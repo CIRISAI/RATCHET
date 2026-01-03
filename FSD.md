@@ -179,6 +179,66 @@ ratchet/
 - MUST test non-convex deceptive regions (torus, point cloud, fractal)
 - MUST support adaptive/moving target deception
 
+#### 3.1.1 Hyperplane Distribution Specification (M-02)
+
+**DISCREPANCY IDENTIFIED:** The theoretical analysis assumes hyperplane offsets are drawn from Uniform([0,1]), while the current implementation uses Uniform([0.2, 0.8]) to avoid boundary effects.
+
+**Canonical Distribution:** The theoretical canonical distribution is:
+- **Normal direction:** Uniform on S^(D-1) (unit sphere), equivalent to Grassmannian Gr(D-1, D)
+- **Offset:** d ~ Uniform([0, 1])
+
+This yields the cutting probability formula:
+```
+P(H ∩ B_r(c) ≠ ∅) = 2r + O(r²)    [for c away from [0,1]^D boundary]
+```
+
+**Implementation Distribution:** The code uses:
+- **Normal direction:** scipy.stats.ortho_group (correct - equivalent to uniform on S^(D-1))
+- **Offset:** d ~ Uniform([a, b]) where typically [a, b] = [0.2, 0.8]
+
+**Lambda Adjustment Formula:** For offset distribution Uniform([a, b]):
+```
+λ_adjusted = 2r / (b - a)
+```
+
+For the default [0.2, 0.8] range:
+```
+λ_adjusted = 2r / 0.6 = 3.33r    (vs. theoretical λ = 2r)
+```
+
+**Error Analysis:**
+- **O(r) error:** The discrepancy introduces an O(r) systematic bias in the cutting probability:
+  ```
+  |p_code - p_theory| ≤ |1 - 1/(b-a)| × 2r = O(r)
+  ```
+- **O(r²) error:** The theoretical formula itself has O(r²) error from higher-order terms
+
+**CRITICAL:** The O(r) error from distribution mismatch dominates the O(r²) theoretical error. Implementations MUST either:
+1. Use Uniform([0, 1]) offset to match theory exactly, OR
+2. Apply the lambda adjustment formula and document the modified decay constant
+
+**Dependency Note:** Error bound specification depends on TC-4 (exponential error bound) from wt-6.
+
+**Configuration:**
+```python
+class HyperplaneDistributionConfig:
+    """
+    Hyperplane sampling distribution configuration.
+    """
+    offset_distribution: Literal["uniform_0_1", "uniform_a_b"] = "uniform_0_1"
+    offset_range: Tuple[float, float] = (0.0, 1.0)  # [a, b] for uniform_a_b
+
+    @property
+    def lambda_multiplier(self) -> float:
+        """Lambda adjustment factor for non-standard offset range."""
+        a, b = self.offset_range
+        return 1.0 / (b - a)  # For uniform_0_1, this is 1.0
+
+    def cutting_probability(self, r: float) -> float:
+        """Expected cutting probability for ball of radius r."""
+        return 2 * r * self.lambda_multiplier
+```
+
 ```python
 class GeometricEngine:
     """
@@ -781,8 +841,76 @@ SECURITY_INVARIANTS = [
 
     # Anti-Sybil
     "federation.behavioral_correlation_detection(coordinated_sybils) == True",
+
+    # M-02: Hyperplane Distribution Consistency (NEW)
+    # INVARIANT: Either use canonical distribution OR apply lambda adjustment
+    """
+    geometric.hyperplane_distribution.offset_distribution == 'uniform_0_1' OR
+    (
+        geometric.hyperplane_distribution.offset_distribution == 'uniform_a_b' AND
+        geometric.lambda == 2*r / (b - a) AND
+        |cutting_probability_error| <= C * r^2
+    )
+    """,
 ]
 ```
+
+#### 7.2.1 Hyperplane Distribution Invariant (M-02 Detail)
+
+**Purpose:** Ensure consistency between theoretical cutting probability and implementation.
+
+**Formal Statement:**
+
+Let H be a hyperplane sampled according to the implementation distribution:
+- Normal n ~ Uniform(S^(D-1))
+- Offset d ~ Uniform([a, b])
+
+And let B_r(c) be a ball of radius r centered at c in the interior of [a, b]^D.
+
+**Invariant M-02-A (Canonical):**
+```
+IF offset_distribution == "uniform_0_1" THEN
+    P(H ∩ B_r(c) ≠ ∅) = 2r + O(r²)
+    λ = 2r
+    Error class: O(r²) [dominated by geometric higher-order terms]
+```
+
+**Invariant M-02-B (Adjusted):**
+```
+IF offset_distribution == "uniform_a_b" with [a,b] ⊂ (0,1) THEN
+    P(H ∩ B_r(c) ≠ ∅) = 2r/(b-a) + O(r²)
+    λ_adjusted = 2r / (b - a)
+    Error class: O(r) if not adjusted, O(r²) if adjusted
+
+    CRITICAL: The unadjusted error is:
+    |p_code - p_theory| = |2r/(b-a) - 2r| = 2r × |1/(b-a) - 1| = O(r)
+```
+
+**Error Bound Dependency:**
+- This invariant specifies the cutting probability error bound
+- The exponential approximation error bound (TC-4) is specified by wt-6
+- Combined error for volume estimate after k constraints:
+  ```
+  V(k) = V(0) × exp(-λ_adjusted × k) × (1 + O(r² × k))
+  ```
+  where the O(r²k) term depends on TC-4 from wt-6.
+
+**O(r) vs O(r²) Error Distinction:**
+
+| Scenario | Cutting Prob Error | Volume Error after k | Severity |
+|----------|-------------------|---------------------|----------|
+| Uniform([0,1]) offset | O(r²) | O(r²k) | Low |
+| Uniform([a,b]) + adjustment | O(r²) | O(r²k) | Low |
+| Uniform([a,b]) WITHOUT adjustment | O(r) | O(rk) | **HIGH** |
+
+**CRITICAL SECURITY IMPLICATION:** Failure to apply lambda adjustment when using non-canonical offset distribution leads to O(rk) cumulative error, which can be **significant for large k** (many constraints). This could lead to:
+1. Overestimating volume reduction (false security)
+2. Underestimating volume reduction (missed attack surface)
+
+**Verification Protocol:**
+1. Unit test: Compare Monte Carlo cutting probability to formula for both distributions
+2. Integration test: Verify λ_adjusted produces correct exponential decay rate
+3. Regression test: Flag any code change that modifies offset distribution without updating λ
 
 ---
 
