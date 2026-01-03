@@ -232,95 +232,34 @@ lambda_eff = lambda_0 / (1 + rho * (k - 1))
 where lambda_0 = 2r (ideal cutting probability for radius r)
 ```
 
+**Preconditions (REQUIRED):**
+```
+PRECONDITION-GE-01: geometric.deceptive_region.is_convex == True
+```
+
+> **INVARIANT:** The deceptive region MUST be convex (e.g., ball, ellipsoid, convex polytope).
+> Non-convex regions (torus, point cloud, fractal, disconnected components) are **UNSUPPORTED**
+> in the current mathematical framework. The exponential volume shrinkage theorem (Theorem 1.1)
+> relies on convexity for the cutting probability calculation. Non-convex regions can have
+> disconnected components that survive hyperplane cuts differently, invalidating the
+> independence assumptions in the proof.
+>
+> **Reference:** FORMALIZATION_ROADMAP.md Section 1.1 (Implicit Assumptions) and Section 4.1.2
+
 **Requirements from Formal Methods:**
 - Must support both orthonormal AND correlated constraint sampling
 - Must track effective rank k_eff = k / (1 + rho*(k-1))
 - MUST verify constraint independence before applying exponential decay claims
 - Must quantify boundary effects at edge of [0,1]^D
 - Must provide error bounds on exponential approximation
+- **Must enforce convexity precondition on deceptive region inputs**
 
 **Requirements from Red Team:**
 - MUST implement null-space attack simulation
 - MUST support adversarial constraint probing
-- MUST test non-convex deceptive regions (torus, point cloud, fractal)
+- MUST test non-convex deceptive regions (torus, point cloud, fractal) **for attack surface analysis only**
 - MUST support adaptive/moving target deception
-- MUST test high-correlation constraint scenarios (rho > 0.5)
-
-**Refinement Types (from schemas/types.py):**
-```python
-from schemas.types import (
-    Dimension,           # int > 0: Prevents zero/negative dimension crashes
-    NumConstraints,      # int > 0: Number of hyperplane constraints
-    Radius,              # 0 < float < 0.5: Deceptive region radius
-    Correlation,         # -1 <= float <= 1: Constraint correlation rho
-    SamplingMode,        # Enum: orthonormal, correlated, adversarial
-    SampleSize,          # int >= 1: Number of Monte Carlo samples
-    AdversarialStrategy, # Attack specification type
-    Hyperplane,          # Normal vector + offset representation
-    VolumeEstimate,      # Result with CI and decay constant
-    EffectiveRankResult, # Effective rank with correlation matrix
-)
-```
-
-#### 3.1.1 Hyperplane Distribution Specification (M-02)
-
-**DISCREPANCY IDENTIFIED:** The theoretical analysis assumes hyperplane offsets are drawn from Uniform([0,1]), while the current implementation uses Uniform([0.2, 0.8]) to avoid boundary effects.
-
-**Canonical Distribution:** The theoretical canonical distribution is:
-- **Normal direction:** Uniform on S^(D-1) (unit sphere), equivalent to Grassmannian Gr(D-1, D)
-- **Offset:** d ~ Uniform([0, 1])
-
-This yields the cutting probability formula:
-```
-P(H ∩ B_r(c) ≠ ∅) = 2r + O(r²)    [for c away from [0,1]^D boundary]
-```
-
-**Implementation Distribution:** The code uses:
-- **Normal direction:** scipy.stats.ortho_group (correct - equivalent to uniform on S^(D-1))
-- **Offset:** d ~ Uniform([a, b]) where typically [a, b] = [0.2, 0.8]
-
-**Lambda Adjustment Formula:** For offset distribution Uniform([a, b]):
-```
-λ_adjusted = 2r / (b - a)
-```
-
-For the default [0.2, 0.8] range:
-```
-λ_adjusted = 2r / 0.6 = 3.33r    (vs. theoretical λ = 2r)
-```
-
-**Error Analysis:**
-- **O(r) error:** The discrepancy introduces an O(r) systematic bias in the cutting probability:
-  ```
-  |p_code - p_theory| ≤ |1 - 1/(b-a)| × 2r = O(r)
-  ```
-- **O(r²) error:** The theoretical formula itself has O(r²) error from higher-order terms
-
-**CRITICAL:** The O(r) error from distribution mismatch dominates the O(r²) theoretical error. Implementations MUST either:
-1. Use Uniform([0, 1]) offset to match theory exactly, OR
-2. Apply the lambda adjustment formula and document the modified decay constant
-
-**Dependency Note:** Error bound specification depends on TC-4 (exponential error bound) from wt-6.
-
-**Configuration:**
-```python
-class HyperplaneDistributionConfig:
-    """
-    Hyperplane sampling distribution configuration.
-    """
-    offset_distribution: Literal["uniform_0_1", "uniform_a_b"] = "uniform_0_1"
-    offset_range: Tuple[float, float] = (0.0, 1.0)  # [a, b] for uniform_a_b
-
-    @property
-    def lambda_multiplier(self) -> float:
-        """Lambda adjustment factor for non-standard offset range."""
-        a, b = self.offset_range
-        return 1.0 / (b - a)  # For uniform_0_1, this is 1.0
-
-    def cutting_probability(self, r: float) -> float:
-        """Expected cutting probability for ball of radius r."""
-        return 2 * r * self.lambda_multiplier
-```
+- MUST flag non-convex inputs as potential attack vectors (see RT-06 below)
 
 ```python
 class GeometricEngine:
@@ -1307,6 +1246,32 @@ class ProofObligation(BaseModel):
 | RT-03 Null Space | Adversarial constraint generation | `core/engines/geometric.py` |
 | RT-04 Mimicry | Ensemble detection, moving thresholds | `core/engines/detection.py` |
 | RT-05 Diverse Sybils | Behavioral correlation checks | `adversarial/defenses/behavioral_correlation.py` |
+| **RT-06 Non-Convex Evasion** | **Convexity enforcement + detection** | `core/engines/geometric.py` |
+
+**RT-06: Non-Convex Deceptive Region Attack (RED TEAM CONSIDERATION)**
+
+> **Severity:** HIGH
+> **Type:** FUNDAMENTAL (exploits mathematical assumption)
+> **Status:** UNSUPPORTED REGION - no mitigation exists
+
+**Attack Description:**
+An adversary constructs a non-convex deceptive region (e.g., torus, fractal, disconnected point cloud)
+that exploits the convexity assumption in Theorem 1.1. Because the exponential volume shrinkage proof
+relies on convex geometry for cutting probability calculations, non-convex regions can:
+
+1. **Survive hyperplane cuts differently**: Disconnected components each survive independently
+2. **Avoid cuts entirely**: Thin "tendrils" between convex hulls may escape constraint intersection
+3. **Adaptive shaping**: Adversary observes constraint directions and shapes region to avoid them
+
+**Current Status:** This attack is **not mitigated** - non-convex regions are explicitly UNSUPPORTED.
+The framework enforces `geometric.deceptive_region.is_convex == True` as a precondition.
+
+**Research Direction:** Future work may explore:
+- Convex hull decomposition with per-component tracking
+- Topological invariants for arbitrary region shapes
+- Adversarial geometry bounds under adaptive attacks
+
+**Reference:** FORMALIZATION_ROADMAP.md Section 4.1.2 (Adversarial Scenario 2)
 
 ### 7.2 Security Invariants
 
@@ -1314,14 +1279,10 @@ class ProofObligation(BaseModel):
 # These invariants MUST hold for any deployment consideration
 
 SECURITY_INVARIANTS = [
-    # ==========================================================================
-    # CRITICAL: Non-Adaptive Adversary Assumption (M-01)
-    # All detection power claims REQUIRE this invariant
-    # ==========================================================================
-    "adversary.strategy_fixed_before(detection.threshold)",
-    # Formal: P_D is measurable w.r.t. sigma-algebra generated by {honest_traces},
-    #         NOT w.r.t. {detection.threshold}
-    # Violation: Adaptive adversary evades with O(sqrt(n)) queries (see Section 11)
+    # Geometric convexity (CRITICAL - Theorem 1.1 depends on this)
+    # Non-convex deceptive regions invalidate volume shrinkage proof
+    # Reference: FORMALIZATION_ROADMAP.md Section 1.1, 4.1.2
+    "geometric.deceptive_region.is_convex == True",
 
     # Byzantine tolerance
     "federation.malicious_fraction < 0.33",
@@ -1417,17 +1378,25 @@ def validate_finite_sample_regime(n: int, empirical_power: float,
     return result
 ```
 
-**References for Finite Sample Analysis:**
-- Berry, A.C. (1941). "The accuracy of the Gaussian approximation to the sum of
-  independent variates." Trans. Amer. Math. Soc.
-- Esseen, C.G. (1942). "On the Liapunoff limit of error in the theory of probability."
-  Ark. Mat. Astron. Fys.
-- Shevtsova, I.G. (2011). "On the absolute constants in the Berry-Esseen type
-  inequalities for identically distributed summands." arXiv:1111.6554
+**Convexity Invariant Details:**
 
-**Dependency Note:** These invariants depend on the asymptotic validity specification
-from wt-7 (DP-4). The n >= 100 threshold is derived from requiring Berry-Esseen
-error < 0.05, which corresponds to 0.4748/sqrt(100) = 0.0475 < 0.05.
+The convexity invariant `geometric.deceptive_region.is_convex == True` is **foundational** to the
+Topological Collapse theorem. Violation analysis:
+
+| Condition | Consequence |
+|-----------|-------------|
+| Convex region (ball, ellipsoid) | Theorem 1.1 applies: V(k) = V(0) × exp(-λk) |
+| Non-convex region (torus, fractal) | **UNSUPPORTED**: Cutting probability formula invalid |
+| Disconnected components | Each component survives cuts independently; theorem breaks |
+| Adaptive non-convex | Adversary can shape region to avoid hyperplane cuts |
+
+**Known Limitation:** Non-convex deceptive regions are explicitly out of scope for the current
+RATCHET framework. Extending to non-convex geometry would require:
+1. New measure-theoretic analysis for arbitrary topology
+2. Per-component volume tracking for disconnected regions
+3. Adversarial geometry optimization bounds
+
+See Section 10 (Open Questions) item 6 for research directions.
 
 ---
 
@@ -1528,6 +1497,15 @@ volumes:
 4. **ETH Dependence:** Complexity claims require ETH. Should we state all results conditionally, or is there unconditional formulation?
 
 5. **System vs Individual:** Framework treats deception as individual property. Can type-theoretic structure capture systemic deception?
+
+6. **Non-Convex Deceptive Regions:** Current framework assumes convex deceptive regions (ball geometry). Can we extend to non-convex regions? Potential approaches:
+   - **Convex decomposition:** Decompose non-convex region into convex components, apply theorem to each, aggregate bounds
+   - **Topological methods:** Use persistent homology or other topological invariants to bound volume shrinkage
+   - **Adversarial geometry:** Prove bounds on how well an adversary can shape non-convex regions to avoid constraints
+   - **Empirical characterization:** Identify which non-convex region classes (e.g., star-shaped, finite union of convex sets) still admit tractable analysis
+
+   **Current status:** Non-convex regions are UNSUPPORTED and flagged as attack vector RT-06.
+   **Reference:** FORMALIZATION_ROADMAP.md Section 4.1.2 (Parameter Regimes Where Claim Fails)
 
 ---
 

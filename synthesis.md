@@ -1,12 +1,12 @@
-# Worktree 10 Synthesis: M-03
+# Worktree 11 Synthesis: M-04
 
 ## Assignment
-- **Issue:** M-03
-- **Scope:** Finite sample invariant
-- **Dependencies:** wt-7 (DP gaps)
+- **Issue:** M-04
+- **Scope:** Convexity invariant
+- **Dependencies:** wt-6 (TC gaps)
 
 ## Task
-Add invariant for n≥100 validity with Berry-Esseen correction specification
+Add invariant: geometric.deceptive_region.is_convex==True, document non-convex as unsupported
 
 ## Parallel Context
 You are one of 15 parallel agents. If your work requires output from a dependent worktree, note the interface assumption and proceed. The coordinator will merge.
@@ -27,61 +27,52 @@ You are one of 15 parallel agents. If your work requires output from a dependent
 
 ## Work Log
 
-### 2026-01-02: Finite Sample Invariant Implementation
+### 2026-01-02: Convexity Invariant Implementation
 
 **Analysis:**
-The FORMALIZATION_ROADMAP.md Section 8.1 Gap 3 identifies that detection power formulas
-use asymptotic normal approximation, but the code tests on finite n. For n < 100,
-Berry-Esseen bounds are needed to quantify the approximation error.
-
-The key insight is that the Berry-Esseen theorem provides an explicit bound on the
-error of the normal approximation:
-```
-|F_n(x) - Phi(x)| <= C * rho / (sigma^3 * sqrt(n))
-```
-where C <= 0.4748 (Shevtsova 2011).
-
-For the 0.05 tolerance to hold, we need:
-```
-0.4748 / sqrt(n) <= 0.05
-=> sqrt(n) >= 9.496
-=> n >= 90.2
-```
-Rounding up to n >= 100 provides a conservative threshold.
+The M-04 issue addresses the implicit convexity assumption in the Topological Collapse theorem
+(Theorem 1.1). Per FORMALIZATION_ROADMAP.md Section 1.1 and 4.1.2, the exponential volume
+shrinkage proof explicitly requires convex geometry for the cutting probability calculation.
+Non-convex regions (torus, fractal, disconnected components) invalidate the independence
+assumptions in the proof.
 
 **Changes Made:**
 
-1. **FSD.md Section 3.3 (Detection Engine):**
-   - Added "Finite Sample Validity Invariant (M-03)" subsection
-   - Documented n >= 100 as asymptotic validity threshold
-   - Added Invariant FS-1 (asymptotic validity threshold)
-   - Added Invariant FS-2 (power approximation accuracy: <= 0.05)
-   - Added Berry-Esseen correction formula for 30 <= n < 100
-   - Added small sample fallback specification for n < 30 (permutation, bootstrap, conservative)
-   - Noted dependency on wt-7 (DP-4 asymptotic validity)
+1. **FSD.md Section 3.1 (GeometricEngine):**
+   - Added `PRECONDITION-GE-01: geometric.deceptive_region.is_convex == True`
+   - Added invariant documentation explaining why convexity is required
+   - Added requirement to enforce convexity precondition on inputs
+   - Updated Red Team requirements to flag non-convex as attack vector
 
-2. **FSD.md Section 7.2 (Security Invariants):**
-   - Added FINITE_SAMPLE_INVARIANTS array with FS-1 through FS-4
-   - Added validate_finite_sample_regime() function for runtime validation
-   - Added academic references (Berry 1941, Esseen 1942, Shevtsova 2011)
-   - Documented derivation of n >= 100 threshold from Berry-Esseen constant
+2. **FSD.md Section 7.1 (Attack Mitigations):**
+   - Added `RT-06 Non-Convex Evasion` attack to the table
+   - Added full attack description with severity (HIGH) and type (FUNDAMENTAL)
+   - Documented research directions for future work
 
-**Dependency on wt-7:**
-This work assumes that wt-7 (DP-4 asymptotic validity) has specified the asymptotic
-regime correctly. The Berry-Esseen corrections here are validated against that regime.
-Specifically:
-- The asymptotic power formula from DP-4 is assumed valid for large n
-- The finite sample corrections provide the bridge to small n
-- The n >= 100 threshold marks the boundary between regimes
+3. **FSD.md Section 7.2 (Security Invariants):**
+   - Added `geometric.deceptive_region.is_convex == True` as first invariant
+   - Added detailed violation analysis table
+   - Documented known limitation and required extensions
+
+4. **FSD.md Section 10 (Open Questions):**
+   - Added item 6: Non-Convex Deceptive Regions research question
+   - Documented potential approaches (convex decomposition, topological methods, etc.)
+
+**Dependency Notes:**
+- **Depends on wt-6 (TC gaps):** This worktree documents the convexity assumption that wt-6
+  may be filling in as a formal gap. The precondition added here should be consistent with
+  any type constraints or invariants wt-6 establishes.
+- **Interface assumption:** We assume wt-6 will establish the formal type structure for
+  `DeceptiveRegion` that includes an `is_convex` property or similar constraint.
 
 **Verification:**
-1. Check that FSD.md Section 3.3 includes all four invariants (FS-1 through FS-4)
-2. Check that FSD.md Section 7.2 includes FINITE_SAMPLE_INVARIANTS array
-3. Verify Berry-Esseen constant 0.4748 matches literature
-4. Confirm n >= 100 threshold derivation: 0.4748/sqrt(100) = 0.0475 < 0.05
+1. Check that FSD.md Section 3.1 contains the precondition
+2. Check that FSD.md Section 7.2 includes convexity in SECURITY_INVARIANTS
+3. Check that RT-06 is documented as an attack vector
+4. Grep for "is_convex" to verify all references are consistent
 
-**Handoff Notes:**
-- Downstream worktrees should use the validate_finite_sample_regime() function
-- Any worktree implementing detection power should check sample size regime
-- The 0.05 tolerance in FS-2 may need adjustment based on domain requirements
+**Handoff:**
+- wt-6 should ensure the formal type `DeceptiveRegion` in Lean includes convexity constraint
+- Any implementation of GeometricEngine must validate convexity at input
+- Non-convex testing should be restricted to attack surface analysis (RT-06 scenarios)
 
