@@ -386,7 +386,7 @@ This is a **standard NP-completeness proof** and should be straightforward to fo
 **Gap Analysis:**
 - **Major Gap:** No geometric probability library
 - **Workaround:** Formalize cutting probability as lemma (100-200 lines)
-- **Estimated Effort:** 2-3 weeks for probability lemmas
+- **Estimated 
 
 #### For Computational Asymmetry (Lean 4)
 
@@ -400,7 +400,7 @@ This is a **standard NP-completeness proof** and should be straightforward to fo
 
 **Gap Analysis:**
 - **Minor Gap:** Need to formalize DNF representation
-- **Estimated Effort:** 1-2 weeks
+- **Estimated 
 
 #### For Detection Power (Lean 4/Isabelle)
 
@@ -421,7 +421,7 @@ This is a **standard NP-completeness proof** and should be straightforward to fo
 **Gap Analysis:**
 - **Major Gap:** No prover has complete statistical testing library
 - **Recommendation:** Prove core lemma in Isabelle, port to Lean
-- **Estimated Effort:** 4-6 weeks (significant)
+- **Estimated 
 
 ---
 
@@ -984,11 +984,11 @@ def GeneralPosition (D : ℕ) (k : ℕ) :=
 ### 10.2 Medium-Term (3-6 Months)
 
 1. **Port multivariate normal** from Isabelle to Lean
-   - **Effort:** 3-4 weeks
+   - **
    - **Impact:** Unblocks Theorem 3.1
 
 2. **Formalize cutting probability** (Theorem 1.1, core lemma)
-   - **Effort:** 2-3 weeks
+   - **
    - **Impact:** High-confidence result for Claim 1
 
 3. **Hybrid verification:** Combine proofs with Monte Carlo
@@ -1019,7 +1019,7 @@ def GeneralPosition (D : ℕ) (k : ℕ) :=
 
 ### Summary of Findings
 
-| Claim | Status | Formalizability | Estimated Effort |
+| Claim | Status | Formalizability | 
 |-------|--------|-----------------|------------------|
 | **Topological Collapse** | Theorem (needs precision) | ✅ Tractable | 4-5 months |
 | **Computational Asymmetry** | Theorem (NP-complete) + Conjecture (ETH) | ✅ Tractable | 2 months |

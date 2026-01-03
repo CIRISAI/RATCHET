@@ -375,14 +375,14 @@ From Roadmap 4.2.2, complexity gap requires m to grow:
 
 | Invariant | Verifiable? | Method | Effort |
 |-----------|-------------|--------|--------|
-| Byzantine tolerance | YES | TLA+ model checking | 2-4 weeks |
-| Detection power | PARTIALLY | Lean 4 (requires MVN lib) | 4-6 weeks |
-| Geometric robustness | YES | Lean 4 (Mathlib) | 3-4 weeks |
-| Complexity gap | YES (NP) + CONDITIONAL (gap) | Lean 4 + ETH assumption | 2-3 weeks |
-| Anti-Sybil | PARTIALLY | Statistical testing | 1-2 weeks |
+| Byzantine tolerance | YES | TLA+ model checking |  |
+| Detection power | PARTIALLY | Lean 4 (requires MVN lib) |  |
+| Geometric robustness | YES | Lean 4 (Mathlib) |  |
+| Complexity gap | YES (NP) + CONDITIONAL (gap) | Lean 4 + ETH assumption |  |
+| Anti-Sybil | PARTIALLY | Statistical testing |  |
 | M-01 (Non-adaptive) | NO | Game-theoretic, not proof | N/A |
 | M-02 (Distribution) | YES | Lean 4 measure theory | 2 weeks |
-| M-03 (Finite sample) | YES | Berry-Esseen bounds | 2-3 weeks |
+| M-03 (Finite sample) | YES | Berry-Esseen bounds |  |
 
 ---
 
@@ -1038,31 +1038,31 @@ class FederationEngine:
 **REC-C1: Add Refinement Types to All Interfaces**
 - **Section:** 3.1, 3.2, 3.3, 3.4, 6.2
 - **Action:** Add Pydantic validators with explicit bounds
-- **Effort:** 2-3 days
+- **
 - **Impact:** Prevents runtime type errors, invalid parameter combinations
 
 **REC-C2: Define All Missing Types**
 - **Section:** 3.1, 3.3, 3.4
 - **Action:** Add schema definitions for AdversarialStrategy, InferenceGraph, Vote, Precedent, Hyperplane, VolumeEstimate
-- **Effort:** 1-2 days
+- **
 - **Impact:** Enables implementation without ambiguity
 
 **REC-C3: Add Preconditions to Detection Power Formula**
 - **Section:** 3.3
 - **Action:** Document validity regime (D >= 0.5, p >= 0.001, n >= 100)
-- **Effort:** 1 day
+- **
 - **Impact:** Prevents unsound security claims
 
 **REC-C4: Enforce or Document k >= 3 for NP-Hardness**
 - **Section:** 3.2
 - **Action:** Either add type constraint or prominent warning
-- **Effort:** 0.5 days
+- **
 - **Impact:** Prevents false security claims in P-time regime
 
 **REC-C5: Specify BFT Protocol Implementation**
 - **Section:** 3.4
 - **Action:** Choose one protocol (recommend PBFT), specify message format, timeout parameters
-- **Effort:** 3-5 days
+- **
 - **Impact:** Enables correct federation implementation
 
 ### 6.2 High Priority (Fix Before Testing)
@@ -1070,31 +1070,31 @@ class FederationEngine:
 **REC-H1: Add Missing Security Invariants**
 - **Section:** 7.2
 - **Action:** Add M-01 (non-adaptive), M-02 (distribution), M-03 (finite sample), M-04 (convexity), M-05 (independence), M-06 (world size)
-- **Effort:** 1 day
+- **
 - **Impact:** Complete security specification
 
 **REC-H2: Specify Error Bounds for All Approximations**
 - **Section:** 3.1, 3.3, 4.1
 - **Action:** Add O() terms: lambda = 2r + O(r^2), sample_size valid to O(1/sqrt(n))
-- **Effort:** 2 days
+- **
 - **Impact:** Enables bound validation
 
 **REC-H3: Specify Hyperplane Distribution**
 - **Section:** 3.1
 - **Action:** Either use d ~ Uniform([0,1]) or document lambda adjustment for [0.2, 0.8]
-- **Effort:** 1 day
+- **
 - **Impact:** Aligns code with theory
 
 **REC-H4: Add ETH Conditionality to Complexity Claims**
 - **Section:** 3.2, 4.1, 7.2
 - **Action:** Mark exponential gap claims as "conditional on ETH"
-- **Effort:** 0.5 days
+- **
 - **Impact:** Correct characterization of proof strength
 
 **REC-H5: Specify Compositional Detection Algorithm**
 - **Section:** 3.3, 3.5
 - **Action:** Define algorithm for RT-01 mitigation (inference chain analysis)
-- **Effort:** 3-5 days
+- **
 - **Impact:** Enables emergent deception detection
 
 ### 6.3 Medium Priority (Fix Before Deployment Consideration)
@@ -1102,31 +1102,31 @@ class FederationEngine:
 **REC-M1: Specify Lean 4 FFI Interface**
 - **Section:** 4.2
 - **Action:** Define call protocol, Mathlib version, module dependencies
-- **Effort:** 2-3 days
+- **
 - **Impact:** Enables Lean integration
 
 **REC-M2: Add Proof Obligation Dependency Graph**
 - **Section:** 4.1
 - **Action:** Specify which proofs depend on which
-- **Effort:** 1 day
+- **
 - **Impact:** Guides formalization order
 
 **REC-M3: Document Non-Adaptive Assumption Prominently**
 - **Section:** 1, 7, throughout
 - **Action:** Add to executive summary and all detection claims
-- **Effort:** 0.5 days
+- **
 - **Impact:** Prevents overstated security claims
 
 **REC-M4: Add Finite-Sample Validity Specification**
 - **Section:** 3.3
 - **Action:** Document Berry-Esseen correction for n < 100
-- **Effort:** 2 days
+- **
 - **Impact:** Correct power analysis for small samples
 
 **REC-M5: Add Type-Theoretic Sketch for Systemic Deception**
 - **Section:** New section 5
 - **Action:** Add deception-indexed types, composition rules
-- **Effort:** 3-5 days
+- **
 - **Impact:** Addresses Question 5, future-proofs design
 
 ### 6.4 Low Priority (Nice to Have)
@@ -1134,19 +1134,19 @@ class FederationEngine:
 **REC-L1: Add Non-Convex Region Support**
 - **Section:** 3.1
 - **Action:** Extend geometric engine or document as unsupported
-- **Effort:** 1-2 weeks
+- **
 - **Impact:** Addresses adversarial scenario 4.1.2 from Roadmap
 
 **REC-L2: Add Adaptive Detection Mode**
 - **Section:** 3.3
 - **Action:** Specify moving threshold algorithm
-- **Effort:** 1 week
+- **
 - **Impact:** Partial mitigation for adaptive adversaries
 
 **REC-L3: Add Session Types for Protocol Specification**
 - **Section:** New
 - **Action:** Formalize agent interaction protocols
-- **Effort:** 2-3 weeks
+- **
 - **Impact:** Static detection of systemic deception potential
 
 ---
@@ -1167,7 +1167,7 @@ The RATCHET FSD is a comprehensive document that integrates multiple perspective
 - Only 60% of roadmap proof obligations are covered
 - Critical assumptions (non-adaptive, Gaussian, convex) are implicit
 
-**Overall Verdict:** The FSD is a GOOD starting point but NOT ready for implementation. Approximately 2-3 weeks of specification work is needed to address the critical and high-priority recommendations.
+**Overall Verdict:** The FSD is a GOOD starting point but NOT ready for implementation. Approximately  of specification work is needed to address the critical and high-priority recommendations.
 
 **Certification:** After addressing REC-C1 through REC-C5 and REC-H1 through REC-H5, the FSD will meet the standard for rigorous implementation with formal verification support.
 
@@ -1184,7 +1184,7 @@ The RATCHET FSD is a comprehensive document that integrates multiple perspective
 
 **Total Issues Identified:** 40
 
-**Estimated Effort to Address All Issues:** 4-6 weeks
+**
 
 ---
 
