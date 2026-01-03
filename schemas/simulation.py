@@ -7,126 +7,64 @@ addressing T-SCH-01 (untyped parameters dictionary) from the Formal Methods Revi
 The SimulationParams discriminated union replaces Dict[str, Any] with engine-specific
 parameter types, enabling compile-time validation and preventing runtime type errors.
 
-Dependencies:
-- Assumes base types from wt-5 (PositiveInt, NonNegativeFloat, Probability, etc.)
-  will be imported from schemas/base.py once available
+Base types are imported from schemas.types (wt-5) to ensure consistency across the
+RATCHET codebase and eliminate duplication.
 """
 
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
-from typing import Annotated, List, Literal, Optional, Tuple, Union
+from typing import Annotated, List, Literal, Optional, Union
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-
 # =============================================================================
-# Base Type Aliases (Refinement Types)
-# Note: These will be imported from schemas/base.py (wt-5) once available
-# For now, we define them locally to enable parallel development
+# Import Base Types from schemas.types (wt-5 canonical definitions)
 # =============================================================================
 
-# Positive integer (D > 0)
-Dimension = Annotated[int, Field(gt=0, description="Positive dimension D")]
+from schemas.types import (
+    # Core refinement types
+    Dimension,
+    Radius,
+    Correlation,
+    Probability,
+    MahalanobisDistance,
+    SampleSize,
+    Literals,
+    WorldSize,
+    # Derived refinement types
+    NumConstraints,
+    NumStatements,
+    ObservableFraction,
+    EffectiveRank,
+    ByzantineFraction,
+    NodeCount,
+    CaptureRate,
+    # Enumerations
+    SamplingMode,
+    DeceptionStrategy,
+    SATSolver,
+    DetectionMethod,
+    ConsensusProtocol,
+    AttackType,
+    MaliciousStrategy,
+    ProofStatus,
+    # Composite types
+    AdversarialStrategy,
+    ProofObligation,
+)
+
+
+# =============================================================================
+# Simulation-Specific Type Aliases
+# (Types needed for simulation.py that aren't in schemas.types)
+# =============================================================================
+
+# Positive integer (general purpose, beyond specific domain types)
 PositiveInt = Annotated[int, Field(gt=0, description="Positive integer")]
 NonNegativeInt = Annotated[int, Field(ge=0, description="Non-negative integer")]
-
-# Radius: 0 < r < 0.5 (per Roadmap Section 4.1.3)
-Radius = Annotated[float, Field(gt=0, lt=0.5, description="Deceptive region radius (0 < r < 0.5)")]
-
-# Correlation: -1 <= rho <= 1
-Correlation = Annotated[float, Field(ge=-1, le=1, description="Constraint correlation coefficient")]
-
-# Probability: 0 < p < 1 (strict bounds to avoid division by zero)
-Probability = Annotated[float, Field(gt=0, lt=1, description="Probability value (0 < p < 1)")]
-
-# Non-negative float for distances
 NonNegativeFloat = Annotated[float, Field(ge=0, description="Non-negative float")]
-
-# Fraction: 0 < f <= 1
 Fraction = Annotated[float, Field(gt=0, le=1, description="Fraction value (0 < f <= 1)")]
-
-# Malicious fraction for BFT: must be < 1/3
-ByzantineFraction = Annotated[float, Field(ge=0, lt=0.33, description="Byzantine fraction (< 1/3 for BFT)")]
-
-
-# =============================================================================
-# Enums for Constrained Choices
-# =============================================================================
-
-class SamplingMode(str, Enum):
-    """Hyperplane sampling modes for geometric engine."""
-    ORTHONORMAL = "orthonormal"
-    CORRELATED = "correlated"
-    ADVERSARIAL = "adversarial"
-
-
-class SATSolver(str, Enum):
-    """SAT solver backend options."""
-    Z3 = "z3"
-    MINISAT = "minisat"
-    CADICAL = "cadical"
-    BRUTEFORCE = "bruteforce"
-
-
-class DeceptionStrategy(str, Enum):
-    """Deception strategies for complexity analysis."""
-    FULL = "full"
-    SPARSE = "sparse"
-    LAZY = "lazy"
-
-
-class DetectionMethod(str, Enum):
-    """Detection algorithm options."""
-    LRT = "lrt"
-    MAHALANOBIS = "mahalanobis"
-    ISOLATION_FOREST = "isolation_forest"
-    ENSEMBLE = "ensemble"
-
-
-class ConsensusProtocol(str, Enum):
-    """BFT consensus protocol options."""
-    PBFT = "pbft"
-    RAFT = "raft"
-    TENDERMINT = "tendermint"
-
-
-class MaliciousStrategy(str, Enum):
-    """Malicious node behavior strategies."""
-    RANDOM = "random"
-    COORDINATED = "coordinated"
-    SLOW_CAPTURE = "slow_capture"
-
-
-class AdversarialAttackType(str, Enum):
-    """Types of adversarial attacks."""
-    NULL_SPACE = "null_space"
-    DISTRIBUTION_MIMICRY = "distribution_mimicry"
-    DIVERSE_SYBIL = "diverse_sybil"
-    SLOW_CAPTURE = "slow_capture"
-    EMERGENT_DECEPTION = "emergent_deception"
-
-
-# =============================================================================
-# Adversarial Strategy Configuration
-# Addresses GAP-01: AdversarialStrategy type undefined
-# =============================================================================
-
-class AdversarialStrategy(BaseModel):
-    """
-    Configuration for adversarial attacks in simulations.
-
-    This type addresses T-GEO-04 from the Formal Review:
-    'adversary: Optional[AdversarialStrategy]' references undefined type.
-    """
-    attack_type: AdversarialAttackType
-    probe_budget: PositiveInt = Field(default=100, description="Number of probing attempts allowed")
-    adaptation_rate: NonNegativeFloat = Field(default=0.0, description="Rate of strategy adaptation")
-    target_evasion_rate: Probability = Field(default=0.5, description="Target evasion success rate")
-
-    class Config:
-        use_enum_values = True
 
 
 # =============================================================================
@@ -141,7 +79,7 @@ class GeometricParams(BaseModel):
     - T-GEO-01: Unbounded dimension parameter -> Dimension (int > 0)
     - T-GEO-02: Unbounded radius parameter -> Radius (0 < r < 0.5)
     - T-GEO-03: Correlation bounds missing -> Correlation (-1 <= rho <= 1)
-    - T-GEO-04: AdversarialStrategy undefined -> Now defined above
+    - T-GEO-04: AdversarialStrategy undefined -> Now imported from schemas.types
     """
     engine: Literal["geometric"] = "geometric"
 
@@ -149,7 +87,7 @@ class GeometricParams(BaseModel):
     dimension: Dimension = Field(
         description="Dimension D of the behavior space (must be positive)"
     )
-    num_constraints: PositiveInt = Field(
+    num_constraints: NumConstraints = Field(
         description="Number of hyperplane constraints k"
     )
     deceptive_radius: Radius = Field(
@@ -167,12 +105,12 @@ class GeometricParams(BaseModel):
         default=SamplingMode.ORTHONORMAL,
         description="Hyperplane sampling mode"
     )
-    num_samples: PositiveInt = Field(
+    num_samples: SampleSize = Field(
         default=100_000,
         description="Number of Monte Carlo samples"
     )
 
-    # Adversarial configuration (now properly typed)
+    # Adversarial configuration (now properly typed via schemas.types)
     adversary: Optional[AdversarialStrategy] = Field(
         default=None,
         description="Adversarial attack configuration (if enabled)"
@@ -195,7 +133,7 @@ class ComplexityParams(BaseModel):
 
     Addresses type issues T-CPX-01 and T-CPX-02 from Formal Review Section 1.1.2:
     - T-CPX-01: Literals per statement unbounded -> literals_per_statement >= 3 for NP-hardness
-    - T-CPX-02: Observable fraction semantics unclear -> Fraction (0 < f <= 1)
+    - T-CPX-02: Observable fraction semantics unclear -> ObservableFraction (0 < f <= 1)
 
     CRITICAL: For NP-hardness claims, literals_per_statement must be >= 3.
     For k < 3, the problem reduces to 2-SAT which is in P.
@@ -203,21 +141,21 @@ class ComplexityParams(BaseModel):
     engine: Literal["complexity"] = "complexity"
 
     # World model parameters
-    world_size: PositiveInt = Field(
+    world_size: WorldSize = Field(
         description="Number of facts/variables in the world model (m)"
     )
-    num_statements: PositiveInt = Field(
+    num_statements: NumStatements = Field(
         description="Number of statements to verify (n)"
     )
 
     # CRITICAL: Must be >= 3 for NP-hardness (2-SAT is in P)
-    literals_per_statement: Annotated[int, Field(ge=2, description="Literals per clause (k >= 3 for NP-hardness)")] = Field(
+    literals_per_statement: Literals = Field(
         default=3,
         description="Number of literals per statement (k). WARNING: k < 3 yields P-time problem"
     )
 
     # Sparse deception parameter with proper bounds
-    observable_fraction: Fraction = Field(
+    observable_fraction: ObservableFraction = Field(
         default=1.0,
         description="Fraction of facts that are observable (0 < f <= 1)"
     )
@@ -246,17 +184,9 @@ class ComplexityParams(BaseModel):
     @model_validator(mode='after')
     def warn_on_easy_sat(self) -> 'ComplexityParams':
         """
-        Emit warning if literals_per_statement < 3.
-        This is U-02 (Critical Unsoundness Risk) from Formal Review.
+        Note: The Literals type from schemas.types already enforces k >= 3.
+        This validator is kept for explicit documentation of the NP-hardness requirement.
         """
-        if self.literals_per_statement < 3:
-            import warnings
-            warnings.warn(
-                f"literals_per_statement={self.literals_per_statement} < 3: "
-                "NP-hardness requires k >= 3. For k < 3, deceptive agent may have "
-                "polynomial time algorithm. Security claims are VOID for this configuration.",
-                UserWarning
-            )
         return self
 
 
@@ -265,7 +195,7 @@ class DetectionParams(BaseModel):
     Parameters for the Detection Engine (statistical deception detection).
 
     Addresses type issues T-DET-01 through T-DET-03 from Formal Review Section 1.1.3:
-    - T-DET-01: Mahalanobis distance must be non-negative -> NonNegativeFloat
+    - T-DET-01: Mahalanobis distance must be non-negative -> MahalanobisDistance
     - T-DET-02: Deception rate domain (0, 1) -> Probability
     - T-DET-03: Alpha/beta probability constraints -> Probability
 
@@ -283,7 +213,7 @@ class DetectionParams(BaseModel):
     )
 
     # Mahalanobis distance (must be non-negative)
-    mahalanobis_distance: NonNegativeFloat = Field(
+    mahalanobis_distance: MahalanobisDistance = Field(
         default=1.0,
         description="Mahalanobis distance D (>= 0, recommend >= 0.5 for meaningful detection)"
     )
@@ -307,7 +237,7 @@ class DetectionParams(BaseModel):
     )
 
     # Sample size for training (finite-sample regime)
-    training_sample_size: Optional[PositiveInt] = Field(
+    training_sample_size: Optional[SampleSize] = Field(
         default=None,
         description="Sample size for detector training (recommend >= 100)"
     )
@@ -360,14 +290,14 @@ class FederationParams(BaseModel):
     Addresses issues from Formal Review:
     - I-INV-01: BFT requires n >= 3f + 1
     - U-03: Byzantine tolerance without protocol specification
-    - GAP-05, GAP-06: Vote and Precedent types undefined (referenced elsewhere)
+    - GAP-05, GAP-06: Vote and Precedent types undefined (defined in schemas.types)
 
     SECURITY INVARIANT: malicious_fraction < 0.33 for BFT safety.
     """
     engine: Literal["federation"] = "federation"
 
     # Node composition
-    num_honest: PositiveInt = Field(
+    num_honest: NodeCount = Field(
         description="Number of honest nodes in the federation"
     )
     num_malicious: NonNegativeInt = Field(
@@ -394,7 +324,7 @@ class FederationParams(BaseModel):
     )
 
     # Slow capture parameters
-    capture_rate_per_period: Optional[Annotated[float, Field(ge=0, lt=1)]] = Field(
+    capture_rate_per_period: Optional[CaptureRate] = Field(
         default=None,
         description="Rate of node capture per period (for slow capture simulation)"
     )
@@ -453,7 +383,7 @@ SimulationParams = Annotated[
 
 
 # =============================================================================
-# Updated SimulationRequest with Type-Safe Parameters
+# Simulation Request and Response Types
 # =============================================================================
 
 class AdversaryConfig(BaseModel):
@@ -605,30 +535,56 @@ class AttackScenario(BaseModel):
 
 
 # =============================================================================
-# Proof Obligation Type
+# Module Exports
 # =============================================================================
 
-class ProofStatus(str, Enum):
-    """Extended proof status (L-03 from Formal Review)."""
-    PENDING = "pending"
-    PARTIAL = "partial"  # Has sorry placeholders
-    AXIOMATIZED = "axiomatized"  # Uses axiom (e.g., ETH)
-    PROVEN = "proven"
-    DISPROVEN = "disproven"
-    BLOCKED = "blocked"  # Waiting on dependency
+__all__ = [
+    # Re-exported from schemas.types for convenience
+    'Dimension',
+    'Radius',
+    'Correlation',
+    'Probability',
+    'MahalanobisDistance',
+    'SampleSize',
+    'Literals',
+    'WorldSize',
+    'NumConstraints',
+    'NumStatements',
+    'ObservableFraction',
+    'EffectiveRank',
+    'ByzantineFraction',
+    'NodeCount',
+    'CaptureRate',
+    'SamplingMode',
+    'DeceptionStrategy',
+    'SATSolver',
+    'DetectionMethod',
+    'ConsensusProtocol',
+    'AttackType',
+    'MaliciousStrategy',
+    'ProofStatus',
+    'AdversarialStrategy',
+    'ProofObligation',
 
+    # Simulation-specific types
+    'PositiveInt',
+    'NonNegativeInt',
+    'NonNegativeFloat',
+    'Fraction',
 
-class ProofObligation(BaseModel):
-    """
-    Proof obligation tracking with ETH conditionality support (REC-H4).
-    """
-    id: str
-    claim: str
-    theorem_statement: str
-    lean_file: Optional[str] = None
-    status: ProofStatus = ProofStatus.PENDING
-    dependencies: List[str] = Field(default_factory=list)
-    conditional_on: List[str] = Field(
-        default_factory=list,
-        description="Assumptions this proof depends on (e.g., ['ETH', 'SETH'])"
-    )
+    # Engine parameter types
+    'GeometricParams',
+    'ComplexityParams',
+    'DetectionParams',
+    'FederationParams',
+    'SimulationParams',
+
+    # Request/Response types
+    'AdversaryConfig',
+    'ProvenanceRecord',
+    'SimulationRequest',
+    'ConfidenceInterval',
+    'AdversarialMetrics',
+    'SimulationResult',
+    'AttackScenario',
+]

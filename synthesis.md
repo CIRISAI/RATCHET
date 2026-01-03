@@ -1,9 +1,11 @@
 # Worktree 4 Synthesis: T-SCH-01
 
+## Status: READY FOR MERGE
+
 ## Assignment
 - **Issue:** T-SCH-01
 - **Scope:** Type hole fix
-- **Dependencies:** wt-5 (base types)
+- **Dependencies:** wt-5 (base types) - NOW MERGED
 
 ## Task
 Replace Dict[str,Any] with discriminated union SimulationParams using engine-specific types
@@ -27,6 +29,46 @@ You are one of 15 parallel agents. If your work requires output from a dependent
 
 ## Work Log
 
+### 2026-01-02: Import Refactoring Complete (wt-5 merged)
+
+#### Changes Made
+
+**Refactored `/home/emoore/RATCHET_WORKTREES/wt-4/schemas/simulation.py`**
+
+Now imports all base types from `schemas.types` (wt-5 canonical definitions):
+
+```python
+from schemas.types import (
+    # Core refinement types
+    Dimension, Radius, Correlation, Probability, MahalanobisDistance,
+    SampleSize, Literals, WorldSize,
+    # Derived refinement types
+    NumConstraints, NumStatements, ObservableFraction, EffectiveRank,
+    ByzantineFraction, NodeCount, CaptureRate,
+    # Enumerations
+    SamplingMode, DeceptionStrategy, SATSolver, DetectionMethod,
+    ConsensusProtocol, AttackType, MaliciousStrategy, ProofStatus,
+    # Composite types
+    AdversarialStrategy, ProofObligation,
+)
+```
+
+**Removed duplicate local definitions:**
+- `Dimension`, `Radius`, `Correlation`, `Probability` (now from types.py)
+- `ByzantineFraction`, `NonNegativeFloat` (now from types.py)
+- All enums: `SamplingMode`, `DeceptionStrategy`, `SATSolver`, etc.
+- `AdversarialStrategy`, `ProofObligation`, `ProofStatus` (now from types.py)
+
+**Kept simulation-specific types:**
+- `PositiveInt`, `NonNegativeInt`, `NonNegativeFloat`, `Fraction` (generic helpers)
+- `GeometricParams`, `ComplexityParams`, `DetectionParams`, `FederationParams`
+- `SimulationParams` discriminated union
+- `AdversaryConfig`, `ProvenanceRecord`, `SimulationRequest`
+- `ConfidenceInterval`, `AdversarialMetrics`, `SimulationResult`
+- `AttackScenario`
+
+---
+
 ### 2026-01-02: T-SCH-01 Type Hole Fix Complete
 
 #### Analysis
@@ -47,7 +89,7 @@ The fix requires implementing a **discriminated union** with engine-specific par
 
 Comprehensive type-safe simulation parameter schemas including:
 
-- **Base Type Aliases (Refinement Types)**:
+- **Base Type Aliases (Refinement Types)** - now imported from schemas.types:
   - `Dimension`: int > 0
   - `Radius`: 0 < float < 0.5 (per Roadmap Section 4.1.3)
   - `Correlation`: -1 <= float <= 1
@@ -69,9 +111,9 @@ Comprehensive type-safe simulation parameter schemas including:
   ```
 
 - **Additional Types Defined**:
-  - `AdversarialStrategy` (addresses GAP-01)
-  - `ProofStatus` with extended states (addresses L-03)
-  - `ProofObligation` with `conditional_on` for ETH (addresses REC-H4)
+  - `AdversarialStrategy` (addresses GAP-01) - now imported from schemas.types
+  - `ProofStatus` with extended states (addresses L-03) - now imported from schemas.types
+  - `ProofObligation` with `conditional_on` for ETH (addresses REC-H4) - now imported from schemas.types
 
 **2. Updated `/home/emoore/RATCHET_WORKTREES/wt-4/FSD.md` Section 6.2**
 
@@ -115,17 +157,9 @@ To verify the fix is correct:
 
 #### Handoff Notes
 
-**Dependency on wt-5 (Base Types)**:
-- This implementation defines base types locally in `schemas/simulation.py`
-- Once wt-5 completes `schemas/base.py`, imports should be updated:
-  ```python
-  # Current (local definitions)
-  Dimension = Annotated[int, Field(gt=0, ...)]
-
-  # After wt-5 merge (import from base)
-  from schemas.base import Dimension, PositiveInt, Probability, ...
-  ```
-- The local definitions match the expected interface from wt-5
+**Dependency on wt-5 (Base Types)**: RESOLVED
+- All base types now imported from `schemas.types` (wt-5 merged to master)
+- No more local duplicate definitions
 
 **For Dependent Worktrees**:
 - `SimulationParams` is the union type to use in API handlers
@@ -148,4 +182,3 @@ To verify the fix is correct:
 | GAP-01 | AdversarialStrategy type | FIXED |
 | L-03 | Proof status incomplete | FIXED |
 | REC-H4 | ETH conditionality | FIXED |
-
