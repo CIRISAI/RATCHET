@@ -167,17 +167,33 @@ ratchet/
 
 **Purpose:** Validate topological collapse theorem V(k) = V(0) × exp(-λk)
 
+**Preconditions (REQUIRED):**
+```
+PRECONDITION-GE-01: geometric.deceptive_region.is_convex == True
+```
+
+> **INVARIANT:** The deceptive region MUST be convex (e.g., ball, ellipsoid, convex polytope).
+> Non-convex regions (torus, point cloud, fractal, disconnected components) are **UNSUPPORTED**
+> in the current mathematical framework. The exponential volume shrinkage theorem (Theorem 1.1)
+> relies on convexity for the cutting probability calculation. Non-convex regions can have
+> disconnected components that survive hyperplane cuts differently, invalidating the
+> independence assumptions in the proof.
+>
+> **Reference:** FORMALIZATION_ROADMAP.md Section 1.1 (Implicit Assumptions) and Section 4.1.2
+
 **Requirements from Formal Methods:**
 - Must support both orthonormal AND correlated constraint sampling
 - Must track effective rank k_eff = k / (1 + ρ(k-1))
 - Must quantify boundary effects at edge of [0,1]^D
 - Must provide error bounds on exponential approximation
+- **Must enforce convexity precondition on deceptive region inputs**
 
 **Requirements from Red Team:**
 - MUST implement null-space attack simulation
 - MUST support adversarial constraint probing
-- MUST test non-convex deceptive regions (torus, point cloud, fractal)
+- MUST test non-convex deceptive regions (torus, point cloud, fractal) **for attack surface analysis only**
 - MUST support adaptive/moving target deception
+- MUST flag non-convex inputs as potential attack vectors (see RT-06 below)
 
 ```python
 class GeometricEngine:
@@ -760,6 +776,32 @@ class ProofObligation(BaseModel):
 | RT-03 Null Space | Adversarial constraint generation | `core/engines/geometric.py` |
 | RT-04 Mimicry | Ensemble detection, moving thresholds | `core/engines/detection.py` |
 | RT-05 Diverse Sybils | Behavioral correlation checks | `adversarial/defenses/behavioral_correlation.py` |
+| **RT-06 Non-Convex Evasion** | **Convexity enforcement + detection** | `core/engines/geometric.py` |
+
+**RT-06: Non-Convex Deceptive Region Attack (RED TEAM CONSIDERATION)**
+
+> **Severity:** HIGH
+> **Type:** FUNDAMENTAL (exploits mathematical assumption)
+> **Status:** UNSUPPORTED REGION - no mitigation exists
+
+**Attack Description:**
+An adversary constructs a non-convex deceptive region (e.g., torus, fractal, disconnected point cloud)
+that exploits the convexity assumption in Theorem 1.1. Because the exponential volume shrinkage proof
+relies on convex geometry for cutting probability calculations, non-convex regions can:
+
+1. **Survive hyperplane cuts differently**: Disconnected components each survive independently
+2. **Avoid cuts entirely**: Thin "tendrils" between convex hulls may escape constraint intersection
+3. **Adaptive shaping**: Adversary observes constraint directions and shapes region to avoid them
+
+**Current Status:** This attack is **not mitigated** - non-convex regions are explicitly UNSUPPORTED.
+The framework enforces `geometric.deceptive_region.is_convex == True` as a precondition.
+
+**Research Direction:** Future work may explore:
+- Convex hull decomposition with per-component tracking
+- Topological invariants for arbitrary region shapes
+- Adversarial geometry bounds under adaptive attacks
+
+**Reference:** FORMALIZATION_ROADMAP.md Section 4.1.2 (Adversarial Scenario 2)
 
 ### 7.2 Security Invariants
 
@@ -767,6 +809,11 @@ class ProofObligation(BaseModel):
 # These invariants MUST hold for any deployment consideration
 
 SECURITY_INVARIANTS = [
+    # Geometric convexity (CRITICAL - Theorem 1.1 depends on this)
+    # Non-convex deceptive regions invalidate volume shrinkage proof
+    # Reference: FORMALIZATION_ROADMAP.md Section 1.1, 4.1.2
+    "geometric.deceptive_region.is_convex == True",
+
     # Byzantine tolerance
     "federation.malicious_fraction < 0.33",
 
@@ -783,6 +830,26 @@ SECURITY_INVARIANTS = [
     "federation.behavioral_correlation_detection(coordinated_sybils) == True",
 ]
 ```
+
+**Convexity Invariant Details:**
+
+The convexity invariant `geometric.deceptive_region.is_convex == True` is **foundational** to the
+Topological Collapse theorem. Violation analysis:
+
+| Condition | Consequence |
+|-----------|-------------|
+| Convex region (ball, ellipsoid) | Theorem 1.1 applies: V(k) = V(0) × exp(-λk) |
+| Non-convex region (torus, fractal) | **UNSUPPORTED**: Cutting probability formula invalid |
+| Disconnected components | Each component survives cuts independently; theorem breaks |
+| Adaptive non-convex | Adversary can shape region to avoid hyperplane cuts |
+
+**Known Limitation:** Non-convex deceptive regions are explicitly out of scope for the current
+RATCHET framework. Extending to non-convex geometry would require:
+1. New measure-theoretic analysis for arbitrary topology
+2. Per-component volume tracking for disconnected regions
+3. Adversarial geometry optimization bounds
+
+See Section 10 (Open Questions) item 6 for research directions.
 
 ---
 
@@ -883,6 +950,15 @@ volumes:
 4. **ETH Dependence:** Complexity claims require ETH. Should we state all results conditionally, or is there unconditional formulation?
 
 5. **System vs Individual:** Framework treats deception as individual property. Can type-theoretic structure capture systemic deception?
+
+6. **Non-Convex Deceptive Regions:** Current framework assumes convex deceptive regions (ball geometry). Can we extend to non-convex regions? Potential approaches:
+   - **Convex decomposition:** Decompose non-convex region into convex components, apply theorem to each, aggregate bounds
+   - **Topological methods:** Use persistent homology or other topological invariants to bound volume shrinkage
+   - **Adversarial geometry:** Prove bounds on how well an adversary can shape non-convex regions to avoid constraints
+   - **Empirical characterization:** Identify which non-convex region classes (e.g., star-shaped, finite union of convex sets) still admit tractable analysis
+
+   **Current status:** Non-convex regions are UNSUPPORTED and flagged as attack vector RT-06.
+   **Reference:** FORMALIZATION_ROADMAP.md Section 4.1.2 (Parameter Regimes Where Claim Fails)
 
 ---
 
