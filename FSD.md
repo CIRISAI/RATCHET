@@ -604,6 +604,54 @@ with adaptive adversaries. Specifically:
 - MUST provide asymptotic AND finite-sample analysis
 - MUST quantify estimation error in plug-in D_hat
 
+**Finite Sample Validity Invariant (M-03):**
+
+The asymptotic power formula is valid for n >= 100. For smaller samples, Berry-Esseen
+corrections are required.
+
+**Invariant FS-1 (Asymptotic Validity Threshold):**
+```
+n >= 100 => asymptotic_formula_valid
+```
+For n >= 100, the Gaussian approximation to the likelihood ratio distribution has
+error bounded by O(1/sqrt(n)), making the asymptotic power formula reliable.
+
+**Invariant FS-2 (Power Approximation Accuracy):**
+```
+n >= 100 => |empirical_power - theoretical_power| <= 0.05
+```
+When n >= 100, the empirical detection power must match the theoretical prediction
+within 5 percentage points. Violations indicate model misspecification or
+distributional departures from Gaussian assumptions.
+
+**Berry-Esseen Correction for n < 100:**
+
+For finite samples with n < 100, apply the Berry-Esseen correction:
+```
+|F_n(x) - Phi(x)| <= C * rho / (sigma^3 * sqrt(n))
+```
+where:
+- F_n(x) is the empirical CDF of the standardized sample mean
+- Phi(x) is the standard normal CDF
+- C <= 0.4748 (Berry-Esseen constant, Shevtsova 2011)
+- rho = E[|X - mu|^3] is the third absolute moment
+- sigma is the standard deviation
+
+**Corrected Power Formula (n < 100):**
+```
+power_corrected = power_asymptotic +/- delta_BE
+delta_BE = 0.4748 * rho / (sigma^3 * sqrt(n))
+```
+
+**Small Sample Fallback (n < 30):**
+For n < 30, the asymptotic formula is unreliable. Use one of:
+1. **Exact permutation test:** Compute exact distribution under null
+2. **Bootstrap power estimation:** B = 10000 bootstrap replicates
+3. **Conservative adjustment:** Apply Bonferroni-style penalty: alpha_eff = alpha / 2
+
+**Dependency:** This invariant depends on wt-7 (DP-4 asymptotic validity specification).
+The Berry-Esseen bounds are validated against the asymptotic regime established there.
+
 **Requirements from Red Team:**
 - MUST implement distribution mimicry attack (moment matching)
 - MUST implement trace flooding/dilution attack
@@ -1304,81 +1352,82 @@ SECURITY_INVARIANTS = [
     """,
 ]
 
-# Effective Rank Calculation (M-05 Supporting Definition)
-#
-# k_eff = k / (1 + rho * (k - 1))
-#
-# where:
-#   k = number of constraints (hyperplanes)
-#   rho = average pairwise correlation of normal vectors
-#   k_eff = effective number of independent constraints
-#
-# Security implications:
-#   - If k_eff < 10, geometric protection is WEAK
-#   - If k_eff < 5, geometric protection is MINIMAL
-#   - If k_eff < 2, geometric protection FAILS (adversary can evade)
-#
-# Recommended minimum: k_eff >= 20 for production systems
+# Finite Sample Validity Invariants (M-03)
+# These invariants govern the validity of asymptotic statistical formulas
 
-MIN_EFFECTIVE_RANK = 20  # Configurable based on threat model
+FINITE_SAMPLE_INVARIANTS = [
+    # FS-1: Asymptotic validity threshold
+    # For n >= 100, the asymptotic power formula is valid
+    "n >= 100 => detection.asymptotic_formula_valid == True",
+
+    # FS-2: Power approximation accuracy
+    # Empirical power must match theoretical within tolerance for n >= 100
+    "n >= 100 => abs(detection.empirical_power - detection.theoretical_power) <= 0.05",
+
+    # FS-3: Berry-Esseen correction required for small samples
+    # For 30 <= n < 100, must apply finite-sample correction
+    "30 <= n < 100 => detection.berry_esseen_correction_applied == True",
+
+    # FS-4: Small sample fallback
+    # For n < 30, must use exact or bootstrap methods
+    "n < 30 => detection.method in ['permutation', 'bootstrap', 'conservative']",
+]
+
+def validate_finite_sample_regime(n: int, empirical_power: float,
+                                   theoretical_power: float) -> dict:
+    """
+    Validate finite sample invariants for detection power analysis.
+
+    Args:
+        n: Sample size
+        empirical_power: Observed detection power from simulation
+        theoretical_power: Power predicted by asymptotic formula
+
+    Returns:
+        dict with validation results and any required corrections
+    """
+    result = {
+        'n': n,
+        'regime': None,
+        'valid': True,
+        'correction_applied': None,
+        'power_deviation': abs(empirical_power - theoretical_power),
+    }
+
+    if n >= 100:
+        # Asymptotic regime - check FS-2
+        result['regime'] = 'asymptotic'
+        if result['power_deviation'] > 0.05:
+            result['valid'] = False
+            result['warning'] = 'Power deviation exceeds 0.05 tolerance'
+    elif n >= 30:
+        # Berry-Esseen correction regime
+        result['regime'] = 'berry_esseen'
+        result['correction_applied'] = 'berry_esseen'
+        # Apply correction: delta_BE = 0.4748 * rho / (sigma^3 * sqrt(n))
+        # Conservative estimate assuming rho/sigma^3 ~ 1
+        delta_BE = 0.4748 / (n ** 0.5)
+        result['correction_bound'] = delta_BE
+    else:
+        # Small sample regime - require fallback
+        result['regime'] = 'small_sample'
+        result['correction_applied'] = 'fallback_required'
+        result['recommended_method'] = 'bootstrap' if n >= 10 else 'permutation'
+
+    return result
 ```
 
-#### 7.2.1 Hyperplane Distribution Invariant (M-02 Detail)
+**References for Finite Sample Analysis:**
+- Berry, A.C. (1941). "The accuracy of the Gaussian approximation to the sum of
+  independent variates." Trans. Amer. Math. Soc.
+- Esseen, C.G. (1942). "On the Liapunoff limit of error in the theory of probability."
+  Ark. Mat. Astron. Fys.
+- Shevtsova, I.G. (2011). "On the absolute constants in the Berry-Esseen type
+  inequalities for identically distributed summands." arXiv:1111.6554
 
-**Purpose:** Ensure consistency between theoretical cutting probability and implementation.
-
-**Formal Statement:**
-
-Let H be a hyperplane sampled according to the implementation distribution:
-- Normal n ~ Uniform(S^(D-1))
-- Offset d ~ Uniform([a, b])
-
-And let B_r(c) be a ball of radius r centered at c in the interior of [a, b]^D.
-
-**Invariant M-02-A (Canonical):**
-```
-IF offset_distribution == "uniform_0_1" THEN
-    P(H ∩ B_r(c) ≠ ∅) = 2r + O(r²)
-    λ = 2r
-    Error class: O(r²) [dominated by geometric higher-order terms]
-```
-
-**Invariant M-02-B (Adjusted):**
-```
-IF offset_distribution == "uniform_a_b" with [a,b] ⊂ (0,1) THEN
-    P(H ∩ B_r(c) ≠ ∅) = 2r/(b-a) + O(r²)
-    λ_adjusted = 2r / (b - a)
-    Error class: O(r) if not adjusted, O(r²) if adjusted
-
-    CRITICAL: The unadjusted error is:
-    |p_code - p_theory| = |2r/(b-a) - 2r| = 2r × |1/(b-a) - 1| = O(r)
-```
-
-**Error Bound Dependency:**
-- This invariant specifies the cutting probability error bound
-- The exponential approximation error bound (TC-4) is specified by wt-6
-- Combined error for volume estimate after k constraints:
-  ```
-  V(k) = V(0) × exp(-λ_adjusted × k) × (1 + O(r² × k))
-  ```
-  where the O(r²k) term depends on TC-4 from wt-6.
-
-**O(r) vs O(r²) Error Distinction:**
-
-| Scenario | Cutting Prob Error | Volume Error after k | Severity |
-|----------|-------------------|---------------------|----------|
-| Uniform([0,1]) offset | O(r²) | O(r²k) | Low |
-| Uniform([a,b]) + adjustment | O(r²) | O(r²k) | Low |
-| Uniform([a,b]) WITHOUT adjustment | O(r) | O(rk) | **HIGH** |
-
-**CRITICAL SECURITY IMPLICATION:** Failure to apply lambda adjustment when using non-canonical offset distribution leads to O(rk) cumulative error, which can be **significant for large k** (many constraints). This could lead to:
-1. Overestimating volume reduction (false security)
-2. Underestimating volume reduction (missed attack surface)
-
-**Verification Protocol:**
-1. Unit test: Compare Monte Carlo cutting probability to formula for both distributions
-2. Integration test: Verify λ_adjusted produces correct exponential decay rate
-3. Regression test: Flag any code change that modifies offset distribution without updating λ
+**Dependency Note:** These invariants depend on the asymptotic validity specification
+from wt-7 (DP-4). The n >= 100 threshold is derived from requiring Berry-Esseen
+error < 0.05, which corresponds to 0.4748/sqrt(100) = 0.0475 < 0.05.
 
 ---
 

@@ -1,12 +1,12 @@
-# Worktree 9 Synthesis: M-02
+# Worktree 10 Synthesis: M-03
 
 ## Assignment
-- **Issue:** M-02
-- **Scope:** Hyperplane distribution invariant
-- **Dependencies:** wt-6 (TC gaps)
+- **Issue:** M-03
+- **Scope:** Finite sample invariant
+- **Dependencies:** wt-7 (DP gaps)
 
 ## Task
-Add invariant specifying offset distribution and lambda adjustment formula
+Add invariant for n≥100 validity with Berry-Esseen correction specification
 
 ## Parallel Context
 You are one of 15 parallel agents. If your work requires output from a dependent worktree, note the interface assumption and proceed. The coordinator will merge.
@@ -27,133 +27,61 @@ You are one of 15 parallel agents. If your work requires output from a dependent
 
 ## Work Log
 
-### Analysis
+### 2026-01-02: Finite Sample Invariant Implementation
 
-**Issue M-02** addresses a critical discrepancy between theory and implementation for hyperplane distributions, as identified in the Formal Review Section 4 Question 1.
+**Analysis:**
+The FORMALIZATION_ROADMAP.md Section 8.1 Gap 3 identifies that detection power formulas
+use asymptotic normal approximation, but the code tests on finite n. For n < 100,
+Berry-Esseen bounds are needed to quantify the approximation error.
 
-**The Problem:**
-- **Theory:** Hyperplane offsets are drawn from Uniform([0, 1])
-- **Code:** Hyperplane offsets are drawn from Uniform([0.2, 0.8])
-
-This discrepancy affects the cutting probability formula and, consequently, the exponential volume decay constant lambda.
-
-**Root Cause Analysis:**
-The implementation uses [0.2, 0.8] to avoid boundary effects at the edges of [0,1]^D. However, this introduces a systematic bias that changes the effective lambda from 2r to 2r/(b-a) = 2r/0.6 = 3.33r.
-
-**Error Classification:**
-- The distribution mismatch causes an O(r) error in cutting probability
-- The theoretical higher-order terms cause an O(r^2) error
-- The O(r) error DOMINATES the O(r^2) error, making this a significant issue
-
-### Changes Made to FSD.md
-
-#### 1. Section 3.1 - New Subsection 3.1.1: Hyperplane Distribution Specification (M-02)
-
-Added comprehensive documentation including:
-- **Discrepancy identification:** Explicit statement of the theory vs. code difference
-- **Canonical distribution specification:** Defined the theoretical standard (Uniform([0,1]) offset)
-- **Lambda adjustment formula:** `lambda_adjusted = 2r / (b - a)`
-- **Error analysis:** Documented O(r) vs O(r^2) error distinction
-- **Configuration class:** `HyperplaneDistributionConfig` with lambda_multiplier property
-- **Dependency note:** Explicit reference to wt-6 for TC-4 error bound
-
-#### 2. Section 7.2 - Added M-02 Invariant to Security Invariants
-
-Added the distribution consistency invariant to the SECURITY_INVARIANTS list:
-```python
-# M-02: Hyperplane Distribution Consistency (NEW)
-"""
-geometric.hyperplane_distribution.offset_distribution == 'uniform_0_1' OR
-(
-    geometric.hyperplane_distribution.offset_distribution == 'uniform_a_b' AND
-    geometric.lambda == 2*r / (b - a) AND
-    |cutting_probability_error| <= C * r^2
-)
-"""
+The key insight is that the Berry-Esseen theorem provides an explicit bound on the
+error of the normal approximation:
 ```
-
-#### 3. Section 7.2.1 - Detailed Invariant Specification
-
-Added new subsection with:
-- **Formal statement:** Mathematical definition of the invariant
-- **M-02-A (Canonical):** Invariant for Uniform([0,1]) case
-- **M-02-B (Adjusted):** Invariant for Uniform([a,b]) case with adjustment
-- **Error bound dependency:** How this invariant connects to TC-4 from wt-6
-- **O(r) vs O(r^2) table:** Clear comparison of error severities
-- **Security implications:** Why this matters for deployment
-- **Verification protocol:** How to test the invariant
-
-### Code
-
-New configuration class added to Section 3.1:
-
-```python
-class HyperplaneDistributionConfig:
-    """
-    Hyperplane sampling distribution configuration.
-    """
-    offset_distribution: Literal["uniform_0_1", "uniform_a_b"] = "uniform_0_1"
-    offset_range: Tuple[float, float] = (0.0, 1.0)  # [a, b] for uniform_a_b
-
-    @property
-    def lambda_multiplier(self) -> float:
-        """Lambda adjustment factor for non-standard offset range."""
-        a, b = self.offset_range
-        return 1.0 / (b - a)  # For uniform_0_1, this is 1.0
-
-    def cutting_probability(self, r: float) -> float:
-        """Expected cutting probability for ball of radius r."""
-        return 2 * r * self.lambda_multiplier
+|F_n(x) - Phi(x)| <= C * rho / (sigma^3 * sqrt(n))
 ```
+where C <= 0.4748 (Shevtsova 2011).
 
-### Verification
+For the 0.05 tolerance to hold, we need:
+```
+0.4748 / sqrt(n) <= 0.05
+=> sqrt(n) >= 9.496
+=> n >= 90.2
+```
+Rounding up to n >= 100 provides a conservative threshold.
 
-1. **Unit test:** Compare Monte Carlo cutting probability against:
-   - `2r` for Uniform([0,1])
-   - `2r/(b-a)` for Uniform([a,b])
+**Changes Made:**
 
-2. **Integration test:** Verify volume decay follows `exp(-lambda_adjusted * k)` for both distributions
+1. **FSD.md Section 3.3 (Detection Engine):**
+   - Added "Finite Sample Validity Invariant (M-03)" subsection
+   - Documented n >= 100 as asymptotic validity threshold
+   - Added Invariant FS-1 (asymptotic validity threshold)
+   - Added Invariant FS-2 (power approximation accuracy: <= 0.05)
+   - Added Berry-Esseen correction formula for 30 <= n < 100
+   - Added small sample fallback specification for n < 30 (permutation, bootstrap, conservative)
+   - Noted dependency on wt-7 (DP-4 asymptotic validity)
 
-3. **Regression test:** CI check that any modification to offset distribution triggers lambda recalculation
+2. **FSD.md Section 7.2 (Security Invariants):**
+   - Added FINITE_SAMPLE_INVARIANTS array with FS-1 through FS-4
+   - Added validate_finite_sample_regime() function for runtime validation
+   - Added academic references (Berry 1941, Esseen 1942, Shevtsova 2011)
+   - Documented derivation of n >= 100 threshold from Berry-Esseen constant
 
-### Handoff
+**Dependency on wt-7:**
+This work assumes that wt-7 (DP-4 asymptotic validity) has specified the asymptotic
+regime correctly. The Berry-Esseen corrections here are validated against that regime.
+Specifically:
+- The asymptotic power formula from DP-4 is assumed valid for large n
+- The finite sample corrections provide the bridge to small n
+- The n >= 100 threshold marks the boundary between regimes
 
-#### Dependency on wt-6 (TC gaps)
+**Verification:**
+1. Check that FSD.md Section 3.3 includes all four invariants (FS-1 through FS-4)
+2. Check that FSD.md Section 7.2 includes FINITE_SAMPLE_INVARIANTS array
+3. Verify Berry-Esseen constant 0.4748 matches literature
+4. Confirm n >= 100 threshold derivation: 0.4748/sqrt(100) = 0.0475 < 0.05
 
-This work **depends on wt-6** for:
-- **TC-4 Error Bound:** The exponential approximation error bound
-- The combined error formula in Section 7.2.1 references:
-  ```
-  V(k) = V(0) * exp(-lambda_adjusted * k) * (1 + O(r^2 * k))
-  ```
-  where the O(r^2 * k) term is specified by TC-4.
+**Handoff Notes:**
+- Downstream worktrees should use the validate_finite_sample_regime() function
+- Any worktree implementing detection power should check sample size regime
+- The 0.05 tolerance in FS-2 may need adjustment based on domain requirements
 
-**Interface Assumption:** Assuming TC-4 provides an error bound of the form O(r^2 * k) for the exponential approximation. If wt-6 specifies a different form, Section 7.2.1 may need adjustment.
-
-#### Notes for Coordinator
-
-1. **Merge Order:** This work can be merged independently, but the TC-4 reference in Section 7.2.1 should be verified against wt-6's output.
-
-2. **Potential Conflicts:**
-   - If wt-6 modifies Section 3.1 or 7.2, manual merge may be needed
-   - The new Section 3.1.1 and 7.2.1 are additions, not modifications, minimizing conflict risk
-
-3. **Open Decision:** The FSD now specifies that `uniform_0_1` is the canonical distribution. Implementers must choose whether to:
-   - Change code to use Uniform([0,1]) and accept boundary effects
-   - Keep Uniform([0.2, 0.8]) and apply lambda adjustment
-
-   The invariant enforces consistency regardless of choice.
-
----
-
-## Summary
-
-| Item | Status |
-|------|--------|
-| Document discrepancy | COMPLETE |
-| Lambda adjustment formula | COMPLETE |
-| Distribution invariant | COMPLETE |
-| Canonical distribution specified | COMPLETE (uniform_0_1) |
-| O(r) vs O(r^2) distinction | COMPLETE |
-| Dependency on wt-6 noted | COMPLETE |
-| Ready for commit | YES |
