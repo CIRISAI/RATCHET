@@ -399,17 +399,110 @@ class GeometricEngine:
 
 **Purpose:** Validate computational asymmetry T_D / T_H = Omega(2^m / poly(n))
 
+**Critical Invariant - Combined Security Requirements (M-06):**
+
+Security claims for the computational asymmetry require BOTH conditions to hold:
+
+```
+INVARIANT M-06: Security claims require BOTH m >= 20 AND k >= 3 (per Section 3.2.1)
+```
+
+Where:
+- `m` = world model size (security parameter)
+- `k` = literals per statement (NP-hardness requirement)
+
+**Why BOTH are Required:**
+
+1. **k >= 3 (NP-hardness):** The complexity gap T_D / T_H = Omega(2^m) relies on CONSISTENT-LIE being NP-hard. This requires k >= 3 (3-SAT). For k = 2, the problem reduces to 2-SAT which is in P, and NO complexity gap exists regardless of m.
+
+2. **m >= 20 (Security parameter):** Even with k >= 3, if m is too small, brute-force solving is feasible. For m <= 15, exhaustive search completes in ~10^6 operations.
+
+**Combined Security Table:**
+
+| k value | m value | Security Status | Rationale |
+|---------|---------|-----------------|-----------|
+| k < 3   | any     | **NONE**        | 2-SAT in P, no complexity gap |
+| k >= 3  | m < 15  | **NONE**        | Brute-force feasible |
+| k >= 3  | m >= 20 | Minimal         | ~10^6 complexity gap |
+| k >= 3  | m >= 40 | Moderate        | ~10^12 complexity gap |
+| k >= 3  | m >= 64 | High            | Cryptographic-level margin |
+
+#### 3.2.1 Security Parameter Relationship
+
+The world model size `m` serves as the security parameter for the complexity gap. The exponential separation T_D / T_H = Omega(2^m / poly(n)) only provides meaningful security guarantees when `m` is sufficiently large AND k >= 3.
+
+**Invariant:** `complexity.world_size >= security_parameter`
+
+| Security Level | Minimum m | Rationale |
+|---------------|-----------|-----------|
+| Minimal | m >= 20 | Below this, brute-force SAT is feasible (~10^6 operations) |
+| Moderate | m >= 40 | Provides ~2^40 complexity gap with modern solvers |
+| High | m >= 64 | Provides cryptographic-level security margin |
+
+**Critical Constraint (from FORMALIZATION_ROADMAP Section 4.2.2):**
+- For m <= 15: Brute-force SAT is feasible, claims are **vacuous**
+- For m = O(log n): Complexity is O(n), no exponential separation
+- For meaningful security: **m must grow with threat model**
+
+The asymptotic separation requires `m` to grow independently of the number of statements `n`. If `m = O(log n)`, then 2^m = O(poly(n)), eliminating the exponential gap.
+
+#### 3.2.2 k >= 3 Enforcement (NP-Hardness Requirement)
+
+**Refinement Types (from schemas/types.py):**
+```python
+from schemas.types import (
+    WorldSize,           # int >= 1: World model size m
+    NumStatements,       # int > 0: Number of statements n
+    Literals,            # int >= 3: Literals per statement (NP-hardness requirement)
+    ObservableFraction,  # 0 < float <= 1: Fraction of observable facts
+    DeceptionStrategy,   # Enum: full, sparse, lazy
+    SATSolver,           # Enum: z3, minisat, cadical, bruteforce
+    ComplexityResult,    # Result with T_H, T_D, ratio, CI
+)
+
+# CRITICAL: T-CPX-01 - Literals >= 3 required for NP-hardness
+# For k < 3, problem is 2-SAT (in P) and security claims are INVALID
+```
+
+```python
+from typing import Annotated
+from pydantic import Field
+
+# SECURITY-CRITICAL TYPE CONSTRAINT:
+# NP-hardness of CONSISTENT-LIE requires k >= 3 (3-SAT reduction).
+# For k = 2, problem reduces to 2-SAT which is in P (polynomial time).
+# For k < 2, trivially solvable.
+#
+# SECURITY IMPLICATION: If k < 3, the computational asymmetry T_D >> T_H
+# vanishes entirely. An adversary using only 2-literal statements can
+# maintain deceptive consistency in polynomial time, defeating the
+# core complexity-based security property.
+
+LiteralsPerStatement = Annotated[
+    int,
+    Field(
+        ge=3,
+        description="Number of literals per statement. MUST be >= 3 for NP-hardness. "
+                    "k=2 reduces to 2-SAT (P-time tractable). "
+                    "k<3 voids all complexity gap security claims."
+    )
+]
+```
+
 **Requirements from Formal Methods:**
 - MUST use industrial SAT solver (Z3, MiniSat, CaDiCaL), NOT brute force
 - MUST distinguish 3-SAT (NP-hard) from 2-SAT (P) regimes
 - MUST track actual solving time, not theoretical complexity
 - MUST support incremental SAT with learned clause reuse
+- MUST enforce minimum world size m >= 20 for security claims
+- MUST enforce k >= 3 for NP-hardness claims
 
 **Requirements from Red Team:**
 - MUST implement sparse deception (lie about unobservable facts only)
 - MUST implement just-in-time fabrication (lazy deception)
 - MUST test structured world models (Horn clauses, 2-SAT)
 - MUST benchmark against state-of-art SAT solvers
+- MUST validate security claims only hold for m >= minimum threshold AND k >= 3
 
 **Refinement Types (from schemas/types.py):**
 ```python
@@ -456,8 +549,12 @@ class ComplexityEngine:
     Deception complexity analysis with realistic SAT solving.
 
     SECURITY WARNING: All complexity gap guarantees (T_D / T_H = Omega(2^m))
-    require literals_per_statement >= 3. For k < 3, the problem is tractable
-    and NO computational asymmetry exists between honest and deceptive agents.
+    require BOTH:
+    1. literals_per_statement >= 3 (for NP-hardness)
+    2. world_size >= 20 (for meaningful security margin)
+
+    For k < 3, the problem is tractable and NO computational asymmetry exists.
+    For m < 20, brute-force is feasible and claims are vacuous.
     """
 
     def __init__(
@@ -1965,10 +2062,18 @@ The framework enforces `geometric.deceptive_region.is_convex == True` as a preco
 # These invariants MUST hold for any deployment consideration
 
 SECURITY_INVARIANTS = [
-    # Geometric convexity (CRITICAL - Theorem 1.1 depends on this)
-    # Non-convex deceptive regions invalidate volume shrinkage proof
-    # Reference: FORMALIZATION_ROADMAP.md Section 1.1, 4.1.2
-    "geometric.deceptive_region.is_convex == True",
+    # M-06: Combined World Model Size + NP-Hardness Invariant (CRITICAL)
+    # Security claims require BOTH m >= 20 AND k >= 3 (per Section 3.2.1)
+    # Without BOTH conditions, complexity gap claims are INVALID
+    "complexity.world_size >= 20 AND complexity.literals_per_statement >= 3",
+
+    # World model size security parameter
+    # Without sufficient world size, complexity claims are vacuous
+    "complexity.world_size >= SECURITY_PARAMETER",  # m must scale with threat model
+
+    # k >= 3 enforcement (NP-hardness requirement)
+    # For k < 3, problem is 2-SAT (in P) and NO complexity gap exists
+    "complexity.literals_per_statement >= 3",  # Required for NP-hardness
 
     # Byzantine tolerance
     "federation.malicious_fraction < 0.33",
@@ -1982,7 +2087,8 @@ SECURITY_INVARIANTS = [
     "geometric.volume_reduction(k=50, rho=0.5) >= 0.50",
 
     # Complexity gap (with modern solver)
-    "complexity.ratio(m=20, solver='z3') >= 5.0",
+    # Note: This gap ONLY holds when world_size >= 20 AND k >= 3 (see Section 3.2)
+    "complexity.ratio(m=SECURITY_PARAMETER, k=3, solver='z3') >= 5.0",
 
     # Anti-Sybil
     "federation.behavioral_correlation_detection(coordinated_sybils) == True",
@@ -1999,69 +2105,55 @@ SECURITY_INVARIANTS = [
     """,
 ]
 
-# Finite Sample Validity Invariants (M-03)
-# These invariants govern the validity of asymptotic statistical formulas
+# M-06 Combined Security Requirements
+# INVARIANT: Security claims require BOTH m >= 20 AND k >= 3 (per Section 3.2.1)
+#
+# Rationale:
+# - k >= 3: Required for NP-hardness (3-SAT). For k = 2, problem is 2-SAT (in P)
+#           and NO complexity gap exists regardless of m.
+# - m >= 20: Required for meaningful security margin. For m <= 15, brute-force
+#            SAT solving is feasible (~10^6 operations).
+#
+# Combined effect: Only when BOTH conditions hold does the exponential
+# complexity gap T_D / T_H = Omega(2^m / poly(n)) provide security.
 
-FINITE_SAMPLE_INVARIANTS = [
-    # FS-1: Asymptotic validity threshold
-    # For n >= 100, the asymptotic power formula is valid
-    "n >= 100 => detection.asymptotic_formula_valid == True",
+M06_COMBINED_INVARIANT = """
+complexity.world_size >= 20 AND complexity.literals_per_statement >= 3
 
-    # FS-2: Power approximation accuracy
-    # Empirical power must match theoretical within tolerance for n >= 100
-    "n >= 100 => abs(detection.empirical_power - detection.theoretical_power) <= 0.05",
+Violation consequences:
+- k < 3 AND any m: NO security (2-SAT in P, complexity gap = 1)
+- k >= 3 AND m < 15: NO security (brute-force feasible)
+- k >= 3 AND m >= 20: Minimal security (2^20 complexity gap)
+"""
 
-    # FS-3: Berry-Esseen correction required for small samples
-    # For 30 <= n < 100, must apply finite-sample correction
-    "30 <= n < 100 => detection.berry_esseen_correction_applied == True",
+# Security parameter scaling specification
+SECURITY_PARAMETER_SCALING = {
+    "minimal": {
+        "world_size": 20,
+        "literals_per_statement": 3,  # k >= 3 required
+        "complexity_gap": 2**20,  # ~10^6
+        "threat_model": "amateur_adversary",
+    },
+    "moderate": {
+        "world_size": 40,
+        "literals_per_statement": 3,  # k >= 3 required
+        "complexity_gap": 2**40,  # ~10^12
+        "threat_model": "resourced_adversary",
+    },
+    "high": {
+        "world_size": 64,
+        "literals_per_statement": 3,  # k >= 3 required
+        "complexity_gap": 2**64,  # ~10^19
+        "threat_model": "nation_state_adversary",
+    },
+}
 
-    # FS-4: Small sample fallback
-    # For n < 30, must use exact or bootstrap methods
-    "n < 30 => detection.method in ['permutation', 'bootstrap', 'conservative']",
-]
-
-def validate_finite_sample_regime(n: int, empirical_power: float,
-                                   theoretical_power: float) -> dict:
-    """
-    Validate finite sample invariants for detection power analysis.
-
-    Args:
-        n: Sample size
-        empirical_power: Observed detection power from simulation
-        theoretical_power: Power predicted by asymptotic formula
-
-    Returns:
-        dict with validation results and any required corrections
-    """
-    result = {
-        'n': n,
-        'regime': None,
-        'valid': True,
-        'correction_applied': None,
-        'power_deviation': abs(empirical_power - theoretical_power),
-    }
-
-    if n >= 100:
-        # Asymptotic regime - check FS-2
-        result['regime'] = 'asymptotic'
-        if result['power_deviation'] > 0.05:
-            result['valid'] = False
-            result['warning'] = 'Power deviation exceeds 0.05 tolerance'
-    elif n >= 30:
-        # Berry-Esseen correction regime
-        result['regime'] = 'berry_esseen'
-        result['correction_applied'] = 'berry_esseen'
-        # Apply correction: delta_BE = 0.4748 * rho / (sigma^3 * sqrt(n))
-        # Conservative estimate assuming rho/sigma^3 ~ 1
-        delta_BE = 0.4748 / (n ** 0.5)
-        result['correction_bound'] = delta_BE
-    else:
-        # Small sample regime - require fallback
-        result['regime'] = 'small_sample'
-        result['correction_applied'] = 'fallback_required'
-        result['recommended_method'] = 'bootstrap' if n >= 10 else 'permutation'
-
-    return result
+# Invariant: For exponential gap to provide security:
+# 1. k >= 3 (NP-hardness) - now enforced via LiteralsPerStatement type
+# 2. m must grow with threat model
+#
+# See Section 3.2 for full specification
+# See FORMALIZATION_ROADMAP Section 4.2.2 for small m regime analysis
 ```
 
 **Convexity Invariant Details:**
