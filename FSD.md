@@ -165,11 +165,11 @@ ratchet/
 
 ### 3.1 Geometric Engine
 
-**Purpose:** Validate topological collapse theorem V(k) = V(0) × exp(-λk)
+**Purpose:** Validate topological collapse theorem V(k) = V(0) x exp(-lambda*k)
 
 **Requirements from Formal Methods:**
 - Must support both orthonormal AND correlated constraint sampling
-- Must track effective rank k_eff = k / (1 + ρ(k-1))
+- Must track effective rank k_eff = k / (1 + rho*(k-1))
 - Must quantify boundary effects at edge of [0,1]^D
 - Must provide error bounds on exponential approximation
 
@@ -179,26 +179,50 @@ ratchet/
 - MUST test non-convex deceptive regions (torus, point cloud, fractal)
 - MUST support adaptive/moving target deception
 
+**Refinement Types (from schemas/types.py):**
+```python
+from schemas.types import (
+    Dimension,           # int > 0: Prevents zero/negative dimension crashes
+    NumConstraints,      # int > 0: Number of hyperplane constraints
+    Radius,              # 0 < float < 0.5: Deceptive region radius
+    Correlation,         # -1 <= float <= 1: Constraint correlation rho
+    SamplingMode,        # Enum: orthonormal, correlated, adversarial
+    SampleSize,          # int >= 1: Number of Monte Carlo samples
+    AdversarialStrategy, # Attack specification type
+    Hyperplane,          # Normal vector + offset representation
+    VolumeEstimate,      # Result with CI and decay constant
+    EffectiveRankResult, # Effective rank with correlation matrix
+)
+```
+
 ```python
 class GeometricEngine:
     """
     Hyperplane intersection volume estimation with adversarial robustness.
+
+    All parameters use refinement types from schemas/types.py to ensure
+    type safety and prevent runtime errors from invalid inputs.
     """
 
     def estimate_volume(
         self,
-        dimension: int,
-        num_constraints: int,
-        deceptive_radius: float,
-        constraint_correlation: float = 0.0,  # ρ parameter
-        sampling_mode: Literal["orthonormal", "correlated", "adversarial"] = "orthonormal",
-        num_samples: int = 100_000,
+        dimension: Dimension,                    # int > 0
+        num_constraints: NumConstraints,         # int > 0
+        deceptive_radius: Radius,                # 0 < r < 0.5
+        constraint_correlation: Correlation = 0.0,  # -1 <= rho <= 1
+        sampling_mode: SamplingMode = SamplingMode.ORTHONORMAL,
+        num_samples: SampleSize = 100_000,       # int >= 1
         adversary: Optional[AdversarialStrategy] = None,
     ) -> VolumeEstimate:
         """
         Returns volume estimate with bootstrap confidence interval.
 
         If adversary is provided, simulates null-space or moving-target attack.
+
+        Type constraints prevent:
+        - T-GEO-01: dimension <= 0 (crashes)
+        - T-GEO-02: radius outside (0, 0.5) (boundary violations)
+        - T-GEO-03: correlation outside [-1, 1] (invalid matrices)
         """
         ...
 
@@ -207,7 +231,7 @@ class GeometricEngine:
         constraints: List[Hyperplane],
     ) -> EffectiveRankResult:
         """
-        Compute k_eff accounting for constraint correlation.
+        Compute k_eff = k / (1 + rho*(k-1)) accounting for constraint correlation.
         Returns effective rank and correlation matrix.
         """
         ...
@@ -215,7 +239,7 @@ class GeometricEngine:
     def null_space_attack(
         self,
         constraints: List[Hyperplane],
-        probe_budget: int,
+        probe_budget: SampleSize,               # int >= 1
     ) -> NullSpaceAttackResult:
         """
         Simulate adversary probing constraint directions and placing
@@ -232,7 +256,7 @@ class GeometricEngine:
 
 ### 3.2 Complexity Engine
 
-**Purpose:** Validate computational asymmetry T_D / T_H = Ω(2^m / poly(n))
+**Purpose:** Validate computational asymmetry T_D / T_H = Omega(2^m / poly(n))
 
 **Requirements from Formal Methods:**
 - MUST use industrial SAT solver (Z3, MiniSat, CaDiCaL), NOT brute force
@@ -246,29 +270,54 @@ class GeometricEngine:
 - MUST test structured world models (Horn clauses, 2-SAT)
 - MUST benchmark against state-of-art SAT solvers
 
+**Refinement Types (from schemas/types.py):**
+```python
+from schemas.types import (
+    WorldSize,           # int >= 1: World model size m
+    NumStatements,       # int > 0: Number of statements n
+    Literals,            # int >= 3: Literals per statement (NP-hardness requirement)
+    ObservableFraction,  # 0 < float <= 1: Fraction of observable facts
+    DeceptionStrategy,   # Enum: full, sparse, lazy
+    SATSolver,           # Enum: z3, minisat, cadical, bruteforce
+    ComplexityResult,    # Result with T_H, T_D, ratio, CI
+)
+
+# CRITICAL: T-CPX-01 - Literals >= 3 required for NP-hardness
+# For k < 3, problem is 2-SAT (in P) and security claims are INVALID
+```
+
 ```python
 class ComplexityEngine:
     """
     Deception complexity analysis with realistic SAT solving.
+
+    SECURITY NOTE: All claims about exponential complexity gap
+    require ETH assumption and k >= 3 (Literals type enforces this).
     """
 
     def __init__(
         self,
-        solver: Literal["z3", "minisat", "cadical", "bruteforce"] = "z3",
+        solver: SATSolver = SATSolver.Z3,
     ):
         self.solver = solver
 
     def measure_complexity(
         self,
-        world_size: int,
-        num_statements: int,
-        literals_per_statement: int,
-        observable_fraction: float = 1.0,  # Sparse deception parameter
-        deception_strategy: Literal["full", "sparse", "lazy"] = "full",
+        world_size: WorldSize,                       # int >= 1
+        num_statements: NumStatements,               # int > 0
+        literals_per_statement: Literals,            # int >= 3 (NP-hard)
+        observable_fraction: ObservableFraction = 1.0,  # 0 < f <= 1
+        deception_strategy: DeceptionStrategy = DeceptionStrategy.FULL,
     ) -> ComplexityResult:
         """
         Compare honest vs deceptive agent computational cost.
         Returns T_H, T_D, ratio, and 95% CI.
+
+        Type constraints prevent:
+        - T-CPX-01: literals < 3 (false NP-hardness claims)
+        - T-CPX-02: observable_fraction = 0 (division by zero)
+
+        CONDITIONAL ON ETH: Exponential gap T_D/T_H = Omega(2^m)
         """
         ...
 
@@ -287,7 +336,7 @@ class ComplexityEngine:
         self,
         world_model: WorldModel,
         observable_facts: Set[int],
-        num_lies: int,
+        num_lies: SampleSize,                        # int >= 1
     ) -> SparseAttackResult:
         """
         Adversary lies only about unobservable facts.
@@ -310,7 +359,7 @@ class ComplexityEngine:
 - MUST implement Neyman-Pearson optimal LRT
 - MUST compute Mahalanobis distance with proper covariance estimation
 - MUST provide asymptotic AND finite-sample analysis
-- MUST quantify estimation error in plug-in D̂
+- MUST quantify estimation error in plug-in D_hat
 
 **Requirements from Red Team:**
 - MUST implement distribution mimicry attack (moment matching)
@@ -318,17 +367,38 @@ class ComplexityEngine:
 - MUST test non-Gaussian distributions (heavy-tailed, mixture)
 - MUST implement adaptive detection (moving thresholds)
 
+**Refinement Types (from schemas/types.py):**
+```python
+from schemas.types import (
+    MahalanobisDistance,  # float >= 0: Non-negative by definition
+    Probability,          # 0 < float < 1: For alpha, beta, deception_rate
+    SampleSize,           # int >= 1: Sample size n
+    DetectionMethod,      # Enum: lrt, mahalanobis, isolation_forest, ensemble
+    AttackType,           # Enum: mimicry, flooding, adaptive, etc.
+    InferenceGraph,       # Graph for compositional detection
+    PowerAnalysisResult,  # Result with required n, achieved power
+)
+
+# PRECONDITIONS for power_analysis formula validity:
+# - D >= 0.5 (otherwise sample size infeasible)
+# - p >= 0.001 (otherwise sample size infeasible)
+# - n >= 100 for asymptotic regime (add Berry-Esseen correction for smaller n)
+```
+
 ```python
 class DetectionEngine:
     """
     Statistical deception detection with adversarial robustness.
+
+    ASSUMPTION: Non-adaptive adversary (adversary.strategy_fixed_before(detection.threshold))
+    For adaptive adversaries, see RT-04 mitigation with moving thresholds.
     """
 
     def train_detector(
         self,
         honest_traces: np.ndarray,
         deceptive_traces: Optional[np.ndarray] = None,
-        method: Literal["lrt", "mahalanobis", "isolation_forest", "ensemble"] = "lrt",
+        method: DetectionMethod = DetectionMethod.LRT,
     ) -> Detector:
         """
         Train detector on honest traces. If deceptive_traces provided,
@@ -338,21 +408,33 @@ class DetectionEngine:
 
     def power_analysis(
         self,
-        mahalanobis_distance: float,
-        deception_rate: float,
-        alpha: float = 0.05,
-        beta: float = 0.05,
+        mahalanobis_distance: MahalanobisDistance,  # float >= 0
+        deception_rate: Probability,                 # 0 < p < 1
+        alpha: Probability = 0.05,                   # 0 < alpha < 1
+        beta: Probability = 0.05,                    # 0 < beta < 1
     ) -> PowerAnalysisResult:
         """
         Compute required sample size for given power.
         Returns n, analytical formula, and finite-sample correction.
+
+        Formula: n >= (z_alpha + z_beta)^2 / (D^2 * p)
+
+        Type constraints prevent:
+        - T-DET-01: negative Mahalanobis distance
+        - T-DET-02: deception_rate = 0 or 1 (division by zero)
+        - T-DET-03: alpha/beta at boundaries (infinite z-scores)
+
+        PRECONDITIONS for valid results:
+        - D >= 0.5 (recommend increasing D or using different test)
+        - p >= 0.001 (otherwise sample size infeasible)
+        - Result valid for n >= 100 (asymptotic regime)
         """
         ...
 
     def adversarial_robustness(
         self,
         detector: Detector,
-        attack: Literal["mimicry", "flooding", "adaptive"],
+        attack: AttackType,
         attack_params: Dict,
     ) -> RobustnessResult:
         """
@@ -369,6 +451,10 @@ class DetectionEngine:
         """
         Detect emergent deception from honest components.
         Analyzes inference chains, not individual traces.
+
+        PARTIAL MITIGATION for RT-01 (emergent deception).
+        Does NOT detect emergent deception that preserves
+        individual trace distributions.
         """
         ...
 ```
@@ -382,30 +468,54 @@ class DetectionEngine:
 - MUST test diverse Sybil attack (pass MI gate, coordinate behavior)
 - MUST implement behavioral correlation detection
 - MUST simulate slow capture over extended time horizons
-- MUST quantify Byzantine threshold (n ≥ 3f + 1)
+- MUST quantify Byzantine threshold (n >= 3f + 1)
+
+**Refinement Types (from schemas/types.py):**
+```python
+from schemas.types import (
+    NodeCount,           # int >= 1: Number of federation nodes
+    ByzantineFraction,   # 0 <= float < 1/3: Byzantine fraction limit
+    CaptureRate,         # 0 <= float < 1: Capture rate per period
+    Probability,         # 0 < float < 1: MI threshold
+    ConsensusProtocol,   # Enum: pbft, raft, tendermint
+    MaliciousStrategy,   # Enum: random, coordinated, slow_capture
+    Vote,                # Vote record type
+    Precedent,           # Precedent record type
+    FederationParams,    # Type-safe parameter bundle with BFT validation
+)
+
+# BFT INVARIANT: malicious_fraction < 1/3
+# Enforced by FederationParams model validator
+```
 
 ```python
 class FederationEngine:
     """
     Federated ratchet simulation with Byzantine fault tolerance.
+
+    SECURITY INVARIANT: federation.malicious_fraction < 0.33
+    This is validated at construction time by FederationParams.
     """
 
     def __init__(
         self,
-        consensus_protocol: Literal["pbft", "raft", "tendermint"] = "pbft",
-        mi_threshold: float = 0.85,
+        consensus_protocol: ConsensusProtocol = ConsensusProtocol.PBFT,
+        mi_threshold: Probability = 0.85,         # 0 < threshold < 1
     ):
         self.consensus = consensus_protocol
         self.mi_threshold = mi_threshold
 
     def create_federation(
         self,
-        num_honest: int,
+        num_honest: NodeCount,                    # int >= 1
         num_malicious: int = 0,
-        malicious_strategy: Literal["random", "coordinated", "slow_capture"] = "random",
+        malicious_strategy: MaliciousStrategy = MaliciousStrategy.RANDOM,
     ) -> Federation:
         """
         Create federation with specified agent composition.
+
+        VALIDATES: num_malicious / (num_honest + num_malicious) < 1/3
+        Raises ValueError if BFT threshold would be violated.
         """
         ...
 
@@ -428,25 +538,31 @@ class FederationEngine:
         """
         Detect coordinated behavior despite diverse constraints.
         Returns correlation matrix and flagged agent pairs.
+
+        Detection guarantee: If agents pass MI gate independently but
+        coordinate votes with correlation > 0.8, detects with
+        probability >= 1 - beta.
         """
         ...
 
     def slow_capture_simulation(
         self,
         federation: Federation,
-        capture_rate_per_period: float,
-        num_periods: int,
+        capture_rate_per_period: CaptureRate,    # 0 <= rate < 1
+        num_periods: SampleSize,                  # int >= 1
     ) -> CaptureSimulationResult:
         """
         Simulate gradual federation takeover.
         Returns period when BFT threshold breached.
+
+        Security: Federation remains secure for O(1/rate) periods.
         """
         ...
 
     def precedent_poisoning_detection(
         self,
         precedent_stream: List[Precedent],
-        window_size: int,
+        window_size: SampleSize,                  # int >= 1
     ) -> PoisoningResult:
         """
         Detect subtle precedent drift over time.
