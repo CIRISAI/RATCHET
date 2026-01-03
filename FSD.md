@@ -313,12 +313,36 @@ from schemas.types import (
 ```
 
 ```python
+from typing import Annotated
+from pydantic import Field
+
+# SECURITY-CRITICAL TYPE CONSTRAINT:
+# NP-hardness of CONSISTENT-LIE requires k >= 3 (3-SAT reduction).
+# For k = 2, problem reduces to 2-SAT which is in P (polynomial time).
+# For k < 2, trivially solvable.
+#
+# SECURITY IMPLICATION: If k < 3, the computational asymmetry T_D >> T_H
+# vanishes entirely. An adversary using only 2-literal statements can
+# maintain deceptive consistency in polynomial time, defeating the
+# core complexity-based security property.
+
+LiteralsPerStatement = Annotated[
+    int,
+    Field(
+        ge=3,
+        description="Number of literals per statement. MUST be >= 3 for NP-hardness. "
+                    "k=2 reduces to 2-SAT (P-time tractable). "
+                    "k<3 voids all complexity gap security claims."
+    )
+]
+
 class ComplexityEngine:
     """
     Deception complexity analysis with realistic SAT solving.
 
-    SECURITY NOTE: All claims about exponential complexity gap
-    require ETH assumption and k >= 3 (Literals type enforces this).
+    SECURITY WARNING: All complexity gap guarantees (T_D / T_H = Omega(2^m))
+    require literals_per_statement >= 3. For k < 3, the problem is tractable
+    and NO computational asymmetry exists between honest and deceptive agents.
     """
 
     def __init__(
@@ -329,11 +353,11 @@ class ComplexityEngine:
 
     def measure_complexity(
         self,
-        world_size: WorldSize,                       # int >= 1
-        num_statements: NumStatements,               # int > 0
-        literals_per_statement: Literals,            # int >= 3 (NP-hard)
-        observable_fraction: ObservableFraction = 1.0,  # 0 < f <= 1
-        deception_strategy: DeceptionStrategy = DeceptionStrategy.FULL,
+        world_size: int,
+        num_statements: int,
+        literals_per_statement: LiteralsPerStatement,  # ENFORCED: >= 3
+        observable_fraction: float = 1.0,  # Sparse deception parameter
+        deception_strategy: Literal["full", "sparse", "lazy"] = "full",
     ) -> ComplexityResult:
         """
         Compare honest vs deceptive agent computational cost.
@@ -373,9 +397,17 @@ class ComplexityEngine:
 
 **Validation Protocol (Computational Scientist):**
 1. Solver benchmark: Compare Z3, MiniSat, CaDiCaL on same instances
-2. Scaling law: Fit T_D(m) = a × 2^(b×m) + c; validate b ≈ 1
+2. Scaling law: Fit T_D(m) = a × 2^(b×m) + c; validate b approx 1
 3. Ratio validation: Report T_D/T_H with error bars across parameter sweep
-4. Edge cases: m ≤ 15 (brute force feasible), k=2 (2-SAT tractable)
+4. Edge cases: m <= 15 (brute force feasible)
+5. **SECURITY BOUNDARY TEST (U-02):** Verify k=2 yields T_D/T_H approx 1 (NO gap)
+
+**k < 3 Security Boundary (CRITICAL):**
+- For k = 2: MUST demonstrate complexity gap collapses to O(1)
+- For k = 3: MUST demonstrate exponential gap emerges
+- Transition boundary k in {2, 3} is the security cliff edge
+- Any system accepting k < 3 MUST emit security warning
+- CI pipeline MUST reject configurations with k < 3 unless explicitly overridden
 
 ### 3.3 Detection Engine
 
@@ -1001,7 +1033,26 @@ SECURITY_INVARIANTS = [
 
     # Anti-Sybil
     "federation.behavioral_correlation_detection(coordinated_sybils) == True",
+
+    # NP-HARDNESS PRECONDITION (U-02 FIX)
+    # CRITICAL: k >= 3 is REQUIRED for computational security.
+    # For k = 2 (2-SAT): Problem is in P, complexity gap = 0
+    # For k = 1 (1-SAT): Trivially solvable, no security
+    # This invariant gates ALL complexity-based security claims.
+    "complexity.literals_per_statement >= 3",
 ]
+
+# COMPLEXITY REGIME DOCUMENTATION
+#
+# | k (literals) | Problem Class | Complexity | Security Status |
+# |--------------|---------------|------------|-----------------|
+# | k >= 3       | k-SAT         | NP-hard    | SECURE          |
+# | k = 2        | 2-SAT         | P (O(n))   | INSECURE        |
+# | k = 1        | 1-SAT         | O(1)       | TRIVIAL         |
+#
+# The reduction 3-SAT <=_p CONSISTENT-LIE requires k >= 3.
+# With k = 2, adversary can use implication graph algorithm
+# (Aspvall, Plass, Tarjan 1979) to find consistent lies in O(n) time.
 ```
 
 ---

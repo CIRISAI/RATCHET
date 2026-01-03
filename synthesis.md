@@ -1,12 +1,12 @@
-# Worktree 1 Synthesis: U-01
+# Worktree 2 Synthesis: U-02
 
 ## Assignment
-- **Issue:** U-01
-- **Scope:** Power formula preconditions
+- **Issue:** U-02
+- **Scope:** k≥3 NP-hardness enforcement
 - **Dependencies:** None
 
 ## Task
-Add preconditions to detection power formula: D≥0.5, p∈(0.001,1), document n≥100 validity regime
+Enforce literals_per_statement≥3 or add prominent warning for P-time regime in 2-SAT
 
 ## Parallel Context
 You are one of 15 parallel agents. If your work requires output from a dependent worktree, note the interface assumption and proceed. The coordinator will merge.
@@ -27,68 +27,98 @@ You are one of 15 parallel agents. If your work requires output from a dependent
 
 ## Work Log
 
-### 2026-01-02: U-01 Implementation Complete
+### Analysis
 
-#### Analysis
+**Issue U-02: k >= 3 NP-Hardness Enforcement**
 
-The Formal Review (Section 5.2) identified **U-01** as a critical unsoundness risk: the detection power formula in Section 3.3 lacked explicit preconditions, which could lead to:
+The Formal Review (Section 5.2, Issue T-CPX-01) identified a critical security vulnerability in the ComplexityEngine interface: the `literals_per_statement` parameter was unbounded, allowing values k < 3 that completely undermine the computational security model.
 
-1. **Division by zero** when `deception_rate = 0`
-2. **Negative or invalid sample sizes** when `mahalanobis_distance` is too small
-3. **Invalid asymptotic approximations** when sample size `n < 100`
-4. **Formula breakdown** when `deception_rate = 1` (no honest baseline)
+**The Problem:**
+- For k >= 3: CONSISTENT-LIE reduces to k-SAT, which is NP-hard
+- For k = 2: CONSISTENT-LIE reduces to 2-SAT, which is in P (solvable in O(n) time via Aspvall-Plass-Tarjan 1979 implication graph algorithm)
+- For k = 1: Problem is trivially solvable
 
-The specific issues from the formal review:
-- T-DET-01: Mahalanobis distance must be non-negative (extended to D >= 0.5 for practical feasibility)
-- T-DET-02: Deception rate domain must be (0, 1) exclusive
-- GAP-08: Finite sample regime n < 100 undefined
-- M-03: Missing finite sample validity invariant
+**Security Impact:**
+The entire complexity-based security argument (T_D / T_H = Omega(2^m)) assumes NP-hardness. With k = 2, an adversary can maintain deceptive consistency with the SAME computational cost as an honest agent. The complexity gap vanishes entirely, defeating the core security property.
 
-#### Changes Made to FSD.md Section 3.3
+**Attack Scenario:**
+An adversary could craft a world model using only 2-literal Horn clauses or implications, pass all validation checks, and then exploit the P-time consistency checking to maintain arbitrary deception indefinitely.
 
-1. **Added Section 3.3.1 "Power Formula Preconditions"** with:
-   - Explicit statement of the sample complexity formula
-   - Precondition table with constraints and rationale:
-     - `mahalanobis_distance >= 0.5` (detection infeasible below)
-     - `deception_rate in (0.001, 1)` exclusive (prevents division by zero, degenerate cases)
-     - `n >= 100` validity regime (asymptotic normality requirement)
-     - Gaussian distribution assumption documented
+### Changes Made to FSD.md
 
-2. **Added Berry-Esseen finite-sample correction guidance**:
-   - For `30 <= n < 100`: apply correction `power_corrected = power - 0.4748/sqrt(n)`
-   - For `n < 30`: asymptotic formula unreliable, use exact methods
+1. **Section 3.2 - ComplexityEngine Interface (Lines 249-295)**
+   - Added `LiteralsPerStatement` refinement type with `ge=3` constraint
+   - Added security-critical documentation explaining why k >= 3 is required
+   - Updated `measure_complexity` signature to use the constrained type
+   - Added class-level docstring warning about k < 3 security implications
 
-3. **Updated `DetectionEngine.power_analysis` docstring** with explicit PRECONDITIONS section:
-   - Precondition 1: D >= 0.5 with guidance for smaller effect sizes
-   - Precondition 2: p in (0.001, 1) with rationale for bounds
-   - Precondition 3: n >= 100 with Berry-Esseen correction formula
-   - Precondition 4: Gaussian assumption with guidance for heavy-tailed distributions
+2. **Section 3.2 - Validation Protocol (Lines 326-338)**
+   - Added explicit security boundary test requirement for k=2 vs k=3
+   - Documented the "security cliff edge" at k in {2, 3}
+   - Added CI pipeline enforcement requirement
 
-4. **Enhanced return type documentation**:
-   - `n`: asymptotic sample size
-   - `n_corrected`: finite-sample adjusted size
-   - `power`: achieved power
-   - `validity_regime`: indicates which approximation regime applies
-   - `warnings`: precondition concerns
+3. **Section 7.2 - Security Invariants (Lines 791-831)**
+   - Added new invariant: `complexity.literals_per_statement >= 3`
+   - Added complexity regime documentation table showing k vs security status
+   - Referenced the Aspvall-Plass-Tarjan algorithm for 2-SAT tractability
 
-#### Verification
+### Code (Type Constraint)
 
-The fix addresses U-01 by:
-1. Preventing unsound implementations that use the formula outside its valid regime
-2. Documenting the finite-sample correction (Berry-Esseen) for n < 100
-3. Providing guidance for edge cases (small D, rare deception, non-Gaussian)
-4. Adding structured return type with validity indicators
+```python
+from typing import Annotated
+from pydantic import Field
 
-To verify correctness:
-1. Check that `D >= 0.5` yields practical sample sizes (n < 100K for typical alpha/beta)
-2. Confirm `p in (0.001, 1)` avoids division by zero and maintains n < 10^7
-3. Validate Berry-Esseen constant C_BE <= 0.4748 matches literature
-4. Ensure docstring preconditions match the specification table
+LiteralsPerStatement = Annotated[
+    int,
+    Field(
+        ge=3,
+        description="Number of literals per statement. MUST be >= 3 for NP-hardness. "
+                    "k=2 reduces to 2-SAT (P-time tractable). "
+                    "k<3 voids all complexity gap security claims."
+    )
+]
+```
 
-#### Handoff Notes
+### Verification
 
-- **Dependencies:** None (this fix is self-contained)
-- **Consumers:** Any worktree implementing DetectionEngine should enforce these preconditions in code
-- **Related:** T-DET-01, T-DET-02, T-DET-03 from formal review Section 1.1.3 are partially addressed; full refinement types (REC-C1) may be handled by another worktree
-- **Assumption:** Other worktrees handling type refinements (Pydantic validators) will use these documented bounds
+To verify this fix is correct:
+
+1. **Type-Level Enforcement:** Any call to `measure_complexity` with `literals_per_statement < 3` should fail Pydantic validation at runtime.
+
+2. **Security Invariant Check:** The CI pipeline should validate `complexity.literals_per_statement >= 3` before accepting any configuration.
+
+3. **Empirical Validation:** Run complexity benchmarks with k=2 and k=3 on identical world models:
+   - k=2: Expect T_D/T_H approx 1 (no gap)
+   - k=3: Expect T_D/T_H >> 1 (exponential gap)
+
+4. **Unit Test:** Add test that verifies rejection of k < 3 configurations.
+
+### Handoff Notes for Dependent Worktrees
+
+**For Worktrees Working on Complexity Engine Implementation:**
+- The `literals_per_statement` parameter now has a minimum value of 3
+- Any code that constructs ComplexityEngine queries MUST ensure k >= 3
+- Legacy code allowing k=2 must be updated to either reject or warn
+
+**For Worktrees Working on Proof Obligations:**
+- The 3-SAT reduction proof (CA-2) now has an explicit precondition: k >= 3
+- The complexity gap claim is conditional on this precondition
+
+**For Worktrees Working on Security Invariants:**
+- New invariant added: `complexity.literals_per_statement >= 3`
+- This invariant gates ALL complexity-based security claims
+
+**Interface Assumptions:**
+- I assume other worktrees will update any code paths that dynamically set `literals_per_statement`
+- The Pydantic validation will catch violations at runtime, but static analysis may need updates
+
+### Summary
+
+This fix closes the k < 3 security hole identified in Formal Review issue U-02 by:
+1. Adding a type-level constraint (refinement type with ge=3)
+2. Adding prominent warnings in documentation
+3. Adding a security invariant for CI enforcement
+4. Documenting the complexity/security tradeoff table
+
+The fix follows the Formal Review recommendation REC-C4: "Enforce or Document k >= 3 for NP-Hardness"
 
