@@ -1,12 +1,12 @@
-# Worktree 7 Synthesis: DP-GAPS
+# Worktree 9 Synthesis: M-02
 
 ## Assignment
-- **Issue:** DP-GAPS
-- **Scope:** Detection power proof gaps
-- **Dependencies:** wt-1 (preconditions)
+- **Issue:** M-02
+- **Scope:** Hyperplane distribution invariant
+- **Dependencies:** wt-6 (TC gaps)
 
 ## Task
-Add specifications for DP-4(asymptotic validity), DP-5(plug-in estimation), DP-6(monotonicity)
+Add invariant specifying offset distribution and lambda adjustment formula
 
 ## Parallel Context
 You are one of 15 parallel agents. If your work requires output from a dependent worktree, note the interface assumption and proceed. The coordinator will merge.
@@ -27,83 +27,133 @@ You are one of 15 parallel agents. If your work requires output from a dependent
 
 ## Work Log
 
-### 2026-01-02: Detection Power Proof Obligations (DP-4, DP-5, DP-6)
+### Analysis
 
-#### Analysis
+**Issue M-02** addresses a critical discrepancy between theory and implementation for hyperplane distributions, as identified in the Formal Review Section 4 Question 1.
 
-The FSD_FORMAL_REVIEW.md (Section 3.1.3) identified three missing detection power proof obligations:
+**The Problem:**
+- **Theory:** Hyperplane offsets are drawn from Uniform([0, 1])
+- **Code:** Hyperplane offsets are drawn from Uniform([0.2, 0.8])
 
-| ID | Obligation | Status Before | Difficulty |
-|----|------------|---------------|------------|
-| DP-4 | Asymptotic validity | MISSING | HARD |
-| DP-5 | Plug-in estimation error | MISSING | MEDIUM |
-| DP-6 | Power monotonicity | IMPLICIT | EASY |
+This discrepancy affects the cutting probability formula and, consequently, the exponential volume decay constant lambda.
 
-These gaps meant that only 57% (4/7) of detection power obligations were covered.
+**Root Cause Analysis:**
+The implementation uses [0.2, 0.8] to avoid boundary effects at the edges of [0,1]^D. However, this introduces a systematic bias that changes the effective lambda from 2r to 2r/(b-a) = 2r/0.6 = 3.33r.
 
-#### Changes Made
+**Error Classification:**
+- The distribution mismatch causes an O(r) error in cutting probability
+- The theoretical higher-order terms cause an O(r^2) error
+- The O(r) error DOMINATES the O(r^2) error, making this a significant issue
 
-1. **FSD.md Section 4.1** - Added detailed specifications for:
+### Changes Made to FSD.md
 
-   - **DP-4 (Asymptotic Validity)**: Specified O(1/sqrt(n)) error term for sample complexity formula using Berry-Esseen bound. Key bound: |beta_hat(n) - beta| <= C/sqrt(n) where C <= 0.56/D for D >= 0.5. Validity regime: n >= 100 for error <= 0.05.
+#### 1. Section 3.1 - New Subsection 3.1.1: Hyperplane Distribution Specification (M-02)
 
-   - **DP-5 (Plug-in Estimation Error)**: Specified error bounds for empirical Mahalanobis distance D_hat. Key bound: |D_hat - D| <= C_p * sqrt(p/n_train) + C_Sigma * sqrt(p^2/n_train) where C_Sigma depends on condition number kappa(Sigma).
+Added comprehensive documentation including:
+- **Discrepancy identification:** Explicit statement of the theory vs. code difference
+- **Canonical distribution specification:** Defined the theoretical standard (Uniform([0,1]) offset)
+- **Lambda adjustment formula:** `lambda_adjusted = 2r / (b - a)`
+- **Error analysis:** Documented O(r) vs O(r^2) error distinction
+- **Configuration class:** `HyperplaneDistributionConfig` with lambda_multiplier property
+- **Dependency note:** Explicit reference to wt-6 for TC-4 error bound
 
-   - **DP-6 (Power Monotonicity)**: Specified three monotonicity properties:
-     - (a) Power increases with n (sample size)
-     - (b) Power increases with D (Mahalanobis distance)
-     - (c) Power decreases with p (deception rate) for fixed n
+#### 2. Section 7.2 - Added M-02 Invariant to Security Invariants
 
-2. **formal/proofs/DetectionPower.lean** - Created Lean 4 theorem sketches:
-   - `DetectionPreconditions` structure encoding constraints from wt-1
-   - `asymptotic_validity` theorem with Berry-Esseen error bound
-   - `plugin_estimation_error` theorem with high-probability bound
-   - `power_monotone_in_n`, `power_monotone_in_D`, `power_monotone_in_p` theorems
-   - `detection_power_guarantees` combined interface theorem for downstream use
+Added the distribution consistency invariant to the SECURITY_INVARIANTS list:
+```python
+# M-02: Hyperplane Distribution Consistency (NEW)
+"""
+geometric.hyperplane_distribution.offset_distribution == 'uniform_0_1' OR
+(
+    geometric.hyperplane_distribution.offset_distribution == 'uniform_a_b' AND
+    geometric.lambda == 2*r / (b - a) AND
+    |cutting_probability_error| <= C * r^2
+)
+"""
+```
 
-#### Dependencies (Inputs)
+#### 3. Section 7.2.1 - Detailed Invariant Specification
 
-**From wt-1 (Preconditions):**
-- D >= 0.5 (Mahalanobis distance lower bound)
-- p > 0.001 (deception rate lower bound)
-- n >= 100 (sample size lower bound)
+Added new subsection with:
+- **Formal statement:** Mathematical definition of the invariant
+- **M-02-A (Canonical):** Invariant for Uniform([0,1]) case
+- **M-02-B (Adjusted):** Invariant for Uniform([a,b]) case with adjustment
+- **Error bound dependency:** How this invariant connects to TC-4 from wt-6
+- **O(r) vs O(r^2) table:** Clear comparison of error severities
+- **Security implications:** Why this matters for deployment
+- **Verification protocol:** How to test the invariant
 
-These preconditions are embedded in the `DetectionPreconditions` structure in DetectionPower.lean and referenced in all proof obligation specifications.
+### Code
 
-#### Handoff (Outputs for wt-10)
+New configuration class added to Section 3.1:
 
-**Available for wt-10:**
+```python
+class HyperplaneDistributionConfig:
+    """
+    Hyperplane sampling distribution configuration.
+    """
+    offset_distribution: Literal["uniform_0_1", "uniform_a_b"] = "uniform_0_1"
+    offset_range: Tuple[float, float] = (0.0, 1.0)  # [a, b] for uniform_a_b
 
-1. **Theorem interfaces** in `formal/proofs/DetectionPower.lean`:
-   - `DetectionPreconditions` - type encoding the wt-1 constraints
-   - `asymptotic_validity` - O(1/sqrt(n)) error bound theorem
-   - `plugin_estimation_error` - estimation error bound theorem
-   - `power_monotone_in_n/D/p` - monotonicity theorems
-   - `detection_power_guarantees` - combined verification interface
+    @property
+    def lambda_multiplier(self) -> float:
+        """Lambda adjustment factor for non-standard offset range."""
+        a, b = self.offset_range
+        return 1.0 / (b - a)  # For uniform_0_1, this is 1.0
 
-2. **Specification text** in FSD.md Section 4.1:
-   - Complete mathematical statements for DP-4, DP-5, DP-6
-   - Explicit precondition references to wt-1
-   - Proof sketches for verification
+    def cutting_probability(self, r: float) -> float:
+        """Expected cutting probability for ball of radius r."""
+        return 2 * r * self.lambda_multiplier
+```
 
-**To complete proofs, wt-10 will need:**
-- Mathlib.Probability.Distributions.Gaussian (when available in Mathlib)
-- Formalization of standard normal CDF Phi and inverse z_alpha
-- Berry-Esseen theorem for Gaussian LRT statistic
-- Concentration bounds for sample covariance matrix estimation
+### Verification
 
-#### Verification
+1. **Unit test:** Compare Monte Carlo cutting probability against:
+   - `2r` for Uniform([0,1])
+   - `2r/(b-a)` for Uniform([a,b])
 
-The specifications can be verified by:
+2. **Integration test:** Verify volume decay follows `exp(-lambda_adjusted * k)` for both distributions
 
-1. **Mathematical consistency**: Check that error bounds are dimensionally correct
-2. **Precondition coverage**: Verify D >= 0.5, p > 0.001, n >= 100 are referenced
-3. **Lean type-checking**: Run `lake build` to verify theorem sketches parse correctly
-4. **Coverage improvement**: Detection power coverage should now be 7/7 (100%)
+3. **Regression test:** CI check that any modification to offset distribution triggers lambda recalculation
 
-#### Files Modified
+### Handoff
 
-- `/home/emoore/RATCHET_WORKTREES/wt-7/FSD.md` (Section 4.1)
-- `/home/emoore/RATCHET_WORKTREES/wt-7/formal/proofs/DetectionPower.lean` (new file)
-- `/home/emoore/RATCHET_WORKTREES/wt-7/synthesis.md` (this file)
+#### Dependency on wt-6 (TC gaps)
 
+This work **depends on wt-6** for:
+- **TC-4 Error Bound:** The exponential approximation error bound
+- The combined error formula in Section 7.2.1 references:
+  ```
+  V(k) = V(0) * exp(-lambda_adjusted * k) * (1 + O(r^2 * k))
+  ```
+  where the O(r^2 * k) term is specified by TC-4.
+
+**Interface Assumption:** Assuming TC-4 provides an error bound of the form O(r^2 * k) for the exponential approximation. If wt-6 specifies a different form, Section 7.2.1 may need adjustment.
+
+#### Notes for Coordinator
+
+1. **Merge Order:** This work can be merged independently, but the TC-4 reference in Section 7.2.1 should be verified against wt-6's output.
+
+2. **Potential Conflicts:**
+   - If wt-6 modifies Section 3.1 or 7.2, manual merge may be needed
+   - The new Section 3.1.1 and 7.2.1 are additions, not modifications, minimizing conflict risk
+
+3. **Open Decision:** The FSD now specifies that `uniform_0_1` is the canonical distribution. Implementers must choose whether to:
+   - Change code to use Uniform([0,1]) and accept boundary effects
+   - Keep Uniform([0.2, 0.8]) and apply lambda adjustment
+
+   The invariant enforces consistency regardless of choice.
+
+---
+
+## Summary
+
+| Item | Status |
+|------|--------|
+| Document discrepancy | COMPLETE |
+| Lambda adjustment formula | COMPLETE |
+| Distribution invariant | COMPLETE |
+| Canonical distribution specified | COMPLETE (uniform_0_1) |
+| O(r) vs O(r^2) distinction | COMPLETE |
+| Dependency on wt-6 noted | COMPLETE |
+| Ready for commit | YES |
