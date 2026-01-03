@@ -1,123 +1,91 @@
 """
-RATCHET Schemas Package
+RATCHET Schema Module
 
-Type-safe Pydantic schemas and refinement types for the RATCHET platform.
-Implements recommendations from FSD_FORMAL_REVIEW.md Section 1.2.
-
-Modules:
-    types: Core refinement types with explicit bounds for all numeric parameters
+Pydantic models for protocol messages, experiment configuration, and results.
 """
 
-from .types import (
-    # Core refinement types
-    Dimension,
-    Radius,
-    Correlation,
-    Probability,
-    MahalanobisDistance,
-    SampleSize,
-    Literals,
-    WorldSize,
+from .bft import (
+    # Configuration
+    BFTConfig,
+    MessageType,
+    ReplicaStatus,
 
-    # Derived refinement types
-    NumConstraints,
-    NumStatements,
-    ObservableFraction,
-    EffectiveRank,
-    ByzantineFraction,
-    NodeCount,
-    CaptureRate,
+    # Core message types
+    Digest,
+    Signature,
+    Request,
+    PrePrepare,
+    Prepare,
+    Commit,
+    Reply,
 
-    # Enumerations
-    SamplingMode,
-    DeceptionStrategy,
-    SATSolver,
-    DetectionMethod,
-    ConsensusProtocol,
-    AttackType,
-    MaliciousStrategy,
-    ProofStatus,
+    # View change protocol
+    PreparedCertificate,
+    CheckpointMessage,
+    ViewChange,
+    NewView,
 
-    # Composite types
-    Hyperplane,
-    VolumeEstimate,
-    EffectiveRankResult,
-    ComplexityResult,
-    PowerAnalysisResult,
-    AdversarialStrategy,
-    InferenceGraph,
-    Vote,
-    Precedent,
+    # Federation extensions
+    PrecedentOperation,
+    FederationState,
 
-    # Engine parameter types
-    GeometricParams,
-    ComplexityParams,
-    DetectionParams,
-    FederationParams,
-    SimulationParams,
+    # Utilities
+    MessageLog,
+    BFTMetrics,
 
-    # Proof types
-    ProofObligation,
+    # Verification helpers
+    verify_bft_invariant,
+    compute_max_faulty,
+    compute_min_replicas,
+    compute_quorum_size,
 
-    # Helper functions
-    compute_effective_rank,
-    compute_required_sample_size,
-    validate_literals_for_np_hardness,
+    # Type aliases
+    ReplicaId,
+    ViewNumber,
+    SequenceNumber,
+    ClientId,
+    PBFTMessage,
 )
 
 __all__ = [
-    # Core refinement types
-    'Dimension',
-    'Radius',
-    'Correlation',
-    'Probability',
-    'MahalanobisDistance',
-    'SampleSize',
-    'Literals',
-    'WorldSize',
+    # Configuration
+    "BFTConfig",
+    "MessageType",
+    "ReplicaStatus",
 
-    # Derived refinement types
-    'NumConstraints',
-    'NumStatements',
-    'ObservableFraction',
-    'EffectiveRank',
-    'ByzantineFraction',
-    'NodeCount',
-    'CaptureRate',
+    # Core message types
+    "Digest",
+    "Signature",
+    "Request",
+    "PrePrepare",
+    "Prepare",
+    "Commit",
+    "Reply",
 
-    # Enumerations
-    'SamplingMode',
-    'DeceptionStrategy',
-    'SATSolver',
-    'DetectionMethod',
-    'ConsensusProtocol',
-    'AttackType',
-    'MaliciousStrategy',
-    'ProofStatus',
+    # View change protocol
+    "PreparedCertificate",
+    "CheckpointMessage",
+    "ViewChange",
+    "NewView",
 
-    # Composite types
-    'Hyperplane',
-    'VolumeEstimate',
-    'EffectiveRankResult',
-    'ComplexityResult',
-    'PowerAnalysisResult',
-    'AdversarialStrategy',
-    'InferenceGraph',
-    'Vote',
-    'Precedent',
+    # Federation extensions
+    "PrecedentOperation",
+    "FederationState",
 
-    # Engine parameter types
-    'GeometricParams',
-    'ComplexityParams',
-    'DetectionParams',
-    'FederationParams',
-    'SimulationParams',
+    # Utilities
+    "MessageLog",
+    "BFTMetrics",
 
-    # Proof types
-    'ProofObligation',
+    # Verification helpers
+    "verify_bft_invariant",
+    "compute_max_faulty",
+    "compute_min_replicas",
+    "compute_quorum_size",
 
-    # Helper functions
-    'compute_effective_rank',
-    'compute_required_sample_size',
-    'validate_literals_for_np_hardness',
+    # Type aliases
+    "ReplicaId",
+    "ViewNumber",
+    "SequenceNumber",
+    "ClientId",
+    "PBFTMessage",
 ]
