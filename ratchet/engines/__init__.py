@@ -11,10 +11,22 @@ Engines:
 """
 
 # Detection engine is always available
-from .detection import DetectionEngine
+from .detection import (
+    DetectionEngine,
+    LRTResult,
+    DistributionParams,
+    mahalanobis_distance,
+    power_analysis,
+    compute_required_sample_size,
+)
 
 __all__ = [
     "DetectionEngine",
+    "LRTResult",
+    "DistributionParams",
+    "mahalanobis_distance",
+    "power_analysis",
+    "compute_required_sample_size",
 ]
 
 # Optional engines - may not exist yet

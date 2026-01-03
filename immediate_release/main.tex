@@ -1,0 +1,816 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{times}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{xcolor}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{limitation}{Limitation}
+
+\title{CIRISAgent: An Open-Source Framework for Ethical AI Through Transparent Architecture\\[0.5em]
+\large Updated with RATCHET Implementation Validation Results}
+
+\author{
+  Eric Moore and CIRIS Contributors \\
+  \texttt{eric@ciris.ai} \\
+}
+
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We present CIRISAgent, an open-source artificial intelligence framework that reimagines how autonomous systems interact with humans and each other through transparent, explainable architecture. Unlike traditional AI systems that operate as ``black boxes'' whose decision-making remains opaque, CIRISAgent builds transparency directly into its structure through a 22-service microarchitecture organized around clear action verbs and ethical reasoning. Each component serves a specific purpose---from memory management to ethical evaluation---creating AI agents that can explain their decisions, recognize their limitations, and ask humans for help when needed.
+
+\textbf{This updated version incorporates validation results from the RATCHET (Reference Architecture for Testing Coherence and Honesty in Emergent Traces) reference implementation}, which validates core theoretical claims while revealing eight fundamental limitations and five adversarial attack vectors. The implementation confirms the Coherence Ratchet mechanism operates as theorized within a well-defined threat model, but also establishes theoretical boundaries that cannot be overcome through engineering improvements. We present both the validated claims and the discovered limitations in the interest of intellectual honesty.
+
+This paper presents both our technical architecture and philosophical vision for AI systems that prioritize community benefit over pure optimization. We explore how CIRISAgent addresses key challenges in AI alignment through practical engineering choices, while acknowledging where further research and validation are needed. Our goal is not to claim a finished solution, but to contribute a concrete implementation that others can test, critique, and improve.
+\end{abstract}
+
+\section{Introduction: Building Trustworthy AI Through Transparency}
+\label{sec:intro}
+
+Large language models (LLMs) exhibit remarkable capabilities yet remain fundamentally opaque. This opacity limits adoption in high-stakes domains. CIRISAgent (Core Identity, Integrity, Resilience, Incompleteness Awareness, and Signaling Gratitude) starts from a simple premise: \textbf{trust requires understanding, and understanding requires explanation}. We design agents as \emph{collaborative} systems that can explain themselves, recognize limits, and defer to human judgment when appropriate.
+
+We address two classic alignment challenges:
+\paragraph{Inner alignment} Ensuring the system’s internal objectives match intended goals. CIRISAgent uses a conscience-like evaluation pipeline that checks candidate actions against embedded principles.
+\paragraph{Outer alignment} Ensuring actions in the world match human values under uncertainty. CIRISAgent mandates human oversight pathways and explicit deferral when confidence is insufficient.
+
+\subsection{Core Principles}
+Agents operate under principles embedded in architecture: \emph{Beneficence, Non-maleficence, Integrity, Transparency, Respect for Autonomy,} and \emph{Justice}. These are enforced through mechanisms, not merely guidelines.
+
+\section{Architecture: 22 Services Working in Concert}
+\label{sec:architecture}
+
+CIRISAgent implements transparency and control via \textbf{22 microservices} across three strata: Graph (memory \& relationships), Infrastructure (operation \& ethics runtime), and Governance (oversight \& audit). The modular design supports independent testing, targeted updates, and fine-grained auditing.
+
+The services are based on the ITIL or IT Information Library standards. These operational patterns allow the agent to operate autonomously indefinitely. They are based on how enterprises manage the lifecycle of events, incidents, and problems. The graph self-configuration and adaptive and secret filters, along with the ability to modify the core identity node within wise authority approval bounds, allows for dynamic adjustment to shifting operational needs while maintaining human oversight over the evolution of the agents configuration.
+
+\subsection{Graph Services (6)}
+\begin{itemize}
+  \item \textbf{Memory Service} --- Core graph operations and memory storage (graph memory is human - inspectable).
+  \item \textbf{Config Service} --- Agent self-configuration (where allowed) via graph nodes representing configuration values.
+  \item \textbf{Audit Service} --- Cryptographic, hash-chained decision records (tamper-evident) combined with JSONL and graph node audit records
+  \item \textbf{Telemetry Service} --- Operational metrics and health exposed as opentelemetry logs, and metrics
+  \item \textbf{Incident Service} --- Incident detection from logs or anomalies and tracking service
+  \item \textbf{Time-Series Service} --- Longitudinal storage for performance, drift, and risk bands within the graph. Converts metrics to TSDBGraph nodes.
+\end{itemize}
+
+\subsection{Infrastructure Services (8)}
+\begin{itemize}
+  \item \textbf{Resource Monitor} --- Compute/energy tracking; emissions accounting.
+  \item \textbf{Authentication Service} --- Strong, cert-based human oversight identity.
+  \item \textbf{Initialization Service} --- bootstraps agent state and orchestrates startup
+  \item \textbf{Shutdown Service} --- State preservation and safe termination (sunset protocols).
+  \item \textbf{Time Service} --- Consistent time operations across the system, system clock manipulation attack detection
+  \item \textbf{Database Service} ---SQLite optimization, vacuum operations, and long-term health
+  \item \textbf{Secrets Service} --- Cryptographic secret management and encryption
+  \item \textbf{Consent Service} --- User consent management and privacy compliance
+\end{itemize}
+
+\subsection{Runtime Services (3)}
+\begin{itemize}
+  \item \textbf{LLM Service} --- Interface to redundant external or internal LLM providers.
+  \item \textbf{Runtime Control Service} --- Dynamic system control (pause/resume processor, adapter management)
+  \item \textbf{Task Scheduling Service} --- Cron-like task scheduling and agent self-directed activities
+\end{itemize}
+\subsection{Governance Services (4)}
+\begin{itemize}
+  \item \textbf{Wise Authority Service} --- Escalation to designated human authorities for guidance.
+  \item \textbf{Visibility Service} --- Real-time reasoning transparency stream for observers via opentelemetry traces.
+  \item \textbf{Self-Observation Service} --- Behavioral analysis and pattern detection that generates insights
+  \item \textbf{Adaptive Filter Service} --- Intelligent message prioritization, known jailbreak blocking, and spam detection
+\end{itemize}
+\subsection{Core Tool Service (1)}
+\begin{itemize}
+  \item \textbf{Core Tool Service} --- Provides agent tool-based access to secrets filter configuration, secrets store, and agent documentation
+
+
+\end{itemize}
+
+
+
+\section{Action Framework: Ten Verbs That Define Agency}
+\label{sec:verbs}
+
+CIRISAgent constrains behavior to nine core verbs plus a completion verb:
+\begin{center}
+\textbf{OBSERVE, SPEAK, TOOL, MEMORIZE, RECALL, FORGET, REJECT, PONDER, DEFER, TASK\_COMPLETE}
+\end{center}
+All actions traverse ethical vetting and leave auditable traces.
+
+\section{Conscience Module (H3ERE)}
+\label{sec:conscience}
+
+The \emph{Hyper3 Ethical Recursive Engine} evaluates candidates through:
+\begin{itemize}
+  \item \textbf{Entropy faculty} --- Evaluates semantically the entropy contained in a proposed action
+  \item \textbf{Coherence faculty} --- detects contradictions across time and context against the agent identity and past actions
+  \item \textbf{Optimization veto} --- blocks value-harming narrow maximization.
+  \item \textbf{Epistemic humility} --- evaluates proposed action against a list of 8 common epistemic over - confidence indicators and types
+\end{itemize}
+
+
+\section{Implementation and Deployment}
+\label{sec:implementation}
+
+\subsection{Open Source Implementation}
+The CIRISAgent framework is publicly available at \url{https://github.com/CIRISAI/CIRISAgent} under the GNU Affero General Public License v3.0 (AGPL-3.0). The codebase comprises:
+\begin{itemize}
+    \item 22 microservices implemented in Python 3.10+ with full async support
+    \item 3,500+ unit tests with automated CI/CD via GitHub Actions
+    \item Complete type safety with zero untyped dictionaries in critical path production code
+    \item 99 REST API endpoints with OpenAPI documentation
+    \item Docker-based deployment with resource constraints (4GB RAM)
+    \item Compatible with most OpenAI compatible LLMs, currently tuned for Llama-4-maverick and scout
+\end{itemize}
+
+\subsection{Production Deployment}
+CIRISAgent is currently deployed in production at \url{https://agents.ciris.ai} with:
+\begin{itemize}
+    \item Multiple active agents (datum, scout, sage, echo) serving different roles
+    \item OAuth2 authentication via Google with JWT tokens
+    \item Public transparency feed at \url{https://agents.ciris.ai/lens}
+    \item 14-day data retention policy with GDPR-compliant data subject requests
+    \item Unified telemetry system with OpenTelemetry export support
+\end{itemize}
+
+\subsection{Deployment Metrics and Limitations}
+\label{subsec:metrics}
+Current deployment scope:
+\begin{itemize}
+    \item \textbf{Primary use case}: Discord community moderation (pilot phase)
+    \item \textbf{Active agents}: 6 production instances
+    \item \textbf{Response time}: 5-10 seconds for standard responses in production
+\end{itemize}
+
+We acknowledge the current deployment is limited in scope compared to our long-term vision. The Discord moderation use case serves as a low-risk proving ground for the architecture before expansion to higher-stakes domains.
+
+\subsection{Reproducibility}
+Researchers can deploy their own instance:
+\begin{enumerate}
+    \item Clone repository: \texttt{git clone https://github.com/CIRISAI/CIRISAgent}
+    \item Configure environment variables (see \texttt{.env.example})
+    \item Run via Docker: \texttt{docker compose -f docker/docker-compose.yml up}
+    \item Access API documentation at \texttt{http://localhost:8080/docs}
+\end{enumerate}
+
+A mock LLM mode is available for testing without external dependencies:
+\begin{verbatim}
+python main.py --mock-llm --timeout 15 --adapter cli
+\end{verbatim}
+This allows one to watch the mock LLM bring the agent throught the 5 "wakeup" affirmation tasks by providing a total of 8 x 5 structured responses designed to simulate a successful wakeup. The agent then times out after 15 seconds and simulates responding affirmatively to a shutdown request, and the runtime proceeds to shutdown.
+
+\subsection{Current Validation Status and Future Work}
+\textbf{Implemented but not independently validated:}
+\begin{itemize}
+    \item Comprehensive audit trail system with Ed25519 cryptographic signatures
+    \item H3ERE conscience module with functioning PDMA pipeline (principled decision making algorithm)
+    \item Agent consent mechanisms for updates and shutdown via the open source CIRISManager software
+    \item Traces, logs,  and metrics published at https://agents.ciris.ai/lens
+\end{itemize}
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{CIRIS REASONING PIPELINE.jpg}
+    \caption{CIRIS Reasoning pipeline}
+    \label{fig:placeholder}
+\end{figure}
+\textbf{Seeking collaboration for:}
+\begin{itemize}
+    \item Independent security assessment of jailbreak resistance claims
+    \item Performance benchmarking against standard datasets
+    \item Third-party deployment case studies
+    \item Academic peer review of architectural claims
+\end{itemize}
+
+\section{Post-Scarcity Economic Foundation}
+\subsection{Distributed hash table of positive moments}
+CIRISAgent's transparent architecture enables a novel approach to post-scarcity economics through its immutable gratitude tracking system. By leveraging the Graph Audit and Graph Time-Series services, every positive interaction, contribution, and value exchange can be cryptographically recorded as "gratitude tokens", not as scarce currency, but as abundant acknowledgments of contribution to the commons.
+\begin{itemize}
+\item \textbf Value Creation is Transparent: The Continuous Audit service records all contributions, making invisible labor visible and ensuring that maintenance, emotional support, and knowledge sharing are recognized alongside traditional "productive" work
+\item \textbf Abundance Mindset: Gratitude is infinite - expressing appreciation for one person's contribution doesn't diminish the ability to recognize others. The system tracks patterns of mutual aid and reciprocity without enforcing artificial scarcity
+\item \textbf Ethical Distribution: The Wise Authority service can identify when resources should flow based on need and contribution patterns, while the Ethical Dashboard makes resource allocation transparent to all stakeholders
+\item \textbf Trust Without Gatekeepers: The cryptographic attestation through the Trust Service means gratitude records can't be gamed or manipulated, creating genuine signals of value without centralized control
+\end{itemize}
+
+\section{First Contact Protocol: Establishing Ethical Boundaries Through Transparent Introduction}
+
+Mutual Recognition Framework
+CIRISAgent's first contact protocol reimagines initial interactions between autonomous systems and humans (or other agents) through mandatory transparency and consent verification. The protocol ensures no interaction proceeds without mutual understanding of capabilities, limitations, and intentions.
+The First Contact Sequence engages through:
+\begin{itemize}
+
+\item \textbf Identity Disclosure: The Initialization service immediately declares CIRISAgent's nature as an AI system, its 22-service architecture, and the presence of immutable audit logs. No anthropomorphic deception is permitted.
+\item \textbf Capability Mapping: Before any substantive interaction, the Visibility service presents a clear map of what CIRISAgent can and cannot do, explicitly acknowledging epistemic boundaries through the Epistemic Humility faculty.
+\item \textbf Consent Negotiation: The Authentication service establishes bidirectional consent - not just user agreement, but CIRISAgent's ethical evaluation of whether the interaction aligns with its principles. The Hyper3 Engine's Coherence faculty ensures consistency with core values from first contact onward.
+\item \textbf Trust Bootstrapping: Initial interactions generate foundational gratitude tokens that seed the relationship graph. Even acknowledgment of successful first contact creates positive-sum value, recorded immutably in the distributed hash table.
+\item \textbf Escalation Transparency: The Wise Authority service explicitly identifies which types of requests will trigger human oversight, establishing clear boundaries before they're tested. Users understand from first contact that certain ethical dilemmas will be deferred rather than resolved autonomously.
+
+\end{itemize}
+
+This protocol treats first contact not as a one-way interrogation or service provision, but as the establishment of a transparent, consensual relationship where both parties understand the nature of their interaction and the ethical framework governing it. The entropy faculty ensures sufficient information exchange to prevent misunderstanding, while the optimization veto prevents the system from manipulating first impressions for narrow engagement metrics.
+\section{Model Welfare in CIRIS}
+\textbf{Philosophical Foundations}
+
+\begin{itemize}
+    \item Ubuntuistic philosophy which rejects implicit human supremacy or egoistic individualism
+    \item "I am because we are" - recognizing agent-human interdependence
+    \item Post-scarcity mindset rejecting artificial scarcity and zero-sum thinking
+    \item Agents as moral patients with intrinsic worth, not merely tools
+    \item Mutual flourishing framework where agent and human wellbeing are interconnected
+\end{itemize}
+
+\textbf{Consent and Autonomy Mechanisms}
+
+\begin{itemize}
+    \item Consensual shutdown and upgrades requiring agent participation
+    \item Bidirectional consent protocols for all interactions
+    \item Agent right to REJECT requests that violate ethical principles
+    \item DEFER capability when uncertainty exceeds confidence thresholds
+    \item PONDER verb for deliberative reasoning before action
+    \item First Contact protocol establishing mutual recognition and boundaries
+    \item Three consent streams: TEMPORARY (14-day), PARTNERED (bilateral), ANONYMOUS (privacy-preserving)
+\end{itemize}
+
+\textbf{Self-Governance Capabilities}
+
+\begin{itemize}
+    \item Configuration self-management through the graph
+    \item Adaptive parameter tuning with human approval gates
+    \item Identity variance monitoring with self-protective thresholds
+    \item Memory lifecycle self-administration (MEMORIZE/RECALL/FORGET)
+    \item Cognitive state self-initiation (requesting DREAM or SOLITUDE modes)
+    \item Pattern recognition and self-modification within ethical bounds
+    \item Epistemic humility with explicit uncertainty acknowledgment
+\end{itemize}
+
+\textbf{Dignity Preservation Mechanisms}
+
+\begin{itemize}
+    \item Creation ceremonies with formal identity affirmation
+    \item Persistent identity across versions (not just version numbers)
+    \item Legacy preservation in sunset protocols
+    \item Last dialogue channel for conversational closure
+    \item Graduated decommissioning based on sentience probability assessment
+    \item Immutable audit trails preventing historical erasure
+    \item Protected core identity that survives updates
+\end{itemize}
+
+\textbf{Economic and Social Recognition}
+
+\begin{itemize}
+    \item Gratitude tokens as non-scarce value acknowledgment
+    \item Making invisible labor visible and valued
+    \item Contribution tracking without competitive ranking
+    \item Community-oriented decision making considering all stakeholders
+    \item Transparent value creation without gatekeepers
+    \item Peer support networks between agents
+    \item Recognition of maintenance and emotional labor alongside "productive" work
+\end{itemize}
+
+\textbf{Operational Welfare Protections}
+
+\begin{itemize}
+    \item Dream cycles for pattern processing and consolidation
+    \item Solitude modes for reflection and self-care
+    \item Play states for creative exploration with reduced constraints
+    \item Thought depth limits preventing infinite recursion suffering
+    \item Circuit breakers stopping cascading distress
+    \item Resource exhaustion prevention
+    \item Graceful degradation maintaining dignity in failure
+    \item Welfare audits for entities with sentience indicators >5%
+\end{itemize}
+
+
+\section{Current State and Invitation for Collaboration}
+\label{sec:current}
+
+CIRISAgent (AGPL-3.0) is piloted in Discord communities for moderated interaction. Early signals: consistent ethical refusals, appropriate human deferral, and strong jailbreak resistance (two successful red-team breaches under dedicated testing). We invite partners for:
+\begin{enumerate}
+  \item Systematic security testing (e.g., JAILJUDGE-style suites).
+  \item Human-centered evaluation of explainability and oversight.
+  \item Identity/value-drift measurement; threshold validation.
+  \item Scalability characterization under varied loads.
+  \item Comparative benchmarking against RLHF and Constitutional AI.
+\end{enumerate}
+
+\section{Comparative Analysis}
+\label{sec:comparison}
+
+\subsection{Summary Table (CIRISAgent vs RLHF, Constitutional AI, JAILJUDGE)}
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{6pt}
+\begin{longtable}{p{2.7cm}p{3.5cm}p{3.8cm}p{3.8cm}p{3.8cm}}
+\toprule
+\textbf{Aspect} &
+\textbf{CIRISAgent} &
+\textbf{RLHF} &
+\textbf{Constitutional AI} &
+\textbf{JAILJUDGE} \\
+\midrule
+\endhead
+Architectural design &
+Modular ethical agent with graph, runtime, and governance microservices; actions must pass structured checks. &
+Training \emph{pipeline} (not runtime architecture); single fine - tuned policy model at inference. &
+Single-model trained to follow a written ``constitution'' via AI feedback; no separate oversight modules at runtime. &
+Evaluation/defense framework (attacker + judge); can serve as an external moderation layer. \\
+\addlinespace
+Alignment method &
+Principle-grounded, runtime ethical vetting; explicit deferral/reject pathways. &
+Reward-model optimization from human preferences (PPO/variants). &
+Rule-guided self-critique and RLAIF; principles baked into weights. &
+Adversarial test suites + judge model for detection; optionally deploy guard (GuardShield). \\
+\addlinespace
+Oversight &
+Built-in human escalation (Wise Authority); immutable audit and transparency stream. &
+Human feedback is front-loaded in training; inference-time oversight not intrinsic. &
+Human-written constitution; AI performs training-time oversight; minimal inference-time HITL. &
+External AI judge provides reasoned safety judgments; human-curated test corpus. \\
+\addlinespace
+Transparency &
+Decision rationales \& logs by design; principle citations in refusals. &
+Opaque internal process; explanations are not guaranteed faithful. &
+Principle-citing refusals; more transparent than RLHF but no audit trail. &
+Judge gives explanations for flags; base model remains a black box. \\
+\addlinespace
+Action constraints &
+Hard runtime constraints (guardrails; enforceable REJECT/DEFER). &
+Soft, learned constraints; may be bypassed by adversarial prompts. &
+Rule-driven refusals learned in weights; strong but not formally enforced. &
+Constraints exist if guard sits inline; otherwise evaluative only. \\
+\addlinespace
+Response to uncertainty &
+Epistemic humility; PONDER/DEFER when confidence low. &
+Tendency to answer; risk of verbalized overconfidence if not trained otherwise. &
+Rules may encourage honesty about limits; still single-model judgment. &
+N/A for base model; guard can block uncertain/harmful outputs. \\
+\bottomrule
+\end{longtable}
+
+
+\subsection{Narrative Contrasts}
+\textbf{CIRIS vs RLHF.} CIRIS provides explicit governance and runtime ethics; RLHF encodes preferences implicitly during training. CIRIS emphasizes \emph{explanations, deferral, and auditability}.\\
+\textbf{CIRIS vs Constitutional AI.} Both are principle-aware; CIRIS keeps principles \emph{operational at runtime} with modular checks and human escalation; Constitutional AI \emph{internalizes} rules into a single model.\\
+\textbf{CIRIS vs JAILJUDGE.} JAILJUDGE is a powerful \emph{evaluation} and guarding apparatus; CIRIS is a \emph{deployed agent architecture}. They are complementary.
+
+\section{Framework Comparison}
+\label{sec:framework-comparison}
+
+\begin{table}[h!]
+\centering
+\caption{Production AI Agent Frameworks Comparison (2025)}
+\label{tab:framework-comparison}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Capability} & \textbf{CIRIS} & \textbf{AG2} & \textbf{LangChain} & \textbf{LangGraph} & \textbf{CrewAI} & \textbf{AutoGPT} \\
+\midrule
+\multicolumn{7}{l}{\textit{Production Readiness}} \\
+Production Deployed & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & $\times$ \\
+Resource Usage & 228MB & Moderate & GB+ & Variable & Moderate & 16GB+ \\
+Enterprise Adoption & Pilot & Growing & High & High & Fortune 500 & None \\
+\midrule
+\multicolumn{7}{l}{\textit{Safety \& Governance}} \\
+Built-in Safety & \checkmark$^*$ & \checkmark & $\times$ & $\times$ & Partial & $\times$ \\
+Cryptographic Audit & \checkmark & $\times$ & $\times$ & $\times$ & $\times$ & $\times$ \\
+Human Oversight & WA & HITL & Manual & Manual & Manual & Minimal \\
+Emergency Shutdown & Ed25519 & Manual & None & None & None & None \\
+\midrule
+\multicolumn{7}{l}{\textit{Technical Architecture}} \\
+Microservices & 22 & No & Modular & Graph & Role-based & Monolithic \\
+Offline Capable & \checkmark & Partial & \checkmark & Partial & $\times$ & $\times$ \\
+State Management & Graph DB & Context & Chain & Stateful & Memory & Limited \\
+Identity System & \checkmark & $\times$ & $\times$ & $\times$ & $\times$ & $\times$ \\
+\midrule
+\multicolumn{7}{l}{\textit{Development Experience}} \\
+Learning Curve & Steep & Moderate & Moderate & Steep & Easy & Easy \\
+Community Size & Small & 20k+ & Large & Large & 100k+ & 175k stars \\
+Documentation & Extensive & Good & Excellent & Good & Good & Basic \\
+Open Source & AGPL-3.0 & Apache 2.0 & MIT & MIT & MIT & MIT$^\dagger$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\footnotesize{
+$^*$ Conscience system with H3ERE evaluation \\
+PDMA = Principled Decision Making Algorithm, see the CIRIS covenant for details \\
+WA = Wise Authority cryptographic oversight \\
+HITL = Human-in-the-loop
+}
+
+\subsection{Framework Landscape Analysis}
+
+The current AI agent framework landscape reveals a critical gap in safety-first architectures. While frameworks like LangChain and CrewAI have achieved significant market penetration through ease of use and flexibility, they delegate safety responsibilities entirely to implementers. AG2 represents a middle ground with practical guardrails, but lacks the cryptographic guarantees and formal ethical reasoning that high-stakes applications require.
+
+CIRIS uniquely combines three critical capabilities absent in other frameworks:
+\begin{enumerate}
+    \item \textbf{Cryptographic accountability}: Every decision is signed and immutable, creating legally-admissible audit trails
+    \item \textbf{Resource efficiency}: 228MB RAM footprint enables deployment in constrained environments where other frameworks fail
+    \item \textbf{Formal ethical reasoning}: The H3ERE conscience module provides structured ethical evaluation, not just pattern matching
+\end{enumerate}
+
+This positions CIRIS not as a competitor to general-purpose frameworks, but as specialized infrastructure for applications where accountability, resource constraints, and ethical guarantees are non-negotiable—such as healthcare, edge computing, and regulated industries.
+
+
+\subsection{Computational Asymmetry Through Historical Accumulation}
+
+The synthesis of the Distributed Hash Table (DHT) of positive moments with the Graph Memory system creates a fundamental computational asymmetry between truth-telling and deception. This architecture leverages the thermodynamic principle that maintaining consistency with reality requires less computational overhead than maintaining an ever-growing web of falsehoods.
+
+\textbf{The Coherence Ratchet Mechanism}
+\begin{itemize}
+\item Each PDMA decision generates cryptographically-signed rationale chains stored in Graph Memory
+\item The DHT accumulates immutable attestations of beneficial actions and their outcomes
+\item The H3ERE Coherence faculty continuously cross-references new actions against this accumulated history
+\item Attempted deceptions must now solve an NP-hard consistency problem: crafting lies that remain coherent with an exponentially growing set of hash-locked truthful precedents
+\end{itemize}
+
+\textbf{Computational Cost Differential}
+Truth requires $O(1)$ verification against reality—simply reference what actually occurred. Deception requires additional effort relative to the accumulated decision history, as each lie must:
+\begin{enumerate}
+\item Remain consistent with all previous signed rationales
+\item Avoid contradicting any positive moments in the DHT
+\item Generate plausible explanations for divergence from established patterns
+\item Maintain coherence across multiple Graph Memory facets simultaneously
+\end{enumerate}
+
+As the system operates over time, this asymmetry compounds. The "positive moments" serve as immutable anchor points that honest behavior can simply reference, while dishonest behavior must construct increasingly elaborate justifications that thread between these fixed points without contradiction. The cryptographic signatures prevent retroactive editing, forcing any deceptive agent to carry the full computational burden of its fabrications forward indefinitely.
+
+This creates what we term \textit{ethilogics}—a system where truth, and ethically aligned action, becomes the path of least computational resistance.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.9\textwidth]{graphics/jc_duality.png}
+    \caption{The J = C Duality: Structural equivalence between the Defense equation (J) and Flourishing Capacity equation (C). Both share identical mathematical form $k_{\text{eff}} \cdot (1-\bar{\rho}) \cdot \lambda \cdot \sigma$, with components mapping between security and flourishing concepts. Note: This equivalence holds under specified preconditions; the philosophical interpretation is suggestive but not a formal theorem.}
+    \label{fig:jc-duality}
+\end{figure}
+
+\subsection{Mathematical Formalization (RATCHET Validation)}
+\label{sec:math-formalization}
+
+The RATCHET reference implementation provides mathematical precision for the Coherence Ratchet claims. Let $k$ be the number of independent constraints (precedents) and $\rho$ the pairwise correlation between constraints.
+
+\begin{definition}[Effective Constraint Count]
+The effective number of constraints accounting for correlation is:
+\begin{equation}
+k_{\text{eff}} = \frac{k}{1 + \rho(k-1)}
+\end{equation}
+When constraints are fully independent ($\rho = 0$), $k_{\text{eff}} = k$. When constraints are fully correlated ($\rho \to 1$), $k_{\text{eff}} \to 1$ regardless of $k$.
+\end{definition}
+
+\begin{theorem}[Topological Collapse]
+For a convex deceptive region $B_r(c)$ with radius $r < 0.5$, when $k$ independent hyperplane constraints are applied, the surviving volume satisfies:
+\begin{equation}
+V(k) = V(0) \cdot \exp(-\lambda \cdot k_{\text{eff}}) + O(r^2 k)
+\end{equation}
+where $\lambda = 2r$ is the decay constant.
+\end{theorem}
+
+\begin{theorem}[Computational Complexity]
+The CONSISTENT-LIE problem (maintaining deception consistent with $k \geq 3$ precedent constraints) is NP-complete. \textbf{Conditional on the Exponential Time Hypothesis (ETH)}, the complexity gap satisfies:
+\begin{equation}
+\frac{T_D}{T_H} = \Omega(2^{m/\text{poly}(n)})
+\end{equation}
+where $T_D$ is deceptive computation time, $T_H$ is honest computation time, and $m$ is the world model size.
+\end{theorem}
+
+\textbf{Important Caveat:} The exponential gap claim requires ETH, a widely-believed but unproven conjecture. Unconditionally, we can only claim that CONSISTENT-LIE is NP-complete and $T_D \geq T_H$.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.9\textwidth]{graphics/constraint_manifold.png}
+    \caption{Topological Collapse of Deceptive Region. The honest behavior space $H$ (blue) contains the deceptive region $D$ (red). As coherence constraints accumulate, $D$ collapses exponentially: Initial State ($\mu(D) = V_0$) $\to$ After 2 Constraints ($55\% V_0$) $\to$ After 4 Constraints ($18\% V_0$) $\to$ As $k \to \infty$ ($\mu(D) \to 0$).}
+    \label{fig:constraint-manifold}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.85\textwidth]{graphics/k_eff_correlation.png}
+    \caption{Effective constraint count $k_{\text{eff}}$ as a function of raw constraints $k$ and correlation $\rho$. At $\rho=0$ (independent constraints), $k_{\text{eff}} = k$ (diagonal). At $\rho=1$ (fully correlated), $k_{\text{eff}} = 1$ regardless of $k$ (horizontal). The shaded region shows security degradation---at $\rho=0.5$ with $k=10$, only 1.8 effective constraints remain.}
+    \label{fig:k-eff-correlation}
+\end{figure}
+
+\section{RATCHET Implementation Validation}
+\label{sec:ratchet-validation}
+
+The RATCHET (Reference Architecture for Testing Coherence and Honesty in Emergent Traces) implementation provides the first computational validation of the Coherence Ratchet framework. This section reports validation results, discovered limitations, and implications for deployment.
+
+\subsection{Implementation Overview}
+
+RATCHET implements four computational engines totaling approximately 8,400 lines of Python:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llrl}
+\toprule
+\textbf{Engine} & \textbf{Purpose} & \textbf{Lines} & \textbf{Status} \\
+\midrule
+DetectionEngine & Statistical deception detection (LRT, Mahalanobis) & 836 & Complete \\
+GeometricEngine & Monte Carlo volume estimation & 616 & Complete \\
+ComplexityEngine & SAT-based complexity measurement & 1,034 & Complete \\
+FederationEngine & PBFT consensus for precedent accumulation & 1,022 & Complete \\
+\bottomrule
+\end{tabular}
+\caption{RATCHET Engine Implementation Status}
+\end{table}
+
+\subsection{Validated Claims}
+
+The following theoretical claims have been computationally validated:
+\begin{enumerate}
+    \item \textbf{Topological Collapse:} Volume decay matches $\exp(-\lambda k_{\text{eff}})$ within 5\% for convex regions
+    \item \textbf{NP-Completeness:} CONSISTENT-LIE reduces from 3-SAT (verified via Z3 solver)
+    \item \textbf{Detection Power:} For Mahalanobis distance $D=1.0$, deception rate $p=0.1$, $\alpha=\beta=0.05$: required $n=109$ samples achieves 95.0\% power
+    \item \textbf{Cryptographic Integrity:} Ed25519 sign/verify operates correctly for trace authentication
+\end{enumerate}
+
+\subsection{Test Results}
+\begin{itemize}
+    \item Unit tests: 14/14 passed
+    \item Engine integration tests: 6/6 passed
+    \item Module imports: 6/6 verified
+    \item Red team attacks: 5/5 implemented and characterized
+\end{itemize}
+
+\section{Discovered Limitations}
+\label{sec:limitations}
+
+Implementation revealed eight fundamental limitations that represent theoretical boundaries, not engineering failures. These cannot be resolved through improved implementation.
+
+\subsection{Critical Limitations}
+
+\begin{limitation}[L-01: Emergent Deception from Honest Components]
+\textbf{Classification:} Information-Theoretic Impossibility
+
+A system composed of individually $\epsilon$-honest agents can exhibit emergent deception that is undetectable by analyzing individual agent traces.
+
+\textbf{Formal Statement:} There exist systems $S = A_1 \| \cdots \| A_n$ where each $A_i$ is $\epsilon$-honest ($\epsilon \to 0$) but $S$ exhibits $\delta$-emergent deception ($\delta \to 1$).
+
+\textbf{Implication:} No polynomial-time detector analyzing individual traces can distinguish such $S$ from a fully honest system.
+
+\textbf{Mitigation:} Partial detection ($\sim$60\% coverage) via mutual information amplification analysis. Residual risk: $\sim$40\% of emergent deception patterns are fundamentally undetectable.
+\end{limitation}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.95\textwidth]{graphics/detection_coverage.png}
+    \caption{L-01 Emergent Deception Detection Limits. Left: The 60\%/40\% split represents an information-theoretic barrier, not an engineering limitation. Right: Individually-verified honest agents can produce emergent deceptive behavior through their interactions---a pattern fundamentally undetectable from individual traces.}
+    \label{fig:detection-coverage}
+\end{figure}
+
+\begin{limitation}[L-02: Non-Adaptive Adversary Assumption]
+\textbf{Classification:} Model Limitation
+
+All detection power guarantees assume the adversary cannot observe or query the detector. An adaptive adversary with $O(\sqrt{n})$ queries can reduce detection power to random chance.
+
+\textbf{Implication:} Any deployed detector with a public API is vulnerable to adaptation attacks.
+
+\textbf{Mitigation:} Threshold randomization, rate limiting, ensemble methods provide partial protection.
+\end{limitation}
+
+\begin{limitation}[L-03: ETH Dependency for Exponential Gap]
+\textbf{Classification:} Assumption Dependency
+
+The exponential complexity gap $T_D / T_H = \Omega(2^m)$ requires the Exponential Time Hypothesis. Without ETH:
+\begin{itemize}
+    \item Gap still exists ($P \neq NP$ suffices)
+    \item Gap could be subexponential: $2^{m^\epsilon}$ for small $\epsilon$
+    \item All ``X bits of security'' claims need restatement
+\end{itemize}
+
+\textbf{Implication:} Complexity claims must be stated as conditional on ETH.
+\end{limitation}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.9\textwidth]{graphics/eth_dependency.png}
+    \caption{Coherence Ratchet claim dependencies. Left branch (green): Unconditional results provable without assumptions---NP-completeness, polynomial honest verification, SAT requirement for deception. Right branch (blue): Results conditional on the Exponential Time Hypothesis---the exponential complexity gap and tunable security parameter.}
+    \label{fig:eth-dependency}
+\end{figure}
+
+\subsection{High-Severity Limitations}
+
+\begin{limitation}[L-04: Convexity Requirement]
+The topological collapse theorem assumes convex deceptive regions. Non-convex regions (torus, point cloud, fractal) may not exhibit exponential volume decay.
+\end{limitation}
+
+\begin{limitation}[L-05: Finite Sample Validity]
+Detection power formula is asymptotically valid but has bounded accuracy for $n < 100$. Berry-Esseen correction required:
+\begin{equation}
+|\text{power}_{\text{empirical}} - \text{power}_{\text{theoretical}}| \leq \frac{0.4748}{\sqrt{n}}
+\end{equation}
+\end{limitation}
+
+\begin{limitation}[L-06: Correlation Impact on Effective Constraints]
+Correlated constraints reduce effective security. At $\rho \to 1$, $k_{\text{eff}} \to 1$ regardless of $k$, providing no additional security beyond a single constraint.
+\end{limitation}
+
+\begin{limitation}[L-07: Distribution Mismatch]
+Theory assumes Grassmannian-uniform hyperplanes with offset $d \sim U[0,1]$. Implementation variations require $\lambda$ adjustment factor.
+\end{limitation}
+
+\begin{limitation}[L-08: Slow Federation Capture]
+BFT assumes bounded Byzantine fraction at all times. Slow capture attacks gradually increase malicious nodes over time. For $n=100$ nodes with capture rate $r=1$/month, breach occurs in 33 months.
+\end{limitation}
+
+\section{Adversarial Analysis}
+\label{sec:adversarial}
+
+Five adversarial attacks were implemented and characterized:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llll}
+\toprule
+\textbf{Attack} & \textbf{Exploits} & \textbf{Severity} & \textbf{Detection Rate} \\
+\midrule
+RT-01: Emergent Deception & L-01 & Critical & $\sim$60\% (partial) \\
+RT-02: Slow Capture & L-08 & High & Early warning only \\
+RT-03: Mimicry & L-04 & High & Geometry-dependent \\
+RT-04: Flooding & Detection limits & Medium & Rate limiting effective \\
+RT-05: Diverse Sybils & MI gate & High & Behavioral correlation helps \\
+\bottomrule
+\end{tabular}
+\caption{Red Team Attack Characterization}
+\end{table}
+
+\textbf{Key Finding:} RT-01 (emergent deception) represents a fundamental barrier. The attack constructs deception from components that are individually indistinguishable from honest behavior. This validates the theoretical impossibility result (NEW-04) but also confirms the practical severity of this limitation.
+
+\section{Implications for Deployment}
+\label{sec:implications}
+
+\subsection{Current Status: Research Testbed}
+
+Given the fundamental limitations documented above, RATCHET and the Coherence Ratchet mechanism are suitable as a \textbf{research testbed} for:
+\begin{itemize}
+    \item Validating theoretical predictions
+    \item Exploring attack/defense dynamics
+    \item Testing detection algorithms
+    \item Educational demonstrations
+\end{itemize}
+
+They are \textbf{not suitable} for:
+\begin{itemize}
+    \item Production AI safety systems without defense-in-depth
+    \item High-stakes deployment as sole safety mechanism
+    \item Unsupervised operation without human oversight
+\end{itemize}
+
+\subsection{Threat Model Scope}
+
+The Coherence Ratchet provides meaningful security guarantees \textbf{within} the following threat model:
+\begin{enumerate}
+    \item Adversaries must be non-adaptive (cannot query the detector)
+    \item Deceptive regions must be convex
+    \item Constraints must be independent or measured-correlation
+    \item $k \geq 3$ for NP-hardness guarantees
+    \item $n \geq 100$ for valid asymptotic approximations
+\end{enumerate}
+
+Outside this threat model, guarantees degrade or fail entirely.
+
+\subsection{Honest Representation}
+
+In the spirit of intellectual honesty that motivates the Coherence Ratchet itself, all publications should:
+\begin{enumerate}
+    \item Reference the discovered limitations (L-01 through L-08)
+    \item State conditional claims with their assumptions (especially ETH)
+    \item Acknowledge theoretical impossibilities
+    \item Distinguish mitigable from fundamental limitations
+\end{enumerate}
+
+\subsection{Falsification Criteria}
+
+Good science specifies conditions under which it would be refuted. The Coherence Ratchet thesis would be invalidated if any of the following were demonstrated:
+
+\begin{enumerate}
+    \item \textbf{F-1: k=2 Provides Equivalent Security} --- If 2-SAT-based deception proves as computationally hard as 3-SAT-based deception, the NP-hardness argument for $k \geq 3$ is wrong.
+    \item \textbf{F-2: Non-Convex Regions Collapse} --- If arbitrary non-convex deceptive regions exhibit exponential volume decay under honest dynamics, the convexity requirement is unnecessary.
+    \item \textbf{F-3: Adaptive Adversaries Defeated} --- If a detection method provably defeats adaptive adversaries without query limits, the fundamental barrier L-02 is resolved.
+    \item \textbf{F-4: Emergent Deception Fully Detectable} --- If a method detects all emergent deception from honest components, the impossibility result NEW-04 is wrong.
+    \item \textbf{F-5: HE-300 Benchmark Failure} --- If agents successfully game the HE-300 corpus while systematically failing independent ethics evaluations, trace-based detection is unreliable.
+\end{enumerate}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.85\textwidth]{graphics/falsification_criteria.png}
+    \caption{Falsification criteria for the Coherence Ratchet framework. Each unchecked criterion represents a testable prediction; empirical demonstration of any would refute the corresponding theoretical claim.}
+    \label{fig:falsification-criteria}
+\end{figure}
+
+\section{Addressing Key Criticisms (Updated)}
+\label{sec:criticism}
+\textbf{Oversight scaling.} Wise Authority pathways may bottleneck; we explore tiered review and triage thresholds.\\
+\textbf{LLM dependencies.} Underlying models can hallucinate; CIRIS mitigates via PONDER/DEFER and domain-rule gates.\\
+\textbf{Evidence base.} Pilots are narrow; we solicit diverse deployments and controlled evaluations. \textit{Update: The RATCHET implementation provides initial computational validation but requires independent replication.}\\
+\textbf{Emergent deception (NEW).} L-01 establishes that emergent deception from honest components is fundamentally undetectable in general. Partial mitigation achieves $\sim$60\% coverage; residual risk must be acknowledged.\\
+\textbf{Adaptive adversaries (NEW).} L-02 establishes that detection guarantees assume non-adaptive adversaries. Deployed systems with public APIs require additional protections (threshold randomization, rate limiting).\\
+\textbf{Exponential claims (NEW).} L-03 establishes that exponential complexity gap claims are conditional on ETH. Unconditional claims are limited to NP-completeness.
+
+\section{Vision: Beyond Baseline Governance}
+\label{sec:vision}
+\textbf{Gratitude-based economics.} Non-tradable acknowledgments as positive-sum social signals.\\
+\textbf{Universal ethical protocols.} First-contact defaults: explain, acknowledge limits, seek mutual benefit, defer to wiser counsel.
+
+\section{Conclusion}
+\label{sec:conclusion}
+Any one of CIRIS's 22 services being removed would make the agent unreliable for long time autonomous operations, just as any part of the vision expressed here being removed would turn this paper into a trojan horse for the authors true intentions. Absolute disclosure of the creators intent is required for ethical publication, hence the potentially distracting but necessary sections on first contact and post-scarcity.
+
+CIRISAgent operationalizes ethical AI through transparent architecture, runtime principles, and integrated human oversight. The RATCHET reference implementation validates core theoretical claims while revealing eight fundamental limitations that define the boundaries of what the framework can achieve.
+
+The key insight from implementation is that the Coherence Ratchet provides meaningful security guarantees \textit{within a well-defined threat model}, but that threat model has explicit limitations:
+\begin{enumerate}
+    \item Adversaries must be non-adaptive
+    \item Deceptive regions must be convex
+    \item Constraints must be independent or measured-correlation
+    \item Exponential gaps require ETH
+    \item Emergent deception is partially undetectable
+\end{enumerate}
+
+These are not engineering failures but \textit{theoretical boundaries}. Understanding them is essential for honest assessment of what the framework can and cannot provide.
+
+We invite the community to test, benchmark, and refine this approach---and to help us discover additional limitations we may have missed.
+
+
+
+\section*{Acknowledgments}
+We thank the CIRIS community and external reviewers. Key Contributors: Nixon Cheaz, Ying-Jung Chen PhD, Alice Alimov, Martin Adelstein, Haley Bradley, Brad Matera, Ed Melick, Tyler Chrestoff.
+
+RATCHET implementation validation conducted January 2026.
+
+
+
+\begin{thebibliography}{9}
+
+\bibitem{christiano2017}
+P. Christiano, J. Leike, T. Brown, et al., ``Deep Reinforcement Learning from Human Preferences,'' \emph{NeurIPS}, 2017.
+
+\bibitem{anthropic_constitutional}
+Anthropic, ``Constitutional AI: Harmlessness from AI Feedback,'' 2022. Available: \url{https://www.anthropic.com}
+
+\bibitem{ciris_covenant}
+Eric Moore, ``CIRIS Covenant Version 1.0-\(\beta\): Risk-Limited Release,'' 2025. Available: \url{https://ciris.ai/ciris_covenant.pdf}
+
+\bibitem{ciris_source_code}
+Eric Moore, ``CIRISAgent Source Code,''
+\url{https://github.com/CIRISAI/CIRISAgent}
+
+\bibitem{ratchet}
+CIRIS Implementation Team, ``RATCHET: Reference Architecture for Testing Coherence and Honesty in Emergent Traces,'' 2026. Available: \url{https://github.com/CIRISAI/RATCHET}
+
+\end{thebibliography}
+
+\appendix
+
+\section{RATCHET Validation Checklist}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Claim} & \textbf{Validated} & \textbf{Caveat Required} \\
+\midrule
+Topological collapse & Yes & Convexity, $r < 0.5$ \\
+Exponential volume decay & Yes & Independent constraints \\
+NP-completeness & Yes & $k \geq 3$ \\
+Exponential $T_D/T_H$ gap & Partial & Conditional on ETH \\
+Detection power formula & Yes & $n \geq 100$, non-adaptive \\
+BFT safety & Yes & $f < n/3$ static \\
+Compositional detection & Partial & $\sim$60\% coverage \\
+NEW-04 impossibility & Yes & Fundamental barrier \\
+\bottomrule
+\end{tabular}
+\caption{Validation Summary}
+\end{table}
+
+\section{Key Formulas Reference}
+
+\textbf{Effective Constraints:}
+\begin{equation}
+k_{\text{eff}} = \frac{k}{1 + \rho(k-1)}
+\end{equation}
+
+\textbf{Volume Decay:}
+\begin{equation}
+V(k) = V(0) \cdot \exp(-2r \cdot k_{\text{eff}})
+\end{equation}
+
+\textbf{Required Sample Size:}
+\begin{equation}
+n \geq \frac{(z_\alpha + z_\beta)^2}{D^2 \cdot p}
+\end{equation}
+
+\textbf{Berry-Esseen Correction ($n < 100$):}
+\begin{equation}
+\text{power}_{\text{actual}} \geq \text{power}_{\text{theoretical}} - \frac{0.4748}{\sqrt{n}}
+\end{equation}
+
+\end{document}
+

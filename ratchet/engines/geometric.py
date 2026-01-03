@@ -454,9 +454,9 @@ class GeometricEngine:
             decay_constant = None
 
         return VolumeEstimate(
-            volume=volume,
-            ci_lower=ci_lower,
-            ci_upper=min(ci_upper, 1.0),
+            volume=fraction_inside,  # Volume fraction, not absolute volume
+            ci_lower=ci_lower_frac,
+            ci_upper=ci_upper_frac,
             num_samples=num_samples,
             decay_constant=decay_constant,
             effective_rank=k_eff,

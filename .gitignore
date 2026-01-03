@@ -1,0 +1,64 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Internal documents (not for public release)
+immediate_release/TEAM_NOTES.md
+immediate_release/RESEARCH_STATUS.md
+immediate_release/create_eth_flowchart.py
+
+# Claude settings
+.claude/
+
+# Review and planning docs (internal)
+REVIEW_PLAN.md
+CONSOLIDATED_REVIEW.md
+EXECUTION_PLAN.md
+COORDINATOR.md
