@@ -552,6 +552,88 @@ class RedTeamEngine:
    ℓ(t) | t ~ P_H ~ N(-D²/2, D²)
    ```
 
+**Detection Power Proof Obligations (DP-4 through DP-6):**
+
+4. **DP-4: Asymptotic Validity** (HARD)
+
+   The sample complexity formula n = ⌈(z_α + z_β)² / (D² · p)⌉ is derived from
+   large-sample Gaussian approximations. The asymptotic error must be quantified.
+
+   ```
+   Theorem (Asymptotic Validity):
+   Let n* = (z_α + z_β)² / (D² · p) be the theoretical sample size.
+   For actual power β̂(n) achieved at sample size n:
+
+   |β̂(n) - β| ≤ C / √n + o(1/√n)
+
+   where C depends on the third and fourth moments of the likelihood ratio
+   distribution (Berry-Esseen bound).
+
+   Specifically, for Gaussian P_H, P_D with Mahalanobis distance D:
+   - C ≤ 0.4748 · (E|ℓ(t) - E[ℓ(t)]|³) / (Var[ℓ(t)])^(3/2)
+   - For D ≥ 0.5: C ≤ 0.56 / D
+
+   Validity regime: n ≥ 100 for error ≤ 0.05
+   ```
+
+   **Preconditions (from wt-1):** D ≥ 0.5, p > 0.001, n ≥ 100
+
+5. **DP-5: Plug-in Estimation Error** (MEDIUM)
+
+   When Mahalanobis distance D is unknown, we estimate D̂ from data.
+   The plug-in estimation error must be bounded.
+
+   ```
+   Theorem (Plug-in Estimation Error):
+   Let D̂ be the empirical Mahalanobis distance estimated from n_train samples:
+
+   D̂² = (μ̂_D - μ̂_H)ᵀ Σ̂⁻¹ (μ̂_D - μ̂_H)
+
+   where μ̂_H, μ̂_D are sample means and Σ̂ is the pooled sample covariance.
+
+   Then with probability ≥ 1 - δ:
+
+   |D̂ - D| ≤ C_p · √(p / n_train) + C_Σ · √(p² / n_train)
+
+   where:
+   - p is the dimension of the trace space
+   - C_p depends on the condition number κ(Σ)
+   - C_Σ ≤ 2κ(Σ) · √(2 log(2p/δ))
+
+   For power analysis using D̂:
+   n_required(D̂) = n_required(D) · (1 + O(1/√n_train))
+   ```
+
+   **Preconditions (from wt-1):** D ≥ 0.5, p > 0.001, n ≥ 100
+
+6. **DP-6: Power Monotonicity** (EASY)
+
+   Detection power must be monotonic in interpretable ways.
+
+   ```
+   Theorem (Power Monotonicity):
+   For fixed α (false positive rate), the detection power (1 - β) satisfies:
+
+   (a) Monotonically increasing in n (sample size):
+       n₁ < n₂ ⟹ Power(n₁, D, p) ≤ Power(n₂, D, p)
+
+   (b) Monotonically increasing in D (Mahalanobis distance):
+       D₁ < D₂ ⟹ Power(n, D₁, p) ≤ Power(n, D₂, p)
+
+   (c) Monotonically decreasing in p (deception rate) for fixed n:
+       p₁ < p₂ ⟹ Power(n, D, p₁) ≥ Power(n, D, p₂)
+
+       Note: This assumes fixed n. If n is chosen to achieve target power,
+       smaller p requires larger n, which is the sample complexity formula.
+
+   Proof sketch:
+   - (a) follows from variance reduction: Var[sample mean] = σ²/n
+   - (b) follows from increased separation of LRT distributions
+   - (c) follows from: fewer deceptive traces → harder to detect in aggregate
+   ```
+
+   **Preconditions (from wt-1):** D ≥ 0.5, p > 0.001, n ≥ 100
+
 ### 4.2 Lean 4 Integration
 
 ```python
