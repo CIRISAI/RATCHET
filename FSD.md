@@ -552,6 +552,339 @@ class RedTeamEngine:
    ℓ(t) | t ~ P_H ~ N(-D²/2, D²)
    ```
 
+### 4.1.1 New Proof Obligations (from Formal Review)
+
+The FSD introduces components not in the original Formalization Roadmap that imply new proof obligations. These obligations arise from FSD additions and must be addressed for complete formal verification coverage.
+
+| ID | Obligation | Source | Difficulty | Status | Dependencies |
+|----|------------|--------|------------|--------|--------------|
+| NEW-01 | Effective Rank Correctness | Section 3.1 (k_eff formula) | Medium | PENDING | wt-5 (types) |
+| NEW-02 | BFT Protocol Safety/Liveness | Section 3.4 (federation) | Hard | PENDING | wt-3 (BFT) |
+| NEW-03 | Behavioral Correlation Soundness | Section 3.4 (Sybil detection) | Medium | PENDING | wt-3 (BFT) |
+| NEW-04 | Compositional Detection Correctness | Section 3.3 (RT-01 mitigation) | **IMPOSSIBLE** | BLOCKED | - |
+| NEW-05 | Slow Capture Threshold | Section 3.4 (slow capture) | Medium | PENDING | wt-3 (BFT) |
+
+---
+
+#### NEW-01: Effective Rank Correctness for Correlated Constraints
+
+**Theorem Statement:**
+```
+For k hyperplanes with pairwise correlation coefficient rho in [-1, 1],
+the effective number of independent constraints is:
+
+    k_eff = k / (1 + rho * (k - 1))
+
+Proof Obligation: k_eff correctly captures the expected volume reduction
+for all rho in [-1, 1], with error bounded by O(rho^2 * k^2).
+```
+
+**Formal Specification:**
+```python
+def effective_rank_correctness(
+    k: PositiveInt,           # Number of hyperplanes
+    rho: Correlation,         # Pairwise correlation in [-1, 1]
+) -> bool:
+    """
+    PRECONDITIONS:
+    - k >= 1
+    - -1 <= rho <= 1
+    - For rho = -1/(k-1), k_eff diverges (degenerate case)
+
+    POSTCONDITION:
+    - volume_reduction(k, rho) == volume_reduction(k_eff, 0) + O(error)
+    - where error = C * rho^2 * k^2 for some constant C
+    """
+```
+
+**Lean 4 Theorem Sketch:**
+```lean
+-- Depends on: wt-5 (Correlation type), Mathlib.LinearAlgebra
+theorem effective_rank_correctness
+    (k : Nat) (hk : k >= 1)
+    (rho : Real) (hrho : -1 <= rho && rho <= 1)
+    (h_nondegen : rho != -1 / (k - 1)) :
+    let k_eff := k / (1 + rho * (k - 1))
+    exists C : Real, C > 0 /\
+      |volume_reduction k rho - volume_reduction k_eff 0| <= C * rho^2 * k^2 := by
+  sorry -- Requires correlation matrix eigenvalue analysis
+```
+
+---
+
+#### NEW-02: BFT Protocol Safety and Liveness
+
+**Theorem Statement:**
+```
+For a federation of n nodes with f < n/3 Byzantine nodes, the chosen
+consensus protocol (PBFT/Tendermint) satisfies:
+
+SAFETY: No two honest nodes commit conflicting precedents.
+LIVENESS: Under partial synchrony, every valid proposal eventually commits.
+
+Proof Obligation: The implemented protocol achieves both properties for f < n/3.
+```
+
+**Formal Specification:**
+```python
+def bft_protocol_correctness(
+    protocol: Literal["pbft", "tendermint"],
+    n: PositiveInt,           # Total nodes
+    f: NonNegativeInt,        # Byzantine nodes
+) -> Tuple[bool, bool]:       # (safety, liveness)
+    """
+    PRECONDITIONS:
+    - n >= 3 * f + 1
+    - protocol has correct implementation (verified separately)
+
+    POSTCONDITIONS:
+    - SAFETY: forall honest h1, h2, round r:
+        committed(h1, r, v1) AND committed(h2, r, v2) => v1 == v2
+    - LIVENESS: forall valid proposal p, exists round r:
+        eventually(committed(honest, r, p))
+    """
+```
+
+**Lean 4 Theorem Sketch:**
+```lean
+-- Depends on: wt-3 (BFT protocol definitions)
+-- Note: Full verification typically done in TLA+ or Ivy
+
+structure BFTConfig where
+  n : Nat
+  f : Nat
+  h_threshold : n >= 3 * f + 1
+
+theorem bft_safety (cfg : BFTConfig)
+    (h1 h2 : HonestNode) (r : Round) (v1 v2 : Value)
+    (hc1 : committed h1 r v1) (hc2 : committed h2 r v2) :
+    v1 = v2 := by
+  sorry -- Reduction to quorum intersection lemma
+
+theorem bft_liveness (cfg : BFTConfig)
+    (p : Proposal) (hp : valid p)
+    (h_sync : partial_synchrony) :
+    exists r : Round, eventually (exists h : HonestNode, committed h r p.value) := by
+  sorry -- Requires partial synchrony model
+```
+
+**Verification Approach:** BFT proofs are typically conducted in TLA+ or Ivy rather than Lean. The Lean sketches above serve as specification anchors; actual verification should use model checking.
+
+---
+
+#### NEW-03: Behavioral Correlation Detection Soundness (Diverse Sybil Detection)
+
+**Theorem Statement:**
+```
+If agents pass the MI orthogonality gate independently but coordinate their
+votes with correlation > threshold, the behavioral_correlation_check
+identifies them with probability >= 1 - delta.
+
+Proof Obligation: Detection is sound (low false positives) and complete
+(high true positives) for coordinated Sybil attacks.
+```
+
+**Formal Specification:**
+```python
+def behavioral_correlation_soundness(
+    agents: List[Agent],
+    voting_history: List[Vote],
+    correlation_threshold: float = 0.8,
+    delta: float = 0.05,
+) -> Tuple[float, float]:     # (sensitivity, specificity)
+    """
+    PRECONDITIONS:
+    - len(voting_history) >= min_history_length (sufficient samples)
+    - correlation_threshold in (0, 1)
+
+    POSTCONDITIONS:
+    - SENSITIVITY: P(detect | coordinated) >= 1 - delta
+    - SPECIFICITY: P(not_detect | independent) >= 1 - delta
+    - Where "coordinated" means pairwise_correlation > correlation_threshold
+    """
+```
+
+**Lean 4 Theorem Sketch:**
+```lean
+-- Depends on: wt-3 (voting types), wt-5 (Agent, Vote types)
+-- Requires: Mathlib.Probability, statistical testing theory
+
+def pairwise_correlation (v1 v2 : VotingHistory) : Real := sorry
+
+def coordinated (agents : List Agent) (histories : Agent -> VotingHistory)
+    (threshold : Real) : Prop :=
+  forall a1 a2, a1 != a2 ->
+    pairwise_correlation (histories a1) (histories a2) > threshold
+
+theorem behavioral_correlation_sensitivity
+    (agents : List Agent)
+    (histories : Agent -> VotingHistory)
+    (threshold : Real) (delta : Real)
+    (h_coordinated : coordinated agents histories threshold)
+    (h_sufficient_history : forall a, (histories a).length >= min_samples delta) :
+    detection_probability agents histories >= 1 - delta := by
+  sorry -- Requires concentration inequality (Hoeffding/McDiarmid)
+
+theorem behavioral_correlation_specificity
+    (agents : List Agent)
+    (histories : Agent -> VotingHistory)
+    (delta : Real)
+    (h_independent : independent_voting agents histories)
+    (h_sufficient_history : forall a, (histories a).length >= min_samples delta) :
+    false_positive_probability agents histories <= delta := by
+  sorry -- Central limit theorem application
+```
+
+---
+
+#### NEW-04: Compositional Detection Correctness
+
+**STATUS: POTENTIALLY IMPOSSIBLE (Fundamental Limitation)**
+
+**Theorem Statement (Attempted):**
+```
+If an inference graph has honest components (each with deception probability < epsilon)
+but exhibits emergent deception (system-level deception probability > delta),
+then compositional_detection identifies the deceptive pattern.
+```
+
+**Why This May Be IMPOSSIBLE:**
+
+1. **Reduction from One-Way Functions:** If compositional detection were efficient and complete, it could break cryptographic commitments by detecting "deceptive" commitments that don't match their openings. This contradicts computational hardness assumptions.
+
+2. **Information-Theoretic Barrier:** Emergent deception that preserves marginal distributions of individual traces is fundamentally undetectable without global state access, which may not be available.
+
+3. **Rice's Theorem Analog:** Determining whether a composition of honest components produces deceptive behavior is analogous to the halting problem for semantic properties.
+
+**Formal Impossibility Sketch:**
+```
+Theorem (Informal): For any polynomial-time detector D, there exists a
+system S of honest components such that S exhibits emergent deception
+and D fails to detect it.
+
+Proof Sketch:
+1. Assume D detects all emergent deception in polynomial time.
+2. Construct a cryptographic commitment scheme where:
+   - Individual commit/reveal operations appear "honest"
+   - Deceptive commitments (commit(m1), reveal(m2)) are detectable by D
+3. D can then be used to distinguish commitments, breaking hiding property.
+4. Contradiction with computational binding of commitments.
+```
+
+**Lean 4 Sketch (Impossibility Statement):**
+```lean
+-- This is a negative result: we prove detection CANNOT be complete
+
+-- Assumption: Cryptographic commitments exist
+axiom commitment_scheme_exists :
+  exists (Commit : Message -> Randomness -> Commitment),
+    hiding Commit /\ binding Commit
+
+-- What we would need for complete detection
+def complete_compositional_detector :=
+  forall (S : System) (epsilon delta : Real),
+    (forall c : Component, c in S -> deception_prob c < epsilon) ->
+    (system_deception_prob S > delta) ->
+    detected S = true
+
+-- The impossibility theorem
+theorem compositional_detection_incomplete :
+    not (exists D : Detector, complete_compositional_detector D) := by
+  intro h_exists
+  obtain ⟨D, h_complete⟩ := h_exists
+  -- Use D to break commitment scheme hiding
+  have h_breaks_hiding : not (hiding commitment_scheme) := sorry
+  -- Contradiction
+  exact absurd commitment_scheme_exists.hiding h_breaks_hiding
+```
+
+**Partial Mitigation (What IS Possible):**
+- Detect emergent deception that causes observable statistical anomalies
+- Detect inference chains with systematic bias
+- Detect information flow patterns that enable deception
+- See Section 3.3 `compositional_detection` for implemented partial detection
+
+---
+
+#### NEW-05: Slow Capture Threshold
+
+**Theorem Statement:**
+```
+For a federation with capture_rate r per period (fraction of honest nodes
+converted to malicious per period), the federation remains secure
+(f < n/3) for at least O(1/r) periods before BFT threshold is breached.
+
+Proof Obligation: Quantify the number of periods until compromise as a
+function of r, initial malicious fraction f_0, and n.
+```
+
+**Formal Specification:**
+```python
+def slow_capture_threshold(
+    n: PositiveInt,           # Total nodes
+    f_0: float,               # Initial malicious fraction (< 1/3)
+    r: float,                 # Capture rate per period
+) -> int:                     # Periods until BFT breach
+    """
+    PRECONDITIONS:
+    - n >= 4 (minimum for BFT)
+    - 0 <= f_0 < 1/3
+    - 0 < r < 1
+
+    POSTCONDITION:
+    - Returns T such that:
+      f_0 + r * T >= 1/3 (BFT threshold breached)
+    - T = floor((1/3 - f_0) / r) = O(1/r) when f_0 is constant
+
+    SECURITY BOUND:
+    - For f_0 = 0, r = 0.01: T >= 33 periods before compromise
+    - For f_0 = 0.1, r = 0.01: T >= 23 periods before compromise
+    """
+```
+
+**Lean 4 Theorem Sketch:**
+```lean
+-- Depends on: wt-3 (BFT definitions), wt-5 (rate types)
+
+def malicious_fraction (f_0 : Real) (r : Real) (t : Nat) : Real :=
+  f_0 + r * t
+
+def bft_secure (f : Real) : Prop := f < 1/3
+
+theorem slow_capture_bound
+    (n : Nat) (hn : n >= 4)
+    (f_0 : Real) (hf0 : 0 <= f_0 /\ f_0 < 1/3)
+    (r : Real) (hr : 0 < r /\ r < 1) :
+    let T := Nat.floor ((1/3 - f_0) / r)
+    forall t : Nat, t < T -> bft_secure (malicious_fraction f_0 r t) := by
+  intro T t ht
+  unfold bft_secure malicious_fraction
+  -- Need: f_0 + r * t < 1/3
+  -- Since t < T = floor((1/3 - f_0) / r), we have r * t < 1/3 - f_0
+  have h1 : (t : Real) < T := Nat.cast_lt.mpr ht
+  have h2 : T <= (1/3 - f_0) / r := Nat.floor_le (by linarith [hr.1, hf0.1, hf0.2])
+  have h3 : r * t < 1/3 - f_0 := by
+    calc r * t < r * T := by nlinarith [hr.1]
+         _ <= r * ((1/3 - f_0) / r) := by nlinarith [hr.1, h2]
+         _ = 1/3 - f_0 := by field_simp; ring
+  linarith
+
+-- Asymptotic bound
+theorem slow_capture_asymptotic
+    (f_0 : Real) (hf0 : 0 <= f_0 /\ f_0 < 1/3)
+    (r : Real) (hr : 0 < r) :
+    let T := (1/3 - f_0) / r
+    T = O(1/r) := by
+  -- T = (1/3 - f_0) / r = (1/3 - f_0) * (1/r)
+  -- For constant f_0, this is O(1/r)
+  sorry -- Big-O notation formalization
+```
+
+**Mitigation Implications:**
+- Federation must implement capture rate monitoring (see Section 3.4)
+- Alarm threshold should trigger at r > r_max where T(r_max) >= min_safe_periods
+- Example: For min_safe_periods = 100, r_max = 0.0033 (0.33% per period)
+
 ### 4.2 Lean 4 Integration
 
 ```python
