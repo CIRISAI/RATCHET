@@ -29,8 +29,9 @@ from __future__ import annotations
 
 import hashlib
 import time
+from abc import ABC, abstractmethod
 from enum import Enum, IntEnum
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Set, Tuple, Union
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -635,6 +636,408 @@ def compute_quorum_size(n: int) -> int:
     f = compute_max_faulty(n)
     return 2 * f + 1
 
+
+# =============================================================================
+# ABSTRACT INTERFACES
+# =============================================================================
+
+class NetworkTransport(ABC):
+    """
+    Abstract interface for PBFT network communication.
+
+    This interface decouples the PBFT consensus logic from the underlying
+    transport mechanism, enabling:
+    - Testing with in-memory transport
+    - Simulation of network conditions (latency, partitions, message loss)
+    - Future deployment options (TCP, gRPC, QUIC)
+
+    Implementations should handle:
+    - Reliable delivery (retries, acknowledgments)
+    - Message ordering (FIFO per sender)
+    - Connection management
+
+    Technology Decision: See FSD.md Section 3.4.9.3
+    """
+
+    @abstractmethod
+    async def send(
+        self,
+        message: PBFTMessage,
+        recipient: str,
+    ) -> bool:
+        """
+        Send a message to a specific replica.
+
+        Args:
+            message: The PBFT message to send
+            recipient: The replica ID of the recipient
+
+        Returns:
+            True if message was successfully sent, False otherwise
+
+        Note: "Successfully sent" means accepted by the transport layer,
+        not necessarily delivered to the recipient.
+        """
+        ...
+
+    @abstractmethod
+    async def broadcast(
+        self,
+        message: PBFTMessage,
+        recipients: List[str],
+    ) -> Dict[str, bool]:
+        """
+        Broadcast a message to multiple replicas.
+
+        Args:
+            message: The PBFT message to broadcast
+            recipients: List of replica IDs to send to
+
+        Returns:
+            Dictionary mapping recipient ID to send success status
+        """
+        ...
+
+    @abstractmethod
+    async def receive(
+        self,
+        timeout_ms: Optional[int] = None,
+    ) -> Optional[Tuple[str, PBFTMessage]]:
+        """
+        Receive the next message from any sender.
+
+        Args:
+            timeout_ms: Maximum time to wait in milliseconds.
+                        None means wait indefinitely.
+
+        Returns:
+            Tuple of (sender_id, message) if message received,
+            None if timeout occurred.
+        """
+        ...
+
+    @abstractmethod
+    def register_handler(
+        self,
+        message_type: MessageType,
+        handler: Callable[[str, PBFTMessage], Awaitable[None]],
+    ) -> None:
+        """
+        Register a callback handler for a specific message type.
+
+        Args:
+            message_type: The type of message to handle
+            handler: Async callback function taking (sender_id, message)
+
+        The handler will be invoked for each received message of the
+        specified type. Multiple handlers can be registered for the
+        same message type.
+        """
+        ...
+
+    @abstractmethod
+    async def start(self) -> None:
+        """
+        Start the transport layer.
+
+        This should initialize connections and begin accepting messages.
+        """
+        ...
+
+    @abstractmethod
+    async def stop(self) -> None:
+        """
+        Stop the transport layer.
+
+        This should gracefully close connections and stop accepting messages.
+        """
+        ...
+
+    @abstractmethod
+    def get_replica_id(self) -> str:
+        """Return the ID of this replica."""
+        ...
+
+
+class PersistentStorage(ABC):
+    """
+    Abstract interface for PBFT durable storage.
+
+    This interface provides persistence for:
+    - Message logs (for crash recovery)
+    - Checkpoints (for garbage collection and view changes)
+    - Replica state (current view, executed sequence numbers)
+
+    PBFT requires durable storage to maintain safety after crashes.
+    A replica must be able to recover its state and resume participation
+    in the protocol.
+
+    Technology Decision: See FSD.md Section 3.4.9.4
+
+    Implementations should provide:
+    - Atomic writes (all-or-nothing)
+    - Durability (survive crashes)
+    - Efficient key-based lookup
+    """
+
+    @abstractmethod
+    async def store_message_log(
+        self,
+        view_number: int,
+        sequence_number: int,
+        log: MessageLog,
+    ) -> None:
+        """
+        Store a message log entry.
+
+        Args:
+            view_number: The view number for this log entry
+            sequence_number: The sequence number for this log entry
+            log: The message log to store
+
+        The (view_number, sequence_number) pair forms the primary key.
+        """
+        ...
+
+    @abstractmethod
+    async def get_message_log(
+        self,
+        view_number: int,
+        sequence_number: int,
+    ) -> Optional[MessageLog]:
+        """
+        Retrieve a message log entry.
+
+        Args:
+            view_number: The view number to look up
+            sequence_number: The sequence number to look up
+
+        Returns:
+            The stored MessageLog, or None if not found
+        """
+        ...
+
+    @abstractmethod
+    async def get_message_logs_range(
+        self,
+        view_number: int,
+        start_sequence: int,
+        end_sequence: int,
+    ) -> List[MessageLog]:
+        """
+        Retrieve message logs for a range of sequence numbers.
+
+        Args:
+            view_number: The view number to query
+            start_sequence: Start of sequence range (inclusive)
+            end_sequence: End of sequence range (inclusive)
+
+        Returns:
+            List of MessageLogs in the specified range, ordered by sequence
+        """
+        ...
+
+    @abstractmethod
+    async def store_checkpoint(
+        self,
+        sequence_number: int,
+        checkpoint: CheckpointMessage,
+        state_snapshot: bytes,
+    ) -> None:
+        """
+        Store a checkpoint with its associated state snapshot.
+
+        Args:
+            sequence_number: The sequence number of the checkpoint
+            checkpoint: The checkpoint message
+            state_snapshot: Serialized application state at this checkpoint
+
+        Note: Checkpoints are keyed by sequence number only, not view,
+        since checkpoints span views.
+        """
+        ...
+
+    @abstractmethod
+    async def get_checkpoint(
+        self,
+        sequence_number: int,
+    ) -> Optional[Tuple[CheckpointMessage, bytes]]:
+        """
+        Retrieve a checkpoint and its state snapshot.
+
+        Args:
+            sequence_number: The sequence number to look up
+
+        Returns:
+            Tuple of (CheckpointMessage, state_snapshot) or None if not found
+        """
+        ...
+
+    @abstractmethod
+    async def get_stable_checkpoint(self) -> Optional[Tuple[int, CheckpointMessage, bytes]]:
+        """
+        Get the most recent stable checkpoint.
+
+        Returns:
+            Tuple of (sequence_number, CheckpointMessage, state_snapshot)
+            or None if no stable checkpoint exists
+        """
+        ...
+
+    @abstractmethod
+    async def store_view_state(
+        self,
+        view_number: int,
+        primary_id: str,
+        last_executed_sequence: int,
+    ) -> None:
+        """
+        Store the current view state.
+
+        Args:
+            view_number: Current view number
+            primary_id: ID of the current primary
+            last_executed_sequence: Last executed sequence number
+        """
+        ...
+
+    @abstractmethod
+    async def get_view_state(self) -> Optional[Tuple[int, str, int]]:
+        """
+        Retrieve the stored view state.
+
+        Returns:
+            Tuple of (view_number, primary_id, last_executed_sequence)
+            or None if no state stored (fresh start)
+        """
+        ...
+
+    @abstractmethod
+    async def garbage_collect(
+        self,
+        stable_checkpoint_sequence: int,
+    ) -> int:
+        """
+        Remove message logs older than the stable checkpoint.
+
+        Args:
+            stable_checkpoint_sequence: Sequence number of stable checkpoint.
+                                        All logs with sequence < this are removed.
+
+        Returns:
+            Number of entries removed
+        """
+        ...
+
+    @abstractmethod
+    async def clear(self) -> None:
+        """
+        Clear all stored data.
+
+        WARNING: This is destructive and should only be used for testing
+        or when intentionally resetting a replica.
+        """
+        ...
+
+
+class CryptoProvider(ABC):
+    """
+    Abstract interface for cryptographic operations.
+
+    Provides signing and verification for PBFT message authentication.
+    Default implementation uses Ed25519 via the `cryptography` library.
+
+    Technology Decision: See FSD.md Section 3.4.9.1
+
+    Security Properties:
+    - Digital signatures provide authentication and non-repudiation
+    - SHA-256 digests provide integrity verification
+    - Ed25519 provides 128-bit security level
+    """
+
+    @abstractmethod
+    def sign(
+        self,
+        message_bytes: bytes,
+    ) -> Signature:
+        """
+        Sign a message with this replica's private key.
+
+        Args:
+            message_bytes: The bytes to sign
+
+        Returns:
+            A Signature object containing the signature value
+        """
+        ...
+
+    @abstractmethod
+    def verify(
+        self,
+        signature: Signature,
+        message_bytes: bytes,
+        signer_public_key: bytes,
+    ) -> bool:
+        """
+        Verify a signature against a message.
+
+        Args:
+            signature: The signature to verify
+            message_bytes: The original message bytes
+            signer_public_key: The public key of the claimed signer
+
+        Returns:
+            True if signature is valid, False otherwise
+
+        Note: Does not raise exceptions on invalid signatures;
+        returns False instead.
+        """
+        ...
+
+    @abstractmethod
+    def get_public_key(self) -> bytes:
+        """
+        Get this replica's public key.
+
+        Returns:
+            The public key as bytes (for sharing with other replicas)
+        """
+        ...
+
+    @abstractmethod
+    def compute_digest(
+        self,
+        data: bytes,
+    ) -> Digest:
+        """
+        Compute a cryptographic digest of data.
+
+        Args:
+            data: The bytes to hash
+
+        Returns:
+            A Digest object containing the hash value
+
+        Uses SHA-256 by default.
+        """
+        ...
+
+    @abstractmethod
+    def generate_keypair(self) -> Tuple[bytes, bytes]:
+        """
+        Generate a new keypair.
+
+        Returns:
+            Tuple of (private_key_bytes, public_key_bytes)
+
+        Used for setting up new replicas.
+        """
+        ...
+
+
+# =============================================================================
+# TYPE ALIASES
+# =============================================================================
 
 # Type aliases for clarity
 ReplicaId = str

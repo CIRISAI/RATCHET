@@ -1,5 +1,7 @@
 # Worktree 3 Synthesis: U-03
 
+**STATUS: READY FOR MERGE**
+
 ## Assignment
 - **Issue:** U-03
 - **Scope:** BFT protocol implementation
@@ -149,15 +151,24 @@ def test_compute_functions():
 | Red Team Testing | `verify_bft_invariant()` | Use to validate attack scenarios respect protocol constraints |
 | Formal Verification | Message types | Models define what needs to be proven (safety, liveness) |
 
-**Assumed Interfaces:**
-- Cryptographic signatures use Ed25519 (placeholder in Signature model)
-- Network layer abstraction not defined (assumed async message passing)
-- Persistent storage for message logs not specified
+**Resolved Interfaces:**
+- Cryptographic signatures: Ed25519 via `cryptography` library (see `CryptoProvider` ABC)
+- Network layer: Abstract `NetworkTransport` interface defined in schemas/bft.py
+- Persistent storage: Abstract `PersistentStorage` interface defined in schemas/bft.py
 
-**Open Questions for Coordinator:**
-1. Should we implement additional BFT variants (Tendermint for async safety)?
-2. Should message serialization use Protobuf for performance?
-3. Need crypto library decision (cryptography, pynacl, etc.)
+**Open Questions (RESOLVED):**
+
+All blocking decisions have been resolved:
+
+| Question | Decision | Rationale |
+|----------|----------|-----------|
+| Crypto library | `cryptography` (pyca/cryptography) | Most mature Python crypto library, provides Ed25519 + SHA-256 |
+| Serialization | JSON with Pydantic | Consistent with codebase, debuggable, type-safe |
+| Network abstraction | Abstract `NetworkTransport` interface | Decouples PBFT from transport, enables testing |
+| Persistent storage | Abstract `PersistentStorage` interface | Implementation-agnostic, supports crash recovery |
+
+See FSD.md Section 3.4.9 for detailed technology decisions.
+See schemas/bft.py for abstract base class definitions.
 
 ---
 

@@ -712,6 +712,107 @@ FEDERATION_INVARIANTS = [
 | Message Replay | Sequence numbers + digests | Signed timestamps |
 | Network Partition | Liveness degradation | Timeout escalation, view change |
 
+#### 3.4.9 Technology Decisions
+
+The following engineering decisions resolve open questions for BFT implementation:
+
+##### 3.4.9.1 Cryptographic Library
+
+**Decision:** Use `cryptography` library (pyca/cryptography)
+
+**Rationale:**
+- Most mature and widely-used Python cryptography library
+- Provides Ed25519 for digital signatures (PBFT message authentication)
+- Provides SHA-256 for message digests
+- FIPS-compliant primitives available
+- Active maintenance and security audit history
+- Used by major projects (PyCA, Paramiko, etc.)
+
+**Usage:**
+```python
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey, Ed25519PublicKey
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.backends import default_backend
+
+# Generate signing keys for each replica
+private_key = Ed25519PrivateKey.generate()
+public_key = private_key.public_key()
+
+# Sign messages
+signature = private_key.sign(message_bytes)
+
+# Verify signatures
+public_key.verify(signature, message_bytes)  # Raises InvalidSignature on failure
+```
+
+##### 3.4.9.2 Message Serialization
+
+**Decision:** JSON with Pydantic models
+
+**Rationale:**
+- Consistent with rest of RATCHET codebase
+- Pydantic provides automatic validation and serialization
+- Human-readable for debugging and logging
+- Schema evolution via optional fields with defaults
+- Type safety at runtime through Pydantic validators
+
+**Alternative Considered:** Protocol Buffers (rejected for now)
+- Would provide better performance for high-throughput scenarios
+- Can be added later if performance becomes a bottleneck
+- Current research testbed prioritizes debuggability over performance
+
+**Serialization Format:**
+```python
+# Serialize
+message_json = message.model_dump_json()
+
+# Deserialize with validation
+message = Request.model_validate_json(message_json)
+
+# Deterministic serialization for digests (exclude volatile fields)
+canonical = message.model_dump_json(exclude={'signature', 'digest'}, sort_keys=True)
+```
+
+##### 3.4.9.3 Network Abstraction
+
+**Decision:** Abstract interface with pluggable implementations
+
+**Rationale:**
+- Decouples PBFT logic from transport mechanism
+- Enables testing with in-memory transport
+- Supports future deployment options (TCP, gRPC, QUIC)
+- Allows simulation of network conditions (latency, partitions)
+
+**Interface:** See `schemas/bft.py` for `NetworkTransport` abstract base class.
+
+**Implementations (to be provided):**
+- `InMemoryTransport`: For testing and simulation
+- `TCPTransport`: For local network testing
+- `AsyncTransport`: For production deployment (future)
+
+##### 3.4.9.4 Persistent Storage
+
+**Decision:** Abstract storage interface (implementation-agnostic)
+
+**Rationale:**
+- PBFT requires durable storage for message logs, checkpoints, and state
+- Abstract interface allows testing with in-memory storage
+- Production can use SQLite, PostgreSQL, or custom backends
+- Supports crash recovery and view change protocol
+
+**Interface:** See `schemas/bft.py` for `PersistentStorage` abstract base class.
+
+**Storage Requirements:**
+- Message logs (keyed by sequence number and view)
+- Stable checkpoints (keyed by sequence number)
+- Current view state
+- Replica key material
+
+**Implementations (to be provided):**
+- `InMemoryStorage`: For testing (no persistence)
+- `SQLiteStorage`: For single-node development
+- `PostgreSQLStorage`: For production (future)
+
 ### 3.5 Red Team Engine
 
 **Purpose:** Orchestrate adversarial scenarios and security validation
