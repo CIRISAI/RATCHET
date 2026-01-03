@@ -382,21 +382,185 @@ class DetectionEngine:
 - MUST test diverse Sybil attack (pass MI gate, coordinate behavior)
 - MUST implement behavioral correlation detection
 - MUST simulate slow capture over extended time horizons
-- MUST quantify Byzantine threshold (n ≥ 3f + 1)
+- MUST quantify Byzantine threshold (n >= 3f + 1)
+
+#### 3.4.1 PBFT Protocol Specification
+
+**Protocol Selection:** PBFT (Practical Byzantine Fault Tolerance) is selected as the consensus protocol for the following reasons:
+1. **Battle-tested:** Deployed in production systems (IBM Hyperledger Fabric)
+2. **Proven guarantees:** Safety and liveness under partial synchrony
+3. **Optimal resilience:** Tolerates f Byzantine faults with n = 3f + 1 replicas (optimal)
+4. **Deterministic finality:** No probabilistic confirmation required
+
+**Byzantine Fault Tolerance Invariant:**
+
+```
+INVARIANT: n >= 3f + 1
+
+Where:
+  n = total number of federation replicas
+  f = maximum number of Byzantine (faulty/malicious) replicas tolerated
+
+Derivation:
+  - Quorum size Q = 2f + 1 (majority of honest replicas)
+  - For safety: Any two quorums must intersect in at least one honest replica
+    Q + Q - n >= 1 honest replica
+    => 2(2f + 1) - n >= f + 1
+    => n >= 3f + 1
+  - For liveness: Must have enough honest replicas to form quorum
+    n - f >= Q = 2f + 1
+    => n >= 3f + 1
+
+Examples:
+  f=1: n >= 4 replicas   (tolerates 1 Byzantine)
+  f=2: n >= 7 replicas   (tolerates 2 Byzantine)
+  f=3: n >= 10 replicas  (tolerates 3 Byzantine)
+```
+
+#### 3.4.2 Message Formats
+
+All messages defined in `schemas/bft.py` using Pydantic models.
+
+**Phase 1: REQUEST**
+```
+<REQUEST, operation, timestamp, client_id>_signature_client
+
+Fields:
+  - operation: Dict[str, Any]  # Precedent operation to execute
+  - timestamp: int             # Milliseconds, for exactly-once semantics
+  - client_id: str             # Unique client identifier
+```
+
+**Phase 2: PRE-PREPARE (Primary only)**
+```
+<<PRE-PREPARE, view, sequence, digest>_signature_primary, request>
+
+Fields:
+  - view: int          # Current view number (v)
+  - sequence: int      # Assigned sequence number (n)
+  - digest: str        # SHA-256 hash of request
+  - request: Request   # Original client request
+
+Acceptance Criteria (replica accepts iff):
+  1. Signature verifies for current primary
+  2. view == replica's current view
+  3. h < sequence <= H (within water marks)
+  4. No prior PRE-PREPARE for (view, sequence) with different digest
+```
+
+**Phase 3: PREPARE**
+```
+<PREPARE, view, sequence, digest, replica_id>_signature_replica
+
+Multicast by replica i upon accepting PRE-PREPARE.
+
+Prepared(m, v, n, i) is TRUE when replica i has:
+  1. The request m
+  2. A valid PRE-PREPARE for m in view v with sequence n
+  3. 2f matching PREPARE messages from different replicas
+```
+
+**Phase 4: COMMIT**
+```
+<COMMIT, view, sequence, digest, replica_id>_signature_replica
+
+Multicast by replica i when Prepared(m, v, n, i) = TRUE.
+
+Committed-local(m, v, n, i) is TRUE when:
+  1. Prepared(m, v, n, i) = TRUE
+  2. Replica has 2f + 1 matching COMMIT from different replicas
+```
+
+**Phase 5: REPLY**
+```
+<REPLY, view, timestamp, client_id, replica_id, result>_signature_replica
+
+Sent to client after Committed-local becomes TRUE and operation executes.
+Client accepts result when f + 1 matching replies received.
+```
+
+#### 3.4.3 View Change Protocol
+
+Triggered when primary is suspected faulty (timeout or Byzantine behavior).
+
+**VIEW-CHANGE Message:**
+```
+<VIEW-CHANGE, new_view, last_checkpoint, checkpoint_proofs, prepared_certs, replica_id>_signature
+
+Fields:
+  - new_view: int                       # v + 1
+  - last_checkpoint: int                # Sequence of last stable checkpoint
+  - checkpoint_proofs: List[Checkpoint] # 2f + 1 matching checkpoints
+  - prepared_certs: List[PreparedCert]  # Proofs of what was prepared
+```
+
+**NEW-VIEW Message (new primary):**
+```
+<NEW-VIEW, new_view, view_change_proofs, pre_prepares_to_redo>_signature
+
+Sent by new primary (replica (v+1) mod n) after collecting 2f + 1 VIEW-CHANGE.
+Contains PRE-PREPAREs for any requests that were prepared but not committed.
+```
+
+**View Change Timeout Escalation:**
+```
+Initial timeout: T = 10 seconds
+After k failed view changes: T_k = T * 2^k
+Maximum timeout: T_max = 120 seconds
+
+This exponential backoff prevents view-change storms while ensuring liveness.
+```
+
+#### 3.4.4 Timeout Parameters
+
+| Parameter | Default | Range | Description |
+|-----------|---------|-------|-------------|
+| `request_timeout_ms` | 5000 | [100, 60000] | Client retry timeout |
+| `preprepare_timeout_ms` | 2000 | [100, 30000] | Wait for PRE-PREPARE |
+| `prepare_timeout_ms` | 3000 | [100, 30000] | Wait for 2f+1 PREPARE |
+| `commit_timeout_ms` | 3000 | [100, 30000] | Wait for 2f+1 COMMIT |
+| `view_change_timeout_ms` | 10000 | [1000, 120000] | Trigger view change |
+| `checkpoint_interval` | 100 | [10, 10000] | Requests between checkpoints |
+
+#### 3.4.5 Garbage Collection and Checkpoints
+
+**Stable Checkpoint:**
+- Replicas checkpoint state every `checkpoint_interval` requests
+- Checkpoint is stable when 2f + 1 replicas have matching checkpoints
+- Stable checkpoint allows garbage collection of older messages
+
+**Water Marks:**
+```
+h = sequence number of last stable checkpoint (low water mark)
+H = h + K where K = high_water_mark_window (e.g., 400)
+
+Replicas reject PRE-PREPARE if sequence <= h or sequence > H.
+This bounds memory usage and enables garbage collection.
+```
+
+#### 3.4.6 Federation Engine Implementation
 
 ```python
 class FederationEngine:
     """
-    Federated ratchet simulation with Byzantine fault tolerance.
+    Federated ratchet simulation with PBFT consensus.
+
+    Implements full PBFT protocol with:
+    - n >= 3f + 1 verification invariant
+    - View change protocol for leader election
+    - Checkpointing and garbage collection
+    - Behavioral correlation detection (anti-Sybil)
     """
 
     def __init__(
         self,
-        consensus_protocol: Literal["pbft", "raft", "tendermint"] = "pbft",
+        consensus_protocol: Literal["pbft"] = "pbft",  # PBFT is the only implemented protocol
         mi_threshold: float = 0.85,
+        bft_config: Optional[BFTConfig] = None,
     ):
         self.consensus = consensus_protocol
         self.mi_threshold = mi_threshold
+        self.config = bft_config or BFTConfig()
 
     def create_federation(
         self,
@@ -406,6 +570,57 @@ class FederationEngine:
     ) -> Federation:
         """
         Create federation with specified agent composition.
+
+        ENFORCES: n >= 3f + 1 where f = num_malicious
+        Raises ValueError if invariant would be violated.
+        """
+        n = num_honest + num_malicious
+        f = num_malicious
+        if n < 3 * f + 1:
+            raise ValueError(
+                f"BFT invariant violated: n={n} < 3f+1={3*f+1}. "
+                f"Need at least {3*f+1 - n} more honest replicas."
+            )
+        ...
+
+    def verify_bft_invariant(
+        self,
+        federation: Federation,
+    ) -> BFTInvariantResult:
+        """
+        Verify n >= 3f + 1 holds for current federation.
+
+        Returns:
+            is_valid: bool
+            n: int (total replicas)
+            f: int (max tolerable Byzantine)
+            actual_malicious: int (known/suspected)
+            margin: int (how many more Byzantine could be tolerated)
+        """
+        ...
+
+    def process_request(
+        self,
+        request: Request,
+        federation: Federation,
+    ) -> ConsensusResult:
+        """
+        Process client request through PBFT phases.
+
+        Returns result after f+1 matching replies collected.
+        """
+        ...
+
+    def initiate_view_change(
+        self,
+        federation: Federation,
+        suspected_primary: str,
+        reason: ViewChangeReason,
+    ) -> ViewChangeResult:
+        """
+        Initiate view change when primary suspected faulty.
+
+        Reasons: TIMEOUT, BYZANTINE_BEHAVIOR, EXPLICIT_REQUEST
         """
         ...
 
@@ -427,7 +642,9 @@ class FederationEngine:
     ) -> CorrelationResult:
         """
         Detect coordinated behavior despite diverse constraints.
-        Returns correlation matrix and flagged agent pairs.
+
+        Flags agents with voting correlation > 0.9 despite MI < 0.85.
+        This detects "diverse Sybil" attacks (RT-05).
         """
         ...
 
@@ -439,7 +656,11 @@ class FederationEngine:
     ) -> CaptureSimulationResult:
         """
         Simulate gradual federation takeover.
-        Returns period when BFT threshold breached.
+
+        Tracks:
+        - Period when f_actual > f_tolerable (BFT breached)
+        - Honest agent departure rate
+        - Precedent poisoning accumulation
         """
         ...
 
@@ -454,6 +675,42 @@ class FederationEngine:
         """
         ...
 ```
+
+#### 3.4.7 Security Invariants (Federation)
+
+```python
+# These invariants are CONTINUOUSLY MONITORED
+
+FEDERATION_INVARIANTS = [
+    # Core BFT invariant
+    "n >= 3 * f + 1",
+
+    # Quorum validity
+    "quorum_size == 2 * f + 1",
+
+    # View consistency
+    "all_honest_replicas_same_view OR view_change_in_progress",
+
+    # Checkpoint consistency
+    "stable_checkpoint_agreed_by >= 2 * f + 1",
+
+    # Anti-Sybil (behavioral)
+    "forall agent_pair: behavioral_correlation(a, b) > 0.9 => flagged",
+
+    # Capture threshold warning
+    "suspected_byzantine_count < f => WARN if > 0.5 * f",
+]
+```
+
+#### 3.4.8 Attack Resistance Matrix
+
+| Attack | PBFT Protection | Additional Mitigation |
+|--------|-----------------|----------------------|
+| RT-02: Slow Capture | BFT threshold monitoring | Capture rate alerts when f_actual > 0.5 * f_max |
+| RT-05: Diverse Sybils | None (bypasses MI gate) | Behavioral correlation detection |
+| Primary Byzantine | View change protocol | Timeout + behavior scoring |
+| Message Replay | Sequence numbers + digests | Signed timestamps |
+| Network Partition | Liveness degradation | Timeout escalation, view change |
 
 ### 3.5 Red Team Engine
 
