@@ -1,12 +1,12 @@
-# Worktree 6 Synthesis: TC-GAPS
+# Worktree 7 Synthesis: DP-GAPS
 
 ## Assignment
-- **Issue:** TC-GAPS
-- **Scope:** Topological collapse proof gaps
-- **Dependencies:** None
+- **Issue:** DP-GAPS
+- **Scope:** Detection power proof gaps
+- **Dependencies:** wt-1 (preconditions)
 
 ## Task
-Add specifications for TC-2(Fubini), TC-3(volume scaling), TC-4(error bounds), TC-8(uniform convergence)
+Add specifications for DP-4(asymptotic validity), DP-5(plug-in estimation), DP-6(monotonicity)
 
 ## Parallel Context
 You are one of 15 parallel agents. If your work requires output from a dependent worktree, note the interface assumption and proceed. The coordinator will merge.
@@ -27,159 +27,83 @@ You are one of 15 parallel agents. If your work requires output from a dependent
 
 ## Work Log
 
-### Analysis
+### 2026-01-02: Detection Power Proof Obligations (DP-4, DP-5, DP-6)
 
-The FORMALIZATION_ROADMAP.md Section 6.1 identifies 8 proof obligations for the Topological Collapse theorem. Four of these were identified as gaps requiring explicit specification:
+#### Analysis
 
-| ID | Obligation | Difficulty | Status Before |
-|----|------------|------------|---------------|
-| TC-2 | Independence/Fubini | CORE | Implicit |
-| TC-3 | Volume scaling | MEDIUM | Implicit |
-| TC-4 | Error bound O(r^2k) | HARD | Unquantified |
-| TC-8 | Uniform convergence | HARD | Unstated |
+The FSD_FORMAL_REVIEW.md (Section 3.1.3) identified three missing detection power proof obligations:
 
-These gaps were blocking formal verification because:
-1. TC-2: Independence assumption was used but not stated as a verifiable property
-2. TC-3: Volume scaling after manifold intersection lacked precise bounds
-3. TC-4: The O(r^2k) error term was mentioned but not formalized
-4. TC-8: No statement about uniformity over center positions
+| ID | Obligation | Status Before | Difficulty |
+|----|------------|---------------|------------|
+| DP-4 | Asymptotic validity | MISSING | HARD |
+| DP-5 | Plug-in estimation error | MISSING | MEDIUM |
+| DP-6 | Power monotonicity | IMPLICIT | EASY |
 
-### Changes Made
+These gaps meant that only 57% (4/7) of detection power obligations were covered.
 
-#### 1. FSD.md Updates
+#### Changes Made
 
-Added new section **4.1.1 Topological Collapse Proof Obligations (TC-GAPS)** containing:
+1. **FSD.md Section 4.1** - Added detailed specifications for:
 
-- **TC-2: Independence/Fubini Property**
-  - Formal statement of product measure factorization
-  - Lean 4 theorem sketch: `independence_fubini`
-  - Verification protocol: Chi-squared test with 10^6 samples
+   - **DP-4 (Asymptotic Validity)**: Specified O(1/sqrt(n)) error term for sample complexity formula using Berry-Esseen bound. Key bound: |beta_hat(n) - beta| <= C/sqrt(n) where C <= 0.56/D for D >= 0.5. Validity regime: n >= 100 for error <= 0.05.
 
-- **TC-3: Volume Scaling After Manifold Intersection**
-  - Precise statement: E[mu(intersection)] = Theta(r^D)
-  - Lean 4 theorems: `volume_scaling_manifold`, `volume_fraction_recursion`
-  - Verification protocol: Numerical integration for D in {10, 50, 100}
+   - **DP-5 (Plug-in Estimation Error)**: Specified error bounds for empirical Mahalanobis distance D_hat. Key bound: |D_hat - D| <= C_p * sqrt(p/n_train) + C_Sigma * sqrt(p^2/n_train) where C_Sigma depends on condition number kappa(Sigma).
 
-- **TC-4: Error Bound O(r^2k)**
-  - Precise statement: |V(k) - V(0)e^{-2rk}| <= V(0)e^{-2rk} * C * r^2 * k
-  - Lean 4 theorem: `exponential_error_bound` with helper lemmas
-  - Verification protocol: Fit C empirically, verify |C - 1.5| < 0.5
+   - **DP-6 (Power Monotonicity)**: Specified three monotonicity properties:
+     - (a) Power increases with n (sample size)
+     - (b) Power increases with D (Mahalanobis distance)
+     - (c) Power decreases with p (deception rate) for fixed n
 
-- **TC-8: Uniform Convergence Over Centers**
-  - Precise statement: Bound holds uniformly over [0.25, 0.75]^D
-  - Lean 4 theorem: `uniform_convergence_centers` with supporting lemmas
-  - Verification protocol: F-test across 100 random centers
+2. **formal/proofs/DetectionPower.lean** - Created Lean 4 theorem sketches:
+   - `DetectionPreconditions` structure encoding constraints from wt-1
+   - `asymptotic_validity` theorem with Berry-Esseen error bound
+   - `plugin_estimation_error` theorem with high-probability bound
+   - `power_monotone_in_n`, `power_monotone_in_D`, `power_monotone_in_p` theorems
+   - `detection_power_guarantees` combined interface theorem for downstream use
 
-#### 2. New Files Created
+#### Dependencies (Inputs)
 
-- `formal/proofs/TopologicalCollapseGaps.lean` (220+ lines)
-  - Complete Lean 4 proof sketches for TC-2, TC-3, TC-4, TC-8
-  - Type definitions for hyperplanes, balls, interior cube
-  - Dependency graph showing proof structure
+**From wt-1 (Preconditions):**
+- D >= 0.5 (Mahalanobis distance lower bound)
+- p > 0.001 (deception rate lower bound)
+- n >= 100 (sample size lower bound)
 
-- `formal/proofs/TCGapsVerification.lean` (180+ lines)
-  - Verification lemmas bridging formal proofs and simulation
-  - Simulation interface types (parameters and results)
-  - Expected outcome theorems
+These preconditions are embedded in the `DetectionPreconditions` structure in DetectionPower.lean and referenced in all proof obligation specifications.
 
-### Verification
+#### Handoff (Outputs for wt-10)
 
-To verify these specifications are correct:
+**Available for wt-10:**
 
-1. **Syntactic Check**: Lean 4 files should parse without syntax errors
-   ```bash
-   cd formal/proofs && lake build
-   ```
+1. **Theorem interfaces** in `formal/proofs/DetectionPower.lean`:
+   - `DetectionPreconditions` - type encoding the wt-1 constraints
+   - `asymptotic_validity` - O(1/sqrt(n)) error bound theorem
+   - `plugin_estimation_error` - estimation error bound theorem
+   - `power_monotone_in_n/D/p` - monotonicity theorems
+   - `detection_power_guarantees` - combined verification interface
 
-2. **Monte Carlo Validation**: Run simulations to confirm bounds
-   - TC-2: Chi-squared p-value > 0.01
-   - TC-3: Volume in range [C1*r^D, C2*r^D] with C1, C2 > 0
-   - TC-4: Fitted C in [1.0, 2.0]
-   - TC-8: F-test p-value > 0.05
+2. **Specification text** in FSD.md Section 4.1:
+   - Complete mathematical statements for DP-4, DP-5, DP-6
+   - Explicit precondition references to wt-1
+   - Proof sketches for verification
 
-3. **Cross-Reference**: Check consistency with FORMALIZATION_ROADMAP.md Section 6.1
+**To complete proofs, wt-10 will need:**
+- Mathlib.Probability.Distributions.Gaussian (when available in Mathlib)
+- Formalization of standard normal CDF Phi and inverse z_alpha
+- Berry-Esseen theorem for Gaussian LRT statistic
+- Concentration bounds for sample covariance matrix estimation
 
----
+#### Verification
 
-## Handoff: Notes for Dependent Worktrees
+The specifications can be verified by:
 
-### For wt-9 (Verification Implementation)
+1. **Mathematical consistency**: Check that error bounds are dimensionally correct
+2. **Precondition coverage**: Verify D >= 0.5, p > 0.001, n >= 100 are referenced
+3. **Lean type-checking**: Run `lake build` to verify theorem sketches parse correctly
+4. **Coverage improvement**: Detection power coverage should now be 7/7 (100%)
 
-**Key Interfaces Provided:**
+#### Files Modified
 
-1. `TC2SimParams` / `TC2SimResult` - Use these types when implementing independence verification
-2. `TC4SimParams` / `TC4SimResult` - Use for error bound fitting
-3. `TC8SimParams` / `TC8SimResult` - Use for uniformity testing
+- `/home/emoore/RATCHET_WORKTREES/wt-7/FSD.md` (Section 4.1)
+- `/home/emoore/RATCHET_WORKTREES/wt-7/formal/proofs/DetectionPower.lean` (new file)
+- `/home/emoore/RATCHET_WORKTREES/wt-7/synthesis.md` (this file)
 
-**Critical Requirements:**
-- TC-2 requires at least 10^6 samples for statistical power
-- TC-4 fitting should use weighted least squares (errors are heteroscedastic)
-- TC-8 centers must be sampled from [0.25, 0.75]^D to avoid boundary effects
-
-**Theorems to Verify:**
-```lean
-theorem independence_fubini        -- TC-2
-theorem exponential_error_bound    -- TC-4
-theorem uniform_convergence_centers -- TC-8
-```
-
-### For wt-11 (Lean Formalization)
-
-**Proof Dependencies:**
-
-```
-TC-2 (Independence)
-  |
-  +--> TC-4 (Error Bound)
-  |      |
-  |      +--> Dimension Independence (existing)
-  |
-  +--> TC-3 (Volume Scaling)
-         |
-         +--> Exponential Decay (existing)
-               |
-               +--> TC-8 (Uniform Convergence)
-                      |
-                      +--> Robustness Analysis
-```
-
-**Suggested Proof Order:**
-1. TC-2 first (uses standard probability independence)
-2. TC-3 (requires coarea formula, geometric probability)
-3. TC-4 (Taylor series, error accumulation - uses TC-2, TC-3)
-4. TC-8 (compactness, uniformity - uses TC-3, TC-4)
-
-**Missing Mathlib Dependencies:**
-- `Probability.Independence.Kernel` for product measure factorization
-- Geometric probability lemmas (may need to develop)
-- Coarea formula (exists in Mathlib, needs connection)
-
-### For wt-12 (Integration Tests)
-
-**Test Cases to Implement:**
-
-| Test ID | Obligation | Parameters | Expected |
-|---------|------------|------------|----------|
-| `test_tc2_independence` | TC-2 | D=20, k=10, r=0.05 | chi_sq < 6.635 |
-| `test_tc3_volume_bounds` | TC-3 | D in {10,50,100} | C1 <= V/r^D <= C2 |
-| `test_tc4_error_fit` | TC-4 | D=50, k_max=50 | 1.0 <= C <= 2.0 |
-| `test_tc8_uniformity` | TC-8 | n_centers=100 | p_value > 0.05 |
-
-**Regression Tests:**
-- Ensure existing volume shrinkage tests still pass
-- Add edge cases: r=0.01 (small), r=0.1 (large), D=1000 (high dim)
-
----
-
-## Files Modified/Created
-
-| File | Action | Lines |
-|------|--------|-------|
-| `FSD.md` | Modified | +220 |
-| `formal/proofs/TopologicalCollapseGaps.lean` | Created | 225 |
-| `formal/proofs/TCGapsVerification.lean` | Created | 185 |
-| `synthesis.md` | Updated | (this file) |
-
-## Status: COMPLETE
-
-All TC-GAPS specifications have been added. Ready for merge into main branch.
