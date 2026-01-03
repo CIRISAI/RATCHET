@@ -420,6 +420,40 @@ from schemas.types import (
 # - n >= 100 for asymptotic regime (add Berry-Esseen correction for smaller n)
 ```
 
+#### 3.3.1 Power Formula Preconditions
+
+The sample complexity formula for detection power:
+
+```
+n >= (z_alpha + z_beta)^2 / (D^2 * p)
+```
+
+Where:
+- `n` = required sample size
+- `z_alpha` = standard normal quantile for significance level alpha
+- `z_beta` = standard normal quantile for power (1 - beta)
+- `D` = Mahalanobis distance between honest and deceptive distributions
+- `p` = deception rate (proportion of deceptive traces)
+
+**PRECONDITIONS (U-01 Fix):**
+
+| Precondition | Constraint | Rationale |
+|--------------|------------|-----------|
+| Mahalanobis Distance | `D >= 0.5` | Detection is statistically infeasible for `D < 0.5`; the required sample sizes become impractically large (n > 100,000 for typical alpha/beta). For `D < 0.5`, consider increasing feature separation or using alternative detection methods. |
+| Deception Rate | `p in (0.001, 1)` exclusive | Division by zero when `p = 0`; formula degenerates when `p = 1` (no honest baseline). Lower bound `p > 0.001` ensures feasible sample sizes (n < 10^7). |
+| Sample Size Validity | `n >= 100` | Asymptotic normality assumption. For `n < 100`, apply Berry-Esseen correction: add `C / sqrt(n)` to error bound where `C <= 0.5`. |
+| Distribution Assumption | Gaussian or sub-Gaussian | LRT optimality and z-score formula require (approximately) Gaussian distributions. For heavy-tailed distributions, use robust estimators and inflate required n by factor 2-3. |
+
+**Berry-Esseen Finite-Sample Correction:**
+
+For sample sizes `30 <= n < 100`, the power estimate should be adjusted:
+
+```
+power_corrected = power_asymptotic - C_BE / sqrt(n)
+```
+
+Where `C_BE <= 0.4748` (Berry-Esseen constant). For `n < 30`, the asymptotic formula is unreliable; use exact binomial or permutation tests instead.
+
 ```python
 class DetectionEngine:
     """
@@ -452,9 +486,41 @@ class DetectionEngine:
         Compute required sample size for given power.
         Returns n, analytical formula, and finite-sample correction.
 
-        ASSUMES: NON-ADAPTIVE ADVERSARY (adversary.strategy_fixed_before(detection.threshold))
-        Formula: n >= (z_alpha + z_beta)^2 / (D^2 * p)
-        INVALID FOR: Adaptive adversary with threshold query access (see Section 11)
+        PRECONDITIONS:
+        --------------
+        1. mahalanobis_distance >= 0.5
+           Detection is statistically infeasible below D=0.5. For smaller
+           effect sizes, the required sample size becomes impractically large.
+           If D < 0.5, consider: (a) increasing feature separation through
+           better trace engineering, (b) using ensemble methods, or
+           (c) accepting lower detection power.
+
+        2. deception_rate in (0.001, 1) exclusive
+           - p = 0 causes division by zero in the sample size formula
+           - p = 1 means all traces are deceptive (no honest baseline)
+           - p < 0.001 requires n > 10^7 which is typically infeasible
+           For very rare deception (p < 0.001), use sequential testing or
+           change detection methods instead.
+
+        3. Result valid for n >= 100 (asymptotic regime)
+           The formula assumes asymptotic normality via CLT. For n < 100,
+           apply Berry-Esseen correction:
+             power_corrected = power - 0.4748 / sqrt(n)
+           For n < 30, use exact methods (binomial, permutation tests).
+
+        4. Assumes approximately Gaussian distributions
+           LRT optimality requires Gaussian P_H and P_D. For heavy-tailed
+           or mixture distributions, inflate sample size by 2-3x or use
+           robust Mahalanobis distance estimation.
+
+        RETURNS:
+        --------
+        PowerAnalysisResult containing:
+          - n: required sample size (asymptotic)
+          - n_corrected: sample size with finite-sample adjustment
+          - power: achieved power at computed n
+          - validity_regime: "asymptotic" | "corrected" | "exact_required"
+          - warnings: list of any precondition concerns
         """
         ...
 
