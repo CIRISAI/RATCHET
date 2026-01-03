@@ -234,17 +234,38 @@ class GeometricEngine:
 
 **Purpose:** Validate computational asymmetry T_D / T_H = Ω(2^m / poly(n))
 
+**Security Parameter Relationship:**
+
+The world model size `m` serves as the security parameter for the complexity gap. The exponential separation T_D / T_H = Ω(2^m / poly(n)) only provides meaningful security guarantees when `m` is sufficiently large. This relationship is fundamental to the framework:
+
+**Invariant:** `complexity.world_size >= security_parameter`
+
+| Security Level | Minimum m | Rationale |
+|---------------|-----------|-----------|
+| Minimal | m >= 20 | Below this, brute-force SAT is feasible (~10^6 operations) |
+| Moderate | m >= 40 | Provides ~2^40 complexity gap with modern solvers |
+| High | m >= 64 | Provides cryptographic-level security margin |
+
+**Critical Constraint (from FORMALIZATION_ROADMAP Section 4.2.2):**
+- For m <= 15: Brute-force SAT is feasible, claims are **vacuous**
+- For m = O(log n): Complexity is O(n), no exponential separation
+- For meaningful security: **m must grow with threat model**
+
+The asymptotic separation requires `m` to grow independently of the number of statements `n`. If `m = O(log n)`, then 2^m = O(poly(n)), eliminating the exponential gap.
+
 **Requirements from Formal Methods:**
 - MUST use industrial SAT solver (Z3, MiniSat, CaDiCaL), NOT brute force
-- MUST distinguish 3-SAT (NP-hard) from 2-SAT (P) regimes
+- MUST distinguish 3-SAT (NP-hard) from 2-SAT (P) regimes (see wt-2 for k>=3 fix)
 - MUST track actual solving time, not theoretical complexity
 - MUST support incremental SAT with learned clause reuse
+- MUST enforce minimum world size m >= 20 for security claims
 
 **Requirements from Red Team:**
 - MUST implement sparse deception (lie about unobservable facts only)
 - MUST implement just-in-time fabrication (lazy deception)
 - MUST test structured world models (Horn clauses, 2-SAT)
 - MUST benchmark against state-of-art SAT solvers
+- MUST validate security claims only hold for m >= minimum threshold
 
 ```python
 class ComplexityEngine:
@@ -767,6 +788,11 @@ class ProofObligation(BaseModel):
 # These invariants MUST hold for any deployment consideration
 
 SECURITY_INVARIANTS = [
+    # World model size security parameter (CRITICAL - M-06)
+    # Without sufficient world size, complexity claims are vacuous
+    "complexity.world_size >= SECURITY_PARAMETER",  # m must scale with threat model
+    "complexity.world_size >= 20",  # Minimum for meaningful security
+
     # Byzantine tolerance
     "federation.malicious_fraction < 0.33",
 
@@ -777,11 +803,35 @@ SECURITY_INVARIANTS = [
     "geometric.volume_reduction(k=50, rho=0.5) >= 0.50",
 
     # Complexity gap (with modern solver)
-    "complexity.ratio(m=20, solver='z3') >= 5.0",
+    # Note: This gap ONLY holds when world_size >= 20 (see Section 3.2)
+    "complexity.ratio(m=SECURITY_PARAMETER, solver='z3') >= 5.0",
 
     # Anti-Sybil
     "federation.behavioral_correlation_detection(coordinated_sybils) == True",
 ]
+
+# Security parameter scaling specification
+SECURITY_PARAMETER_SCALING = {
+    "minimal": {
+        "world_size": 20,
+        "complexity_gap": 2**20,  # ~10^6
+        "threat_model": "amateur_adversary",
+    },
+    "moderate": {
+        "world_size": 40,
+        "complexity_gap": 2**40,  # ~10^12
+        "threat_model": "resourced_adversary",
+    },
+    "high": {
+        "world_size": 64,
+        "complexity_gap": 2**64,  # ~10^19
+        "threat_model": "nation_state_adversary",
+    },
+}
+
+# Invariant: For exponential gap to provide security, m must grow with threat model
+# See FORMALIZATION_ROADMAP Section 4.2.2 for small m regime analysis
+# Dependency: wt-2 (k>=3 fix) required for NP-hardness to apply
 ```
 
 ---
