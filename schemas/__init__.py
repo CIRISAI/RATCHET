@@ -22,7 +22,7 @@ from .simulation import (
     DetectionMethod,
     ConsensusProtocol,
     MaliciousStrategy,
-    AdversarialAttackType,
+    AttackType,
     ProofStatus,
     # Parameter models
     AdversarialStrategy,
@@ -60,7 +60,7 @@ __all__ = [
     "DetectionMethod",
     "ConsensusProtocol",
     "MaliciousStrategy",
-    "AdversarialAttackType",
+    "AttackType",
     "ProofStatus",
     # Parameter models
     "AdversarialStrategy",
