@@ -712,40 +712,147 @@ GET    /redteam/report           Get latest audit report
 
 ### 6.2 Schema Examples
 
+**Note:** Full type definitions are in `schemas/simulation.py`. The following shows the type-safe
+discriminated union approach that replaces `Dict[str, Any]` (addressing T-SCH-01 from Formal Review).
+
 ```python
+from typing import Annotated, Literal, Optional, Union
+from pydantic import BaseModel, Field
+
+# =============================================================================
+# Refinement Types (Base Types)
+# =============================================================================
+
+Dimension = Annotated[int, Field(gt=0, description="Positive dimension D")]
+Radius = Annotated[float, Field(gt=0, lt=0.5, description="Deceptive radius (0 < r < 0.5)")]
+Correlation = Annotated[float, Field(ge=-1, le=1, description="Constraint correlation")]
+Probability = Annotated[float, Field(gt=0, lt=1, description="Probability (0 < p < 1)")]
+PositiveInt = Annotated[int, Field(gt=0, description="Positive integer")]
+NonNegativeFloat = Annotated[float, Field(ge=0, description="Non-negative float")]
+
+# =============================================================================
+# Engine-Specific Parameter Models (Discriminated Union Members)
+# =============================================================================
+
+class GeometricParams(BaseModel):
+    """Parameters for Geometric Engine. Addresses T-GEO-01 through T-GEO-04."""
+    engine: Literal["geometric"] = "geometric"
+    dimension: Dimension
+    num_constraints: PositiveInt
+    deceptive_radius: Radius
+    constraint_correlation: Correlation = 0.0
+    sampling_mode: Literal["orthonormal", "correlated", "adversarial"] = "orthonormal"
+    num_samples: PositiveInt = 100_000
+    adversary: Optional[AdversarialStrategy] = None
+
+class ComplexityParams(BaseModel):
+    """
+    Parameters for Complexity Engine. Addresses T-CPX-01, T-CPX-02.
+    WARNING: literals_per_statement < 3 yields P-time problem (2-SAT), voiding NP-hardness claims.
+    """
+    engine: Literal["complexity"] = "complexity"
+    world_size: PositiveInt
+    num_statements: PositiveInt
+    literals_per_statement: Annotated[int, Field(ge=2)] = 3  # Must be >= 3 for NP-hardness
+    observable_fraction: Annotated[float, Field(gt=0, le=1)] = 1.0
+    deception_strategy: Literal["full", "sparse", "lazy"] = "full"
+    solver: Literal["z3", "minisat", "cadical", "bruteforce"] = "z3"
+
+class DetectionParams(BaseModel):
+    """
+    Parameters for Detection Engine. Addresses T-DET-01 through T-DET-03.
+    PRECONDITIONS: D >= 0.5, p >= 0.001, n >= 100 for asymptotic validity.
+    """
+    engine: Literal["detection"] = "detection"
+    method: Literal["lrt", "mahalanobis", "isolation_forest", "ensemble"] = "lrt"
+    mahalanobis_distance: NonNegativeFloat = 1.0
+    deception_rate: Probability = 0.01
+    alpha: Probability = 0.05
+    beta: Probability = 0.05
+    training_sample_size: Optional[PositiveInt] = None
+
+class FederationParams(BaseModel):
+    """
+    Parameters for Federation Engine. Enforces BFT invariant: n >= 3f + 1.
+    SECURITY INVARIANT: num_malicious / (num_honest + num_malicious) < 0.33
+    """
+    engine: Literal["federation"] = "federation"
+    num_honest: PositiveInt
+    num_malicious: Annotated[int, Field(ge=0)] = 0
+    consensus_protocol: Literal["pbft", "raft", "tendermint"] = "pbft"
+    malicious_strategy: Literal["random", "coordinated", "slow_capture"] = "random"
+    mi_threshold: Annotated[float, Field(ge=0, le=1)] = 0.85
+
+    @model_validator(mode='after')
+    def validate_bft_threshold(self) -> 'FederationParams':
+        """Enforce BFT safety: malicious_fraction < 1/3."""
+        total = self.num_honest + self.num_malicious
+        if self.num_malicious / total >= 1/3:
+            raise ValueError("BFT safety violated: malicious_fraction >= 1/3")
+        return self
+
+# =============================================================================
+# Discriminated Union (Replaces Dict[str, Any])
+# =============================================================================
+
+SimulationParams = Annotated[
+    Union[GeometricParams, ComplexityParams, DetectionParams, FederationParams],
+    Field(discriminator="engine")
+]
+
+# =============================================================================
+# Request/Response Models
+# =============================================================================
+
 class SimulationRequest(BaseModel):
-    engine: Literal["geometric", "complexity", "detection", "federation"]
-    parameters: Dict[str, Any]
+    """
+    Type-safe simulation request with discriminated union parameters.
+    The 'engine' field is now part of parameters, enabling automatic discrimination.
+    """
+    parameters: SimulationParams  # Discriminated union - replaces Dict[str, Any]
     adversarial: bool = False
     adversary_config: Optional[AdversaryConfig] = None
-    num_runs: int = 1
+    num_runs: PositiveInt = 1
     seed: Optional[int] = None
+
+    @property
+    def engine(self) -> str:
+        """Engine type derived from parameters."""
+        return self.parameters.engine
 
 class SimulationResult(BaseModel):
     id: str
-    engine: str
+    engine: Literal["geometric", "complexity", "detection", "federation"]
     status: Literal["pending", "running", "completed", "failed"]
-    metrics: Dict[str, float]
-    confidence_intervals: Dict[str, Tuple[float, float]]
+    metrics: dict[str, float]
+    confidence_intervals: dict[str, ConfidenceInterval]
     adversarial_results: Optional[AdversarialMetrics] = None
     provenance: ProvenanceRecord
     created_at: datetime
-    completed_at: Optional[datetime]
+    completed_at: Optional[datetime] = None
 
 class AttackScenario(BaseModel):
-    attack_id: str  # RT-01 through RT-05
-    target_engine: str
-    params: Dict[str, Any]
-    success_threshold: float = 0.5
+    attack_id: str = Field(pattern=r"^RT-0[1-5]$")  # RT-01 through RT-05
+    target_engine: Literal["geometric", "complexity", "detection", "federation"]
+    params: SimulationParams  # Type-safe parameters
+    success_threshold: Probability = 0.5
 
 class ProofObligation(BaseModel):
+    """Extended with ETH conditionality support (REC-H4)."""
     id: str
     claim: str
     theorem_statement: str
-    lean_file: Optional[str]
-    status: Literal["pending", "proven", "disproven", "blocked"]
-    dependencies: List[str]
+    lean_file: Optional[str] = None
+    status: Literal["pending", "partial", "axiomatized", "proven", "disproven", "blocked"]
+    dependencies: List[str] = []
+    conditional_on: List[str] = []  # E.g., ["ETH", "SETH"] for complexity claims
 ```
+
+**Type Safety Benefits:**
+- Compile-time validation via Pydantic discriminated union
+- Runtime parameter validation with meaningful error messages
+- Refinement types prevent invalid parameter combinations (e.g., radius > 0.5, k < 3)
+- BFT safety invariant enforced at schema level
 
 ---
 
