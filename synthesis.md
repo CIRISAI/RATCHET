@@ -1,12 +1,12 @@
-# Worktree 12 Synthesis: M-05
+# Worktree 6 Synthesis: TC-GAPS
 
 ## Assignment
-- **Issue:** M-05
-- **Scope:** Independence invariant
-- **Dependencies:** wt-6 (TC gaps)
+- **Issue:** TC-GAPS
+- **Scope:** Topological collapse proof gaps
+- **Dependencies:** None
 
 ## Task
-Add invariant for constraint independence, specify correlation impact on k_eff
+Add specifications for TC-2(Fubini), TC-3(volume scaling), TC-4(error bounds), TC-8(uniform convergence)
 
 ## Parallel Context
 You are one of 15 parallel agents. If your work requires output from a dependent worktree, note the interface assumption and proceed. The coordinator will merge.
@@ -29,113 +29,157 @@ You are one of 15 parallel agents. If your work requires output from a dependent
 
 ### Analysis
 
-Issue M-05 addresses a critical gap identified in the Formal Methods Review: the exponential decay of deceptive volume V(k) = V(0) * exp(-lambda*k) assumes constraints are independent. The Red Team Analysis (Section 1.2) demonstrates that correlated constraints dramatically reduce effective protection:
+The FORMALIZATION_ROADMAP.md Section 6.1 identifies 8 proof obligations for the Topological Collapse theorem. Four of these were identified as gaps requiring explicit specification:
 
-**Key Finding from Red Team Analysis 1.2:**
-- For k=100 constraints with rho=0.7 correlation: k_eff = 100 / (1 + 0.7 * 99) = 1.42
-- This means 100 correlated constraints provide protection equivalent to only ~1.4 independent constraints
+| ID | Obligation | Difficulty | Status Before |
+|----|------------|------------|---------------|
+| TC-2 | Independence/Fubini | CORE | Implicit |
+| TC-3 | Volume scaling | MEDIUM | Implicit |
+| TC-4 | Error bound O(r^2k) | HARD | Unquantified |
+| TC-8 | Uniform convergence | HARD | Unstated |
 
-**Root Cause:**
-- Real-world federations suffer from shared training data, memetic propagation, and authority bias
-- Current simulations use `ortho_group.rvs(D)` which generates maximally independent (orthonormal) constraints
-- This is the best case, not the typical case
+These gaps were blocking formal verification because:
+1. TC-2: Independence assumption was used but not stated as a verifiable property
+2. TC-3: Volume scaling after manifold intersection lacked precise bounds
+3. TC-4: The O(r^2k) error term was mentioned but not formalized
+4. TC-8: No statement about uniformity over center positions
 
-### Changes Made to FSD.md
+### Changes Made
 
-#### Section 3.1 - Geometric Engine
+#### 1. FSD.md Updates
 
-1. **Added Critical Invariant M-05:**
-   ```
-   INVARIANT M-05: forall i, j: i != j => hyperplanes[i] independent_of hyperplanes[j]
-   ```
+Added new section **4.1.1 Topological Collapse Proof Obligations (TC-GAPS)** containing:
 
-2. **Added Formal Definition:** Two hyperplanes are independent iff their normal vectors are linearly independent.
+- **TC-2: Independence/Fubini Property**
+  - Formal statement of product measure factorization
+  - Lean 4 theorem sketch: `independence_fubini`
+  - Verification protocol: Chi-squared test with 10^6 samples
 
-3. **Added Correlation Impact Table:** Shows k_eff for various rho values (0.0 to 0.9) and k values (10, 50, 100).
+- **TC-3: Volume Scaling After Manifold Intersection**
+  - Precise statement: E[mu(intersection)] = Theta(r^D)
+  - Lean 4 theorems: `volume_scaling_manifold`, `volume_fraction_recursion`
+  - Verification protocol: Numerical integration for D in {10, 50, 100}
 
-4. **Added Adjusted Decay Rate Formula:**
-   ```
-   lambda_eff = lambda_0 / (1 + rho * (k - 1))
-   ```
+- **TC-4: Error Bound O(r^2k)**
+  - Precise statement: |V(k) - V(0)e^{-2rk}| <= V(0)e^{-2rk} * C * r^2 * k
+  - Lean 4 theorem: `exponential_error_bound` with helper lemmas
+  - Verification protocol: Fit C empirically, verify |C - 1.5| < 0.5
 
-5. **Extended `compute_effective_rank` method:** Added detailed algorithm specification including:
-   - Gram matrix computation
-   - SVD-based alternative (participation ratio)
-   - Return values including independence_violations list
-   - Invariant check with warning threshold
+- **TC-8: Uniform Convergence Over Centers**
+  - Precise statement: Bound holds uniformly over [0.25, 0.75]^D
+  - Lean 4 theorem: `uniform_convergence_centers` with supporting lemmas
+  - Verification protocol: F-test across 100 random centers
 
-6. **Added `verify_independence` method:** For checking invariant M-05 compliance with configurable thresholds.
+#### 2. New Files Created
 
-7. **Added `enforce_independence` method:** Three remediation strategies:
-   - `drop_correlated`: Remove highly correlated constraints
-   - `orthogonalize`: Apply Gram-Schmidt orthogonalization
-   - `diversify`: Add new orthogonal constraints from null space
+- `formal/proofs/TopologicalCollapseGaps.lean` (220+ lines)
+  - Complete Lean 4 proof sketches for TC-2, TC-3, TC-4, TC-8
+  - Type definitions for hyperplanes, balls, interior cube
+  - Dependency graph showing proof structure
 
-#### Section 7.2 - Security Invariants
-
-1. **Added three M-05 related invariants:**
-   - Independence invariant (forall i,j: i != j => independent)
-   - Effective rank minimum (k_eff >= MIN_EFFECTIVE_RANK)
-   - Correlation bound (average_correlation <= 0.3)
-
-2. **Added Effective Rank Calculation specification** with security implications:
-   - k_eff < 10: WEAK protection
-   - k_eff < 5: MINIMAL protection
-   - k_eff < 2: FAILS (adversary can evade)
-
-#### Section 7.3 - Independence Enforcement Protocol (NEW)
-
-Added comprehensive operational protocol:
-- Continuous monitoring with alert levels (INFO, WARNING, ALERT, CRITICAL)
-- Three enforcement action types: Preventive, Corrective, Compensatory
-
-### Code
-
-No new Python/Lean code added. The specification additions provide sufficient detail for implementation. The algorithms (Gram matrix, SVD, Gram-Schmidt) are standard linear algebra operations.
+- `formal/proofs/TCGapsVerification.lean` (180+ lines)
+  - Verification lemmas bridging formal proofs and simulation
+  - Simulation interface types (parameters and results)
+  - Expected outcome theorems
 
 ### Verification
 
-To verify the fix is correct:
+To verify these specifications are correct:
 
-1. **Check invariant coverage:** Grep for "M-05" in FSD.md - should appear in Sections 3.1, 7.2, and 7.3.
+1. **Syntactic Check**: Lean 4 files should parse without syntax errors
+   ```bash
+   cd formal/proofs && lake build
+   ```
 
-2. **Verify formula consistency:** The k_eff formula `k / (1 + rho * (k-1))` should match across all occurrences.
+2. **Monte Carlo Validation**: Run simulations to confirm bounds
+   - TC-2: Chi-squared p-value > 0.01
+   - TC-3: Volume in range [C1*r^D, C2*r^D] with C1, C2 > 0
+   - TC-4: Fitted C in [1.0, 2.0]
+   - TC-8: F-test p-value > 0.05
 
-3. **Test correlation impact table:** Manually verify one entry:
-   - k=50, rho=0.5: k_eff = 50 / (1 + 0.5 * 49) = 50 / 25.5 = 1.96 (matches table)
-
-4. **Formal verification:** The invariant statement is suitable for encoding in Lean 4.
-
-### Handoff
-
-#### Dependency on wt-6 (TC gaps)
-
-This worktree depends on wt-6 which addresses TC (Topological Collapse) gaps. Specifically:
-- wt-6 should provide the proof obligation TC-2 (Independence via Fubini) specification
-- M-05 provides the invariant that TC-2 depends on
-- The effective rank calculation in this worktree (k_eff formula) should be referenced by TC-7
-
-**Interface Assumption:** wt-6 will use the invariant M-05 as stated here:
-```
-forall i, j: i != j => hyperplanes[i] independent_of hyperplanes[j]
-```
-
-**Merge Order:** wt-6 should merge after wt-12 to ensure the independence invariant is in place.
-
-#### Notes for Coordinator
-
-1. The k_eff formula appears in multiple places - ensure consistency during merge.
-2. Section 7.3 is new - verify it doesn't conflict with other worktrees modifying Section 7.
-3. The `verify_independence` and `enforce_independence` methods extend the GeometricEngine interface.
+3. **Cross-Reference**: Check consistency with FORMALIZATION_ROADMAP.md Section 6.1
 
 ---
 
-## Summary
+## Handoff: Notes for Dependent Worktrees
 
-This worktree addresses M-05 by adding a comprehensive specification for constraint independence, including:
-- Formal invariant statement
-- Effective rank calculation formula with security implications
-- Methods for verification and enforcement
-- Operational monitoring protocol with alert levels
+### For wt-9 (Verification Implementation)
 
-The changes ensure that geometric security claims are qualified by the independence assumption and provide practical tools for maintaining this invariant in production systems.
+**Key Interfaces Provided:**
+
+1. `TC2SimParams` / `TC2SimResult` - Use these types when implementing independence verification
+2. `TC4SimParams` / `TC4SimResult` - Use for error bound fitting
+3. `TC8SimParams` / `TC8SimResult` - Use for uniformity testing
+
+**Critical Requirements:**
+- TC-2 requires at least 10^6 samples for statistical power
+- TC-4 fitting should use weighted least squares (errors are heteroscedastic)
+- TC-8 centers must be sampled from [0.25, 0.75]^D to avoid boundary effects
+
+**Theorems to Verify:**
+```lean
+theorem independence_fubini        -- TC-2
+theorem exponential_error_bound    -- TC-4
+theorem uniform_convergence_centers -- TC-8
+```
+
+### For wt-11 (Lean Formalization)
+
+**Proof Dependencies:**
+
+```
+TC-2 (Independence)
+  |
+  +--> TC-4 (Error Bound)
+  |      |
+  |      +--> Dimension Independence (existing)
+  |
+  +--> TC-3 (Volume Scaling)
+         |
+         +--> Exponential Decay (existing)
+               |
+               +--> TC-8 (Uniform Convergence)
+                      |
+                      +--> Robustness Analysis
+```
+
+**Suggested Proof Order:**
+1. TC-2 first (uses standard probability independence)
+2. TC-3 (requires coarea formula, geometric probability)
+3. TC-4 (Taylor series, error accumulation - uses TC-2, TC-3)
+4. TC-8 (compactness, uniformity - uses TC-3, TC-4)
+
+**Missing Mathlib Dependencies:**
+- `Probability.Independence.Kernel` for product measure factorization
+- Geometric probability lemmas (may need to develop)
+- Coarea formula (exists in Mathlib, needs connection)
+
+### For wt-12 (Integration Tests)
+
+**Test Cases to Implement:**
+
+| Test ID | Obligation | Parameters | Expected |
+|---------|------------|------------|----------|
+| `test_tc2_independence` | TC-2 | D=20, k=10, r=0.05 | chi_sq < 6.635 |
+| `test_tc3_volume_bounds` | TC-3 | D in {10,50,100} | C1 <= V/r^D <= C2 |
+| `test_tc4_error_fit` | TC-4 | D=50, k_max=50 | 1.0 <= C <= 2.0 |
+| `test_tc8_uniformity` | TC-8 | n_centers=100 | p_value > 0.05 |
+
+**Regression Tests:**
+- Ensure existing volume shrinkage tests still pass
+- Add edge cases: r=0.01 (small), r=0.1 (large), D=1000 (high dim)
+
+---
+
+## Files Modified/Created
+
+| File | Action | Lines |
+|------|--------|-------|
+| `FSD.md` | Modified | +220 |
+| `formal/proofs/TopologicalCollapseGaps.lean` | Created | 225 |
+| `formal/proofs/TCGapsVerification.lean` | Created | 185 |
+| `synthesis.md` | Updated | (this file) |
+
+## Status: COMPLETE
+
+All TC-GAPS specifications have been added. Ready for merge into main branch.

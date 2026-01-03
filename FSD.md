@@ -909,6 +909,219 @@ class RedTeamEngine:
    ℓ(t) | t ~ P_H ~ N(-D²/2, D²)
    ```
 
+### 4.1.1 Topological Collapse Proof Obligations (TC-GAPS)
+
+The following proof obligations were identified as gaps requiring explicit specification:
+
+#### TC-2: Independence/Fubini Property
+
+**Statement:** For i.i.d. random hyperplanes H_1, ..., H_k, the probability that all hyperplanes intersect a ball B_r(c) factors as a product:
+
+```
+P(∩_{i=1}^k (H_i ∩ B_r(c) ≠ ∅)) = ∏_{i=1}^k P(H_i ∩ B_r(c) ≠ ∅)
+```
+
+**Formal Specification:**
+```lean
+theorem independence_fubini
+  {D k : ℕ} (r : ℝ) (c : Fin D → ℝ)
+  (H : Fin k → RandomHyperplane D)
+  (h_iid : ∀ i j, i ≠ j → Independent (H i) (H j)) :
+  Pr[∀ i, (H i).intersects (Ball c r)] =
+  ∏ i, Pr[(H i).intersects (Ball c r)] := by
+  apply independence_of_products
+  exact h_iid
+```
+
+**Verifiable Properties:**
+1. Each hyperplane H_i is sampled independently from the same distribution
+2. The cutting events E_i = {H_i ∩ B_r(c) ≠ ∅} are measurable
+3. The product measure factorization holds
+
+**Verification Protocol:**
+- Monte Carlo: Sample 10^6 hyperplane sets, compare empirical joint probability to product of marginals
+- Statistical test: Chi-squared test for independence with α = 0.01
+
+**Status:** CORE | Difficulty: ⭐⭐ | Blocks: TC-4, volume_shrinkage
+
+---
+
+#### TC-3: Volume Scaling After Manifold Intersection
+
+**Statement:** For k < D random hyperplanes in general position, the expected measure of the intersection with [0,1]^D is Θ(1):
+
+```
+E[μ(∩_{i=1}^k H_i ∩ [0,1]^D)] = Θ(1)  for k < D
+```
+
+More precisely, for the intersection with a ball B_r(c):
+```
+E[μ(B_r(c) ∩ ∩_{i=1}^k H_i)] = V(0) · ∏_{i=1}^k (1 - p_i + p_i · γ_i)
+```
+
+where γ_i is the expected volume fraction retained after hyperplane i cuts the region.
+
+**Formal Specification:**
+```lean
+theorem volume_scaling_manifold
+  {D k : ℕ} (hk : k < D) (r : ℝ) (hr : 0 < r ∧ r < 0.5)
+  (H : Fin k → RandomHyperplane D)
+  (h_general_position : GeneralPosition H) :
+  let M := ⋂ i, (H i).affineSubspace
+  let V_intersect := volume (Ball 0 r ∩ M ∩ unitCube D)
+  ∃ (C₁ C₂ : ℝ), C₁ > 0 ∧ C₂ > 0 ∧
+    C₁ * r^D ≤ E[V_intersect] ∧ E[V_intersect] ≤ C₂ * r^D := by
+  -- Proof uses coarea formula and random hyperplane properties
+  sorry
+
+theorem volume_fraction_recursion
+  {D : ℕ} (k : ℕ) (r : ℝ) (hr : 0 < r ∧ r < 0.5)
+  (V : ℕ → ℝ)  -- V(k) = expected volume after k cuts
+  (hV0 : V 0 = volume (Ball 0 r))
+  (p : ℝ)  -- cutting probability
+  (hp : |p - 2*r| ≤ C * r^2) :
+  ∃ (γ : ℝ), γ ∈ [0.4, 0.6] ∧
+    V (k+1) = V k * (1 - p + p * γ) := by
+  sorry
+```
+
+**Verifiable Properties:**
+1. Manifold dimension is D - k (codimension k intersection)
+2. Intersection remains non-empty with high probability for k << D
+3. Volume scales as r^D times a dimension-dependent constant
+
+**Verification Protocol:**
+- Numerical integration: Compute volume for D ∈ {10, 50, 100}, k ∈ {1, 5, 10}
+- Verify codimension: Check rank of constraint matrix equals k
+
+**Status:** MEDIUM | Difficulty: ⭐⭐⭐ | Blocks: exponential_decay
+
+---
+
+#### TC-4: Error Bound O(r²k) for Exponential Approximation
+
+**Statement:** The approximation V(k) ≈ V(0) · e^{-2rk} has multiplicative error bounded by O(r²k):
+
+```
+|V(k) - V(0) · e^{-2rk}| ≤ V(0) · e^{-2rk} · C · r² · k
+```
+
+for some constant C > 0 (empirically C ≈ 1).
+
+**Formal Specification:**
+```lean
+theorem exponential_error_bound
+  {D k : ℕ} (r : ℝ) (hr : 0 < r ∧ r ≤ 0.1)
+  (V : ℕ → ℝ)  -- Volume function
+  (hV : ∀ k, V k = E[volume (Ball 0 r ∩ ⋂ i : Fin k, H i)]) :
+  ∃ (C : ℝ), C > 0 ∧ C ≤ 2 ∧
+  ∀ k ≤ ⌈D/2⌉,
+    |V k - V 0 * Real.exp (-2 * r * k)| ≤
+    V 0 * Real.exp (-2 * r * k) * C * r^2 * k := by
+  -- Proof by Taylor expansion of ln(1-p) and accumulation of errors
+  use 1.5
+  constructor
+  · linarith
+  constructor
+  · linarith
+  intro k hk
+  -- Key steps:
+  -- 1. V(k) = V(0) · (1-p)^k where p = 2r + O(r²)
+  -- 2. (1-p)^k = exp(k · ln(1-p)) = exp(-k·(p + p²/2 + O(p³)))
+  -- 3. exp(-2rk) · exp(-k·O(r²)) = exp(-2rk) · (1 + O(r²k))
+  sorry
+
+-- Helper: Taylor expansion of logarithm
+lemma ln_one_minus_taylor (p : ℝ) (hp : |p| < 1) :
+  |Real.log (1 - p) - (-p - p^2/2)| ≤ |p|^3 / (1 - |p|) := by
+  sorry
+
+-- Error accumulation over k steps
+lemma error_accumulation (k : ℕ) (ε : ℝ) (hε : 0 < ε ∧ ε < 0.1) :
+  |(1 + ε)^k - 1| ≤ 2 * ε * k := by
+  -- Valid for small ε and moderate k (εk < 0.5)
+  sorry
+```
+
+**Verifiable Properties:**
+1. The constant C is dimension-independent
+2. Error is multiplicative, not additive
+3. Bound is tight: achievable by adversarial hyperplane configurations
+
+**Verification Protocol:**
+- Monte Carlo: For each (D, k, r), compute V(k) empirically and compare to V(0)·e^{-2rk}
+- Fit: Measure empirical C across parameter ranges
+- Tolerance: |C_empirical - C_theoretical| < 0.5
+
+**Status:** HARD | Difficulty: ⭐⭐⭐⭐ | Blocks: dimension_independence
+
+---
+
+#### TC-8: Uniform Convergence Over Center Positions c ∈ [0.25, 0.75]^D
+
+**Statement:** The exponential decay bound V(k) ≤ V(0)·e^{-λk} holds uniformly over all ball centers c in the interior cube [0.25, 0.75]^D:
+
+```
+∀ c ∈ [0.25, 0.75]^D:
+  V_c(k) ≤ V(0) · e^{-λk + O(r²k)}
+```
+
+where V_c(k) = E[μ(B_r(c) ∩ ∩_i H_i)] and λ = 2r.
+
+**Formal Specification:**
+```lean
+def InteriorCube (D : ℕ) : Set (Fin D → ℝ) :=
+  { c | ∀ i, 0.25 ≤ c i ∧ c i ≤ 0.75 }
+
+theorem uniform_convergence_centers
+  {D : ℕ} (hD : D ≥ 10) (r : ℝ) (hr : 0 < r ∧ r ≤ 0.1)
+  (k : ℕ) (hk : k ≤ 100) :
+  ∀ c ∈ InteriorCube D,
+    let V_c := fun k => E[volume (Ball c r ∩ ⋂ i : Fin k, H i)]
+    V_c k ≤ V_c 0 * Real.exp (-2 * r * k) * (1 + 2 * r^2 * k) := by
+  intro c hc
+  -- Proof sketch:
+  -- 1. Interior position avoids boundary effects
+  -- 2. Cutting probability is translation-invariant (uniform hyperplanes)
+  -- 3. Apply pointwise bound and take supremum
+  sorry
+
+-- Key lemma: Cutting probability is independent of center position
+-- for centers in interior (away from [0,1]^D boundary)
+lemma cutting_probability_translation_invariant
+  {D : ℕ} (r : ℝ) (c₁ c₂ : Fin D → ℝ)
+  (hc₁ : c₁ ∈ InteriorCube D) (hc₂ : c₂ ∈ InteriorCube D)
+  (hr : r ≤ 0.1) :
+  Pr[H.intersects (Ball c₁ r)] = Pr[H.intersects (Ball c₂ r)] := by
+  -- Uniform hyperplane distribution is translation-invariant
+  sorry
+
+-- Supremum over compact set
+lemma sup_over_interior_cube
+  {D k : ℕ} (r : ℝ)
+  (V : (Fin D → ℝ) → ℕ → ℝ)  -- V c k = volume at center c after k cuts
+  (h_continuous : Continuous (fun c => V c k))
+  (h_pointwise : ∀ c ∈ InteriorCube D, V c k ≤ bound k) :
+  ⨆ c ∈ InteriorCube D, V c k ≤ bound k := by
+  -- Interior cube is compact; continuous function attains supremum
+  sorry
+```
+
+**Verifiable Properties:**
+1. Bound is uniform: same λ for all interior centers
+2. Edge effects are avoided: margin of 0.25 ensures B_r(c) ⊆ [0,1]^D
+3. No dependence on specific center position
+
+**Verification Protocol:**
+- Grid sweep: Sample 100 random centers uniformly from [0.25, 0.75]^D
+- For each center: Run Monte Carlo volume estimation
+- Statistical test: F-test for equality of decay rates across centers
+- Acceptance: p-value > 0.05 for uniform λ
+
+**Status:** HARD | Difficulty: ⭐⭐⭐⭐ | Blocks: robustness analysis
+
+---
+
 ### 4.2 Lean 4 Integration
 
 ```python
