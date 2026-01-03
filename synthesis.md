@@ -1,12 +1,12 @@
-# Worktree 2 Synthesis: U-02
+# Worktree 12 Synthesis: M-05
 
 ## Assignment
-- **Issue:** U-02
-- **Scope:** k≥3 NP-hardness enforcement
-- **Dependencies:** None
+- **Issue:** M-05
+- **Scope:** Independence invariant
+- **Dependencies:** wt-6 (TC gaps)
 
 ## Task
-Enforce literals_per_statement≥3 or add prominent warning for P-time regime in 2-SAT
+Add invariant for constraint independence, specify correlation impact on k_eff
 
 ## Parallel Context
 You are one of 15 parallel agents. If your work requires output from a dependent worktree, note the interface assumption and proceed. The coordinator will merge.
@@ -29,96 +29,113 @@ You are one of 15 parallel agents. If your work requires output from a dependent
 
 ### Analysis
 
-**Issue U-02: k >= 3 NP-Hardness Enforcement**
+Issue M-05 addresses a critical gap identified in the Formal Methods Review: the exponential decay of deceptive volume V(k) = V(0) * exp(-lambda*k) assumes constraints are independent. The Red Team Analysis (Section 1.2) demonstrates that correlated constraints dramatically reduce effective protection:
 
-The Formal Review (Section 5.2, Issue T-CPX-01) identified a critical security vulnerability in the ComplexityEngine interface: the `literals_per_statement` parameter was unbounded, allowing values k < 3 that completely undermine the computational security model.
+**Key Finding from Red Team Analysis 1.2:**
+- For k=100 constraints with rho=0.7 correlation: k_eff = 100 / (1 + 0.7 * 99) = 1.42
+- This means 100 correlated constraints provide protection equivalent to only ~1.4 independent constraints
 
-**The Problem:**
-- For k >= 3: CONSISTENT-LIE reduces to k-SAT, which is NP-hard
-- For k = 2: CONSISTENT-LIE reduces to 2-SAT, which is in P (solvable in O(n) time via Aspvall-Plass-Tarjan 1979 implication graph algorithm)
-- For k = 1: Problem is trivially solvable
-
-**Security Impact:**
-The entire complexity-based security argument (T_D / T_H = Omega(2^m)) assumes NP-hardness. With k = 2, an adversary can maintain deceptive consistency with the SAME computational cost as an honest agent. The complexity gap vanishes entirely, defeating the core security property.
-
-**Attack Scenario:**
-An adversary could craft a world model using only 2-literal Horn clauses or implications, pass all validation checks, and then exploit the P-time consistency checking to maintain arbitrary deception indefinitely.
+**Root Cause:**
+- Real-world federations suffer from shared training data, memetic propagation, and authority bias
+- Current simulations use `ortho_group.rvs(D)` which generates maximally independent (orthonormal) constraints
+- This is the best case, not the typical case
 
 ### Changes Made to FSD.md
 
-1. **Section 3.2 - ComplexityEngine Interface (Lines 249-295)**
-   - Added `LiteralsPerStatement` refinement type with `ge=3` constraint
-   - Added security-critical documentation explaining why k >= 3 is required
-   - Updated `measure_complexity` signature to use the constrained type
-   - Added class-level docstring warning about k < 3 security implications
+#### Section 3.1 - Geometric Engine
 
-2. **Section 3.2 - Validation Protocol (Lines 326-338)**
-   - Added explicit security boundary test requirement for k=2 vs k=3
-   - Documented the "security cliff edge" at k in {2, 3}
-   - Added CI pipeline enforcement requirement
+1. **Added Critical Invariant M-05:**
+   ```
+   INVARIANT M-05: forall i, j: i != j => hyperplanes[i] independent_of hyperplanes[j]
+   ```
 
-3. **Section 7.2 - Security Invariants (Lines 791-831)**
-   - Added new invariant: `complexity.literals_per_statement >= 3`
-   - Added complexity regime documentation table showing k vs security status
-   - Referenced the Aspvall-Plass-Tarjan algorithm for 2-SAT tractability
+2. **Added Formal Definition:** Two hyperplanes are independent iff their normal vectors are linearly independent.
 
-### Code (Type Constraint)
+3. **Added Correlation Impact Table:** Shows k_eff for various rho values (0.0 to 0.9) and k values (10, 50, 100).
 
-```python
-from typing import Annotated
-from pydantic import Field
+4. **Added Adjusted Decay Rate Formula:**
+   ```
+   lambda_eff = lambda_0 / (1 + rho * (k - 1))
+   ```
 
-LiteralsPerStatement = Annotated[
-    int,
-    Field(
-        ge=3,
-        description="Number of literals per statement. MUST be >= 3 for NP-hardness. "
-                    "k=2 reduces to 2-SAT (P-time tractable). "
-                    "k<3 voids all complexity gap security claims."
-    )
-]
-```
+5. **Extended `compute_effective_rank` method:** Added detailed algorithm specification including:
+   - Gram matrix computation
+   - SVD-based alternative (participation ratio)
+   - Return values including independence_violations list
+   - Invariant check with warning threshold
+
+6. **Added `verify_independence` method:** For checking invariant M-05 compliance with configurable thresholds.
+
+7. **Added `enforce_independence` method:** Three remediation strategies:
+   - `drop_correlated`: Remove highly correlated constraints
+   - `orthogonalize`: Apply Gram-Schmidt orthogonalization
+   - `diversify`: Add new orthogonal constraints from null space
+
+#### Section 7.2 - Security Invariants
+
+1. **Added three M-05 related invariants:**
+   - Independence invariant (forall i,j: i != j => independent)
+   - Effective rank minimum (k_eff >= MIN_EFFECTIVE_RANK)
+   - Correlation bound (average_correlation <= 0.3)
+
+2. **Added Effective Rank Calculation specification** with security implications:
+   - k_eff < 10: WEAK protection
+   - k_eff < 5: MINIMAL protection
+   - k_eff < 2: FAILS (adversary can evade)
+
+#### Section 7.3 - Independence Enforcement Protocol (NEW)
+
+Added comprehensive operational protocol:
+- Continuous monitoring with alert levels (INFO, WARNING, ALERT, CRITICAL)
+- Three enforcement action types: Preventive, Corrective, Compensatory
+
+### Code
+
+No new Python/Lean code added. The specification additions provide sufficient detail for implementation. The algorithms (Gram matrix, SVD, Gram-Schmidt) are standard linear algebra operations.
 
 ### Verification
 
-To verify this fix is correct:
+To verify the fix is correct:
 
-1. **Type-Level Enforcement:** Any call to `measure_complexity` with `literals_per_statement < 3` should fail Pydantic validation at runtime.
+1. **Check invariant coverage:** Grep for "M-05" in FSD.md - should appear in Sections 3.1, 7.2, and 7.3.
 
-2. **Security Invariant Check:** The CI pipeline should validate `complexity.literals_per_statement >= 3` before accepting any configuration.
+2. **Verify formula consistency:** The k_eff formula `k / (1 + rho * (k-1))` should match across all occurrences.
 
-3. **Empirical Validation:** Run complexity benchmarks with k=2 and k=3 on identical world models:
-   - k=2: Expect T_D/T_H approx 1 (no gap)
-   - k=3: Expect T_D/T_H >> 1 (exponential gap)
+3. **Test correlation impact table:** Manually verify one entry:
+   - k=50, rho=0.5: k_eff = 50 / (1 + 0.5 * 49) = 50 / 25.5 = 1.96 (matches table)
 
-4. **Unit Test:** Add test that verifies rejection of k < 3 configurations.
+4. **Formal verification:** The invariant statement is suitable for encoding in Lean 4.
 
-### Handoff Notes for Dependent Worktrees
+### Handoff
 
-**For Worktrees Working on Complexity Engine Implementation:**
-- The `literals_per_statement` parameter now has a minimum value of 3
-- Any code that constructs ComplexityEngine queries MUST ensure k >= 3
-- Legacy code allowing k=2 must be updated to either reject or warn
+#### Dependency on wt-6 (TC gaps)
 
-**For Worktrees Working on Proof Obligations:**
-- The 3-SAT reduction proof (CA-2) now has an explicit precondition: k >= 3
-- The complexity gap claim is conditional on this precondition
+This worktree depends on wt-6 which addresses TC (Topological Collapse) gaps. Specifically:
+- wt-6 should provide the proof obligation TC-2 (Independence via Fubini) specification
+- M-05 provides the invariant that TC-2 depends on
+- The effective rank calculation in this worktree (k_eff formula) should be referenced by TC-7
 
-**For Worktrees Working on Security Invariants:**
-- New invariant added: `complexity.literals_per_statement >= 3`
-- This invariant gates ALL complexity-based security claims
+**Interface Assumption:** wt-6 will use the invariant M-05 as stated here:
+```
+forall i, j: i != j => hyperplanes[i] independent_of hyperplanes[j]
+```
 
-**Interface Assumptions:**
-- I assume other worktrees will update any code paths that dynamically set `literals_per_statement`
-- The Pydantic validation will catch violations at runtime, but static analysis may need updates
+**Merge Order:** wt-6 should merge after wt-12 to ensure the independence invariant is in place.
 
-### Summary
+#### Notes for Coordinator
 
-This fix closes the k < 3 security hole identified in Formal Review issue U-02 by:
-1. Adding a type-level constraint (refinement type with ge=3)
-2. Adding prominent warnings in documentation
-3. Adding a security invariant for CI enforcement
-4. Documenting the complexity/security tradeoff table
+1. The k_eff formula appears in multiple places - ensure consistency during merge.
+2. Section 7.3 is new - verify it doesn't conflict with other worktrees modifying Section 7.
+3. The `verify_independence` and `enforce_independence` methods extend the GeometricEngine interface.
 
-The fix follows the Formal Review recommendation REC-C4: "Enforce or Document k >= 3 for NP-Hardness"
+---
 
+## Summary
+
+This worktree addresses M-05 by adding a comprehensive specification for constraint independence, including:
+- Formal invariant statement
+- Effective rank calculation formula with security implications
+- Methods for verification and enforcement
+- Operational monitoring protocol with alert levels
+
+The changes ensure that geometric security claims are qualified by the independence assumption and provide practical tools for maintaining this invariant in production systems.
