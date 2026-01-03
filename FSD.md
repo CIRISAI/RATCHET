@@ -167,9 +167,49 @@ ratchet/
 
 **Purpose:** Validate topological collapse theorem V(k) = V(0) × exp(-λk)
 
+**Critical Invariant - Constraint Independence (M-05):**
+
+The exponential decay of deceptive volume requires constraints (hyperplanes) to be independent:
+
+```
+INVARIANT M-05: forall i, j: i != j => hyperplanes[i] independent_of hyperplanes[j]
+```
+
+**Formal Definition:** Two hyperplanes H_i = {x : <n_i, x> = d_i} and H_j = {x : <n_j, x> = d_j} are independent iff their normal vectors are linearly independent: n_i and n_j span a 2-dimensional subspace (i.e., n_i is not a scalar multiple of n_j).
+
+**Why This Matters (Red Team Analysis 1.2):** When constraints are correlated (e.g., from shared training data, memetic propagation, or authority bias), the effective number of constraints collapses dramatically. For pairwise correlation rho:
+
+```
+k_eff = k / (1 + rho * (k - 1))
+
+Example: k = 100 constraints with rho = 0.7 correlation
+k_eff = 100 / (1 + 0.7 * 99) = 100 / 70.3 = 1.42
+
+=> 100 correlated constraints provide protection of only ~1.4 independent constraints!
+```
+
+**Correlation Impact on Security:**
+
+| Correlation (rho) | k = 10 | k = 50 | k = 100 |
+|-------------------|--------|--------|---------|
+| 0.0 (ideal)       | 10.0   | 50.0   | 100.0   |
+| 0.3               | 2.63   | 3.21   | 3.29    |
+| 0.5               | 1.82   | 1.96   | 1.98    |
+| 0.7               | 1.37   | 1.42   | 1.42    |
+| 0.9               | 1.10   | 1.11   | 1.11    |
+
+**Adjusted Decay Rate:** For correlated constraints, the effective decay rate becomes:
+
+```
+lambda_eff = lambda_0 / (1 + rho * (k - 1))
+
+where lambda_0 = 2r (ideal cutting probability for radius r)
+```
+
 **Requirements from Formal Methods:**
 - Must support both orthonormal AND correlated constraint sampling
-- Must track effective rank k_eff = k / (1 + ρ(k-1))
+- Must track effective rank k_eff = k / (1 + rho*(k-1))
+- MUST verify constraint independence before applying exponential decay claims
 - Must quantify boundary effects at edge of [0,1]^D
 - Must provide error bounds on exponential approximation
 
@@ -178,6 +218,7 @@ ratchet/
 - MUST support adversarial constraint probing
 - MUST test non-convex deceptive regions (torus, point cloud, fractal)
 - MUST support adaptive/moving target deception
+- MUST test high-correlation constraint scenarios (rho > 0.5)
 
 ```python
 class GeometricEngine:
@@ -209,6 +250,27 @@ class GeometricEngine:
         """
         Compute k_eff accounting for constraint correlation.
         Returns effective rank and correlation matrix.
+
+        ALGORITHM:
+        1. Extract normal vectors N = [n_1, n_2, ..., n_k] from constraints
+        2. Compute Gram matrix G where G[i,j] = <n_i, n_j> / (||n_i|| * ||n_j||)
+        3. Compute average off-diagonal correlation: rho = mean(|G[i,j]|) for i != j
+        4. Compute effective rank: k_eff = k / (1 + rho * (k - 1))
+
+        ALTERNATIVE (SVD-based):
+        1. Form matrix N with rows as normalized normals
+        2. Compute singular values sigma_1 >= sigma_2 >= ... >= sigma_k
+        3. k_eff = (sum(sigma_i))^2 / sum(sigma_i^2)  [participaton ratio]
+
+        RETURNS:
+        - effective_rank: float (k_eff value)
+        - correlation_matrix: np.ndarray (k x k Gram matrix)
+        - average_correlation: float (rho value)
+        - independence_violations: List[Tuple[int, int]] (pairs with |rho| > threshold)
+
+        INVARIANT CHECK:
+        If average_correlation > 0.3, emit warning:
+        "Constraint correlation exceeds safe threshold. Security claims may be weakened."
         """
         ...
 
@@ -220,6 +282,60 @@ class GeometricEngine:
         """
         Simulate adversary probing constraint directions and placing
         deception in null space. Returns evasion success rate.
+        """
+        ...
+
+    def verify_independence(
+        self,
+        constraints: List[Hyperplane],
+        correlation_threshold: float = 0.3,
+    ) -> IndependenceVerificationResult:
+        """
+        Verify that constraint set satisfies independence invariant M-05.
+
+        VERIFICATION PROCEDURE:
+        1. Compute Gram matrix of normalized normal vectors
+        2. Check: forall i != j: |<n_i, n_j>| < correlation_threshold
+        3. If violated, identify problematic pairs
+        4. Compute effective rank k_eff
+
+        RETURNS:
+        - is_independent: bool (True if invariant holds)
+        - violations: List[Tuple[int, int, float]] (pairs exceeding threshold with correlation value)
+        - effective_rank: float
+        - recommended_action: str (e.g., "Remove constraint 3", "Add orthogonal constraints")
+
+        THRESHOLD GUIDANCE:
+        - correlation_threshold = 0.1: Strict (near-orthogonal required)
+        - correlation_threshold = 0.3: Standard (moderate correlation tolerated)
+        - correlation_threshold = 0.5: Lenient (significant correlation allowed)
+        """
+        ...
+
+    def enforce_independence(
+        self,
+        constraints: List[Hyperplane],
+        method: Literal["drop_correlated", "orthogonalize", "diversify"] = "orthogonalize",
+    ) -> IndependenceEnforcementResult:
+        """
+        Transform constraint set to satisfy independence invariant.
+
+        METHODS:
+        1. "drop_correlated": Remove constraints with highest correlation until
+           independence holds. Fast but loses information.
+
+        2. "orthogonalize": Apply Gram-Schmidt to normal vectors. Preserves
+           count but changes constraint directions.
+
+        3. "diversify": Add new orthogonal constraints sampled from null space
+           of existing constraints. Increases protection without removal.
+
+        RETURNS:
+        - transformed_constraints: List[Hyperplane]
+        - dropped_indices: List[int] (for "drop_correlated")
+        - transformation_matrix: np.ndarray (for "orthogonalize")
+        - added_constraints: List[Hyperplane] (for "diversify")
+        - new_effective_rank: float
         """
         ...
 ```
@@ -781,8 +897,65 @@ SECURITY_INVARIANTS = [
 
     # Anti-Sybil
     "federation.behavioral_correlation_detection(coordinated_sybils) == True",
+
+    # M-05: Constraint Independence (CRITICAL for geometric claims)
+    # See Section 3.1 for detailed specification
+    "forall i, j: i != j => geometric.hyperplanes[i] independent_of geometric.hyperplanes[j]",
+
+    # M-05 Quantitative: Effective rank must be sufficient
+    # For k constraints with correlation rho, k_eff = k / (1 + rho * (k - 1)) must exceed threshold
+    "geometric.effective_rank(constraints) >= MIN_EFFECTIVE_RANK",
+
+    # M-05 Correlation Bound: Average correlation must not exceed safety threshold
+    "geometric.average_correlation(constraints) <= 0.3",
 ]
+
+# Effective Rank Calculation (M-05 Supporting Definition)
+#
+# k_eff = k / (1 + rho * (k - 1))
+#
+# where:
+#   k = number of constraints (hyperplanes)
+#   rho = average pairwise correlation of normal vectors
+#   k_eff = effective number of independent constraints
+#
+# Security implications:
+#   - If k_eff < 10, geometric protection is WEAK
+#   - If k_eff < 5, geometric protection is MINIMAL
+#   - If k_eff < 2, geometric protection FAILS (adversary can evade)
+#
+# Recommended minimum: k_eff >= 20 for production systems
+
+MIN_EFFECTIVE_RANK = 20  # Configurable based on threat model
 ```
+
+### 7.3 Independence Enforcement Protocol
+
+To maintain invariant M-05 in operational systems:
+
+**Monitoring:**
+```python
+# Continuous independence monitoring
+def monitor_constraint_independence(
+    constraints: List[Hyperplane],
+    alert_threshold: float = 0.3,
+    critical_threshold: float = 0.5,
+) -> MonitoringResult:
+    """
+    Continuously monitor constraint correlation and alert on violations.
+
+    ALERT LEVELS:
+    - INFO: rho < 0.1 (ideal, highly independent)
+    - WARNING: 0.1 <= rho < 0.3 (acceptable, monitor closely)
+    - ALERT: 0.3 <= rho < 0.5 (concerning, consider remediation)
+    - CRITICAL: rho >= 0.5 (security claims compromised, immediate action required)
+    """
+```
+
+**Enforcement Actions:**
+1. **Preventive:** Before adding new constraints, verify they maintain independence
+2. **Corrective:** When correlation exceeds threshold, apply diversification or removal
+3. **Compensatory:** Adjust security claims (k_eff instead of k) when correlation unavoidable
 
 ---
 
