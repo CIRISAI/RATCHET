@@ -1,91 +1,81 @@
 """
-RATCHET Schema Module
+RATCHET Schema Definitions
 
-Pydantic models for protocol messages, experiment configuration, and results.
+Type-safe Pydantic models for the RATCHET platform.
 """
 
-from .bft import (
-    # Configuration
-    BFTConfig,
-    MessageType,
-    ReplicaStatus,
-
-    # Core message types
-    Digest,
-    Signature,
-    Request,
-    PrePrepare,
-    Prepare,
-    Commit,
-    Reply,
-
-    # View change protocol
-    PreparedCertificate,
-    CheckpointMessage,
-    ViewChange,
-    NewView,
-
-    # Federation extensions
-    PrecedentOperation,
-    FederationState,
-
-    # Utilities
-    MessageLog,
-    BFTMetrics,
-
-    # Verification helpers
-    verify_bft_invariant,
-    compute_max_faulty,
-    compute_min_replicas,
-    compute_quorum_size,
-
-    # Type aliases
-    ReplicaId,
-    ViewNumber,
-    SequenceNumber,
-    ClientId,
-    PBFTMessage,
+from .simulation import (
+    # Base type aliases
+    Dimension,
+    PositiveInt,
+    NonNegativeInt,
+    Radius,
+    Correlation,
+    Probability,
+    NonNegativeFloat,
+    Fraction,
+    ByzantineFraction,
+    # Enums
+    SamplingMode,
+    SATSolver,
+    DeceptionStrategy,
+    DetectionMethod,
+    ConsensusProtocol,
+    MaliciousStrategy,
+    AdversarialAttackType,
+    ProofStatus,
+    # Parameter models
+    AdversarialStrategy,
+    GeometricParams,
+    ComplexityParams,
+    DetectionParams,
+    FederationParams,
+    SimulationParams,
+    # Request/Response models
+    AdversaryConfig,
+    ProvenanceRecord,
+    SimulationRequest,
+    ConfidenceInterval,
+    AdversarialMetrics,
+    SimulationResult,
+    AttackScenario,
+    ProofObligation,
 )
 
 __all__ = [
-    # Configuration
-    "BFTConfig",
-    "MessageType",
-    "ReplicaStatus",
-
-    # Core message types
-    "Digest",
-    "Signature",
-    "Request",
-    "PrePrepare",
-    "Prepare",
-    "Commit",
-    "Reply",
-
-    # View change protocol
-    "PreparedCertificate",
-    "CheckpointMessage",
-    "ViewChange",
-    "NewView",
-
-    # Federation extensions
-    "PrecedentOperation",
-    "FederationState",
-
-    # Utilities
-    "MessageLog",
-    "BFTMetrics",
-
-    # Verification helpers
-    "verify_bft_invariant",
-    "compute_max_faulty",
-    "compute_min_replicas",
-    "compute_quorum_size",
-
-    # Type aliases
-    "ReplicaId",
-    "ViewNumber",
-    "SequenceNumber",
-    "ClientId",
-    "PBFTMessage",
+    # Base type aliases
+    "Dimension",
+    "PositiveInt",
+    "NonNegativeInt",
+    "Radius",
+    "Correlation",
+    "Probability",
+    "NonNegativeFloat",
+    "Fraction",
+    "ByzantineFraction",
+    # Enums
+    "SamplingMode",
+    "SATSolver",
+    "DeceptionStrategy",
+    "DetectionMethod",
+    "ConsensusProtocol",
+    "MaliciousStrategy",
+    "AdversarialAttackType",
+    "ProofStatus",
+    # Parameter models
+    "AdversarialStrategy",
+    "GeometricParams",
+    "ComplexityParams",
+    "DetectionParams",
+    "FederationParams",
+    "SimulationParams",
+    # Request/Response models
+    "AdversaryConfig",
+    "ProvenanceRecord",
+    "SimulationRequest",
+    "ConfidenceInterval",
+    "AdversarialMetrics",
+    "SimulationResult",
+    "AttackScenario",
+    "ProofObligation",
 ]

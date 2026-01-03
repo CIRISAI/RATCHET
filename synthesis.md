@@ -1,14 +1,14 @@
-# Worktree 3 Synthesis: U-03
+# Worktree 4 Synthesis: T-SCH-01
 
-**STATUS: READY FOR MERGE**
+## Status: READY FOR MERGE
 
 ## Assignment
-- **Issue:** U-03
-- **Scope:** BFT protocol implementation
-- **Dependencies:** None
+- **Issue:** T-SCH-01
+- **Scope:** Type hole fix
+- **Dependencies:** wt-5 (base types) - NOW MERGED
 
 ## Task
-Implement PBFT consensus with message formats, timeout params, n>=3f+1 verification
+Replace Dict[str,Any] with discriminated union SimulationParams using engine-specific types
 
 ## Parallel Context
 You are one of 15 parallel agents. If your work requires output from a dependent worktree, note the interface assumption and proceed. The coordinator will merge.
@@ -29,162 +29,156 @@ You are one of 15 parallel agents. If your work requires output from a dependent
 
 ## Work Log
 
-### 1. Analysis
+### 2026-01-02: Import Refactoring Complete (wt-5 merged)
 
-**Problem Statement:**
-The Red Team Analysis (Section 4.3) identified a critical gap: "Book IX does not specify a BFT protocol" and noted missing mechanisms for Byzantine fault tolerance. The original FSD Section 3.4 only listed requirements but did not specify the actual protocol implementation.
+#### Changes Made
 
-**Key Issues Identified:**
-1. No concrete protocol selection (PBFT, Raft, Tendermint mentioned but not chosen)
-2. No message format specification
-3. No timeout parameters defined
-4. No view change protocol for leader failure
-5. n >= 3f + 1 invariant mentioned but not enforced
+**Refactored `/home/emoore/RATCHET_WORKTREES/wt-4/schemas/simulation.py`**
 
-**Solution Approach:**
-Selected PBFT (Practical Byzantine Fault Tolerance - Castro & Liskov, 1999) as the consensus protocol because:
-- Most battle-tested BFT protocol
-- Deployed in production (IBM Hyperledger Fabric, etc.)
-- Optimal Byzantine resilience (n = 3f + 1)
-- Deterministic finality (no probabilistic confirmation)
-- Well-understood security properties
-
-### 2. Changes Made
-
-**FSD.md Section 3.4 - Complete PBFT Specification Added:**
-
-| Subsection | Content |
-|------------|---------|
-| 3.4.1 | Protocol selection rationale and BFT invariant derivation |
-| 3.4.2 | Complete message formats (REQUEST, PRE-PREPARE, PREPARE, COMMIT, REPLY) |
-| 3.4.3 | View change protocol (VIEW-CHANGE, NEW-VIEW) with timeout escalation |
-| 3.4.4 | Timeout parameters table with defaults and ranges |
-| 3.4.5 | Garbage collection and checkpoint specification |
-| 3.4.6 | Updated FederationEngine implementation with PBFT |
-| 3.4.7 | Security invariants for continuous monitoring |
-| 3.4.8 | Attack resistance matrix mapping attacks to protections |
-
-### 3. Code Created
-
-**New File: `schemas/bft.py`**
-
-Complete Pydantic model definitions for PBFT protocol:
-
-| Model | Purpose |
-|-------|---------|
-| `BFTConfig` | Protocol configuration (timeouts, water marks) |
-| `Digest` | SHA-256 message hashing for verification |
-| `Signature` | Ed25519 digital signatures |
-| `Request` | Client request (Phase 1) |
-| `PrePrepare` | Primary sequence assignment (Phase 2) |
-| `Prepare` | Replica prepared vote (Phase 3) |
-| `Commit` | Replica commit vote (Phase 4) |
-| `Reply` | Execution result to client (Phase 5) |
-| `PreparedCertificate` | Proof of prepared state |
-| `CheckpointMessage` | State checkpoint for GC |
-| `ViewChange` | Leader election initiation |
-| `NewView` | New leader announcement |
-| `PrecedentOperation` | Federation-specific operation |
-| `FederationState` | Federation state with BFT invariant validation |
-| `MessageLog` | Per-sequence message tracking |
-| `BFTMetrics` | Protocol health metrics |
-
-**Helper Functions:**
-- `verify_bft_invariant(n, f)` - Check n >= 3f + 1
-- `compute_max_faulty(n)` - Compute f = (n-1) // 3
-- `compute_min_replicas(f)` - Compute n = 3f + 1
-- `compute_quorum_size(n)` - Compute Q = 2f + 1
-
-**Key Safety Feature:**
-`FederationState` includes a `model_validator` that enforces the BFT invariant at construction time. Any attempt to create invalid state raises `ValueError`.
-
-### 4. Verification
-
-**Unit Test Requirements:**
+Now imports all base types from `schemas.types` (wt-5 canonical definitions):
 
 ```python
-# Test BFT invariant enforcement
-def test_bft_invariant_valid():
-    state = FederationState(
-        view_number=0,
-        last_sequence=0,
-        total_replicas=4,  # n = 4
-        max_faulty=1,      # f = 1, 4 >= 3(1)+1 = 4 OK
-        replica_ids=["r1", "r2", "r3", "r4"],
-        primary_id="r1"
-    )
-    assert state.quorum_size() == 3  # 2f + 1 = 3
-
-def test_bft_invariant_invalid():
-    with pytest.raises(ValueError, match="BFT invariant violated"):
-        FederationState(
-            view_number=0,
-            last_sequence=0,
-            total_replicas=3,  # n = 3
-            max_faulty=1,      # f = 1, 3 < 3(1)+1 = 4 FAIL
-            replica_ids=["r1", "r2", "r3"],
-            primary_id="r1"
-        )
-
-# Test helper functions
-def test_compute_functions():
-    assert verify_bft_invariant(4, 1) == True
-    assert verify_bft_invariant(3, 1) == False
-    assert compute_max_faulty(7) == 2
-    assert compute_min_replicas(2) == 7
-    assert compute_quorum_size(10) == 7  # f=3, 2*3+1=7
+from schemas.types import (
+    # Core refinement types
+    Dimension, Radius, Correlation, Probability, MahalanobisDistance,
+    SampleSize, Literals, WorldSize,
+    # Derived refinement types
+    NumConstraints, NumStatements, ObservableFraction, EffectiveRank,
+    ByzantineFraction, NodeCount, CaptureRate,
+    # Enumerations
+    SamplingMode, DeceptionStrategy, SATSolver, DetectionMethod,
+    ConsensusProtocol, AttackType, MaliciousStrategy, ProofStatus,
+    # Composite types
+    AdversarialStrategy, ProofObligation,
+)
 ```
 
-**Integration Test Requirements:**
-1. Full PBFT round with 4 replicas, 1 Byzantine
-2. View change triggered by primary timeout
-3. Behavioral correlation detection with synthetic Sybils
-4. Slow capture simulation over 10 periods
+**Removed duplicate local definitions:**
+- `Dimension`, `Radius`, `Correlation`, `Probability` (now from types.py)
+- `ByzantineFraction`, `NonNegativeFloat` (now from types.py)
+- All enums: `SamplingMode`, `DeceptionStrategy`, `SATSolver`, etc.
+- `AdversarialStrategy`, `ProofObligation`, `ProofStatus` (now from types.py)
 
-### 5. Handoff Notes
-
-**For Dependent Worktrees:**
-
-| Worktree | Interface | Notes |
-|----------|-----------|-------|
-| Federation Engine Implementation | Import from `schemas.bft` | Use `BFTConfig` for timeouts, `FederationState` for state tracking |
-| Red Team Testing | `verify_bft_invariant()` | Use to validate attack scenarios respect protocol constraints |
-| Formal Verification | Message types | Models define what needs to be proven (safety, liveness) |
-
-**Resolved Interfaces:**
-- Cryptographic signatures: Ed25519 via `cryptography` library (see `CryptoProvider` ABC)
-- Network layer: Abstract `NetworkTransport` interface defined in schemas/bft.py
-- Persistent storage: Abstract `PersistentStorage` interface defined in schemas/bft.py
-
-**Open Questions (RESOLVED):**
-
-All blocking decisions have been resolved:
-
-| Question | Decision | Rationale |
-|----------|----------|-----------|
-| Crypto library | `cryptography` (pyca/cryptography) | Most mature Python crypto library, provides Ed25519 + SHA-256 |
-| Serialization | JSON with Pydantic | Consistent with codebase, debuggable, type-safe |
-| Network abstraction | Abstract `NetworkTransport` interface | Decouples PBFT from transport, enables testing |
-| Persistent storage | Abstract `PersistentStorage` interface | Implementation-agnostic, supports crash recovery |
-
-See FSD.md Section 3.4.9 for detailed technology decisions.
-See schemas/bft.py for abstract base class definitions.
+**Kept simulation-specific types:**
+- `PositiveInt`, `NonNegativeInt`, `NonNegativeFloat`, `Fraction` (generic helpers)
+- `GeometricParams`, `ComplexityParams`, `DetectionParams`, `FederationParams`
+- `SimulationParams` discriminated union
+- `AdversaryConfig`, `ProvenanceRecord`, `SimulationRequest`
+- `ConfidenceInterval`, `AdversarialMetrics`, `SimulationResult`
+- `AttackScenario`
 
 ---
 
-## Summary
+### 2026-01-02: T-SCH-01 Type Hole Fix Complete
 
-**Deliverables Completed:**
-1. Full PBFT protocol specification in FSD.md Section 3.4
-2. Complete Pydantic schemas in `schemas/bft.py`
-3. n >= 3f + 1 invariant enforced at type level
-4. View change protocol with timeout escalation
-5. Attack resistance matrix for Red Team scenarios
+#### Analysis
 
-**Lines Changed:**
-- FSD.md: +340 lines (Section 3.4 expansion)
-- schemas/bft.py: +480 lines (new file)
-- schemas/__init__.py: +70 lines (new file)
+The Formal Review (Section 1.1.4) identified issue **T-SCH-01** as a critical type hole:
+- `parameters: Dict[str, Any]` in `SimulationRequest` provides no compile-time validation
+- No validation of parameter correctness for engine-specific requirements
+- Risk: Runtime type errors, invalid parameter combinations
 
-**Security Impact:**
-Addresses Red Team concern in Section 4.3 by providing concrete BFT implementation rather than just specification. The n >= 3f + 1 invariant is now enforced at construction time, preventing invalid federations from being created.
+The fix requires implementing a **discriminated union** with engine-specific parameter types that enforce:
+- Refinement types for all numeric parameters (dimension > 0, radius in (0, 0.5), etc.)
+- Engine-specific validation rules (BFT threshold for federation, k >= 3 for NP-hardness)
+- Proper typing for previously undefined types (AdversarialStrategy, etc.)
+
+#### Changes Made
+
+**1. Created `/home/emoore/RATCHET_WORKTREES/wt-4/schemas/simulation.py`**
+
+Comprehensive type-safe simulation parameter schemas including:
+
+- **Base Type Aliases (Refinement Types)** - now imported from schemas.types:
+  - `Dimension`: int > 0
+  - `Radius`: 0 < float < 0.5 (per Roadmap Section 4.1.3)
+  - `Correlation`: -1 <= float <= 1
+  - `Probability`: 0 < float < 1
+  - `ByzantineFraction`: 0 <= float < 0.33
+
+- **Engine-Specific Parameter Models**:
+  - `GeometricParams`: Addresses T-GEO-01 through T-GEO-04
+  - `ComplexityParams`: Addresses T-CPX-01, T-CPX-02 with k >= 3 warning
+  - `DetectionParams`: Addresses T-DET-01 through T-DET-03 with precondition warnings
+  - `FederationParams`: Enforces BFT invariant n >= 3f + 1
+
+- **Discriminated Union**:
+  ```python
+  SimulationParams = Annotated[
+      Union[GeometricParams, ComplexityParams, DetectionParams, FederationParams],
+      Field(discriminator="engine")
+  ]
+  ```
+
+- **Additional Types Defined**:
+  - `AdversarialStrategy` (addresses GAP-01) - now imported from schemas.types
+  - `ProofStatus` with extended states (addresses L-03) - now imported from schemas.types
+  - `ProofObligation` with `conditional_on` for ETH (addresses REC-H4) - now imported from schemas.types
+
+**2. Updated `/home/emoore/RATCHET_WORKTREES/wt-4/FSD.md` Section 6.2**
+
+Replaced the `Dict[str, Any]` type hole with documented discriminated union approach:
+- Added refinement type definitions
+- Documented engine-specific parameter models
+- Added type safety benefits explanation
+
+**3. Created `/home/emoore/RATCHET_WORKTREES/wt-4/schemas/__init__.py`**
+
+Package exports for all defined types.
+
+#### Code Quality
+
+- **Validators**: Model validators enforce:
+  - BFT safety invariant (malicious_fraction < 1/3)
+  - Warning for k < 3 (NP-hardness void)
+  - Warning for weak detection parameters (D < 0.5, p < 0.001, n < 100)
+
+- **Documentation**: Comprehensive docstrings reference formal review issue IDs
+
+- **Enums**: Type-safe enums for all constrained string literals
+
+#### Verification
+
+To verify the fix is correct:
+
+1. **Type Checking**: Run `mypy schemas/simulation.py` - should pass with no errors
+2. **Validation Tests**:
+   ```python
+   # Should succeed
+   GeometricParams(dimension=100, num_constraints=50, deceptive_radius=0.1)
+
+   # Should fail: radius out of bounds
+   GeometricParams(dimension=100, num_constraints=50, deceptive_radius=0.6)  # ValidationError
+
+   # Should fail: BFT violation
+   FederationParams(num_honest=5, num_malicious=5)  # ValueError: malicious_fraction >= 1/3
+   ```
+3. **Discriminated Union**: Pydantic correctly routes to engine-specific model based on `engine` field
+
+#### Handoff Notes
+
+**Dependency on wt-5 (Base Types)**: RESOLVED
+- All base types now imported from `schemas.types` (wt-5 merged to master)
+- No more local duplicate definitions
+
+**For Dependent Worktrees**:
+- `SimulationParams` is the union type to use in API handlers
+- Use `request.parameters.engine` to get engine type after validation
+- All engine-specific params are available via `request.parameters` (properly typed)
+
+**Issues Addressed**:
+| Issue ID | Description | Status |
+|----------|-------------|--------|
+| T-SCH-01 | Untyped parameters dictionary | FIXED |
+| T-GEO-01 | Unbounded dimension | FIXED |
+| T-GEO-02 | Unbounded radius | FIXED |
+| T-GEO-03 | Correlation bounds | FIXED |
+| T-GEO-04 | AdversarialStrategy undefined | FIXED |
+| T-CPX-01 | k < 3 NP-hardness | FIXED (with warning) |
+| T-CPX-02 | Observable fraction | FIXED |
+| T-DET-01 | Negative Mahalanobis | FIXED |
+| T-DET-02 | Deception rate bounds | FIXED |
+| T-DET-03 | Alpha/beta bounds | FIXED |
+| GAP-01 | AdversarialStrategy type | FIXED |
+| L-03 | Proof status incomplete | FIXED |
+| REC-H4 | ETH conditionality | FIXED |
