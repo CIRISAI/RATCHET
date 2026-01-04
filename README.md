@@ -3,6 +3,8 @@
 **Reference Architecture for Testing Coherence and Honesty in Emergent Traces**
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![DOI: CCA Paper](https://zenodo.org/badge/DOI/10.5281/zenodo.18142668.svg)](https://doi.org/10.5281/zenodo.18142668)
+[![DOI: CIRISAgent Paper](https://zenodo.org/badge/DOI/10.5281/zenodo.18137161.svg)](https://doi.org/10.5281/zenodo.18137161)
 
 RATCHET is the first computational implementation of the Coherence Ratchet framework described in Book IX of the CIRIS Covenant. It provides mathematical validation of the framework's core claims while documenting eight fundamental limitations that define its theoretical boundaries.
 
