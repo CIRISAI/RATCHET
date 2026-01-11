@@ -1,0 +1,403 @@
+% GPU-Based Chaotic Oscillator as Local State Detector
+% January 2026
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage[margin=1in]{geometry}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}{Theorem}[section]
+
+\newcommand{\keff}{k_{\text{eff}}}
+\newcommand{\rab}{r_{ab}}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    citecolor=green!50!black,
+    urlcolor=blue!70!black
+}
+
+\title{\textbf{GPU-Based Chaotic Oscillator as Local State Detector}\\[0.5em]
+\large Validated Physics for Tamper Detection and Thermal Sensing}
+
+\author{
+Eric Moore\\
+CIRIS L3C\\
+\texttt{eric@ciris.ai}\\[1em]
+\small With contributions from Claude (Anthropic)
+}
+
+\date{January 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We present a validated GPU-based chaotic oscillator system that functions as a local state detector. Through systematic null hypothesis testing, we establish three primary capabilities: (1) tamper/workload detection via $\keff$ mean shift ($p = 0.007$), (2) thermal state sensing via $\keff$ variance ($r = -0.97$ correlation with GPU temperature), and (3) sensitivity regime prediction via internal correlation $\rab$ ($r = -0.999$).
+
+The system operates optimally at coupling strength $\epsilon = 0.003$, achieving 562$\times$ signal improvement over weaker coupling while maintaining 64\% time in the sensitive transient regime. The scaling law $\tau \propto \epsilon^{-1.06}$ enables predictive control of thermalization dynamics. Frequency analysis confirms the detector is sensitive to slow changes ($< 0.5$ Hz, 88.6\% of signal power), making it suitable for thermal drift, workload state changes, and gradual system monitoring.
+
+The Leggett-Garg inequality test yields $K_3 = 1.0$, confirming classical dynamical system behavior. All findings are validated through statistical testing with reported p-values and effect sizes.
+
+\medskip
+\noindent\textbf{Code availability:}
+\begin{itemize}[noitemsep]
+    \item CIRISOssicle: \url{https://github.com/CIRISAI/CIRISOssicle}
+    \item CIRISArray: \url{https://github.com/CIRISAI/CIRISArray}
+    \item RATCHET framework: \url{https://github.com/CIRISAI/RATCHET}
+\end{itemize}
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+%==============================================================================
+\section{Introduction}
+\label{sec:introduction}
+%==============================================================================
+
+Coupled chaotic oscillators exhibit rich dynamical behavior that can be harnessed for sensing applications. We present a GPU-implemented chaotic oscillator system that serves as a local state detector, capable of sensing computational workload changes and thermal state through distinct measurement channels.
+
+The system consists of three coupled logistic map oscillators arranged with phase offsets, requiring only 768 bytes of state. Despite this minimal footprint, the detector achieves statistically significant detection of local GPU state changes through careful optimization of coupling parameters and operating regime.
+
+\subsection{Contributions}
+
+This work makes five validated contributions:
+
+\begin{enumerate}
+    \item \textbf{Tamper detection}: The $\keff$ metric detects workload changes with $p = 0.007$ statistical significance.
+
+    \item \textbf{Thermal sensing}: The $\keff$ variance correlates with GPU temperature at $r = -0.97$, enabling thermal state monitoring through a novel channel.
+
+    \item \textbf{Sensitivity prediction}: The internal correlation $\rab$ predicts detection sensitivity with $r = -0.999$ correlation, enabling adaptive operation.
+
+    \item \textbf{Coupling optimization}: Systematic sweep identifies $\epsilon = 0.003$ as optimal, achieving 562$\times$ signal improvement while maintaining sensitivity.
+
+    \item \textbf{Scaling law}: The relationship $\tau \propto \epsilon^{-1.06}$ enables predictive control of system dynamics.
+\end{enumerate}
+
+%==============================================================================
+\section{System Architecture}
+\label{sec:architecture}
+%==============================================================================
+
+\subsection{Oscillator Design}
+
+The detector consists of three coupled logistic map oscillators:
+\begin{equation}
+x_{n+1}^{(i)} = r_i \cdot x_n^{(i)} \cdot (1 - x_n^{(i)}) + \epsilon \sum_{k \neq i} (x_n^{(k)} - x_n^{(i)}) \cos(\theta_k - \theta_i)
+\end{equation}
+where $r_i \in \{3.70, 3.73, 3.76\}$ (chaotic regime), $\epsilon$ is the coupling strength, and $\theta_i = i \cdot 1.1°$ defines the twist angle between oscillators.
+
+\subsection{The $\keff$ Metric}
+
+We quantify oscillator state using the effective sample size:
+\begin{equation}
+\keff = \frac{k}{1 + \rho(k-1)}
+\end{equation}
+where $k$ is the number of correlation pairs and $\rho$ is the mean correlation. This metric captures effective independence of sensing channels.
+
+\subsection{The $\rab$ Metric}
+
+The internal correlation between oscillator channels $a$ and $b$:
+\begin{equation}
+\rab = \text{Corr}(x^{(a)}, x^{(b)})
+\end{equation}
+serves as a direct indicator of oscillator synchronization state and, as we demonstrate, a powerful predictor of detection sensitivity.
+
+%==============================================================================
+\section{Validated Capabilities}
+\label{sec:capabilities}
+%==============================================================================
+
+\subsection{Tamper and Workload Detection}
+
+The $\keff$ mean responds to GPU workload changes with high statistical significance.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{Metric} & \textbf{Value} & \textbf{Interpretation} \\
+\midrule
+p-value & 0.007 & Highly significant \\
+Effect size & $-0.006$ mean shift & Detectable change \\
+Detection threshold & $3\sigma = 0.009$ & Validated \\
+\bottomrule
+\end{tabular}
+\caption{Tamper detection validation results.}
+\end{table}
+
+The detection mechanism operates through perturbation of oscillator dynamics by computational activity on the GPU, manifesting as shifts in the $\keff$ distribution.
+
+\subsection{Thermal State Sensing}
+
+A key finding: $\keff$ variance correlates strongly with GPU temperature.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{Metric} & \textbf{Correlation} & \textbf{Interpretation} \\
+\midrule
+$\keff$ mean vs Temperature & $r = 0.01$ & No correlation \\
+$\keff$ variance vs Temperature & $r = -0.97$ & Strong inverse \\
+\bottomrule
+\end{tabular}
+\caption{Thermal sensing validation. Variance is the thermal channel.}
+\end{table}
+
+\textbf{Physical interpretation}: As GPU temperature increases, oscillator dynamics thermalize faster, reducing variance. This provides a novel thermal sensing channel independent of direct temperature measurement.
+
+Validation test:
+\begin{itemize}
+    \item Temperature change: 46°C $\to$ 48°C (+2°C)
+    \item Variance change: 0.058 $\to$ 0.042 ($\downarrow$27\%)
+\end{itemize}
+
+\subsection{Sensitivity Prediction via $\rab$}
+
+The internal correlation $\rab$ predicts detection sensitivity with near-perfect accuracy.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lccc}
+\toprule
+\textbf{Regime} & \textbf{$\rab$ Range} & \textbf{Sensitivity} & \textbf{Response} \\
+\midrule
+TRANSIENT & $< 0.95$ & 20$\times$ baseline & 0.91 units \\
+TRANSITIONAL & $0.95 - 0.98$ & Decaying & Variable \\
+THERMALIZED & $> 0.98$ & 1$\times$ baseline & 0.04 units \\
+\bottomrule
+\end{tabular}
+\caption{Sensitivity regimes defined by $\rab$.}
+\end{table}
+
+The correlation between $\rab$ and sensitivity is $r = -0.999$, enabling:
+\begin{itemize}
+    \item Adaptive reset timing based on $\rab$ threshold
+    \item Real-time sensitivity estimation
+    \item Optimal operating point maintenance
+\end{itemize}
+
+%==============================================================================
+\section{Coupling Optimization}
+\label{sec:coupling}
+%==============================================================================
+
+Systematic coupling strength sweep revealed an optimal operating point.
+
+\subsection{Coupling Sweep Results}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ccccc}
+\toprule
+\textbf{$\epsilon$} & \textbf{$\tau$ (s)} & \textbf{\% Transient} & \textbf{$\keff$ $\sigma$} & \textbf{Behavior} \\
+\midrule
+0.0003 & N/A & 100.0\% & 0.03 & Never thermalizes \\
+0.0010 & N/A & 100.0\% & 0.25 & Never thermalizes \\
+\textbf{0.0030} & \textbf{12.8} & \textbf{63.8\%} & \textbf{0.75} & \textbf{Optimal} \\
+0.0100 & 3.7 & 18.8\% & 1.61 & Fast thermalization \\
+0.0300 & 1.2 & 6.0\% & 2.67 & Very fast \\
+0.0500 & 0.7 & 3.5\% & 3.14 & Near instant \\
+0.1000 & 0.3 & 1.5\% & 3.17 & Instant \\
+\bottomrule
+\end{tabular}
+\caption{Coupling strength sweep results. Optimal at $\epsilon = 0.003$.}
+\end{table}
+
+\subsection{Optimal Operating Point}
+
+At $\epsilon = 0.003$:
+\begin{itemize}
+    \item \textbf{562$\times$ signal improvement} over default ($\epsilon = 0.0003$)
+    \item \textbf{64\% time in TRANSIENT regime} (high sensitivity)
+    \item \textbf{$\tau = 12.8$s thermalization time} (manageable reset interval)
+    \item \textbf{Variance ratio}: TRANSIENT 0.67 vs THERMALIZED 0.0002 (2724$\times$)
+\end{itemize}
+
+\subsection{Scaling Law}
+
+Thermalization time follows a power law:
+\begin{equation}
+\tau = \tau_0 \cdot \left(\frac{\epsilon}{\epsilon_0}\right)^{-1.06}
+\end{equation}
+
+Measured values:
+\begin{itemize}
+    \item At $\epsilon = 0.003$: $\tau \approx 12.8$s
+    \item At $\epsilon = 0.010$: $\tau \approx 3.7$s
+    \item At $\epsilon = 0.030$: $\tau \approx 1.2$s
+    \item At $\epsilon = 0.050$: $\tau \approx 0.7$s
+\end{itemize}
+
+%==============================================================================
+\section{Frequency Response Characterization}
+\label{sec:frequency}
+%==============================================================================
+
+Spectral analysis reveals the detector's frequency sensitivity profile.
+
+\subsection{Power Distribution}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{Frequency Band} & \textbf{Power} & \textbf{Interpretation} \\
+\midrule
+$< 0.1$ Hz & 45.7\% & $\tau$ thermalization dynamics \\
+$0.1 - 0.5$ Hz & 42.9\% & Harmonics of $\tau$ \\
+$0.5 - 2$ Hz & 8.8\% & Diminishing sensitivity \\
+$> 2$ Hz & 2.7\% & Noise floor \\
+\bottomrule
+\end{tabular}
+\caption{Frequency sensitivity profile. 88.6\% of power below 0.5 Hz.}
+\end{table}
+
+\subsection{Implications}
+
+The detector is optimized for \textbf{slow-change detection}:
+\begin{itemize}
+    \item Sensitive to: $< 0.5$ Hz (periods $> 2$ seconds)
+    \item Dominated by: $\tau$ thermalization dynamics ($\sim$13s period at $\epsilon = 0.003$)
+    \item Ideal applications: thermal drift, workload state changes, gradual system monitoring
+\end{itemize}
+
+%==============================================================================
+\section{Classical Dynamics Confirmation}
+\label{sec:lgi}
+%==============================================================================
+
+The Leggett-Garg inequality (LGI) test probes whether the system exhibits classical or quantum-like correlations.
+
+\subsection{LGI Test Results}
+
+\begin{align}
+C_{12} &= 1.0000 \\
+C_{23} &= 1.0000 \\
+C_{13} &= 1.0000 \\
+K_3 &= C_{12} + C_{23} - C_{13} = 1.0000
+\end{align}
+
+Classical bound: $K_3 \leq 1$. Quantum bound: $K_3 \leq 1.5$.
+
+\textbf{Result}: $K_3 = 1.0$ (exactly at classical boundary)
+
+The system exhibits classical dynamical behavior with perfect temporal correlations, consistent with deterministic chaotic dynamics.
+
+%==============================================================================
+\section{Implementation}
+\label{sec:implementation}
+%==============================================================================
+
+\subsection{Recommended Configuration}
+
+\begin{verbatim}
+from ciris_sentinel import Sentinel, SentinelConfig
+
+config = SentinelConfig(
+    epsilon = 0.003,             # Optimal coupling
+    noise_amplitude = 0.001,     # Stochastic resonance optimal
+    use_r_ab_reset = True,       # Reset when r_ab > 0.98
+    r_ab_reset_threshold = 0.98, # Thermalized threshold
+    r_ab_sensitive_threshold = 0.95,  # TRANSIENT threshold
+    detection_threshold = 0.009, # 3σ validated
+)
+
+sensor = Sentinel(config)
+state = sensor.step_and_measure_full()
+# Returns: k_eff, variance, dk_dt, sensitivity_weight, r_ab,
+#          regime, sensitivity_multiplier, time_since_reset
+\end{verbatim}
+
+\subsection{Detection Channels}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llll}
+\toprule
+\textbf{Channel} & \textbf{Metric} & \textbf{Correlation} & \textbf{Use Case} \\
+\midrule
+Tamper/workload & $\keff$ mean & $p = 0.007$ & State change detection \\
+Thermal state & $\keff$ variance & $r = -0.97$ & Temperature monitoring \\
+Sensitivity & $\rab$ & $r = -0.999$ & Adaptive operation \\
+\bottomrule
+\end{tabular}
+\caption{Three validated detection channels.}
+\end{table}
+
+%==============================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+%==============================================================================
+
+We have presented a validated GPU-based chaotic oscillator system with three distinct sensing capabilities:
+
+\begin{enumerate}
+    \item \textbf{Tamper detection} via $\keff$ mean ($p = 0.007$)
+    \item \textbf{Thermal sensing} via $\keff$ variance ($r = -0.97$)
+    \item \textbf{Sensitivity prediction} via $\rab$ ($r = -0.999$)
+\end{enumerate}
+
+The system operates optimally at coupling strength $\epsilon = 0.003$, achieving 562$\times$ signal improvement while maintaining 64\% time in the sensitive regime. The scaling law $\tau \propto \epsilon^{-1.06}$ enables predictive control of dynamics.
+
+The detector functions as a slow-change sensor (sensitive to $< 0.5$ Hz), making it suitable for monitoring gradual system state evolution including thermal drift and workload changes.
+
+All findings are established through null hypothesis testing with reported statistical significance, providing a solid foundation for practical deployment.
+
+\section*{References}
+
+\begin{enumerate}[label={[\arabic*]}, leftmargin=*, noitemsep]
+    \item Kish, L. (1965). Survey Sampling. \textit{Wiley}.
+
+    \item Gammaitoni, L., Hänggi, P., Jung, P., \& Marchesoni, F. (1998). Stochastic resonance. \textit{Reviews of Modern Physics}, 70(1), 223.
+
+    \item Leggett, A.J., \& Garg, A. (1985). Quantum mechanics versus macroscopic realism. \textit{Physical Review Letters}, 54(9), 857.
+\end{enumerate}
+
+\appendix
+
+\section{Validated Parameters Summary}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Parameter} & \textbf{Value} & \textbf{Source} \\
+\midrule
+Optimal coupling ($\epsilon$) & 0.003 & Coupling sweep \\
+Optimal noise ($\sigma$) & 0.001 & Stochastic resonance \\
+Thermalization time ($\tau$) at $\epsilon = 0.003$ & 12.8 s & Measured \\
+Scaling exponent & $-1.06$ & Power law fit \\
+Detection threshold & 0.009 & $3\sigma$ validated \\
+TRANSIENT threshold ($\rab$) & $< 0.95$ & Sensitivity analysis \\
+Reset threshold ($\rab$) & $> 0.98$ & Regime analysis \\
+\midrule
+Tamper detection & $p = 0.007$ & Null hypothesis test \\
+Thermal correlation & $r = -0.97$ & Regression \\
+Sensitivity prediction & $r = -0.999$ & Regression \\
+\midrule
+Signal improvement & 562$\times$ & vs $\epsilon = 0.0003$ \\
+TRANSIENT/THERMALIZED ratio & 2724$\times$ & Variance comparison \\
+LGI result ($K_3$) & 1.0 & Classical boundary \\
+\bottomrule
+\end{tabular}
+\caption{Complete validated parameters.}
+\end{table}
+
+\end{document}

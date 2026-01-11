@@ -1,0 +1,12 @@
+name = "RATCHET"
+version = "0.1.0"
+defaultTargets = ["RATCHET"]
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.14.0"
+
+[[lean_lib]]
+name = "RATCHET"
+roots = ["RATCHET"]
