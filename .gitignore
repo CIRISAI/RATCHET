@@ -63,3 +63,4 @@ CONSOLIDATED_REVIEW.md
 EXECUTION_PLAN.md
 COORDINATOR.md
 formal/.lake/
+release/data_scrubbed_v1/*.jsonl

@@ -1,0 +1,65 @@
+{
+  "release_built_at": "2026-04-27T16:04:18.994916+00:00",
+  "scrubber": "Rust v2 (DistilBERT-multilingual NER + regex, ort INT8) \u2192 spaCy en_core_web_sm + xx_ent_wiki_sm post-pass",
+  "filter_rules": [
+    "Pass 1: cirislens_core.scrub_trace at level=full_traces (XLM-R / DistilBERT multilingual NER + regex; year-residue invariant).",
+    "Pass 2: spaCy backstop with placeholder protection. Routes non-Latin-heavy strings to xx_ent_wiki_sm (multilingual), everything else to en_core_web_sm. Catches entities the Rust multilingual model missed in dense-placeholder context, including English names embedded in non-English prompts and CJK toponyms that don't survive transformer chunk boundaries."
+  ],
+  "files": {
+    "accord_traces.jsonl": {
+      "sha256": "6a00017c54c0b859de9693d13024bea337176c627bd56515b7417c1b62c67ebc",
+      "size_bytes": 223057500,
+      "row_count": 6465,
+      "spacy_entities_redacted": 737922,
+      "spacy_by_label": {
+        "ORG": 209307,
+        "DATE": 170265,
+        "PERSON": 169116,
+        "GPE": 12520,
+        "EVENT": 80,
+        "NORP": 18518,
+        "WORK_OF_ART": 30638,
+        "TIME": 19817,
+        "LOC": 27868,
+        "MISC": 76908,
+        "FAC": 880,
+        "LAW": 2005
+      }
+    },
+    "trace_context.jsonl": {
+      "sha256": "09a6ab25fa04ecbfdb3cbdc0ba8bae98e320428819053ab9b4d4d7c8ccf2b4ab",
+      "size_bytes": 10662771,
+      "row_count": 6465,
+      "spacy_entities_redacted": 15108,
+      "spacy_by_label": {
+        "DATE": 7508,
+        "ORG": 4539,
+        "GPE": 891,
+        "PERSON": 1819,
+        "NORP": 230,
+        "WORK_OF_ART": 3,
+        "EVENT": 18,
+        "LAW": 9,
+        "TIME": 91
+      }
+    },
+    "accord_public_keys.jsonl": {
+      "sha256": "2494814033c520aebb20477603d02f47ad11fff6565857202ff24f73cd855d6e",
+      "size_bytes": 172564,
+      "row_count": 583,
+      "passthrough": true
+    },
+    "accord_trace_batches.jsonl": {
+      "sha256": "c749caf0230239e2dd77e2f3f1b873ab3c805164de2821e2b41b3d563d3c9e0b",
+      "size_bytes": 2877803,
+      "row_count": 7417,
+      "passthrough": true
+    },
+    "connectivity_events.jsonl": {
+      "sha256": "d95958ce2eb3a217cad8221987fd6594cf622d81ad02999ea9f06e7be676a10c",
+      "size_bytes": 2685253,
+      "row_count": 5704,
+      "passthrough": true
+    }
+  }
+}

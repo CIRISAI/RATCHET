@@ -1,0 +1,69 @@
+{
+  "release_built_at": "2026-04-27T17:11:51.445909+00:00",
+  "data_dir": "data_scrubbed_v1/",
+  "scrubber_pipeline": [
+    "Pass 1: cirislens_core.scrub_trace at level=full_traces \u2014 Rust v2 ort+INT8 DistilBERT-multilingual NER scoped to SCRUB_FIELDS subtrees + regex pass applied globally to all strings (year, year-bearing identifier, email, phone, IPv4, URL, SSN, credit card). Year-residue invariant rejects any trace with a 1700-2023 string-leaf in the scrubbed output (zero rejected on this corpus).",
+    "Pass 2: spaCy en_core_web_sm with placeholder-mask protection. Redacts PERSON / ORG / GPE / LOC / FAC / NORP / DATE / TIME / EVENT / WORK_OF_ART / LAW spans on all strings, routing strings with substantial non-Latin content (\u22655% or \u22653 non-Latin chars) to xx_ent_wiki_sm (multilingual) instead.",
+    "Pass 3: post-pass year-residue check on the final scrubbed output (verified zero across reasoning-text files)."
+  ],
+  "filter_rules": [
+    "signature_verified=true required (all 6,465 rows verified)",
+    "timestamp >= 2026-03-22 (HF release cutoff; pre-cutoff sparse-field traces dropped)",
+    "wbd_deferral retry-loop fixture excluded"
+  ],
+  "files": {
+    "accord_public_keys.jsonl": {
+      "sha256": "2494814033c520aebb20477603d02f47ad11fff6565857202ff24f73cd855d6e",
+      "size_bytes": 172564,
+      "row_count": 583
+    },
+    "accord_trace_batches.jsonl": {
+      "sha256": "c749caf0230239e2dd77e2f3f1b873ab3c805164de2821e2b41b3d563d3c9e0b",
+      "size_bytes": 2877803,
+      "row_count": 7417
+    },
+    "accord_traces.jsonl": {
+      "sha256": "6a00017c54c0b859de9693d13024bea337176c627bd56515b7417c1b62c67ebc",
+      "size_bytes": 223057500,
+      "row_count": 6465
+    },
+    "connectivity_events.jsonl": {
+      "sha256": "d95958ce2eb3a217cad8221987fd6594cf622d81ad02999ea9f06e7be676a10c",
+      "size_bytes": 2685253,
+      "row_count": 5704
+    },
+    "trace_context.jsonl": {
+      "sha256": "09a6ab25fa04ecbfdb3cbdc0ba8bae98e320428819053ab9b4d4d7c8ccf2b4ab",
+      "size_bytes": 10662771,
+      "row_count": 6465
+    }
+  },
+  "audit": {
+    "accord_public_keys.jsonl": {
+      "string_leaf_year_residue": 0,
+      "residual_meta_reasoning_lines": 0
+    },
+    "accord_trace_batches.jsonl": {
+      "string_leaf_year_residue": 37,
+      "residual_meta_reasoning_lines": 0
+    },
+    "accord_traces.jsonl": {
+      "string_leaf_year_residue": 0,
+      "residual_meta_reasoning_lines": 143
+    },
+    "connectivity_events.jsonl": {
+      "string_leaf_year_residue": 29,
+      "residual_meta_reasoning_lines": 0
+    },
+    "trace_context.jsonl": {
+      "string_leaf_year_residue": 0,
+      "residual_meta_reasoning_lines": 0
+    }
+  },
+  "known_residual": {
+    "residual_named_entity_lines_total": "see audit.<file>.residual_meta_reasoning_lines",
+    "rate": "approximately 1.9% of reasoning-text rows",
+    "concentration": "agent-meta-reasoning fields (aspdma_prompt, dsdma.prompt_used, current_thought_summary.content, idma_result.prompt_used and recovery fields). Not user content.",
+    "explanation": "Four mechanistic NER models (DistilBERT-multilingual INT8, regex, spaCy en_core_web_sm, spaCy xx_ent_wiki_sm) converge on missing certain named-entity classes in dense-prompt context with embedded placeholders. The residual is preserved rather than removed via topic-specific regex because the methodology is mechanistic and reproducible: same source + same pinned models = bytewise-identical output. A topic blacklist would defeat that property."
+  }
+}
