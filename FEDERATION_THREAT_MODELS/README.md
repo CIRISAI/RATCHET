@@ -8,7 +8,13 @@ These are **copies**. The authoritative versions live in their respective reposi
 
 RATCHET (`../`) is the federation's anti-Sybil evaluator. It consumes the federation threat model (`FEDERATION_THREAT_MODEL.md`) as its interface contract — the F-AV catalog tells RATCHET what threats it is expected to detect, the substrate-assumption surface tells it what it can rely on, and the per-F-AV dimension mapping tells it which N_eff signals to compute. The per-repo substrate threat models cover Class 1 substrate threats that RATCHET assumes hold (cryptography, hardware identity, build provenance, signed evidence durability, audit log integrity, etc.); RATCHET does not detect substrate-class threats, but understanding them is necessary for understanding what RATCHET *can* detect.
 
-Vendoring the snapshots here lets a RATCHET reviewer / auditor / integrator read the full federation threat surface without cross-repo navigation, and lets RATCHET's own CI validate against a known threat-model state.
+Vendoring snapshots here serves three concrete purposes:
+
+1. **Self-contained reading**. RATCHET is public AGPL-3.0 on GitHub. A reviewer or integrator picking up RATCHET should be able to understand the full federation threat surface without cloning 8 other repositories. Vendoring removes that friction.
+
+2. **Snapshot stability**. RATCHET's interface contract is pinned to a *known state* of the federation threat model. When the source documents change in ways that affect what RATCHET must detect, that change is a deliberate refresh of this directory — not a silent drift through cross-repo updates.
+
+3. **Public reviewability**. Anyone reading RATCHET in the open — researchers, auditors, federation participants, adversarial reviewers — sees exactly the threat surface RATCHET was designed against, at exactly the version RATCHET was designed against.
 
 ## Contents
 
@@ -60,7 +66,7 @@ This directory is **manually synchronized**, not automated. The federation delib
 
 - Threat model changes are rare (quarterly minor, annual major per `FEDERATION_THREAT_MODEL.md` §12).
 - Each refresh should be reviewed for material impact on RATCHET's interface contract; automatic sync would obscure the review.
-- Vendored snapshots make RATCHET self-contained for offline review and air-gapped audit.
+- A vendored snapshot makes the threat-model version RATCHET was designed against legible to public readers without cross-repo navigation.
 
 **Refresh trigger**: any of the source files moves materially — substantively new F-AVs, primitive changes, fail-secure protocol revisions, or version bumps in the federation threat model.
 
