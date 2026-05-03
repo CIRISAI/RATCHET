@@ -29,7 +29,8 @@ FEDERATION_THREAT_MODELS/
 ├── CIRISBilling_THREAT_MODEL.md       substrate: billing, bond purchase flow
 ├── CIRISProxy_THREAT_MODEL.md         substrate: federation proxy / routing
 ├── CIRISOssicle_THREAT_MODEL.md       substrate: ossicle (signed manifest) format
-└── CIRISEdge_THREAT_MODEL.md          substrate: federation transport (Reticulum + multi-medium); fills N1 + N2 primitives
+├── CIRISEdge_THREAT_MODEL.md          substrate: federation transport (Reticulum + multi-medium); fills N1 + N2 primitives
+└── CIRISLensCore_THREAT_MODEL.md      substrate: science-layer detection runtime (manifold-conformity + 5 ratchet detectors); folds into agent post-PoB §3.1
 ```
 
 ## Reading order
@@ -57,8 +58,9 @@ Snapshots taken **2026-05-02 (UTC-5)** from the following commits, with `CIRISEd
 | `CIRISProxy_THREAT_MODEL.md` | CIRISProxy | `docs/THREAT_MODEL.md` | `44ae015` | 2026-05-01 | 532 |
 | `CIRISOssicle_THREAT_MODEL.md` | CIRISOssicle | `THREAT_MODEL.md` | `167291c` | 2026-01-10 | 190 |
 | `CIRISEdge_THREAT_MODEL.md` | CIRISEdge | `docs/THREAT_MODEL.md` | `2c3c167` | 2026-05-03 | 893 |
+| `CIRISLensCore_THREAT_MODEL.md` | CIRISLens | `docs/THREAT_MODEL_CORE.md` | `5717da3` | 2026-05-03 | 939 |
 
-**Total: 8,691 lines across 9 files.**
+**Total: 9,630 lines across 10 files.**
 
 The `FEDERATION_THREAT_MODEL.md` document is **v1.0 (first publication)**. It survived 8 reviewer-passes (4 specialist roles × 2 internal versions) before the published v1.0 was produced. See its Appendix A for the v1 → v2 → v1.0 (published) lineage.
 
@@ -88,6 +90,7 @@ cp ../../CIRISBilling/docs/THREAT_MODEL.md            CIRISBilling_THREAT_MODEL.
 cp ../../CIRISProxy/docs/THREAT_MODEL.md              CIRISProxy_THREAT_MODEL.md
 cp ../../CIRISOssicle/THREAT_MODEL.md                 CIRISOssicle_THREAT_MODEL.md
 cp ../../CIRISEdge/docs/THREAT_MODEL.md               CIRISEdge_THREAT_MODEL.md
+cp ../../CIRISLens/docs/THREAT_MODEL_CORE.md          CIRISLensCore_THREAT_MODEL.md
 
 # Then update the provenance table above with new commit hashes / dates / line counts
 # Then commit + push from RATCHET
