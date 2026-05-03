@@ -48,7 +48,7 @@ Snapshots taken **2026-05-02 (UTC-5)** from the following commits, with `CIRISEd
 
 | File | Source repo | Source path | Commit | Date | Lines |
 |------|-------------|-------------|--------|------|-------|
-| `FEDERATION_THREAT_MODEL.md` | CIRISVerify | `docs/FEDERATION_THREAT_MODEL.md` | `d66ff9c` | 2026-05-02 | 2,095 |
+| `FEDERATION_THREAT_MODEL.md` | CIRISVerify | `docs/FEDERATION_THREAT_MODEL.md` | `c09dd24` | 2026-05-03 | 2,095 |
 | `CIRISVerify_THREAT_MODEL.md` | CIRISVerify | `docs/THREAT_MODEL.md` | `de28673` | 2026-05-02 | 540 |
 | `CIRISPersist_THREAT_MODEL.md` | CIRISPersist | `docs/THREAT_MODEL.md` | `6e9b243` | 2026-05-01 | 980 |
 | `CIRISRegistry_THREAT_MODEL.md` | CIRISRegistry | `docs/THREAT_MODEL.md` | `242ec88` | 2026-05-01 | 1,896 |
