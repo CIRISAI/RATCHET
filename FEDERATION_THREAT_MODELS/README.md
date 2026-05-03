@@ -6,7 +6,7 @@ These are **copies**. The authoritative versions live in their respective reposi
 
 ## Why this directory exists
 
-RATCHET (`../`) is the federation's anti-Sybil evaluator. It consumes the federation threat model (`FEDERATION_THREAT_MODEL.md`) as its interface contract — the F-AV catalog tells RATCHET what threats it is expected to detect, the substrate-assumption surface tells it what it can rely on, and the per-F-AV dimension mapping tells it which N_eff signals to compute. The per-repo substrate threat models cover Class 1 substrate threats that RATCHET assumes hold (cryptography, hardware identity, build provenance, signed evidence durability, audit log integrity, etc.); RATCHET does not detect substrate-class threats, but understanding them is necessary for understanding what RATCHET *can* detect.
+RATCHET (`../`) is the federation's anti-Sybil evaluator. It consumes the federation threat model (`FEDERATION_THREAT_MODEL.md`) as its interface contract — the F-AV catalog tells RATCHET what threats it is expected to detect, the substrate-assumption surface tells it what it can rely on, and the per-F-AV dimension mapping tells it which N_eff signals to compute. The per-repo substrate threat models cover Class 1 substrate threats that RATCHET assumes hold (cryptography, hardware identity, build provenance, signed evidence durability, audit log integrity, federation transport, etc.); RATCHET does not detect substrate-class threats, but understanding them is necessary for understanding what RATCHET *can* detect.
 
 Vendoring snapshots here serves three concrete purposes:
 
@@ -28,7 +28,8 @@ FEDERATION_THREAT_MODELS/
 ├── CIRISLens_THREAT_MODEL.md          substrate: ethical-reasoning analysis layer (pre-§3.1 collapse)
 ├── CIRISBilling_THREAT_MODEL.md       substrate: billing, bond purchase flow
 ├── CIRISProxy_THREAT_MODEL.md         substrate: federation proxy / routing
-└── CIRISOssicle_THREAT_MODEL.md       substrate: ossicle (signed manifest) format
+├── CIRISOssicle_THREAT_MODEL.md       substrate: ossicle (signed manifest) format
+└── CIRISEdge_THREAT_MODEL.md          substrate: federation transport (Reticulum + multi-medium); fills N1 + N2 primitives
 ```
 
 ## Reading order
@@ -43,7 +44,7 @@ For a RATCHET reader picking this up cold:
 
 ## Provenance
 
-Snapshots taken **2026-05-02 (UTC-5)** from the following commits:
+Snapshots taken **2026-05-02 (UTC-5)** from the following commits, with `CIRISEdge_THREAT_MODEL.md` added 2026-05-03 when the Edge substrate published its baseline threat model:
 
 | File | Source repo | Source path | Commit | Date | Lines |
 |------|-------------|-------------|--------|------|-------|
@@ -55,8 +56,9 @@ Snapshots taken **2026-05-02 (UTC-5)** from the following commits:
 | `CIRISBilling_THREAT_MODEL.md` | CIRISBilling | `docs/THREAT_MODEL.md` | `974ed06` | 2026-05-01 | 620 |
 | `CIRISProxy_THREAT_MODEL.md` | CIRISProxy | `docs/THREAT_MODEL.md` | `44ae015` | 2026-05-01 | 532 |
 | `CIRISOssicle_THREAT_MODEL.md` | CIRISOssicle | `THREAT_MODEL.md` | `167291c` | 2026-01-10 | 190 |
+| `CIRISEdge_THREAT_MODEL.md` | CIRISEdge | `docs/THREAT_MODEL.md` | `2c3c167` | 2026-05-03 | 893 |
 
-**Total: 7,798 lines across 8 files.**
+**Total: 8,691 lines across 9 files.**
 
 The `FEDERATION_THREAT_MODEL.md` document is **v1.0 (first publication)**. It survived 8 reviewer-passes (4 specialist roles × 2 internal versions) before the published v1.0 was produced. See its Appendix A for the v1 → v2 → v1.0 (published) lineage.
 
@@ -85,6 +87,7 @@ cp ../../CIRISLens/docs/THREAT_MODEL.md               CIRISLens_THREAT_MODEL.md
 cp ../../CIRISBilling/docs/THREAT_MODEL.md            CIRISBilling_THREAT_MODEL.md
 cp ../../CIRISProxy/docs/THREAT_MODEL.md              CIRISProxy_THREAT_MODEL.md
 cp ../../CIRISOssicle/THREAT_MODEL.md                 CIRISOssicle_THREAT_MODEL.md
+cp ../../CIRISEdge/docs/THREAT_MODEL.md               CIRISEdge_THREAT_MODEL.md
 
 # Then update the provenance table above with new commit hashes / dates / line counts
 # Then commit + push from RATCHET
