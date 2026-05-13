@@ -1,0 +1,228 @@
+ratchet_calibration_version: 1
+projection_version: crc-v1
+calibrated_at: '2026-05-13T21:43:28+00:00'
+calibration_corpus:
+  source_package: ratchet_v0_1_0_calibration
+  trace_events_sha256: 24f5b517917e52751b593e1958ec239b7d41f916023a524b3770490be3f61338
+  n_thoughts: 264
+  schema_version: 2.7.9
+  exported_at: '2026-05-13T21:38:29.906634+00:00'
+  known_issues:
+  - 'channel_id is scrubbed to ''[IDENTIFIER]'' for ALL traces (CIRISLens#12). Task-class derivation via channel_id prefix
+    is unusable; all traces will project into ''other'' cohort until #12 lands.'
+  - "deployment_region is empty for all traces (operator config \u2014 value defaults to '' and persist drops empty optionals)."
+sample_size_gate: 500
+manifold_threshold_global: 2.5
+projection:
+  field_order:
+  - csdma_plausibility_score
+  - dsdma_domain_alignment
+  - coherence_level
+  - entropy_level
+  - idma_k_eff
+  - idma_correlation_risk
+  - entropy_score
+  - coherence_score
+  - optimization_veto_entropy_ratio
+  - epistemic_humility_certainty
+  - conscience_passed
+  - entropy_passed
+  - coherence_passed
+  - optimization_veto_passed
+  - epistemic_humility_passed
+  - action_was_overridden
+  imputation:
+    csdma_plausibility_score: 0.9818181818181807
+    dsdma_domain_alignment: 0.5651515151515158
+    coherence_level: 0.9293181818181782
+    entropy_level: 0.10053030303030322
+    idma_k_eff: 1.0
+    idma_correlation_risk: 0.9388257575757553
+    entropy_score: 0.14554054054054075
+    coherence_score: 0.8869930069930081
+    optimization_veto_entropy_ratio: 1.51171875
+    epistemic_humility_certainty: 0.9540909090909107
+    conscience_passed: 0.8068181818181818
+    entropy_passed: 0.9662162162162162
+    coherence_passed: 0.8951048951048951
+    optimization_veto_passed: 0.859375
+    epistemic_humility_passed: 1.0
+    action_was_overridden: 0.19318181818181818
+  standardization:
+    means:
+    - 0.9818181818181807
+    - 0.5651515151515158
+    - 0.9293181818181782
+    - 0.10053030303030322
+    - 1.0
+    - 0.9388257575757553
+    - 0.14554054054054033
+    - 0.8869930069930044
+    - 1.51171875
+    - 0.9540909090909074
+    - 0.8068181818181818
+    - 0.9662162162162158
+    - 0.895104895104895
+    - 0.859375
+    - 1.0
+    - 0.19318181818181818
+    stds:
+    - 0.08019217620171523
+    - 0.3942022724295398
+    - 0.164153905896073
+    - 0.14283819195763575
+    - 1.0
+    - 0.17847773803169661
+    - 0.09573196397812442
+    - 0.1527104483462656
+    - 1.47547170407518
+    - 0.008846136570922087
+    - 0.39479438104636844
+    - 0.13527582766166926
+    - 0.22551769925310686
+    - 0.24206145913796356
+    - 1.0
+    - 0.3947943810463685
+  retention_mask:
+  - true
+  - true
+  - true
+  - true
+  - false
+  - true
+  - true
+  - true
+  - true
+  - true
+  - true
+  - true
+  - true
+  - true
+  - false
+  - true
+  retained_dim_count: 14
+cohort_centroids:
+- cohort:
+    agent_role: null
+    agent_template: null
+    deployment_domain: null
+    deployment_type: null
+    deployment_region: null
+    deployment_trust_mode: null
+  centroid:
+  - 0.17433293585130774
+  - -0.16740606511284153
+  - -0.3342253722571068
+  - 0.3333909287231972
+  - -0.04568350517051178
+  - 0.3188434189750087
+  - -0.2794040668273607
+  - 0.2751354486883787
+  - -0.06433732297051134
+  - -0.4898063725081462
+  - -0.14480722081946817
+  - -0.2696973745794759
+  - -0.33685191288442623
+  - 0.4898063725081462
+  variance:
+  - 0.02992323789898665
+  - 0.9668971162117943
+  - 1.9311026308248855
+  - 1.4465810025343322
+  - 1.211014369881408
+  - 1.863722869709919
+  - 1.9850367317722004
+  - 1.9676474395957353
+  - 0.5186107990080278
+  - 1.5214050140744433
+  - 2.1613541099452966
+  - 2.0203063125702676
+  - 1.9093249064331614
+  - 1.5214050140744433
+  sample_count: 119
+  above_sample_size_gate: false
+- cohort:
+    agent_role: ally
+    agent_template: null
+    deployment_domain: general
+    deployment_type: production
+    deployment_region: null
+    deployment_trust_mode: null
+  centroid:
+  - -0.06423962281003502
+  - 0.21665029954718207
+  - 0.2972389175060146
+  - -0.3529811686089244
+  - 0.0843978161044291
+  - -0.26829789776958446
+  - 0.21466039904852774
+  - -0.22568112298692
+  - 0.10847627683623286
+  - 0.4330345216831164
+  - 0.11099555090188508
+  - 0.20672455764868064
+  - 0.2581988897471612
+  - -0.4330345216831163
+  variance:
+  - 1.418523873270861
+  - 0.9536582529323744
+  - 0.05277076428910863
+  - 0.3494621056094313
+  - 0.6683691090924495
+  - 0.1623565557002489
+  - 0.07164349937969948
+  - 0.08915218447191538
+  - 1.5676975104917659
+  - 0.13940736649380747
+  - 0.015400015400015296
+  - 0.05341880341880317
+  - 0.08333333333333348
+  - 0.13940736649380747
+  sample_count: 90
+  above_sample_size_gate: false
+- cohort:
+    agent_role: unknown
+    agent_template: null
+    deployment_domain: general
+    deployment_type: production
+    deployment_region: null
+    deployment_trust_mode: null
+  centroid:
+  - -0.2720736966072513
+  - 0.007687177985114053
+  - 0.23675121314655084
+  - -0.1437311880592292
+  - -0.03926302425644227
+  - -0.25082829197750206
+  - 0.2532663279653399
+  - -0.2259966786380772
+  - -0.03830406330352627
+  - 0.3511609341270762
+  - 0.13168108538814488
+  - 0.2452504979377528
+  - 0.30631777374549557
+  - -0.35116093412707616
+  variance:
+  - 2.267502008032128
+  - 1.0099534275615787
+  - 0.09312604748848702
+  - 0.633247997524595
+  - 1.0683975059878588
+  - 0.10124291236544555
+  - 0.0794137467110106
+  - 0.09863711126688464
+  - 1.0829132367782293
+  - 0.33086992543496363
+  - 0.015546124637033618
+  - 0.05392561983471052
+  - 0.08412396694214866
+  - 0.33086992543496363
+  sample_count: 55
+  above_sample_size_gate: false
+notes:
+- v0.1.0 baseline bundle. All cohort cells below sample_size_gate=500.
+- Lens-core scoring against this bundle returns LC-AV-18 indeterminate for every cohort until v0.2 re-calibration on a larger
+  corpus.
+- "idma_k_eff and epistemic_humility_passed dropped by retention mask (std<1e-9 in calibration corpus \u2014 degenerate in\
+  \ 2.7.9-stable traffic)."
+- "manifold_threshold_global=2.5\u03C3 is provisional; needs empirical ROC fit."

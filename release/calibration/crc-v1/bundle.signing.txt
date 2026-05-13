@@ -1,0 +1,7 @@
+# CIRISLensCore v0.1.0 calibration bundle — signing target
+# Algorithm: Ed25519 + ML-DSA-65 (hybrid, federation primitive)
+# Canonical bytes: bundle.cbor (canonical CBOR per RFC 8949 §4.2)
+# Sign with ciris-keyring + ciris-crypto v1.9.0
+#
+# Sha256 of canonical bytes:
+323a171c1f3306440ab92580605eb1ba9a2eb4eae283c2ba0c339e8800c4f6ed
