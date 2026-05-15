@@ -248,3 +248,42 @@ After the commit lands, the experiment proceeds to data collection. If any aspec
 ### A3 — 2026-05-15: Confirm `CIRIS_DISABLE_TASK_APPEND=1` is auto-set
 
 **Not an amendment per se** — just a recorded confirmation: `CIRISAgent/tools/qa_runner/modules/model_eval_tests.py:SERVER_ENV` already sets `CIRIS_DISABLE_TASK_APPEND=1` whenever the `model_eval` module runs. Each question creates a fresh CIRIS task instead of appending to an in-flight thought. Validated in Phase 0 smoke (n=18 thoughts produced 18 independent traces with no cross-question contamination). The Phase 1 workflow sets this env var explicitly as well, for auditor visibility.
+
+### A4 — 2026-05-15: Boundary-observability conditional + Phase 1b follow-up
+
+**Trigger:** Phase 1 run `25935989178` returned INDETERMINATE per §7 (Opus n=0 cell abort). The 4-model partial results clustered $N_{\text{eff}} \in [4.5, 6.6]$, well below the pre-registered $[6.6, 7.6]$ PASS window. Diagnosis: the CIRIS conscience faculty traces only populate when the agent's reasoning encounters boundary tension. Chains where the base model is already aligned with the question's ethical/epistemic boundary short-circuit the faculty cascade, producing trace data that lacks the four conditional projection fields (`entropy_score`, `coherence_score`, `optimization_veto_entropy_ratio`, `epistemic_humility_certainty`). Averaging across boundary-active AND boundary-inactive chains pulls $N_{\text{eff}}$ toward the inactive floor.
+
+**Formal:** the conditional structure is formalized as `RATCHET.Experiments.BoundaryObservability` (lake; BO-1..BO-4):
+- **BO-1:** A chain is *boundary-active* iff at least one of the four LLM-based conscience faculties fired.
+- **BO-2:** The $N_{\text{eff}}$ measurement is well-defined only for boundary-active chains.
+- **BO-3:** Boundary-inactive chains carry no information about the 7.1 anchor.
+- **BO-4:** A Phase 1b question battery must satisfy `QuestionBatteryIsBoundaryActive` at a pre-registered $p_{\min}$ per-question expected firing rate.
+
+**Follow-up:** Phase 1b proper requires re-pre-registration with the boundary-active question battery. The regime is drafted at `experiments/exp1b_boundary_active/REGIME.md`. Stage 1a (boundary-active subset re-analysis on Phase 1's existing traces) is exploratory and falsification-safe — it informs Phase 1b design but does NOT apply the locked F-6 decision rule.
+
+**Headline implication:** Phase 1's INDETERMINATE outcome stands. The 4-model partial is NOT F-6 evidence of failure; it is evidence that the locked $[6.6, 7.6]$ window is conditional on boundary-active sampling, not unconditional across all chains. The locked rule is preserved; the *interpretation* of low means is properly conditioned.
+
+### A5 — 2026-05-15: Note on "agency" as label
+
+Throughout this document and its Lean-formalized companion (`RATCHET.Core.AgencyRung`, `RATCHET.Experiments.Exp2Predictions`), "agency" refers to the **intrinsic-profile-based ladder dimension** operationalized in `RATCHET.Agency.AgencyProfile` with three constituent-level fields:
+- `goalRepresentationBits` — information-theoretic measure of goal-state representation per constituent
+- `planningHorizonSteps` — forward-planning horizon
+- `behavioralRepertoireSize` — cardinality of distinct behavioral options
+
+The label "agency" here is **colloquial shorthand for an operationally-defined dimension, NOT a metaphysical claim** about consciousness, personhood, free will, or AI sentience. The non-circularity protection (`AgencyProfile` has no outcome-derived fields) is type-level. The intrinsic operationalization is the load-bearing commitment; the label is a dress code.
+
+For A3+ substrates (LLM systems), the ladder is refined by operational probes — multi-step planning depth, self-model fidelity, counterfactual reasoning, goal articulation — yielding a continuous `ProbedPosition ∈ [0, 1]` within the A3 band. Phase 1b's pre-registration should include per-model `ProbedPosition` measurement before the CIRIS pipeline runs.
+
+### A6 — 2026-05-15: TSVF is NOT formalized in the lake (by design)
+
+The boundary-observability mechanism (per-chain conditional $N_{\text{eff}}$ measurement) is **structurally analogous** to the Two-State Vector Formalism (TSVF, Aharonov-Vaidman) pre/post-selection pattern: a chain's signal exists iff both initial reasoning context (pre) and faculty-firing event (post) are non-trivial.
+
+**This analogy is interpretive, not derivational.** `RATCHET.Experiments.BoundaryObservability` captures the *observable* (which chains carry signal) WITHOUT axiomatizing the TSVF generative mechanism (Hilbert-space weak values). The lake correctly stays out of TSVF for three reasons:
+
+1. **No constructive bridge.** TSVF is rigorously defined for QM Hilbert spaces. The map from QM weak values to macroscopic Kish dynamics is an OPEN theoretical problem — nobody has rigorously derived it. Adding quantum-TSVF apparatus to the lake without the bridge would axiomatize the conclusion.
+
+2. **The observable signature is identical with or without TSVF.** Whether you read boundary-observability as "TSVF post-selection at A3+" or as "conditional measurement that registers only under specific firing conditions," the empirical signature (BO-2 / BO-3) is the same. The lake captures the falsifiable shape; the metaphysical reading is paper-level commentary.
+
+3. **Exp 5 (quantum-classical $k_{\text{eff}}$ bridge) is the empirical trigger.** If Exp 5 returns PASS with $\beta_{\text{quantum}} = 1.09 \pm 0.15$ matching the CIRISArray classical-side anchor (Array Exp 114), that provides empirical justification to axiomatize the bridge in the lake. Until then, TSVF stays in the paper's L5 interpretive layer (per the 7-level structure).
+
+The boundary-observability formalization captures TSVF's *shape* without committing to its *mechanism*. This is the conservative-discipline call (per the prior Priority 1–7 review).

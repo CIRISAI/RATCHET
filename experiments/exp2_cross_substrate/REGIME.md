@@ -3,8 +3,27 @@
 **Status:** v0.3 (regime locked; pre-registration pending engine implementation + dataset SHA pins).
 **Paper hook:** Coherence Substrate Synthesis paper §10 Exp 2 (renamed from "Cross-substrate extension").
 **Falsification handle:** F-7 (cross-substrate mapping failure), strengthened with F-7b (residual-structure agency conditional).
+**Formal authority:** Lean lake modules — `RATCHET.Experiments.Exp2Predictions` (P1/P2/P3 + Inv-1..Inv-5 decision-rule invariants) + `RATCHET.Core.AgencyRung` (ladder + `consent_required_iff_rung_ge_A3` theorem).
 **Pairs with:** existing `ratchet/engines/{battery,institutional,microbiome}.py` Tier-1 fits.
 **Companions:** Counter-RII consent-gate work (FSD/COUNTER_RII_DETECTION.md) — same construction, different rung.
+
+### Operationalization note: "agency" as label
+
+The agency-ladder terminology throughout this document refers to the **intrinsic-profile-based ladder dimension** formalized in `RATCHET.Agency.AgencyProfile` (three constituent-level fields: `goalRepresentationBits`, `planningHorizonSteps`, `behavioralRepertoireSize`). "Agency" here is colloquial shorthand for an operationally-defined dimension, NOT a metaphysical claim about consciousness, personhood, or free will.
+
+The non-circularity protection — `AgencyProfile` has no outcome-derived fields — is type-level in `Core.AgencyRung.lean`. This prevents P2 (residual structure as agency-conditional) from being reverse-inferred and thereby circular.
+
+### Note on TSVF (Two-State Vector Formalism)
+
+The agency-conditional residual-structure prediction (P2) is **structurally analogous** to TSVF's pre/post-selection pattern: high-agency constituents impose meaningful post-selection on trajectories, contributing backward-evolving state that registers as structured residual orthogonal to the forward Kish fit.
+
+**This analogy is interpretive, not derivational.** `RATCHET.Experiments.Exp2Predictions` axiomatizes the agency-conditional residual whiteness as a *prediction*, NOT a derivation from TSVF mechanics. The lake correctly stays out of formalizing TSVF for three reasons:
+
+1. **No constructive bridge from QM TSVF to macroscopic Kish dynamics.** Adding TSVF apparatus to the lake without the bridge would axiomatize the conclusion.
+2. **The empirical signature is identical with or without TSVF reading.** Whether P2's monotonicity holds because of "TSVF post-selection at higher agency" or "agency-conditional residual structure that lacks any deeper mechanism," the observation is the same.
+3. **Exp 5 (quantum-classical $k_{\text{eff}}$ bridge) is the empirical trigger.** If Exp 5 returns PASS with $\beta_{\text{quantum}} \approx 1.09$ matching CIRISArray Exp 114, that provides empirical justification to axiomatize the bridge. Until then, TSVF stays in the paper's L5 interpretive layer.
+
+The Lean module `Experiments.Exp2Predictions.lean` axiomatizes P2's monotonicity (`P2_monotone_in_rung`) as a *pre-registered prediction* rather than a *derived theorem*. This is the discipline: encode what we're predicting, refuse to axiomatize the unverified mechanism.
 
 ---
 
