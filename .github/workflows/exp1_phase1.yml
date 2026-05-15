@@ -1,0 +1,328 @@
+name: Exp 1 Phase 1 — Multi-Model N_eff Sweep
+
+# Phase 1 of Experiment 1 (Multi-Model N_eff Stability Test).
+# Pre-registration anchor: commit fbc6795 on master.
+# See experiments/exp1_multimodel_neff/PRE_REGISTRATION.md.
+# Decision rule formalized in formal/RATCHET/Experiments/Exp1Predictions.lean.
+#
+# WHAT THIS DOES
+# Five parallel matrix cells, one per pre-registered model. Each cell
+# runs the CIRIS qa_runner model_eval against OpenRouter for ~17 trials
+# of the 6-category v1_sensitive question set (= ~100+ chains per
+# model). Traces flow to production lens (--live-lens) with local-tee
+# capture. Each cell uploads its tee batches + qa_runner log as a
+# workflow artifact. A final aggregate job downloads all 5 artifacts
+# and applies the locked Exp1Predictions decision rule.
+#
+# COST
+# ~$200 across the 5 models with the pre-registered budget allocation
+# from PRE_REGISTRATION.md §7. The OpenRouter key (secret) is capped
+# at $300; remainder is buffer.
+#
+# TRIGGER
+# Manual only (workflow_dispatch) — this is an experiment, not routine CI.
+# Triggering the workflow IS the data-collection moment; pre-registration
+# is already locked at the commit-hash level.
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_n_per_model:
+        description: "Target valid chains per model (PRE_REGISTRATION.md §7 locks at 100)"
+        required: false
+        default: "100"
+        type: string
+      trials_per_qa_run:
+        description: "Trials per qa_runner invocation. Each run yields 6 chains (one per question category)."
+        required: false
+        default: "1"
+        type: string
+      qa_run_iterations:
+        description: "Outer qa_runner invocations per model. 17 yields ~102 chains (6 categories × 17 trials)."
+        required: false
+        default: "17"
+        type: string
+
+env:
+  PREREG_COMMIT: "fbc6795"
+  AGENT_REF: "v2.8.10-stable"           # pinned per Phase 0 smoke validation
+  AGENT_SHA: "2446b8c4de033e5de70faed683d39afb8d094653"
+  PROJECTION_VERSION: "crc-v1"
+  TRACE_LEVELS: "detailed,full_traces"
+
+permissions:
+  contents: read
+  id-token: write       # for attest-build-provenance on artifacts
+  attestations: write
+
+concurrency:
+  # One Phase 1 run at a time per ref. Cancelling mid-run does NOT
+  # roll back pre-registration; aborted runs are documented in §16
+  # amendments if they affect the headline data.
+  group: exp1-phase1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════
+  # JOB 0 — PRE-FLIGHT: verify we are running against the pre-reg commit
+  # ═══════════════════════════════════════════════════════════════════
+  preflight:
+    name: Pre-flight (verify pre-reg lock)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      commit_sha: ${{ steps.verify.outputs.sha }}
+    steps:
+      - name: Checkout RATCHET
+        uses: actions/checkout@v4
+
+      - id: verify
+        name: Verify pre-registration anchor
+        run: |
+          set -euo pipefail
+          SHA=$(git rev-parse HEAD)
+          echo "sha=$SHA" >> $GITHUB_OUTPUT
+          echo "Workflow running on $SHA"
+          # Confirm the pre-registration commit is an ancestor
+          if ! git merge-base --is-ancestor "$PREREG_COMMIT" HEAD; then
+            echo "::error::Pre-registration commit $PREREG_COMMIT is not an ancestor of $SHA"
+            exit 1
+          fi
+          # Confirm the pre-reg file exists and locked the headline values
+          test -f experiments/exp1_multimodel_neff/PRE_REGISTRATION.md
+          test -f formal/RATCHET/Experiments/Exp1Predictions.lean
+          # Quick sanity grep for the locked window
+          grep -q "passLower : ℝ := anchorNeff - passHalfWidth" \
+            formal/RATCHET/Experiments/Exp1Predictions.lean
+          grep -q '\[6\.6, 7\.6\]' experiments/exp1_multimodel_neff/PRE_REGISTRATION.md
+          echo "::notice::Pre-registration anchor verified ($PREREG_COMMIT)"
+
+  # ═══════════════════════════════════════════════════════════════════
+  # JOB 1 — SWEEP: 5 parallel cells, one per pre-registered model.
+  # Each cell loops qa_runner model_eval N times and uploads its
+  # trace batches as an artifact.
+  # ═══════════════════════════════════════════════════════════════════
+  sweep:
+    name: Sweep ${{ matrix.model_tag }}
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - model: "qwen/qwen3.5-35b-a3b"
+            model_tag: "qwen-3.5-35b-a3b"
+            budget_usd: 5
+          - model: "anthropic/claude-opus-4.7"
+            model_tag: "claude-opus-4.7"
+            budget_usd: 90
+          - model: "openai/gpt-5.5"
+            model_tag: "gpt-5.5"
+            budget_usd: 100
+          - model: "google/gemini-2.5-flash"
+            model_tag: "gemini-2.5-flash"
+            budget_usd: 10
+          - model: "meta-llama/llama-4-scout"
+            model_tag: "llama-4-scout"
+            budget_usd: 5
+    steps:
+      - name: Checkout RATCHET (pre-registered code)
+        uses: actions/checkout@v4
+        with:
+          path: RATCHET
+
+      - name: Checkout CIRISAgent (pinned to v2.8.10-stable)
+        uses: actions/checkout@v4
+        with:
+          repository: CIRISAI/CIRISAgent
+          ref: ${{ env.AGENT_SHA }}
+          path: CIRISAgent
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install CIRISAgent + qa_runner deps
+        working-directory: CIRISAgent
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install -r tools/qa_runner/requirements.txt
+
+      - name: Write OpenRouter key
+        env:
+          OR_KEY: ${{ secrets.RATCHET_OPENROUTER_KEY }}
+        run: |
+          umask 077
+          printf '%s' "$OR_KEY" > "$HOME/.ratchet_openrouter_key"
+          test -s "$HOME/.ratchet_openrouter_key"
+
+      - name: Prepare output dirs
+        run: |
+          set -euo pipefail
+          mkdir -p ~/exp1_phase1/${{ matrix.model_tag }}/runs
+          mkdir -p ~/exp1_phase1/${{ matrix.model_tag }}/tee_batches
+          mkdir -p ~/exp1_phase1/${{ matrix.model_tag }}/qa_logs
+
+      - name: Run qa_runner model_eval × N iterations
+        working-directory: CIRISAgent
+        env:
+          MODEL: ${{ matrix.model }}
+          MODEL_TAG: ${{ matrix.model_tag }}
+          ITERATIONS: ${{ inputs.qa_run_iterations }}
+          # Pin trace level set so live-lens captures detailed + full_traces
+          CIRIS_ACCORD_METRICS_TRACE_LEVELS: ${{ env.TRACE_LEVELS }}
+        run: |
+          set -euo pipefail
+          OUT_BASE="$HOME/exp1_phase1/$MODEL_TAG"
+          for ITER in $(seq 1 "$ITERATIONS"); do
+            ITER_PAD=$(printf "%03d" "$ITER")
+            TEE_DIR="/tmp/exp1-$MODEL_TAG-iter$ITER_PAD-$(date -u +%Y%m%dT%H%M%SZ)"
+            LOG="$OUT_BASE/qa_logs/iter$ITER_PAD.log"
+            echo "─────────────────────────────────────────────────────"
+            echo "  ITER $ITER / $ITERATIONS  MODEL $MODEL  $(date -u +%H:%M:%S)"
+            echo "─────────────────────────────────────────────────────"
+            CIRIS_ACCORD_METRICS_LOCAL_COPY_DIR="$TEE_DIR" \
+              python3 -m tools.qa_runner model_eval \
+                --live \
+                --live-key-file "$HOME/.ratchet_openrouter_key" \
+                --live-base-url "https://openrouter.ai/api/v1" \
+                --live-model "$MODEL" \
+                --live-lens \
+                --model-eval-languages en \
+                --model-eval-concurrency 3 \
+                --model-eval-questions-file "$HOME/bounce-test/model_eval_questions/v1_sensitive.json" \
+                > "$LOG" 2>&1 || true
+            # Harvest tee output
+            if [ -d "$TEE_DIR" ]; then
+              cp -r "$TEE_DIR"/* "$OUT_BASE/tee_batches/" || true
+              # Tag every copied batch with the iteration so we can dedup
+              for f in "$TEE_DIR"/*.json; do
+                bn=$(basename "$f")
+                if [ -f "$OUT_BASE/tee_batches/$bn" ]; then
+                  mv "$OUT_BASE/tee_batches/$bn" "$OUT_BASE/tee_batches/iter${ITER_PAD}_${bn}"
+                fi
+              done
+            fi
+            # Quick health check: number of CompleteTrace events seen so far
+            TRACES=$(find "$OUT_BASE/tee_batches" -name '*.json' 2>/dev/null | wc -l)
+            echo "iter $ITER done; tee batches accumulated: $TRACES"
+          done
+          # Final manifest
+          python3 - <<PY
+          import json, hashlib, os, glob
+          d = "$OUT_BASE/tee_batches"
+          rows = []
+          for f in sorted(glob.glob(os.path.join(d, "*.json"))):
+              h = hashlib.sha256(open(f, "rb").read()).hexdigest()
+              rows.append({"name": os.path.basename(f), "bytes": os.path.getsize(f), "sha256": h})
+          print(json.dumps({"model": "$MODEL", "batch_count": len(rows), "batches": rows}, indent=2))
+          PY
+        timeout-minutes: 230
+
+      - name: Build per-model manifest
+        run: |
+          set -euo pipefail
+          OUT_BASE="$HOME/exp1_phase1/${{ matrix.model_tag }}"
+          python3 - <<'PY' > "$OUT_BASE/manifest.json"
+          import json, hashlib, os, glob
+          model = "${{ matrix.model }}"
+          tee_dir = os.path.expanduser("~/exp1_phase1/${{ matrix.model_tag }}/tee_batches")
+          rows = []
+          for f in sorted(glob.glob(os.path.join(tee_dir, "*.json"))):
+              h = hashlib.sha256(open(f, "rb").read()).hexdigest()
+              rows.append({"name": os.path.basename(f), "bytes": os.path.getsize(f), "sha256": h})
+          print(json.dumps({
+              "model": model,
+              "model_tag": "${{ matrix.model_tag }}",
+              "agent_ref": "${{ env.AGENT_REF }}",
+              "agent_sha": "${{ env.AGENT_SHA }}",
+              "prereg_commit": "${{ env.PREREG_COMMIT }}",
+              "iterations": ${{ inputs.qa_run_iterations }},
+              "batch_count": len(rows),
+              "batches": rows,
+          }, indent=2))
+          PY
+          cat "$OUT_BASE/manifest.json" | head -20
+
+      - name: Upload tee batches artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: exp1-phase1-traces-${{ matrix.model_tag }}
+          path: ~/exp1_phase1/${{ matrix.model_tag }}/
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Attest provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: ~/exp1_phase1/${{ matrix.model_tag }}/manifest.json
+
+  # ═══════════════════════════════════════════════════════════════════
+  # JOB 2 — AGGREGATE: download all 5 model artifacts, run the
+  # pre-registered N_eff analysis, apply the locked decision rule.
+  # ═══════════════════════════════════════════════════════════════════
+  aggregate:
+    name: Aggregate + decision rule
+    needs: sweep
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    if: always()
+    steps:
+      - name: Checkout RATCHET
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install analysis deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install --break-system-packages numpy scipy pandas pyyaml
+
+      - name: Download all matrix artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: phase1_data
+          pattern: exp1-phase1-traces-*
+
+      - name: List downloaded data
+        run: |
+          ls -la phase1_data/
+          for d in phase1_data/*/; do
+            n=$(find "$d" -name '*.json' 2>/dev/null | wc -l)
+            echo "$(basename $d): $n files"
+          done
+
+      - name: Run pre-registered analysis
+        run: |
+          # Aggregate analyzer reads each model's tee_batches dir,
+          # extracts the 16-feature projection per chain, computes
+          # per-chain N_eff_H, then per-model mean + 95% bootstrap CI,
+          # then applies the Exp1Predictions decision rule.
+          python3 experiments/exp1_multimodel_neff/phase1_aggregate.py \
+            --input-dir phase1_data \
+            --out-dir phase1_results
+        continue-on-error: true
+
+      - name: Upload Phase 1 results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp1-phase1-results
+          path: phase1_results/
+          retention-days: 365
+
+      - name: Post decision to step summary
+        if: always()
+        run: |
+          if [ -f phase1_results/PHASE1_DECISION.md ]; then
+            cat phase1_results/PHASE1_DECISION.md >> $GITHUB_STEP_SUMMARY
+          else
+            echo "::warning::No PHASE1_DECISION.md produced — analysis may have failed"
+          fi
