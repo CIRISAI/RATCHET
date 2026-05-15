@@ -171,7 +171,9 @@ def load_model_features(tee_dir: Path):
         "ACTION_RESULT",
     }
 
-    for batch_path in sorted(tee_dir.glob("**/accord-batch-*.json")):
+    # Match both raw `accord-batch-*.json` (smoke) and the workflow's
+    # iter-prefixed `iter{N}_accord-batch-*.json` (Phase 1).
+    for batch_path in sorted(tee_dir.glob("**/*accord-batch-*.json")):
         try:
             batch = json.load(open(batch_path))
         except Exception:
