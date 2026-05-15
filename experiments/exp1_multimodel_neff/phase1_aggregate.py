@@ -371,6 +371,17 @@ def main():
 
     decision, k = decide(summaries)
 
+    # Distinguish "partial / single-model validation sweep" from a catastrophic
+    # full-sweep failure. If most models have zero chains AND at least one
+    # has substantial data, that's a CI-shakedown run with model_filter set,
+    # not a §7 catastrophic-failure trigger.
+    populated = [s for s in summaries if s["valid_n"] > 0]
+    is_partial_sweep = (
+        decision == "INDETERMINATE"
+        and len(populated) < NUM_MODELS
+        and any(s["valid_n"] >= MIN_VALID_N for s in populated)
+    )
+
     # Write per-chain CSV
     with open(out_dir / "per_chain_features.csv", "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=["model", "trace_id", "thought_id"] + PROJECTION_16)
@@ -424,8 +435,18 @@ def main():
                   "claim weakens; CIRIS's effect depends on the underlying model's "
                   "properties.\n")
     else:  # INDETERMINATE
-        md.append("§7 catastrophic-failure clause triggered. At least one model produced "
-                  "fewer than 50 valid chains. Re-pre-registration required before any re-run.\n")
+        if is_partial_sweep:
+            md.append("**PARTIAL SWEEP — not a §7 catastrophic-failure trigger.**\n\n")
+            md.append(f"Only {len(populated)} of {NUM_MODELS} models produced data. This is "
+                      f"consistent with a `model_filter`-gated CI-shakedown validation run "
+                      f"(see workflow `exp1_phase1.yml`), not a full Phase 1 sweep. The Exp1Predictions "
+                      f"decision rule requires all 5 models populated; this run does not exercise it.\n\n")
+            md.append("Per-model N_eff for the populated model(s) is informational and does NOT "
+                      "constitute F-6 evidence either way. The full sweep is the authoritative "
+                      "Phase 1 data-collection run.\n")
+        else:
+            md.append("§7 catastrophic-failure clause triggered. At least one model produced "
+                      "fewer than 50 valid chains. Re-pre-registration required before any re-run.\n")
 
     md.append(f"\n## Pre-registered window: $[{PASS_LOWER}, {PASS_UPPER}]$\n")
     md.append(f"\nDecision rule formalized in `formal/RATCHET/Experiments/Exp1Predictions.lean`.\n")

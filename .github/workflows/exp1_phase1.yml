@@ -42,6 +42,11 @@ on:
         required: false
         default: "17"
         type: string
+      model_filter:
+        description: "If set, run ONLY this OpenRouter model ID. Empty = run all 5 pre-registered models (the actual Phase 1 sweep). Used for CI-shakedown validation before the full $200 sweep."
+        required: false
+        default: ""
+        type: string
 
 env:
   PREREG_COMMIT: "fbc6795"
@@ -106,6 +111,12 @@ jobs:
     name: Sweep ${{ matrix.model_tag }}
     needs: preflight
     runs-on: ubuntu-latest
+    # Per-cell gate: when model_filter is set, only the matching matrix
+    # cell runs. Empty filter = full 5-model sweep (the actual Phase 1).
+    # Used for single-model CI-shakedown validation (e.g., run only
+    # meta-llama/llama-4-scout at ~$1 to confirm end-to-end pipeline
+    # before committing $200 on the full sweep).
+    if: ${{ inputs.model_filter == '' || matrix.model == inputs.model_filter }}
     timeout-minutes: 240
     strategy:
       fail-fast: false
