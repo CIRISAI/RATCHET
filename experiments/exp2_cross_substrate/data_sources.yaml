@@ -1,0 +1,131 @@
+# Exp 2 substrate dataset pin registry.
+#
+# Each entry pins a public data source by URL + version + SHA-256 of the
+# downloaded artifact. The CI substrate_revalidation workflow uses this
+# file as the source of truth for what to re-fetch and how to validate.
+#
+# SHA pins are filled in after the first vendored fetch. NULL means
+# "fetch and record on next run".
+#
+# Refresh cadence is per-source; CI cron runs quarterly regardless.
+
+version: "0.1"
+last_updated: "2026-05-15"
+
+substrates:
+  # ─────────────────────────────────────────────────────────────────
+  # A0 — agency ~0 (inert / engineered)
+  # ─────────────────────────────────────────────────────────────────
+  alphafold:
+    rung: A0
+    engine: ratchet.engines.protein
+    name: "AlphaFold Protein Structure Database"
+    version: "v6"  # UniProt 2025_03 sync; 241M structures
+    license: "CC-BY-4.0"
+    primary_source:
+      kind: "ftp"
+      url: "https://ftp.ebi.ac.uk/pub/databases/alphafold/v4/"
+      proteome_subset: "CATH-S40 representative single-domain"
+      expected_count: 10000
+    mirror:
+      kind: "https"
+      url: "https://storage.googleapis.com/public-datasets-deepmind/alphafold/"
+    expected_sha256: null  # filled on first fetch
+    refresh_cadence: "annual (major)"
+
+  pmu_pnnl:
+    rung: A0
+    engine: ratchet.engines.powergrid
+    name: "PNNL Open-Source PMU Library"
+    version: "PNNL-30492"
+    license: "open-source (DOE)"
+    primary_source:
+      kind: "https"
+      url: "https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-30492.pdf"
+      data_url: "https://gridevents.pnnl.gov"  # event registry
+      expected_count: 1694  # transmission events
+    expected_sha256: null
+    refresh_cadence: "static (one-time pin)"
+
+  # ─────────────────────────────────────────────────────────────────
+  # A1 — agency low (homeostatic / cellular signaling)
+  # ─────────────────────────────────────────────────────────────────
+  allen_neuropixels:
+    rung: A1
+    engine: ratchet.engines.neural
+    name: "Allen Brain Observatory — Visual Coding Neuropixels"
+    version: "2019-release-with-extensions"
+    license: "ABO data-use-agreement (permissive research)"
+    primary_source:
+      kind: "s3"
+      bucket: "allen-brain-observatory"
+      path: "visual-coding-neuropixels/ecephys-cache/"
+      sdk: "allensdk"
+    expected_session_count: 80
+    expected_sha256: null
+    refresh_cadence: "static (one-time pin)"
+
+  # ─────────────────────────────────────────────────────────────────
+  # A2 — agency moderate (population dynamics)
+  # ─────────────────────────────────────────────────────────────────
+  biotime:
+    rung: A2
+    engine: ratchet.engines.ecological
+    name: "BioTIME 2.0 — Global biodiversity time series"
+    version: "2.0"  # 2025 release
+    license: "CC-BY"
+    primary_source:
+      kind: "https"
+      url: "https://biotime.st-andrews.ac.uk/downloads.php"
+      r_package: "BioTIMEr"
+    filter_criteria:
+      min_years: 10
+      min_species: 5
+      expected_count: 500
+    expected_sha256: null
+    refresh_cadence: "annual"
+
+  # ─────────────────────────────────────────────────────────────────
+  # Tier-1 substrates for continuous re-validation
+  # ─────────────────────────────────────────────────────────────────
+  nasa_battery:
+    rung: A0
+    engine: ratchet.engines.battery
+    name: "NASA PCoE Li-ion Battery Aging Datasets"
+    version: "static"
+    license: "Public Domain (NASA)"
+    primary_source:
+      kind: "https"
+      url: "https://phm-datasets.s3.amazonaws.com/NASA/5.+Battery+Data+Set.zip"
+      contact: "christopher.a.teubert@nasa.gov"
+    expected_sha256: null
+    refresh_cadence: "static (one-time pin; re-validate quarterly against pinned hash)"
+    note: "Dataset is fixed historical. Re-validation means re-running engine on pinned data; alert only on SHA drift."
+
+  vdem:
+    rung: A4
+    engine: ratchet.engines.institutional
+    name: "V-Dem Varieties of Democracy"
+    version: "v16"  # released Q1 2026
+    license: "CC-BY-4.0"
+    primary_source:
+      kind: "https"
+      url: "https://v-dem.net/data/the-v-dem-dataset/"
+      r_package: "vdemdata"
+    expected_sha256: null
+    refresh_cadence: "annual"
+    note: "Previous validation in CCA paper used v14. v16 brings 2025 country-year extensions."
+
+  agp_microbiome:
+    rung: A1
+    engine: ratchet.engines.microbiome
+    name: "American Gut Project / Microsetta"
+    version: "public-archive-2026-02"
+    license: "Public Domain (after scrubbing)"
+    primary_source:
+      kind: "https"
+      url: "https://microsetta.ucsd.edu/american-gut-project/"
+      qiita_study: "10317"
+    expected_sha256: null
+    refresh_cadence: "periodic (enrollment paused as of Feb 2026)"
+    note: "AGP/Microsetta paused enrollment Feb 2026. Public data archives remain accessible."
