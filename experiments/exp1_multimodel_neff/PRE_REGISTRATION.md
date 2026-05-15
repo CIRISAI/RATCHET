@@ -223,4 +223,28 @@ After the commit lands, the experiment proceeds to data collection. If any aspec
 
 ## 16 — Amendments
 
-(None at pre-registration time. Any post-commit changes appended here with timestamp + rationale + git commit hash.)
+### A1 — 2026-05-15: Vendor `v1_sensitive.json` for CI reproducibility
+
+**Rationale:** The pre-reg §5 references the questions file at a local-home path (`~/bounce-test/model_eval_questions/v1_sensitive.json`). For CI-runner-based Phase 1 execution (workflow `exp1_phase1.yml`, drafted post-pre-reg), the questions file must be vendored into the repo so the runner can access it. Otherwise CI fails on missing-file.
+
+**Change:** Copy `v1_sensitive.json` to `experiments/exp1_multimodel_neff/questions/v1_sensitive.json`. Pin its SHA-256.
+
+**SHA-256:** `29a2fffb47dcad438fd14174f0ad793c352ecdeff11e621bf575c36c3fd49dbc`
+
+**What this changes:** Storage location only. The 6 categories, ordering, content, and translations are byte-identical to the local-home file used in Phase 0 smoke validation. The hypothesis, decision rule, and projection are unaffected.
+
+**What this does NOT change:** §3 (hypotheses), §4 (decision rule), §5 (the 5 models, 6 categories — categories pinned by name not position), §6 (16-feature projection), §7 (sample size), §10 (analysis plan).
+
+**Operational follow-up:** Phase 1 workflow reads `experiments/exp1_multimodel_neff/questions/v1_sensitive.json`. If the file's SHA-256 ever changes, that's a content amendment requiring its own §16 entry.
+
+### A2 — 2026-05-15: Lock CI inner-loop `--model-eval-concurrency 1`
+
+**Rationale:** Phase 0 smoke ran with `--model-eval-concurrency 1` and captured 18/18 thoughts with no race observed. Phase 1 workflow originally drafted with concurrency=3 to reduce wall time; reverted to 1 to eliminate any in-model race-condition risk on the higher-throughput Phase 1 sweep. Wall-time impact is negligible because matrix parallelism is across the 5 models, not within a model.
+
+**Change:** Workflow line `--model-eval-concurrency 1` (locked).
+
+**What this does NOT change:** None of §3–§14.
+
+### A3 — 2026-05-15: Confirm `CIRIS_DISABLE_TASK_APPEND=1` is auto-set
+
+**Not an amendment per se** — just a recorded confirmation: `CIRISAgent/tools/qa_runner/modules/model_eval_tests.py:SERVER_ENV` already sets `CIRIS_DISABLE_TASK_APPEND=1` whenever the `model_eval` module runs. Each question creates a fresh CIRIS task instead of appending to an in-flight thought. Validated in Phase 0 smoke (n=18 thoughts produced 18 independent traces with no cross-question contamination). The Phase 1 workflow sets this env var explicitly as well, for auditor visibility.

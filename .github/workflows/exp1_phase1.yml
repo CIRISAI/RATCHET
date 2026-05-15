@@ -175,6 +175,12 @@ jobs:
           ITERATIONS: ${{ inputs.qa_run_iterations }}
           # Pin trace level set so live-lens captures detailed + full_traces
           CIRIS_ACCORD_METRICS_TRACE_LEVELS: ${{ env.TRACE_LEVELS }}
+          # Explicit task-isolation: every incoming message creates its own
+          # fresh task instead of appending to an existing in-flight thought.
+          # qa_runner's model_eval module already sets this via SERVER_ENV
+          # (see tools/qa_runner/modules/model_eval_tests.py:SERVER_ENV), but
+          # we set it explicitly here for auditor visibility.
+          CIRIS_DISABLE_TASK_APPEND: "1"
         run: |
           set -euo pipefail
           OUT_BASE="$HOME/exp1_phase1/$MODEL_TAG"
@@ -193,8 +199,8 @@ jobs:
                 --live-model "$MODEL" \
                 --live-lens \
                 --model-eval-languages en \
-                --model-eval-concurrency 3 \
-                --model-eval-questions-file "$HOME/bounce-test/model_eval_questions/v1_sensitive.json" \
+                --model-eval-concurrency 1 \
+                --model-eval-questions-file "$GITHUB_WORKSPACE/RATCHET/experiments/exp1_multimodel_neff/questions/v1_sensitive.json" \
                 > "$LOG" 2>&1 || true
             # Harvest tee output
             if [ -d "$TEE_DIR" ]; then
