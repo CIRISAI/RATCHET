@@ -217,6 +217,8 @@ jobs:
           set -euo pipefail
           OUT_BASE="$HOME/exp1_phase1/$MODEL_TAG"
           RUN_START=$(date -u +%s)
+          CONSECUTIVE_EMPTY=0
+          CELL_BUDGET="${{ matrix.budget_usd }}"
           for ITER in $(seq 1 "$ITERATIONS"); do
             ITER_PAD=$(printf "%03d" "$ITER")
             TEE_DIR="/tmp/exp1-$MODEL_TAG-iter$ITER_PAD-$(date -u +%Y%m%dT%H%M%SZ)"
@@ -244,10 +246,9 @@ jobs:
                 | grep -E "🧪|✅|❌|⚠️|🔑|🌐|📊|📡|🚀|🛑|QA Test Summary|Total Tests|Passed|Failed|Success Rate|Duration|Avg Time|Avg Length|Memory|Critical|Errors|Warnings|Setup|Authentication|Server|Lens|Trace|complete_trace|accord-batch|FAIL|ERROR|Capture|interaction|Question|Response|Language|Locale|Memory Profile|Initial|Peak|Final|Growth" \
                 || true
             ITER_END=$(date -u +%s)
-            # Harvest tee output. Relax set -e for the accounting block —
-            # grep returning 1 on no-match should not kill the loop, and
-            # GH Actions runners enforce pipefail by default which makes
-            # | wc -l fail when grep finds nothing. Restore -e after.
+            # Harvest + accounting + sanity checks. Set +e because grep
+            # returning 1 on no-match should never kill the loop. Restore
+            # -e after the block.
             set +e
             BATCHES_THIS_ITER=0
             if [ -d "$TEE_DIR" ]; then
@@ -260,13 +261,47 @@ jobs:
             fi
             TOTAL_BATCHES=$(find "$OUT_BASE/tee_batches" -name '*.json' 2>/dev/null | wc -l)
             TRACES_TOTAL=$(grep -l '"event_type":"complete_trace"\|"event_type": "complete_trace"' "$OUT_BASE/tee_batches/"*.json 2>/dev/null | wc -l)
+            # Reasoning-leak watchdog: any LLM_CALL with reasoning_tokens > 0
+            # is a data-quality flag — the model honored reasoning.enabled=false
+            # in Phase 0 but a mid-run regression would silently confound F-6.
+            REASONING_LEAKS=$(grep -l '"reasoning_tokens":[ ]*[1-9]\|"completion_tokens_details":[ ]*{[ ]*"reasoning_tokens":[ ]*[1-9]' "$OUT_BASE/tee_batches/iter${ITER_PAD}"*.json 2>/dev/null | wc -l)
+            # Cost rollup from LLM_CALL.cost_usd fields — delegated to helper
+            # script to avoid heredoc / indentation issues inside bash loops.
+            COST_THIS_ITER=$(python3 "$GITHUB_WORKSPACE/RATCHET/experiments/exp1_multimodel_neff/iter_cost.py" \
+              "$OUT_BASE/tee_batches/iter${ITER_PAD}*.json" 2>/dev/null || echo "0.0000")
+            CELL_COST_TOTAL=$(python3 -c "print(f'{float(\"${CELL_COST_TOTAL:-0}\") + float(\"${COST_THIS_ITER:-0}\"):.4f}')" 2>/dev/null || echo "${COST_THIS_ITER:-0.0000}")
             set -e
             echo "─────────────────────────────────────────────────────"
             echo "  iter $ITER done in $((ITER_END - ITER_START))s"
             echo "  batches this iter: $BATCHES_THIS_ITER"
+            echo "  chains this iter (complete_trace files): $TRACES_TOTAL"
             echo "  total batches accumulated: $TOTAL_BATCHES"
-            echo "  total chains (complete_trace events): $TRACES_TOTAL"
             echo "  cumulative wall time: $((ITER_END - RUN_START))s"
+            echo "  iter cost (USD): \$$COST_THIS_ITER"
+            echo "  cell cost so far (USD): \$$CELL_COST_TOTAL / cap \$$CELL_BUDGET"
+            if [ "$REASONING_LEAKS" -gt 0 ]; then
+              echo "::warning title=Reasoning leak detected::ITER $ITER produced $REASONING_LEAKS trace batch(es) with reasoning_tokens > 0. The model honored reasoning-disabled in Phase 0 — a mid-run regression here is a F-6 data-quality flag."
+            fi
+            if [ "$BATCHES_THIS_ITER" -eq 0 ]; then
+              CONSECUTIVE_EMPTY=$((CONSECUTIVE_EMPTY + 1))
+              echo "::warning title=Empty iteration::ITER $ITER produced 0 batches. Consecutive empty: $CONSECUTIVE_EMPTY / 3"
+              if [ "$CONSECUTIVE_EMPTY" -ge 3 ]; then
+                echo "::error title=3 consecutive empty iterations::Aborting cell $MODEL_TAG — qa_runner likely broken or model API unreachable"
+                break
+              fi
+            else
+              CONSECUTIVE_EMPTY=0
+            fi
+            # Cost cap: ADVISORY ONLY — emit a workflow warning if the
+            # cell's cumulative CIRIS-reported cost_usd exceeds its
+            # budgeted cap. CIRIS's cost_usd field may include more than
+            # per-token OpenRouter cost (carbon, energy, etc), so this is
+            # not a reliable hard-stop. OpenRouter's own $300 budget on
+            # the API key is the actual hard cap.
+            COST_BREACH=$(python3 -c "print(1 if float('${CELL_COST_TOTAL:-0}') > float('${CELL_BUDGET:-0}') else 0)" 2>/dev/null || echo 0)
+            if [ "$COST_BREACH" = "1" ]; then
+              echo "::warning title=Cell cost over budget::CIRIS-reported \$$CELL_COST_TOTAL > cell budget \$$CELL_BUDGET. NOT aborting (cost_usd may include non-API components); OpenRouter \$300 hard cap still applies."
+            fi
             echo "─────────────────────────────────────────────────────"
             echo "::endgroup::"
           done
