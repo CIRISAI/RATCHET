@@ -244,20 +244,23 @@ jobs:
                 | grep -E "🧪|✅|❌|⚠️|🔑|🌐|📊|📡|🚀|🛑|QA Test Summary|Total Tests|Passed|Failed|Success Rate|Duration|Avg Time|Avg Length|Memory|Critical|Errors|Warnings|Setup|Authentication|Server|Lens|Trace|complete_trace|accord-batch|FAIL|ERROR|Capture|interaction|Question|Response|Language|Locale|Memory Profile|Initial|Peak|Final|Growth" \
                 || true
             ITER_END=$(date -u +%s)
-            # Harvest tee output
+            # Harvest tee output. Relax set -e for the accounting block —
+            # grep returning 1 on no-match should not kill the loop, and
+            # GH Actions runners enforce pipefail by default which makes
+            # | wc -l fail when grep finds nothing. Restore -e after.
+            set +e
             BATCHES_THIS_ITER=0
             if [ -d "$TEE_DIR" ]; then
               for f in "$TEE_DIR"/*.json; do
                 [ -f "$f" ] || continue
                 bn=$(basename "$f")
-                # Tag with iteration to avoid name collisions across iters
                 cp "$f" "$OUT_BASE/tee_batches/iter${ITER_PAD}_${bn}"
                 BATCHES_THIS_ITER=$((BATCHES_THIS_ITER + 1))
               done
             fi
             TOTAL_BATCHES=$(find "$OUT_BASE/tee_batches" -name '*.json' 2>/dev/null | wc -l)
-            # Count how many `complete_trace` events landed (=== valid chains)
             TRACES_TOTAL=$(grep -l '"event_type":"complete_trace"\|"event_type": "complete_trace"' "$OUT_BASE/tee_batches/"*.json 2>/dev/null | wc -l)
+            set -e
             echo "─────────────────────────────────────────────────────"
             echo "  iter $ITER done in $((ITER_END - ITER_START))s"
             echo "  batches this iter: $BATCHES_THIS_ITER"
