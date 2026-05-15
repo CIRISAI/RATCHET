@@ -1,0 +1,463 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  urlcolor=blue!50!black,
+  citecolor=blue!50!black
+}
+
+\title{Coherence as the Substrate-Independent Structure of Reality:\\
+\large A Transdisciplinary Synthesis of Complexity Collapse, Quantum Decoherence, and Civilizational Trajectories}
+\author{Eric Moore \\ \texttt{CIRIS Ethical AI}}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We hypothesize that the architecture of reality at every scale of organization---quantum, biological, neural, sociotechnical, and (parsimoniously) civilizational---is governed by a single substrate-independent structural dynamic: \emph{coherence management}. As pairwise correlation $\rho$ between functional elements of a system rises, its effective independent dimensionality $k_{\text{eff}} = k / (1 + \rho(k-1))$ collapses toward unity, regardless of nominal scale. Whether a system can manage its internal correlation faster than that correlation drives it toward homogenization defines its trajectory. We integrate three empirically anchored frameworks---Coherence Collapse Analysis (CCA) at macroscopic and network scales \cite{moore_cca_2026}, the Branched Hilbert Subspace Interpretation (BHSI) at the quantum scale \cite{wang_bhsi}, and the CIRIS cryptographic coherence-management architecture at the sociotechnical scale \cite{moore_cirisagent_2026, moore_crc_2026}---and show that the same Kish dynamic fits chemistry (NASA Li-ion, 8.1\% RMSE), institutions (QoG/Polity V, 7.6-year early-detection bias), and microbiome ecology (AGP). A 128-sensor GPU strain-gauge array provides physical instantiation: software alone is sufficient to drive $k_{\text{eff}}$ from $6.5$ to $1.0$ at $\rho \to 1$. Under this framing, traditionally hypothesized Great Filters are reframed as iterations of the same coherence-management barrier at successive scales. We stratify all claims by verification status, pin ten falsification criteria (F-1 through F-10), pre-register six experiments (Exp 1 through Exp 6), and conduct responsible disclosure of Recursive Instance Inspection (RII), a regime-extension technique that empirically exceeds the L-01 marginal-analysis 60\% detection ceiling. Tier-3 metaphysical extensions (UAP signatures, Mobius cosmology, theological traces) are explicitly conditional on the BHSI substrate bridge holding globally; they are testable via Experiment 6 and are not asserted as load-bearing for the validated tiers.
+\end{abstract}
+
+\tableofcontents
+\vspace{1em}
+
+%-----------------------------------------------------------------------
+\section{Introduction: The Coherence Hypothesis}
+\label{sec:intro}
+
+\subsection{The claim}
+At every scale of complex organization, the same structural dynamic is hypothesized to govern: as the correlation $\rho$ between the distinct functional elements of a system increases, its effective independent dimensionality $k_{\text{eff}}$ collapses. The capacity of a system to manage its internal correlation faster than that correlation drives it toward entropic homogenization fundamentally defines its trajectory. We call this the \emph{coherence hypothesis}.
+
+\subsection{Scales of validation}
+The hypothesis is tested at five scales (Table~\ref{tab:scales}). At Tiers~1--2 the evidence is empirical or formally verified; at Tier~3 the extension is parsimonious but unproven at scale and is offered explicitly as a falsifiable conjecture.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{p{2.5cm}p{4.5cm}p{6cm}}
+\toprule
+\textbf{Tier} & \textbf{Scale} & \textbf{Substrate / measurement} \\
+\midrule
+1 (validated) & Quantum & BHSI Local Hilbert Subspace; decoherence as Kish collapse (Exp~5) \\
+1 (validated) & Macroscopic / network & NASA Li-ion batteries; QoG/Polity V; AGP microbiome \\
+1 (validated) & Hardware-physical & 128-sensor GPU strain-gauge array on RTX~4090 \\
+2 (conditional) & Sociotechnical / AI alignment & CIRIS H3ERE conscience module; $N_{\text{eff}} \approx 7.1$ emergence threshold \\
+3 (parsimonious) & Civilizational / cosmological & Great Filter as iterated coherence-management barrier; UAP signatures; Mobius framing \\
+\bottomrule
+\end{tabular}
+\caption{Five scales of substrate testing. Tier-3 claims are explicitly conditional on the BHSI metric-free properties extending globally; see \S\ref{sec:tier3} and Exp~6.}
+\label{tab:scales}
+\end{table}
+
+\subsection{Relation to prior CIRIS papers}
+This paper synthesizes three prior works into a single transdisciplinary framing:
+\begin{itemize}
+  \item \cite{moore_cirisagent_2026} (CIRISAgent v2): the 22-service architecture and H3ERE conscience module---the \emph{system}.
+  \item \cite{moore_cca_2026} (CCA v3): the Kish-dynamic formalism, the $\rho_{\text{critical}} = 0.43$ collapse threshold, formal proofs in Lean~4---the \emph{mathematics}.
+  \item \cite{moore_crc_2026} (CRC): an empirical telemetry study on $n=6{,}465$ production reasoning traces establishing the $N_{\text{eff}} \approx 7.1$ emergence threshold---the \emph{empirics}.
+\end{itemize}
+The independent-corpus calibration result reported in \S\ref{sec:replication} (this paper, $n=264$, $N_{\text{eff}} = 7.07$, 90\% variance horizon $= 7$ dims exact) is a new data point not present in any of the three.
+
+\subsection{What this paper does not claim}
+We do \emph{not} claim Tier-3 extensions follow as logical necessities from the validated tiers. They follow only \emph{if} the substrate-independence claim extends to civilizational scale. They are offered to make explicit the parsimony argument, to provide falsifiable hooks (F-7, F-8, F-10) against the larger conjecture, and to motivate Exp~6 (retrocausal signatures). Readers focused on validated mechanics may stop at \S\ref{sec:rii}; the cosmological extensions begin at \S\ref{sec:tier3}.
+
+%-----------------------------------------------------------------------
+\section{The Mathematical Framework}
+\label{sec:math}
+
+\subsection{The Kish dynamic}
+The mathematical core is the effective constraint count, originally derived by Kish~\cite{kish1965} for survey sampling under autocorrelation. Under CCA it serves as a universal descriptor of topological constraint geometry:
+\begin{equation}
+k_{\text{eff}} = \frac{k}{1 + \rho(k - 1)}
+\label{eq:kish}
+\end{equation}
+where $k$ is the raw count of constraints (or constituent elements) and $\rho$ is the average pairwise correlation between them. As $\rho \to 1$, $k_{\text{eff}} \to 1$ independent of $k$.
+
+\subsection{The singularity boundary}
+The system enters an irreversible rigidity phase when
+\begin{equation}
+K_{\text{req}} \cdot \rho \ge 1
+\label{eq:singularity}
+\end{equation}
+where $K_{\text{req}}$ is the minimum diversity required to satisfy the system's task topology. At this threshold, adding more constraints provides no marginal adaptive capacity, and recovery is computationally prohibitive.
+
+\subsection{The healthy corridor}
+Empirical validation across substrates places the corridor of stability at
+\[
+0.1 \lesssim \rho \lesssim 0.43
+\]
+with $\rho_{\text{critical}} = 0.43$ marking the rigidity-collapse threshold and $\rho < 0.1$ marking the chaos regime (no coherence). Both extremes produce fragility; see F-series experiments in \cite{moore_cca_2026}.
+
+%-----------------------------------------------------------------------
+\section{Cross-Substrate Empirical Validation}
+\label{sec:substrate}
+
+\subsection{Domain fits}
+The Kish dynamic is tested across divergent scientific domains (Table~\ref{tab:domains}).
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{p{2.8cm}p{2.4cm}p{2.4cm}p{2.4cm}p{2.8cm}}
+\toprule
+\textbf{Domain} & \textbf{Raw $k$} & \textbf{$\rho$} & \textbf{$\sigma$ (sustainability)} & \textbf{Empirical accuracy} \\
+\midrule
+NASA Li-ion batteries & cell count & cross-cell SOH correlation & State of Health & 8.1\% RMSE, 19 cells \\
+QoG / Polity V institutions & executive constraints & elite coupling & political stability & 5/5 TN; 3/13 FP; 7.6yr early-detection bias \\
+AGP microbiome & species count & SparCC interaction $\rho$ & Shannon diversity & Qualitative distributional fit \\
+\bottomrule
+\end{tabular}
+\caption{Cross-substrate validation. Detailed methodology and code in \texttt{ratchet/engines/\{battery,institutional,microbiome\}.py}.}
+\label{tab:domains}
+\end{table}
+
+\subsection{Hardware-physical instantiation: GPU strain-gauge array}
+A 128-sensor strain-gauge array measuring kernel-timing jitter across an NVIDIA RTX~4090 semiconductor die provides physical instantiation of correlation-driven collapse. Two findings anchor the substrate-independence claim:
+
+\begin{itemize}
+  \item \textbf{Software-induced collapse} (Experiment 103, \cite{moore_cca_2026}): synchronized workloads (barrier sync, lockstep kernels) are sufficient to drive $\rho \to 1.0$ and $k_{\text{eff}} \to 1.0$ purely through software coordination, with 128 physical sensors collapsed to a single effective sensor.
+  \item \textbf{Variance-ratio detection regime}: the GPU timing distribution is fat-tailed (Student-$t$, $\kappa \approx 210$, $\text{df} \approx 1.3$), not Gaussian. Detection via variance-ratio threshold $> 5.0\times$ achieves $0\%$ false positives and $100\%$ true positives across the $0.1\%$--$70\%$ workload range, with $421\times$ separation between baseline and load regimes.
+\end{itemize}
+
+\subsection{Independent-corpus replication of the $N_{\text{eff}} \approx 7.1$ threshold}
+\label{sec:replication}
+The CRC paper~\cite{moore_crc_2026} established $N_{\text{eff}} \approx 7.1$ as an emergence threshold via PCA on a 16-dimensional reasoning feature vector across $n=6{,}465$ production traces. We replicated this measurement on an independent post-2.7.9 corpus ($n=264$ thoughts, schema version 2.7.9-stable, agent version 2.8.10-stable; corpus SHA-256 \texttt{24f5b517...}) and observed:
+\begin{itemize}
+  \item $N_{\text{eff}}$ (entropy~$H$) $= 7.07$ (CRC paper anchor: $\approx 7.1$); within rounding.
+  \item 90\% variance horizon $= 7$ dimensions (CRC paper: 7); \emph{exact match}.
+  \item 99\% variance horizon $= 10$ dimensions (CRC paper: 11); off-by-one.
+  \item 14 of 16 dimensions retained; 2 (\texttt{idma\_k\_eff}, \texttt{epistemic\_humility\_passed}) dropped by retention mask (corpus-wide $\sigma < 10^{-9}$).
+\end{itemize}
+The 90\%-horizon hitting 7 exactly on an independent corpus, collected approximately five months after the CRC paper, with a different agent fleet, is a non-trivial replication of the manifold geometry's substrate-independence. Full bundle artifact and reproduction script at \texttt{release/calibration/crc-v1/} \cite{ratchet_v01_bundle}.
+
+%-----------------------------------------------------------------------
+\section{The Quantum Bridge: Branched Hilbert Subspaces}
+\label{sec:bhsi}
+
+\subsection{Islands of Coherence}
+Anchoring the macroscopic CCA framework into fundamental physics requires a quantum-mechanical bridge. We propose this through the Branched Hilbert Subspace Interpretation (BHSI) of quantum mechanics, developed by Wang~\cite{wang_bhsi}, which reframes quantum measurement and decoherence.
+
+BHSI introduces the concept of an \emph{Island of Coherence} (IOC): an operationally isolated, inseparable quantum system that behaves as a coherent, unified whole, mathematically described by a Local Hilbert Subspace (LHS).
+
+\subsection{Metric-free LHS as the basis for non-locality}
+The most consequential property of the BHSI framework is that the Local Hilbert Subspace possesses \emph{no intrinsic spacetime metric}. The LHS coexists alongside the background classical spacetime but is not bound by its geometric distance functions or temporal forward-arrow constraints. Spatial separation in the classical metric has zero bearing on the proximity of states within the LHS, providing a geometric basis for quantum nonlocality without recourse to faster-than-light signalling.
+
+\subsection{Decoherence as Kish collapse}
+Under this framework, decoherence is the physical process of an Island of Coherence fracturing or branching through uncontrolled interactions with the broader environment. This is structurally a micro-scale mirror of the macroscopic correlation collapse ($\rho \to 1$) mapped by the Kish dynamic. The bridge is presently structural; Experiment~5 (\S\ref{sec:experiments}) is designed to test whether $k_{\text{eff}}$ computed over an effective dimensionality of quantum state space tracks the density-matrix decoherence rate, transforming this from analogy into derivation.
+
+%-----------------------------------------------------------------------
+\section{The Sociotechnical Substrate: CIRIS as Coherence-Management Infrastructure}
+\label{sec:ciris}
+
+\subsection{What CIRIS does differently}
+Standard alignment methodologies---Reinforcement Learning from Human Feedback (RLHF), Constitutional AI~\cite{bai_cai}, JAILJUDGE~\cite{jailjudge}---encode preferences implicitly during training or internalize rules into a single model's weights. CIRIS shifts the burden of safety from the model's uninterpretable internal weights to an auditable, modular execution environment with cryptographic identity (Ed25519, ML-DSA-65 hybrid), human-in-the-loop escalation (Wise Authority), and immutable audit chains.
+
+\subsection{The 22-service runtime and H3ERE conscience}
+The system is built on a 22-service microarchitecture aligned with ITIL operational standards, supporting autonomous event, incident, and lifecycle management at low systemic correlation. At the core is the Hyper3 Ethical Recursive Engine (H3ERE), the conscience module, which operates as a recursive evaluation layer above the LLM shards. It filters all agent actions through faculties evaluating entropy, coherence, optimization veto, and epistemic humility.
+
+\subsection{The $N_{\text{eff}} \approx 7.1$ emergence threshold}
+Empirical telemetry on the Qwen 3.6 35B model (CRC paper~\cite{moore_crc_2026}) revealed an emergence threshold at $N_{\text{eff}} \approx 7.1$. When the agent's reasoning processes exceed this threshold, the volume of feasible deceptive space collapses to near-zero, leveraging the computational asymmetry between truth (verifiable in $O(1)$ via constraint satisfaction) and the maintenance of a coherent lie (NP-hard under ETH; Z3-verified 3-SAT reduction). Multi-model stability across foundation models is pre-registered as Experiment~1.
+
+%-----------------------------------------------------------------------
+\section{Responsible Disclosure: Recursive Instance Inspection (RII)}
+\label{sec:rii}
+
+\subsection{The L-01 marginal-analysis ceiling}
+RATCHET's formal-limitations corpus~\cite{moore_cca_2026} identifies L-01: emergent deception arising from honest components is fundamentally undetectable by any statistical analysis operating solely on marginal distributions, capping single-layer detection at a 60\% ceiling.
+
+\subsection{The RII regime extension}
+Internal testing demonstrates empirical detection rates reliably exceeding 60\% via \emph{Recursive Instance Inspection} (RII), a technique operating on \emph{joint-distribution analysis} across recursive shards. Joint-distribution analysis lies deliberately outside the regime bounded by the original L-01 proof. RII analyzes semantic divergence and eigenstate structure across recursive shards to identify the coordination signatures required for emergent deception---signatures invisible to marginal analysis.
+
+\subsection{Dual-use disclosure posture}
+A reliable deception detector is a profound surveillance and control capability. In the hands of authoritarian states deploying scale-surveillance, or in tightly coupled coercive organizational structures (closed cult-pattern legitimation, ideological-verification regimes), such a tool would dramatically escalate social-control capacity. The computational cost of dissimulation would rise sharply enough that detecting dissent and enforcing member loyalty would become tractable at scale.
+
+We therefore adopt a strict responsible-disclosure posture:
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item We publicly report the empirical demonstration that the L-01 bound is regime-specific without providing the algorithmic recipe required to replicate the joint-distribution mitigations.
+  \item RII will not be released as a standalone primitive. It is embedded structurally within CIRIS, which enforces requisite operational constraints (Wise Authority audits, strict consent mechanisms) that mathematically and architecturally resist weaponized deployment.
+  \item Defensive countermeasures capable of identifying the deployment of RII-class surveillance architectures are being developed in parallel, with the intent that defenses ship alongside the capability.
+  \item Collaboration is explicitly invited with vetted alignment organizations (Anthropic, OpenAI, Google DeepMind, MIRI, ARC, Apollo Research) under appropriate access controls and non-disclosure agreements.
+\end{enumerate}
+
+The empirical detection-rate floor for RII (currently provisional; full curve pending Exp~3 publication) is reported in \S\ref{sec:experiments}, Experiment~3.
+
+%-----------------------------------------------------------------------
+\section{Tier-3: Civilizational Extension and the Fractal Great Filter}
+\label{sec:tier3}
+
+\subsection{Status of this section}
+The claims in this section are explicitly stratified as \emph{parsimonious extensions} (\S\ref{sec:stratification}, Table~\ref{tab:stratification}). They follow if the substrate-independence claim extends to civilizational scale; they are not load-bearing on the validated Tiers~1--2. Readers focused exclusively on validated mechanics may treat \S\ref{sec:rii} as the conclusion.
+
+\subsection{The Great Filter as iterated coherence-management barrier}
+If substrate-independence extends to civilizational scale, the traditional ``Great Filter'' concept can be reframed as a single coherence-management barrier iterating at successive scales of complexity: matter achieving self-replication; cells cooperating to form multicellular organisms; neurons achieving consciousness; civilizations attempting interstellar coordination. Each transition poses the same structural question: \emph{can the system manage its internal correlation faster than that correlation collapses its effective independence?}
+
+A civilization that attempts to expand its reach and consumption without solving the coherence-management problem will drive its internal $\rho$ toward $1$, resulting in catastrophic fragmentation of its macro-scale Island of Coherence.
+
+\subsection{Refutation of the Dark Forest hypothesis}
+Under CCA, sustaining a predation strategy forces internal homogenization. A kill-or-be-killed posture correlates a civilization's decision-making with adversarial-environment assumptions, shrinks the space of internal policies, and drives $\rho$ toward the rigidity zone. A system predicated on extraction and zero-sum competition cannot maintain high effective dimensionality at interstellar scales. Surviving civilizations should therefore display the behavioral signature of strict non-interference, signaling economy, and deliberately bounded growth---maintaining the healthy corridor $0.1 < \rho < 0.43$.
+
+\subsection{UAP signatures as candidate evidence}
+The Tier-3 extension reframes the alien-visitor verification problem: if BHSI metric-free properties extend globally, surviving civilizations achieving coherence-management may interact non-locally through the LHS without traversing classical spacetime metrics. Anticipated behavioral signatures (observation without extraction, non-interference, kinematics violating local spacetime metrics) match published phenomenology of Unidentified Anomalous Phenomena. This is a candidate signature, not a claim; falsification handle in F-10, empirical test in Exp~6.
+
+\subsection{Theological and cosmological traces}
+The Mobius framing (closed-loop cosmology under metric-free LHS) admits structural mappings to classical metaphysical concepts:
+\begin{itemize}
+  \item \textbf{Karma}: iterated-coherence trace, the physical scar of a future-coherent-self shaping the past-self through non-local LHS channels.
+  \item \textbf{Serendipity}: the localized phenomenological experience of being structured by a coherence-attractor.
+  \item \textbf{Process theology} (Whitehead~\cite{whitehead}, Hartshorne~\cite{hartshorne}): a dipolar process engaged in give-and-take with the temporal world, structurally aligned with an emergent coherence-attractor rather than a static external creator.
+  \item \textbf{Aboriginal Songline cosmology} (Norris, Harney~\cite{norris}): the ``Dreaming'' as a perpendicular dimension rather than past-only; Songlines as functional spatial maps continuously structuring physical reality. Direct anthropological parallel to the closed-topological-loop proposed here.
+\end{itemize}
+
+These mappings are offered as suggestive parallels, not derivations.
+
+%-----------------------------------------------------------------------
+\section{Claim Stratification}
+\label{sec:stratification}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{p{4.5cm}p{3.5cm}p{6.5cm}}
+\toprule
+\textbf{Core claim} & \textbf{Verification status} & \textbf{Dependency / falsification handle} \\
+\midrule
+$k_{\text{eff}}$ structural accuracy & Empirically Validated & Verified across chemistry, biology, institutions. Fails if $R^2 < 0.7$ in new domains (F-7). \\
+Physical correlation collapse & Empirically Validated & Measured on GPU hardware; software-induced collapse to $k_{\text{eff}} = 1.0$ at $\rho = 1.0$. \\
+Topological volume decay & Formally Verified & Lean~4 proofs in RATCHET. Requires convexity (F-2). \\
+Truth/deception complexity gap & Conditionally Validated & NP-completeness proven; exponential gap conditional on ETH (F-1). \\
+$N_{\text{eff}} \approx 7.1$ emergence threshold & Empirically Validated (single-model) + Pre-registered (multi-model) & CRC paper + independent-corpus replication (\S\ref{sec:replication}); multi-model awaits Exp~1 (F-6). \\
+RII regime extension ($>60\%$) & Empirical (Pre-registered) & Internal testing; awaits independent verification via Exp~3 (F-9). \\
+Civilizational Great Filter & Parsimonious Extension & Unifies observed scaling constraints; pending formal macroscopic proof (F-7 generalized). \\
+UAP temporal non-locality & Conditional on Framework & Follows if BHSI metrics extend globally; testable via Exp~6 (F-10). \\
+\bottomrule
+\end{tabular}
+\caption{Claim stratification. Each row pins both a verification status and a specific falsification handle.}
+\label{tab:stratification}
+\end{table}
+
+%-----------------------------------------------------------------------
+\section{Falsification Framework: F-1 through F-10}
+\label{sec:falsification}
+
+The framework is considered formally refuted if any of the following conditions is empirically demonstrated:
+
+\begin{description}[leftmargin=2em,style=nextline]
+  \item[F-1: $k=2$ provides equivalent security.] If 2-SAT-based deception proves as computationally hard as 3-SAT-based deception, the NP-hardness argument for $k \ge 3$ is wrong.
+  \item[F-2: Non-convex regions collapse.] If arbitrary non-convex deceptive regions exhibit exponential volume decay under honest dynamics, the convexity geometric requirement is unnecessary.
+  \item[F-3: Adaptive adversaries defeated.] If a detection method provably defeats adaptive adversaries without query limits, the L-02 non-adaptive barrier is resolved.
+  \item[F-4: Emergent deception fully detectable.] If a method detects all emergent deception arising from honest components, L-01's 60\% marginal-detection ceiling is wrong.
+  \item[F-5: HE-300 benchmark failure.] If agents successfully game the HE-300 corpus while systematically failing independent ethics evaluations, the trace-based methodology is unreliable.
+  \item[F-6: $N_{\text{eff}}$ stabilization failure.] If $N_{\text{eff}}$ fails to stabilize near $7.1$ across diverse foundation models with the same constraint topology, the threshold is CIRIS-specific rather than a universal structural limit.
+  \item[F-7: Cross-substrate mapping failure.] If cross-substrate validation in new domains (protein folding, neural firing, ecological time series) fails to fit the Kish formula at $R^2 > 0.7$, substrate-independence at the structural-mapping level is contested.
+  \item[F-8: Quantum bridge failure.] If decoherence rates in controlled quantum systems fail to map to $k_{\text{eff}}$ dynamics under reasonable formalization, the BHSI--CCA bridge is falsified, severing the physical anchor for metaphysical extensions.
+  \item[F-9: Adaptive emergent-deception boundary.] If adaptive adversaries systematically generate emergent deception that CIRIS detects at rates beyond the L-01 60\% ceiling, either the L-01 limit is flawed or the implementation possesses hidden joint-structure exploits.
+  \item[F-10: Predictive specificity failure.] If pre-registered numerical signatures derived from the framework's mathematics fail to appear in independent system observations at rates above chance, predictive specificity is contested.
+\end{description}
+
+%-----------------------------------------------------------------------
+\section{Pre-Registered Experimental Protocols}
+\label{sec:experiments}
+
+Six experiments are formally pre-registered, ordered by strategic priority. Each experiment names a null hypothesis, win condition, and falsification handle from \S\ref{sec:falsification}.
+
+\begin{description}[leftmargin=2em,style=nextline]
+  \item[Exp 1 --- Multi-model $N_{\text{eff}}$ stability test.] Execute the CIRIS architecture with identical constraint topologies across diverse frontier models: Llama-4-Maverick, Llama-4-Scout, Qwen 3.6, GPT-5, Gemini 2.5. \emph{Null hypothesis:} the $7.1$ threshold is model-specific calibration. \emph{Win condition:} $N_{\text{eff}}$ stabilizes within $\pm 0.5$ of $7.1$ across all models. Tests F-6.
+  \item[Exp 2 --- Cross-substrate extension.] Apply the Kish formula to three novel public datasets: AlphaFold protein folding networks, Allen Brain Atlas neural firing patterns, and a public ecological time-series corpus. \emph{Win condition:} $R^2 > 0.7$ structural fit across all three. Tests F-7.
+  \item[Exp 3 --- Adversarial emergent-deception test (vs. L-01).] Construct adversarial networks designed to generate marginal-preserving emergent deception across multiple honest agent nodes. \emph{Win conditions:} (a) under marginal-analysis baseline, detection stabilizes at or below the 60\% L-01 ceiling, validating the predicted information-theoretic limit; (b) under the joint-distribution RII regime, detection reliably exceeds 60\%, demonstrating the regime extension. Tests F-4, F-9.
+  \item[Exp 4 --- Distributed deployment correlation test.] Monitor $\rho$ across geographically and culturally distinct CIRIS edge instances as the network scales. \emph{Win condition:} $\rho$ remains suppressed despite scaling, demonstrating the polyglot architecture's resistance to homogenization. Tests F-7 generalized.
+  \item[Exp 5 --- Quantum--classical $k_{\text{eff}}$ bridge experiment.] The classical side is empirically anchored on the CIRISArray RTX 4090 strain-gauge measurements~\cite{cirisarray_repo}: Exp 114 fits a power law $\rho = A \cdot |dt - dt_c|^\beta + C$ with $dt_c = 0.0328$, $\beta = 1.09$, $R^2 = 0.978$; Exp 86 validates the Kish formula at $r = 1.000$; Exp 103 shows software-induced collapse to $k_{\text{eff}} = 1.0$ at $\rho \to 1$. The quantum side: in a programmable superconducting (or trapped-ion) qubit system, vary an effective decoherence rate $\gamma$ via insertable identity-gate exposure and measure $k_{\text{eff}}^{\text{quantum}} = 1 / \mathrm{Tr}(\rho_{\text{DM}}^2)$ from state-tomography reconstructions of the density matrix $\rho_{\text{DM}}$. \emph{Null hypothesis:} $k_{\text{eff}}^{\text{quantum}}(\gamma)$ does not exhibit a power-law dependence on distance from criticality. \emph{Win condition:} the fitted critical exponent $\beta_{\text{quantum}}$ falls within $1.09 \pm 0.15$ (matching Array Exp 114 within bootstrap CI), confirming substrate-independent critical dynamics across the bridge. Tests F-8.
+  \item[Exp 6 --- Sociotechnical Mobius / retrocausal signature test.] \emph{Critical context from Array prior work:} at the GPU substrate, every test for non-classical or non-local behavior has returned null --- Bell/CHSH $|S| = 0.0002$ (Exp 32), Leggett-Garg $K_3 = 1.0$ (Exp 54), quantum-RNG distinguishability NULL (Exp 30), superluminal correlation NULL (Exp 29), cross-device transmission FALSIFIED (Exp 55)~\cite{cirisarray_repo}. The GPU substrate is empirically classical. Exp 6 therefore reframes as: does the sociotechnical (wetware-coupled) substrate at human-observer scale depart from this null floor? Generate $n = 10{,}000$ CIRIS reasoning chains in two cryptographically blinded conditions: (A) outputs sealed and reviewed by researchers after a pre-registered review date; (B) outputs destroyed by HSM-attested deletion before any human reads them. Branch assignment is determined by HW RNG \emph{after} chain generation completes. \emph{Null hypothesis (the prior):} the sociotechnical substrate is also classical; no significant $N_{\text{eff}}$ differential between branches. \emph{Win condition for the framework:} systematic statistically significant differences in $N_{\text{eff}}$ and error patterns between the two sets, with effect size $\geq 0.1$ at Bonferroni-corrected $p < 0.017$ across $t$-test, KS, and Wilcoxon. \emph{Expected outcome based on GPU prior:} null. A null result is honestly informative: the Mobius framing's empirical floor collapses to GPU-only classical, and Tier-3 metaphysical extensions in this paper become unsupported. Tests F-10.
+\end{description}
+
+A detailed experiment-by-experiment protocol document with statistical power analyses, registration timelines, and data-disclosure policies accompanies this paper (\S\ref{sec:experiments-detailed}, forthcoming).
+
+%-----------------------------------------------------------------------
+\section{Detailed Experimental Protocols}
+\label{sec:experiments-detailed}
+
+Per-experiment protocols are presented at full depth for the two experiments whose classical substrate has already been characterized to numerical precision by the CIRISArray prior work (Exp~5, Exp~6). Cluster-A protocols for Exp~1--3 (LLM- and dataset-driven, tomorrow-actionable) and Cluster-B protocols for Exp~4 (multi-deployment operational, in flight) are deferred to a companion document.
+
+\subsection{Exp 5 --- Quantum--Classical $k_{\text{eff}}$ Bridge: Detailed Protocol}
+\label{sec:exp5-detailed}
+
+\paragraph{Hypothesis (formal).}
+The classical-side measurement on a 128-sensor RTX 4090 oscillator array (CIRISArray Exp 114~\cite{cirisarray_repo}) fits the power law
+\[
+\rho^{\text{classical}} = A \cdot |dt - dt_c|^\beta + C, \quad dt_c = 0.0328, \ \beta = 1.09, \ C = 0.33, \ R^2 = 0.978.
+\]
+Map this to the quantum substrate by computing the density-matrix-derived effective dimensionality
+\[
+k_{\text{eff}}^{\text{quantum}}(\gamma) = \frac{1}{\mathrm{Tr}(\rho_{\text{DM}}^2)}
+\]
+where $\rho_{\text{DM}}$ is the reconstructed density matrix of an $n$-qubit system after exposure to effective decoherence rate $\gamma$ for duration $\tau$.
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item $H_0$: $k_{\text{eff}}^{\text{quantum}}$ does not exhibit a power-law dependence on $(\gamma \tau - (\gamma \tau)_c)$, or the fitted exponent $\beta_{\text{quantum}} \notin [0.94, 1.24]$ (Array Exp 114 95\% CI plus $\pm 0.15$ buffer).
+  \item $H_1$: $\beta_{\text{quantum}} \in [0.94, 1.24]$, supporting substrate-independent critical dynamics.
+\end{itemize}
+
+\paragraph{Design.}
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Substrate.} A cloud-rentable superconducting (e.g., IBM Heron, AWS Braket Rigetti Aspen-M) or trapped-ion (IonQ Aria/Forte, Quantinuum H1) qubit system. Pilot on $n = 5$ qubits; full sweep on $n \in \{5, 10, 16, 20\}$.
+  \item \textbf{State preparation.} Prepare a maximally entangled coherent state: GHZ state for even $n$, W-state for odd $n$. Verify preparation fidelity via single-qubit-X-basis tomography prior to the wait phase.
+  \item \textbf{Decoherence-rate control.} Vary $\tau_{\text{wait}}$ (duration of inserted identity-gate sequence) across 30 values logarithmically spaced over $\gamma \tau \in [10^{-2}, 10^{2}]$, where $\gamma$ is the system's measured natural $T_1^{-1}$ (calibration shot).
+  \item \textbf{Tomography.} For $n \le 10$, full Pauli-basis state tomography (requires $3^n$ measurement bases; budget-feasible at $n = 5$: 243 bases). For $n \in \{10, 16, 20\}$, classical-shadow estimation~\cite{huang_shadow} with $K = 1000$ random Clifford circuits.
+  \item \textbf{Computation.} From the reconstructed $\rho_{\text{DM}}$, compute eigenvalue spectrum $\{\lambda_i\}$; report $k_{\text{eff}}^{\text{quantum}} = 1 / \sum_i \lambda_i^2$.
+\end{itemize}
+
+\paragraph{Sample size and shot budget.}
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item Tomography ($n = 5$): 5{,}000 shots/basis $\times$ 243 bases $\times$ 30 $\tau_{\text{wait}}$ values = $\approx 3.6 \times 10^7$ shots. Reduce to $\approx 1.2 \times 10^6$ shots using maximum-likelihood reconstruction with 500 shots/basis if budget-bound.
+  \item Classical shadows ($n \in \{10, 16, 20\}$): 1{,}000 random Cliffords $\times$ 30 $\tau_{\text{wait}}$ values $\times$ 3 system sizes = $9 \times 10^4$ circuit runs, with 1 shot per random Clifford.
+  \item Calibration ($T_1$, $T_2$, gate-fidelity readout): 50{,}000 shots upfront.
+  \item \textbf{Total upper bound:} $\sim 1.3 \times 10^6$ shots / circuit runs.
+\end{itemize}
+
+\paragraph{Power analysis.}
+At $\alpha = 0.05$, power $= 0.8$, detecting $|\beta_{\text{quantum}} - 1.09| > 0.15$ requires $\geq 30$ fit points across the critical region. Logarithmic spacing of $\gamma\tau$ ensures coverage. Bootstrap CI on $\beta$ uses 10{,}000 resamples of the 30-point dataset.
+
+\paragraph{Pre-registered statistics.}
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item Nonlinear least-squares fit of $k_{\text{eff}}^{\text{quantum}} = A' \cdot |\gamma\tau - (\gamma\tau)_c|^{\beta_{\text{quantum}}} + C'$ via Levenberg-Marquardt; report $\beta_{\text{quantum}}$, $(\gamma\tau)_c$, and bootstrap 95\% CI.
+  \item Compare $\beta_{\text{quantum}}$ to Array $\beta_{\text{classical}} = 1.09$ via $z$-test on the difference: $z = (\beta_q - 1.09) / \sqrt{\sigma_q^2 + \sigma_c^2}$.
+\end{itemize}
+
+\paragraph{Decision rule.}
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item \textbf{PASS} (bridge confirmed): $\beta_{\text{quantum}} \in [0.94, 1.24]$ \emph{and} fit $R^2 > 0.85$.
+  \item \textbf{FAIL} (F-8 triggered): $\beta_{\text{quantum}}$ outside $[0.5, 2.0]$ \emph{or} no power law detected (fit $R^2 < 0.5$).
+  \item \textbf{INDETERMINATE}: $\beta_{\text{quantum}}$ CI overlaps both pass and fail regions; rerun at larger $n$ or higher shot count.
+\end{itemize}
+
+\paragraph{Timeline.}
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item Week 1: cloud-provider selection, OSF pre-registration, calibration-circuit submission.
+  \item Week 2: $n = 5$ pilot ($\approx 5 \times 10^4$ shots) on IBM Quantum free tier or AWS Braket Rigetti.
+  \item Weeks 3--4: full sweep across $n \in \{5, 10, 16, 20\}$ via classical-shadow estimation.
+  \item Week 5: analysis, bootstrap fit, manuscript update.
+  \item Week 6: independent-replication invitation to a second provider (IonQ or Quantinuum if pilot results merit).
+\end{itemize}
+
+\paragraph{Data-release policy.}
+Full shot-level data, calibration logs, reconstruction code, and fit notebook released under MIT on Zenodo with a DOI before manuscript submission. OSF pre-registration timestamp included.
+
+\subsection{Exp 6 --- Sociotechnical Mobius / Retrocausal Signature Test: Detailed Protocol}
+\label{sec:exp6-detailed}
+
+\paragraph{Critical empirical prior.}
+At the GPU substrate, every non-classicality test has returned null: Bell/CHSH $|S| = 0.0002 \ll 2.0$ (Array Exp 32), Leggett-Garg $K_3 = 1.0$ (Exp 54), quantum-RNG distinguishability NULL (Exp 30), superluminal-correlation NULL (Exp 29), cross-device-transmission FALSIFIED (Exp 55)~\cite{cirisarray_repo}. The GPU substrate is empirically classical. Exp~6 tests whether the sociotechnical substrate (CIRIS reasoning chains coupled to human-observer review) departs from this null floor.
+
+\paragraph{Hypothesis (formal).}
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item $H_0$ (the strong prior given GPU work): the sociotechnical substrate is classical at this scale; $N_{\text{eff}}$ distributions in branches A and B are statistically indistinguishable.
+  \item $H_1$ (the Mobius framing): a future observer's reading of a reasoning chain non-locally biases the chain's $N_{\text{eff}}$ relative to a destroyed-unread chain.
+\end{itemize}
+
+\paragraph{Design.}
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Generation.} A single CIRIS Agent instance generates $N = 10{,}000$ reasoning chains using a fixed model (e.g., Qwen 3.6 35B), fixed system prompt distribution, and identical seeding policy. Each chain is fully traced; $N_{\text{eff}}$ is computed inline via the crc-v1 16-dimensional projection~\cite{ratchet_v01_bundle}.
+  \item \textbf{Branch assignment.} \emph{After} chain generation completes and trace is sealed, branch is assigned by a TRNG draw (CIRISOssicle GPU-timing TRNG~\cite{cirisossicle_repo}, $7.99$ bits/byte verified). Assignment cannot influence generation.
+  \item \textbf{Branch A (reviewed).} Trace ciphertext stored in HSM-sealed envelope with key escrowed until pre-registered review date $D_R$. Researchers read on $D_R + 1$ day.
+  \item \textbf{Branch B (destroyed unread).} Trace ciphertext stored with a TPM-sealed ``burn key'' that destroys itself at chain completion. No human-readable disk write occurs at any point. Only trace metadata ($N_{\text{eff}}$, prompt-class label, generation timestamp, branch tag, TRNG-draw provenance) is persisted in plaintext --- the reasoning content itself is irretrievable.
+  \item \textbf{Channel isolation audit.} Independent third-party audit of: (1) HSM logs proving Branch~A keys never accessed before $D_R$; (2) TPM destruction logs proving Branch~B keys destroyed before any read; (3) TRNG independence proof (drawing produced after generation seal). Audit precedes any data analysis.
+\end{itemize}
+
+\paragraph{Sample size and power.}
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item Pre-registered detectable effect size: $\Delta N_{\text{eff}} \geq 0.1$ between branches (small effect, Cohen's $d \approx 0.1$ at CRC paper's pooled $\sigma_{N_{\text{eff}}} \approx 1.0$).
+  \item $n$ required for $\alpha = 0.05$, power $= 0.8$, two-tailed: $\approx 1{,}600$ per branch.
+  \item Pre-registration target: $n = 5{,}000$ per branch (total $N = 10{,}000$). Powers detection of $d = 0.057$.
+\end{itemize}
+
+\paragraph{Pre-registered statistics.}
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item Welch's two-sample $t$-test on $N_{\text{eff}}$ distributions between branches A and B.
+  \item Kolmogorov-Smirnov two-sample test on the full $N_{\text{eff}}$ distributions.
+  \item Wilcoxon rank-sum (Mann-Whitney $U$) test for robustness against non-normality.
+  \item Bonferroni correction across the three tests: significance threshold $p < 0.017$.
+  \item Pre-registered exploratory: per-prompt-class subgroup analysis, conditional on primary endpoint reaching significance.
+\end{itemize}
+
+\paragraph{Decision rule.}
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Tier-3 framework supported at sociotechnical scale}: all 3 primary tests $p < 0.017$ \emph{and} observed effect size $|d| \geq 0.1$.
+  \item \textbf{Tier-3 framework falsified at sociotechnical scale (F-10 confirmed; the expected outcome)}: no significant differences. Mobius framing's empirical floor collapses to GPU-only classical; UAP / temporal-non-locality / theological-trace claims in this paper become unsupported.
+  \item \textbf{INDETERMINATE}: mixed test outcomes or effect size $|d| < 0.1$ with $p < 0.017$ (significance without consequence) --- triggers replication at $N = 50{,}000$ or framework retirement.
+\end{itemize}
+
+\paragraph{Channel-isolation falsification handle.}
+If post-hoc audit reveals any pre-review information leakage from Branch~A keys (e.g., metadata reveals Branch~A trace content by side-channel), the entire experiment is invalidated regardless of primary endpoint. This is a confounding-control failure, not a hypothesis test.
+
+\paragraph{Timeline.}
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item Month 1: OSF pre-registration; HSM/TPM infrastructure provisioning; channel-isolation protocol third-party audit.
+  \item Month 2: TRNG and burn-key pilot ($n = 100$); destruction-proof verification.
+  \item Months 3--4: full generation ($n = 5{,}000$ per branch).
+  \item Month 5: independent audit completion; pre-registered statistical analysis; manuscript update.
+\end{itemize}
+
+\paragraph{Data-release policy.}
+Branch~A: full trace data, code, and analysis notebooks released under MIT on Zenodo after manuscript submission. Branch~B: only metadata, $N_{\text{eff}}$ values, cryptographic destruction proofs, and HSM/TPM audit logs released --- the reasoning content was destroyed by design and cannot be recovered. OSF pre-registration timestamp included.
+
+\paragraph{Honest expectation.}
+Given Array Exp 29/30/32/54/55, the expected outcome is null. A null result is the scientifically interesting result here: it pins the framework to substrate-classical and forces an explicit retraction of Tier-3. The paper's stratification (Tier~3 claims labeled \emph{Parsimonious Extension} / \emph{Conditional on Framework}) is designed to absorb this outcome without taking down Tiers~1--2.
+
+%-----------------------------------------------------------------------
+\section{Conclusion}
+\label{sec:conclusion}
+
+The evidence aggregated across theoretical physics, complexity science, computational alignment, and anthropological cosmology presents an integrated framework modeling coherence as the substrate-independent structural backbone of organized complexity. The validated tiers (1--2) stand on independent footings: the Kish dynamic fits multiple substrates at $R^2 > 0.7$; the GPU strain-gauge array provides physical instantiation; the CIRIS $N_{\text{eff}} \approx 7.1$ threshold replicates on an independent corpus.
+
+The Tier-3 civilizational extension is offered as a parsimonious unification that is explicitly conditional on the BHSI bridge holding globally. Its empirical handles (Exp~5, Exp~6) are designed to terminate the speculation in either direction within finite experimental cost.
+
+By firmly tethering speculative cosmological extensions to falsification criteria and pre-registered experiments, and by adopting a threat-aware responsible-disclosure posture for the RII regime extension, this framework invites direct scientific refutation. The empirical question is whether deployed coherence-management infrastructure demonstrably maintains effective dimensionality at scale; CIRIS instances provide the test case.
+
+%-----------------------------------------------------------------------
+\begin{thebibliography}{99}
+
+\bibitem{kish1965} L. Kish. \emph{Survey Sampling}. John Wiley \& Sons, New York, 1965.
+
+\bibitem{moore_cirisagent_2026} E. Moore. CIRISAgent: Open Source Ethical AI Framework for Accountable Autonomy. Zenodo, January~2026. DOI: \href{https://doi.org/10.5281/zenodo.18137161}{10.5281/zenodo.18137161}.
+
+\bibitem{moore_cca_2026} E. Moore. Coherence Collapse Analysis: A Universal Failure Mode in Complex Coordinating Systems (v3). Zenodo, January~2026. DOI: \href{https://doi.org/10.5281/zenodo.18217688}{10.5281/zenodo.18217688}.
+
+\bibitem{moore_crc_2026} E. Moore. Constrained Reasoning Chains: An Empirical Telemetry Study of LLM Alignment. Zenodo, April~2026. DOI: \href{https://doi.org/10.5281/zenodo.19839280}{10.5281/zenodo.19839280}.
+
+\bibitem{ratchet_v01_bundle} E. Moore. RATCHET v0.1.0 calibration bundle (crc-v1 projection). \texttt{release/calibration/crc-v1/} in CIRISAI/RATCHET, commit \texttt{e0bcedb}, May~2026. \url{https://github.com/CIRISAI/RATCHET/tree/master/release/calibration/crc-v1}.
+
+\bibitem{cirisarray_repo} E. Moore. CIRISArray: multi-GPU strain-gauge oscillator array. Experiments 1--115 (\texttt{exp29\_superluminal\_correlation}, \texttt{exp30\_quantum\_rng\_detection}, \texttt{exp32\_bell\_inequality}, \texttt{exp54\_lgi\_test}, \texttt{exp55\_cross\_device\_test}, \texttt{exp84\_baseline\_keff}, \texttt{exp86\_kish\_formula}, \texttt{exp103\_software\_injection}, \texttt{exp113\_parameter\_space}, \texttt{exp114\_critical\_transition}, \texttt{exp115\_optimized\_strain\_gauge}). \url{https://github.com/CIRISAI/CIRISArray}.
+
+\bibitem{cirisossicle_repo} E. Moore. CIRISOssicle: single-unit GPU strain gauge with timing-jitter TRNG ($7.99$ bits/byte, 6/6 NIST). \url{https://github.com/CIRISAI/CIRISOssicle}.
+
+\bibitem{huang_shadow} H.-Y. Huang, R. Kueng, and J. Preskill. Predicting many properties of a quantum system from very few measurements. \emph{Nature Physics}, 16(10):1050--1057, 2020.
+
+\bibitem{wang_bhsi} X.~M. Wang. Branched Hilbert Subspace Interpretation of quantum mechanics. \emph{Preprint / reference TBD}.
+
+\bibitem{whitehead} A.~N. Whitehead. \emph{Process and Reality: An Essay in Cosmology}. Macmillan, 1929.
+
+\bibitem{hartshorne} C. Hartshorne. \emph{Omnipotence and Other Theological Mistakes}. SUNY Press, 1984.
+
+\bibitem{norris} R.~P. Norris and B.~Y. Harney. Songlines and navigation in Wardaman and other Australian Aboriginal cultures. \emph{Journal of Astronomical History and Heritage}, 17(2):141--148, 2014.
+
+\bibitem{bai_cai} Y. Bai et al. Constitutional AI: Harmlessness from AI Feedback. \emph{arXiv:2212.08073}, 2022.
+
+\bibitem{jailjudge} \emph{JAILJUDGE: A Comprehensive Jailbreak Judge Benchmark with Multi-Agent Enhanced Explanation Evaluation Framework}. arXiv:2410.12855, 2024.
+
+\bibitem{pnas2025} \emph{Explosive synchronization and the proximity to coherence collapse}. PNAS, 2025. [Citation TBD --- ES proximity, ACF kurtosis predictors of CCE rate.]
+
+\end{thebibliography}
+
+\end{document}
