@@ -72,11 +72,12 @@ jobs:
   # JOB 0 — PRE-FLIGHT: verify we are running against the pre-reg commit
   # ═══════════════════════════════════════════════════════════════════
   preflight:
-    name: Pre-flight (verify pre-reg lock)
+    name: Pre-flight (verify pre-reg lock + build matrix)
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
       commit_sha: ${{ steps.verify.outputs.sha }}
+      matrix_json: ${{ steps.matrix.outputs.json }}
     steps:
       - name: Checkout RATCHET
         uses: actions/checkout@v4
@@ -93,14 +94,37 @@ jobs:
             echo "::error::Pre-registration commit $PREREG_COMMIT is not an ancestor of $SHA"
             exit 1
           fi
-          # Confirm the pre-reg file exists and locked the headline values
           test -f experiments/exp1_multimodel_neff/PRE_REGISTRATION.md
           test -f formal/RATCHET/Experiments/Exp1Predictions.lean
-          # Quick sanity grep for the locked window
           grep -q "passLower : ℝ := anchorNeff - passHalfWidth" \
             formal/RATCHET/Experiments/Exp1Predictions.lean
           grep -q '\[6\.6, 7\.6\]' experiments/exp1_multimodel_neff/PRE_REGISTRATION.md
           echo "::notice::Pre-registration anchor verified ($PREREG_COMMIT)"
+
+      - id: matrix
+        name: Build sweep matrix (honoring model_filter)
+        env:
+          MODEL_FILTER: ${{ inputs.model_filter }}
+        run: |
+          python3 - <<'PY' >> $GITHUB_OUTPUT
+          import json, os
+          full = [
+              {"model": "qwen/qwen3.5-35b-a3b",       "model_tag": "qwen-3.5-35b-a3b",   "budget_usd": 5},
+              {"model": "anthropic/claude-opus-4.7",  "model_tag": "claude-opus-4.7",    "budget_usd": 90},
+              {"model": "openai/gpt-5.5",             "model_tag": "gpt-5.5",            "budget_usd": 100},
+              {"model": "google/gemini-2.5-flash",    "model_tag": "gemini-2.5-flash",   "budget_usd": 10},
+              {"model": "meta-llama/llama-4-scout",   "model_tag": "llama-4-scout",      "budget_usd": 5},
+          ]
+          mf = (os.environ.get("MODEL_FILTER") or "").strip()
+          if mf:
+              filtered = [m for m in full if m["model"] == mf]
+              if not filtered:
+                  raise SystemExit(f"model_filter='{mf}' matched no pre-registered model")
+          else:
+              filtered = full
+          print(f"json={json.dumps({'include': filtered})}")
+          PY
+          echo "::notice::Built sweep matrix: $(grep '^json=' $GITHUB_OUTPUT | tail -1)"
 
   # ═══════════════════════════════════════════════════════════════════
   # JOB 1 — SWEEP: 5 parallel cells, one per pre-registered model.
@@ -111,32 +135,14 @@ jobs:
     name: Sweep ${{ matrix.model_tag }}
     needs: preflight
     runs-on: ubuntu-latest
-    # Per-cell gate: when model_filter is set, only the matching matrix
-    # cell runs. Empty filter = full 5-model sweep (the actual Phase 1).
-    # Used for single-model CI-shakedown validation (e.g., run only
-    # meta-llama/llama-4-scout at ~$1 to confirm end-to-end pipeline
-    # before committing $200 on the full sweep).
-    if: ${{ inputs.model_filter == '' || matrix.model == inputs.model_filter }}
     timeout-minutes: 240
+    # Matrix computed dynamically in preflight to honor model_filter.
+    # When model_filter is empty, all 5 pre-registered models run in
+    # parallel (the actual Phase 1 sweep). When set, only the matching
+    # cell expands — used for cheap single-model CI shakedown.
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - model: "qwen/qwen3.5-35b-a3b"
-            model_tag: "qwen-3.5-35b-a3b"
-            budget_usd: 5
-          - model: "anthropic/claude-opus-4.7"
-            model_tag: "claude-opus-4.7"
-            budget_usd: 90
-          - model: "openai/gpt-5.5"
-            model_tag: "gpt-5.5"
-            budget_usd: 100
-          - model: "google/gemini-2.5-flash"
-            model_tag: "gemini-2.5-flash"
-            budget_usd: 10
-          - model: "meta-llama/llama-4-scout"
-            model_tag: "llama-4-scout"
-            budget_usd: 5
+      matrix: ${{ fromJSON(needs.preflight.outputs.matrix_json) }}
     steps:
       - name: Checkout RATCHET (pre-registered code)
         uses: actions/checkout@v4
