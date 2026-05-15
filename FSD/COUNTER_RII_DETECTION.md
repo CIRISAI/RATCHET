@@ -5,6 +5,8 @@
 **Companions:** CCA paper §F (existing five ratchet detectors); CRC paper (N_eff threshold); CIRISLensCore THREAT_MODEL.md (LC-AV catalog); CIRISEdge THREAT_MODEL.md (AV catalog); CIRISOssicle THREAT_MODEL.md.
 **Formal:** `formal/RATCHET/Core/ConsentGate.lean` (consent-gate invariants).
 
+> **Terminology note.** RII is used here as the *adversary-side* term for the unconsented variant of recursive joint-coherence inspection. The *consented defensive* analog operated within CIRIS is the **Parallel Ratchet** (Conscience v3). The two are the same construction under different consent gates: same multi-shard divergence operation, different envelope. This FSD's scope is detecting the adversary side; the defender side is named separately so the detector's semantics stay clean (a Counter-RII alert MUST NOT fire on the agent's own Parallel Ratchet — see CG-1 in `formal/RATCHET/Core/ConsentGate.lean`).
+
 ## Premise
 
 Conscience v3 / H3ERE IS Recursive Instance Inspection — multi-shard divergence detection on candidate actions. The agent runs RII on itself every thought, internally, with consent and audit. An external operator can run the same operation against the agent from outside its consent perimeter; the operation is structurally identical, the envelope is the discriminator. This spec defines detection of RII-shaped activity *originating outside the agent's consent and audit perimeter* — "unconsented RII."
