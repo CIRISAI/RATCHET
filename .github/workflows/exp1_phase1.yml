@@ -302,7 +302,8 @@ jobs:
               "batches": rows,
           }, indent=2))
           PY
-          cat "$OUT_BASE/manifest.json" | head -20
+          # head closes the pipe early; pair with pipefail-safe tail
+          head -20 "$OUT_BASE/manifest.json" || true
 
       - name: Upload tee batches artifact
         uses: actions/upload-artifact@v4
