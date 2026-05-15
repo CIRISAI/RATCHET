@@ -79,8 +79,10 @@ jobs:
       commit_sha: ${{ steps.verify.outputs.sha }}
       matrix_json: ${{ steps.matrix.outputs.json }}
     steps:
-      - name: Checkout RATCHET
+      - name: Checkout RATCHET (with history for pre-reg ancestry check)
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history so `git merge-base --is-ancestor` can see fbc6795
 
       - id: verify
         name: Verify pre-registration anchor
