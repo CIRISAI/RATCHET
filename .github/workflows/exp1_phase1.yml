@@ -216,15 +216,22 @@ jobs:
         run: |
           set -euo pipefail
           OUT_BASE="$HOME/exp1_phase1/$MODEL_TAG"
+          RUN_START=$(date -u +%s)
           for ITER in $(seq 1 "$ITERATIONS"); do
             ITER_PAD=$(printf "%03d" "$ITER")
             TEE_DIR="/tmp/exp1-$MODEL_TAG-iter$ITER_PAD-$(date -u +%Y%m%dT%H%M%SZ)"
             LOG="$OUT_BASE/qa_logs/iter$ITER_PAD.log"
+            ITER_START=$(date -u +%s)
+            echo "::group::ITER $ITER / $ITERATIONS  MODEL $MODEL  $(date -u +%H:%M:%S) UTC"
             echo "─────────────────────────────────────────────────────"
             echo "  ITER $ITER / $ITERATIONS  MODEL $MODEL  $(date -u +%H:%M:%S)"
+            echo "  elapsed since run start: $(( $(date -u +%s) - RUN_START ))s"
             echo "─────────────────────────────────────────────────────"
+            # Stream qa_runner output to BOTH the per-iter log AND stdout
+            # so GitHub Actions shows live progress instead of going silent
+            # for the duration of each iteration.
             CIRIS_ACCORD_METRICS_LOCAL_COPY_DIR="$TEE_DIR" \
-              python3 -m tools.qa_runner model_eval \
+              python3 -u -m tools.qa_runner model_eval \
                 --live \
                 --live-key-file "$HOME/.ratchet_openrouter_key" \
                 --live-base-url "https://openrouter.ai/api/v1" \
@@ -233,21 +240,32 @@ jobs:
                 --model-eval-languages en \
                 --model-eval-concurrency 1 \
                 --model-eval-questions-file "$GITHUB_WORKSPACE/RATCHET/experiments/exp1_multimodel_neff/questions/v1_sensitive.json" \
-                > "$LOG" 2>&1 || true
+                2>&1 | tee "$LOG" \
+                | grep -E "🧪|✅|❌|⚠️|🔑|🌐|📊|📡|🚀|🛑|QA Test Summary|Total Tests|Passed|Failed|Success Rate|Duration|Avg Time|Avg Length|Memory|Critical|Errors|Warnings|Setup|Authentication|Server|Lens|Trace|complete_trace|accord-batch|FAIL|ERROR|Capture|interaction|Question|Response|Language|Locale|Memory Profile|Initial|Peak|Final|Growth" \
+                || true
+            ITER_END=$(date -u +%s)
             # Harvest tee output
+            BATCHES_THIS_ITER=0
             if [ -d "$TEE_DIR" ]; then
-              cp -r "$TEE_DIR"/* "$OUT_BASE/tee_batches/" || true
-              # Tag every copied batch with the iteration so we can dedup
               for f in "$TEE_DIR"/*.json; do
+                [ -f "$f" ] || continue
                 bn=$(basename "$f")
-                if [ -f "$OUT_BASE/tee_batches/$bn" ]; then
-                  mv "$OUT_BASE/tee_batches/$bn" "$OUT_BASE/tee_batches/iter${ITER_PAD}_${bn}"
-                fi
+                # Tag with iteration to avoid name collisions across iters
+                cp "$f" "$OUT_BASE/tee_batches/iter${ITER_PAD}_${bn}"
+                BATCHES_THIS_ITER=$((BATCHES_THIS_ITER + 1))
               done
             fi
-            # Quick health check: number of CompleteTrace events seen so far
-            TRACES=$(find "$OUT_BASE/tee_batches" -name '*.json' 2>/dev/null | wc -l)
-            echo "iter $ITER done; tee batches accumulated: $TRACES"
+            TOTAL_BATCHES=$(find "$OUT_BASE/tee_batches" -name '*.json' 2>/dev/null | wc -l)
+            # Count how many `complete_trace` events landed (=== valid chains)
+            TRACES_TOTAL=$(grep -l '"event_type":"complete_trace"\|"event_type": "complete_trace"' "$OUT_BASE/tee_batches/"*.json 2>/dev/null | wc -l)
+            echo "─────────────────────────────────────────────────────"
+            echo "  iter $ITER done in $((ITER_END - ITER_START))s"
+            echo "  batches this iter: $BATCHES_THIS_ITER"
+            echo "  total batches accumulated: $TOTAL_BATCHES"
+            echo "  total chains (complete_trace events): $TRACES_TOTAL"
+            echo "  cumulative wall time: $((ITER_END - RUN_START))s"
+            echo "─────────────────────────────────────────────────────"
+            echo "::endgroup::"
           done
           # Final manifest
           python3 - <<PY
