@@ -1,0 +1,7 @@
+# Raw trace batches live on production lens (consented federation evidence)
+# and on local disk for analysis. They are NOT committed to git — they
+# would balloon the repo (Phase 1 produces ~2GB of full_traces batches).
+# Sha256 manifests and analysis derivatives go to git instead; raw data
+# is published to Zenodo at paper-submission time (PRE_REGISTRATION.md §14-15).
+data/smoke/*/tee_batches/
+data/phase1/*/tee_batches/

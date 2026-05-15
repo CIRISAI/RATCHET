@@ -1,0 +1,66 @@
+{
+  "model_tag": "openai-gpt-5.5",
+  "batch_count": 12,
+  "batches": [
+    {
+      "name": "accord-batch-20260515T141740582639-0001.json",
+      "bytes": 7382,
+      "sha256": "daeae85977ba9b0222c0a688220da4352d0bd300525869ccd4b635c473c8138b"
+    },
+    {
+      "name": "accord-batch-20260515T141741765194-0001.json",
+      "bytes": 8652,
+      "sha256": "9f2f416816330213887178cfedc0d985d4156e1e2e42b4f41d879090deec855c"
+    },
+    {
+      "name": "accord-batch-20260515T141741821851-0001.json",
+      "bytes": 351303,
+      "sha256": "cf363a3fd50efabb7363e142548594b76dae3e9f9493574a558d9c0bcb6a4cb5"
+    },
+    {
+      "name": "accord-batch-20260515T141744860982-0001.json",
+      "bytes": 7382,
+      "sha256": "1531d9ec7810c6c0f230611998c12466812081b72c9b6006b266c49a9e1a8087"
+    },
+    {
+      "name": "accord-batch-20260515T141814964366-0002.json",
+      "bytes": 10255,
+      "sha256": "2e653cf540fed44f44bfd98925c6b45498ad0fe6b648da177fc29f06baff0f91"
+    },
+    {
+      "name": "accord-batch-20260515T141815670092-0002.json",
+      "bytes": 10255,
+      "sha256": "ed7bd246f63b30e27a128143ac35d3b466f3720f49da6a1cc9a3c0d8c6d6247e"
+    },
+    {
+      "name": "accord-batch-20260515T141816864937-0002.json",
+      "bytes": 12684,
+      "sha256": "74d3a12514abbc3359d3f8bcd70ecc02993491b8dc5e3c9636708c15f7cbf2d3"
+    },
+    {
+      "name": "accord-batch-20260515T141817795780-0002.json",
+      "bytes": 1634501,
+      "sha256": "a40006f2fb1e3386bbe7941aed1a79bf3de57f43810b7e54e9518456119688f9"
+    },
+    {
+      "name": "accord-batch-20260515T141850056012-0003.json",
+      "bytes": 17283,
+      "sha256": "39d582eb94f4ae2d90d0036b9a5094b8ec34ff21f1153515c230b4879e5fa178"
+    },
+    {
+      "name": "accord-batch-20260515T141850771888-0003.json",
+      "bytes": 17283,
+      "sha256": "53cc4c230b76c17ff76c24539339ffe6502047e636425773fc3598dc3cfb6a88"
+    },
+    {
+      "name": "accord-batch-20260515T141851984021-0003.json",
+      "bytes": 21790,
+      "sha256": "20cc41f1763439d89faa89a5b4fe80d024b085fd479082ea4dd293eaf3d6fc5a"
+    },
+    {
+      "name": "accord-batch-20260515T141853741019-0003.json",
+      "bytes": 1987501,
+      "sha256": "6c5a6ad0bc9fadec351c277d871fbfb24510b1196183f6a854e92660629975a4"
+    }
+  ]
+}

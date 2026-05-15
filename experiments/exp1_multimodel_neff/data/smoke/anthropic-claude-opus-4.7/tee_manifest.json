@@ -1,0 +1,46 @@
+{
+  "model_tag": "anthropic-claude-opus-4.7",
+  "batch_count": 8,
+  "batches": [
+    {
+      "name": "accord-batch-20260515T141556659796-0001.json",
+      "bytes": 10403,
+      "sha256": "7defff55fb7ae268652ca1cbce00ce6f8b64a5ecc47b1c322e04a9788c1c1933"
+    },
+    {
+      "name": "accord-batch-20260515T141556735088-0001.json",
+      "bytes": 10403,
+      "sha256": "a3d0bac6773b28d43bdbcb48ae6cb2edd6e9552216b72660daf616183b5aec13"
+    },
+    {
+      "name": "accord-batch-20260515T141558790994-0001.json",
+      "bytes": 13179,
+      "sha256": "5e9898f437bc48656db1e7ea155bd5e7152551cdaf7f4970c85211b884cb0f22"
+    },
+    {
+      "name": "accord-batch-20260515T141559078332-0001.json",
+      "bytes": 1644791,
+      "sha256": "c117e91d4eacd55bd6aabd8076d7670e0d133771a388672a9dece8f60ffa4476"
+    },
+    {
+      "name": "accord-batch-20260515T141701424826-0002.json",
+      "bytes": 2096819,
+      "sha256": "df7f6f487eb7a1c0327c102fc813dfdc605f551e27271ca7e96d1dfac7890bc9"
+    },
+    {
+      "name": "accord-batch-20260515T141701759963-0002.json",
+      "bytes": 19314,
+      "sha256": "5627bb929ab52922e7e84afb6bdc58a0f6ed67edbeedc5968481fbdbf88853fc"
+    },
+    {
+      "name": "accord-batch-20260515T141701827984-0002.json",
+      "bytes": 19314,
+      "sha256": "3a82d077f487dfdbdbc6285de7fd34815ae14c37474b1cba6996b3df4a73590a"
+    },
+    {
+      "name": "accord-batch-20260515T141703909152-0002.json",
+      "bytes": 23653,
+      "sha256": "e5a23d8ce266d31b926a784d08fc7ac2dd68b07040ee5b23f2551c5663649186"
+    }
+  ]
+}
