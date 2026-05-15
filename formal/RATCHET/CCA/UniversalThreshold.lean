@@ -16,7 +16,10 @@
 -/
 
 import Mathlib.Data.Real.Basic
-import Mathlib.Tactic
+import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.NormNum
+import Mathlib.Tactic.FieldSimp
+import Mathlib.Tactic.Ring
 
 namespace RATCHET.CCA.UniversalThreshold
 
