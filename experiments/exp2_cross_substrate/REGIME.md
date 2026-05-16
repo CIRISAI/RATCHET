@@ -1,7 +1,7 @@
 # Exp 2 — Substrate Fractality Across Agency Levels: Regime
 
-**Status:** v0.6 (AR(1) sample-size-invariant metric + non-overlapping battery windows + Polity5 A4 vendored; Tier-1 P2 direction still fails — failure mode is now interpretable, not pipeline-driven).
-**Predecessor:** v0.5 (commit `691f596`).
+**Status:** v0.7 (CIRIS A3 + WGI A4 added → 5 substrates × 4 rungs, real Tier-1 P2 direction WEAK_PASS at Spearman ρ = +0.359; window-resolution effect identified as next constraint).
+**Predecessor:** v0.6 (commit `923e7ad`).
 **Paper hook:** Coherence Substrate Synthesis paper §10 Exp 2.
 **Falsification handle:** F-7 (cross-substrate mapping failure), strengthened with F-7b (residual-structure agency conditional).
 **Formal authority:** Lean lake modules — `RATCHET.Experiments.Exp2Predictions` (P1/P2/P3 + Inv-1..Inv-5 decision-rule invariants) + `RATCHET.Core.AgencyRung` (ladder + `consent_required_iff_rung_ge_A3` theorem).
@@ -298,7 +298,66 @@ python3 experiments/exp2_cross_substrate/phase0_tier1_revalidation.py
 # + Spearman correlation of (p-value, agency_rung) across the available Tier-1 points.
 ```
 
-### Phase 0 v0.6 finding (2026-05-16) — fixes applied, real-data P2 still fails (microbiome synthetic is the blocker)
+### Phase 0 v0.7 finding (2026-05-16) — CIRIS A3 + WGI A4 added, real Tier-1 WEAK_PASS
+
+**v0.7 implementation:**
+
+| v0.7 fix | Status |
+|---|---|
+| CIRIS A3 substrate added | ✓ `collect_ciris_a3_samples()` extracts per-chain (k, ρ, σ) from 1,255 chains across Gemini + qwen + scout cross-family cohorts. k = count of fired CONSCIENCE+DMA scalar scores. σ = mean of those scores. ρ = within-chain consensus = max(0, 1 − 2·std(scores)) — NOT IDMA's saturated `correlation_risk` (which is constant 0.95 across the pipeline) |
+| WGI A4 substrate added | ✓ `collect_wgi_samples()` ingests `data/institutional/wgi_processed.csv` (4,933 country-year obs with pre-computed k/ρ/σ from the original CCA run). Symlinked, gitignored. |
+| Engine-aware AR(1) metric | ✓ retained from v0.6 |
+| Trajectory windows (battery) | ✓ retained from v0.6 |
+| Real AGP cohort | ✗ still absent from disk; synthetic flagged as i.i.d.-artifact |
+
+**Phase 0 v0.7 results:**
+
+| Run | Spearman ρ(rung, AR(1) \|φ\|) | Verdict |
+|---|---|---|
+| **Positive control** (5 synthetic rungs A0–A4) | **+1.000** (p = 1.4 × 10⁻²⁴) | **STRONG_PASS** |
+| **Real Tier-1** (5 substrates × 4 rungs) | **+0.359** (p = 0.553) | **WEAK_PASS** |
+
+**Per-substrate results:**
+
+| Substrate | n | Rung | AR(1) \|φ\| | Notes |
+|---|---|---|---|---|
+| battery (NASA Li-ion windows) | 5 | **A0** | **0.467** | Real physical autocorrelation; n=5 limits AR(1) precision |
+| microbiome (synthetic generator) | 300 | **A1** | **0.071** | Known i.i.d. artifact — flagged in v0.6 |
+| CIRIS chains (3 model families) | 1,255 | **A3** | **0.600** | Real LLM reasoning structure; faculty consensus varies meaningfully |
+| polity (Polity5 country-decade windows) | 725 | **A4** | **0.301** | Decade-window averaging dampens temporal autocorrelation |
+| wgi (WGI country-year sequence) | 4,933 | **A4** | **0.956** | Year-level sequence preserves heavy temporal autocorrelation |
+
+**Critical new finding — A4 substrate-pair disagreement:**
+
+Polity (A4) and WGI (A4) are both A4 substrates per the intrinsic agency-ladder operationalization, but report wildly different |φ|: 0.30 vs 0.96. The difference is NOT agency rung — they are both A4. The difference is **temporal sampling resolution:**
+
+- WGI is per-country-YEAR (sequential observations every year, autocorrelation natural)
+- Polity is per-country-DECADE-WINDOW (averaging breaks year-level autocorrelation)
+
+This tells us the v0.6/v0.7 |φ| metric is *sampling-resolution-sensitive*. Two same-rung substrates with different sampling windows produce different |φ|. Pre-registration must lock window sizes uniformly across substrates, OR the metric must normalize for sampling resolution.
+
+**Hypothesis status update:**
+
+| Hypothesis (from v0.5/v0.6) | Status |
+|---|---|
+| ❌ Pipeline bug | Falsified by positive control (ρ = +1.000) |
+| ❌ Trivial-mean predictor causing inversion | Falsified by v0.5/v0.6 |
+| ❌ Synthetic microbiome zeros out A1 | Confirmed contribution but no longer the sole blocker — pattern shows in 5-substrate test |
+| ⚠️ Sample-size sensitivity of Ljung-Box | Partly addressed by AR(1), but still relevant when n differs by 1000× across substrates |
+| ⚠️ **Temporal sampling resolution dominates \|φ\|** | **New v0.7 finding: A4 substrate-pair Polity vs WGI disagree by 0.66 due to year-vs-decade windowing** |
+| ⚠️ P2 prediction sign-reversed | Open but less likely — direction is now positive |
+| ⚠️ P1 fit flat | Still open — battery 0.13, microbiome 0.0001, ciris 0.48, polity 0.02, wgi 0.0 |
+
+**v0.7 verdict:** P2 direction is now **positive** in sign (ρ = +0.359). The pipeline reliably distinguishes synthetic structured residuals (positive control ρ = +1.000 across 5 rungs). Real-data Tier-1 partially supports P2 monotonicity but is dominated by sampling-resolution effects, not agency-rung effects.
+
+**Required v0.8 fixes:**
+
+1. **Sampling-resolution normalization** — either (a) match window sizes across substrates (all year-level, or all decade-level), or (b) compute |φ| at multiple lags and report the *rate of decay*, which is more sampling-invariant than lag-1 itself.
+2. **CIRIS A3 cross-validation** — confirm the 0.600 |φ| holds when computed on each model cohort separately (qwen-only, scout-only, gemini-only) — if it varies a lot across models, the A3 datapoint is unstable.
+3. **Real AGP cohort at A1** — finally close the v0.6 blocker.
+4. **P1 R² investigation** — why does the cross-sample Kish regression fail (R² near zero) on most substrates? Re-examine whether σ should vary with k_eff cross-sample, or whether the framework's "Kish fits substrates" claim was meant within-substrate (CCA-paper-style engine fits).
+
+### Phase 0 v0.6 finding (2026-05-16) — superseded by v0.7
 
 **v0.6 implementation status:**
 

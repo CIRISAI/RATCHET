@@ -45,7 +45,9 @@ from analysis.omega.null_test import (
 AGENCY_RUNG = {
     "battery": 0,        # A0 — inert
     "microbiome": 1,     # A1 — low (cellular signaling)
+    "ciris": 3,          # A3 — moderate-high (goal-directed LLM reasoning chains)
     "polity": 4,         # A4 — high (full human agency, Polity5 country-decades)
+    "wgi": 4,            # A4 — high (full human agency, WGI country-years)
 }
 
 
@@ -112,6 +114,112 @@ def collect_battery_samples(
     if len(k_list) < 4:
         return None
     return np.asarray(k_list), np.asarray(rho_list), np.asarray(sigma_list), sid_list
+
+
+def collect_ciris_a3_samples() -> Optional[tuple[np.ndarray, np.ndarray, np.ndarray, list]]:
+    """A3 — CIRIS LLM-reasoning chains. Per-chain (k, ρ, σ) extracted from
+    DMA + CONSCIENCE scalar scores in the trace.
+
+    Per chain (each chain = one CIRIS deliberation):
+      k = count of fired faculty/DMA scores in [0, 1]
+          (csdma plausibility, dsdma alignment, entropy, coherence,
+           epistemic_humility, optimization_veto-ratio normalized)
+      σ = mean of those scores (overall chain quality)
+      ρ = within-chain consensus = max(0, 1 - 2·std(scores))
+          (high agreement among faculties → ρ near 1)
+
+    Uses all available chains from Gemini + qwen + llama-scout cross-family
+    runs (~1,255 chains total). Each chain is one A3 sample.
+
+    Note: IDMA's `correlation_risk` is intentionally NOT used — it
+    saturates at 0.95 across all models on the qa_runner pipeline (the
+    universal-rigidity classification finding from CRCv2). Using it as ρ
+    would zero out cross-chain variance.
+    """
+    candidates = [
+        REPO_ROOT / "experiments/exp1b_boundary_active/data/crossfamily/qwen-3.5-35b-a3b/tee",
+        REPO_ROOT / "experiments/exp1b_boundary_active/data/crossfamily/llama-4-scout/tee",
+        Path("/tmp/exp1b_gemini"),  # Gemini cohort lives at /tmp from prior session
+    ]
+
+    k_list, rho_list, sigma_list, sid_list = [], [], [], []
+    for trace_dir in candidates:
+        if not trace_dir.is_dir():
+            continue
+        for p in sorted(trace_dir.glob("*.json")):
+            try:
+                d = json.loads(p.read_text())
+            except Exception:
+                continue
+            trace = (d.get("events") or [{}])[0].get("trace") or {}
+            scores = []
+            for c in trace.get("components", []):
+                et = c.get("event_type")
+                data = c.get("data", {})
+                if et == "DMA_RESULTS":
+                    for dma_name in ("csdma", "dsdma"):
+                        sub = data.get(dma_name) or {}
+                        for sk in ("plausibility_score", "domain_alignment"):
+                            v = sub.get(sk)
+                            if v is not None and 0.0 <= v <= 1.0:
+                                scores.append(float(v))
+                elif et == "CONSCIENCE_RESULT":
+                    for sk in ("entropy_score", "coherence_score",
+                               "epistemic_humility_certainty"):
+                        v = data.get(sk)
+                        if v is not None and 0.0 <= v <= 1.0:
+                            scores.append(float(v))
+                    v = data.get("optimization_veto_entropy_ratio")
+                    if v is not None and v >= 0:
+                        # Normalize: ratio capped at 2.0 → [0, 1]
+                        scores.append(float(min(v / 2.0, 1.0)))
+            if len(scores) < 2:
+                continue
+            arr = np.array(scores)
+            k = len(arr)
+            sigma = float(arr.mean())
+            sigma = float(np.clip(sigma, 0.01, 0.99))
+            score_std = float(arr.std())
+            rho = float(max(0.01, min(0.99, 1.0 - 2.0 * score_std)))
+            k_list.append(k)
+            rho_list.append(rho)
+            sigma_list.append(sigma)
+            sid_list.append(f"ciris_{trace_dir.name}_{p.stem[-12:]}")
+
+    if len(k_list) < 20:
+        return None
+    return np.asarray(k_list), np.asarray(rho_list), np.asarray(sigma_list), sid_list
+
+
+def collect_wgi_samples() -> Optional[tuple[np.ndarray, np.ndarray, np.ndarray, list]]:
+    """A4 — World Governance Indicators country-year, pre-mapped to (k, ρ, σ).
+
+    The vendored wgi_processed.csv from the original CCA run already has
+    columns 'k', 'rho', 'sigma' computed per country-year. We use those
+    directly rather than re-deriving from the 6 governance indicators.
+
+    5,083 country-year observations covering all WGI countries 1996-2023.
+    """
+    wgi_path = REPO_ROOT / "data" / "institutional" / "wgi_processed.csv"
+    if not wgi_path.exists():
+        return None
+    try:
+        import pandas as pd
+        df = pd.read_csv(wgi_path)
+    except Exception:
+        return None
+    if not {"k", "rho", "sigma"}.issubset(df.columns):
+        return None
+    df = df[df["k"].notna() & df["rho"].notna() & df["sigma"].notna()].copy()
+    # WGI's 'k' is already a fractional Kish-effective-count proxy; cast int floor
+    k_arr = df["k"].clip(lower=1).round().astype(int).values
+    rho_arr = df["rho"].clip(0.0, 1.0).values
+    sigma_arr = df["sigma"].clip(0.01, 0.99).values
+    sids = [f"wgi_{cc}_{int(yr)}"
+            for cc, yr in zip(df["country_code"].fillna("XX"), df["year"].fillna(0))]
+    if len(k_arr) < 20:
+        return None
+    return np.asarray(k_arr), np.asarray(rho_arr), np.asarray(sigma_arr), sids
 
 
 def collect_polity_samples(
@@ -419,7 +527,9 @@ def main() -> int:
     collectors = {
         "battery":    (collect_battery_samples,    DomainType.BATTERY),
         "microbiome": (collect_microbiome_samples, DomainType.MICROBIOME),
+        "ciris":      (collect_ciris_a3_samples,   DomainType.GENERIC),
         "polity":     (collect_polity_samples,     DomainType.INSTITUTIONAL),
+        "wgi":        (collect_wgi_samples,        DomainType.INSTITUTIONAL),
     }
 
     results: dict[str, dict] = {}

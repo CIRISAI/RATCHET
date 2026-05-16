@@ -213,6 +213,35 @@
       "mean_zero_p": 0.9999999999998448,
       "normality_p": 5.247092144581431e-09
     },
+    "ciris": {
+      "status": "ok",
+      "rung": 3,
+      "n_samples": 1255,
+      "p1_r_squared": 0.4784182764874706,
+      "p1_alpha": 1.1106526093065507,
+      "p1_beta": -0.18187038996998303,
+      "p1_pass_at_0_7": false,
+      "k_range": [
+        2,
+        6
+      ],
+      "rho_range": [
+        0.01,
+        0.99
+      ],
+      "sigma_range": [
+        0.01,
+        0.99
+      ],
+      "omega_mean": -8.775627413770162e-17,
+      "omega_std": 0.13940851450280656,
+      "p2_ar1_abs_phi": 0.6000106069948427,
+      "p2_ljung_box_p": 0.0,
+      "p2_ljung_box_lag": 10,
+      "p2_rejects_white": true,
+      "mean_zero_p": 0.9999999999999822,
+      "normality_p": 4.3350638937531563e-47
+    },
     "polity": {
       "status": "ok",
       "rung": 4,
@@ -242,13 +271,42 @@
       "mean_zero_p": 0.9999999999999856,
       "normality_p": 2.1965481682989967e-11
     },
+    "wgi": {
+      "status": "ok",
+      "rung": 4,
+      "n_samples": 4933,
+      "p1_r_squared": 0.0,
+      "p1_alpha": 0.24595757299090137,
+      "p1_beta": 0.24595757299090285,
+      "p1_pass_at_0_7": false,
+      "k_range": [
+        1,
+        1
+      ],
+      "rho_range": [
+        0.0792183637619019,
+        0.889304327964783
+      ],
+      "sigma_range": [
+        0.03732099533081,
+        0.8601983547210701
+      ],
+      "omega_mean": 1.912113281414014e-15,
+      "omega_std": 0.19949967596401272,
+      "p2_ar1_abs_phi": 0.955866567819977,
+      "p2_ljung_box_p": 0.0,
+      "p2_ljung_box_lag": 10,
+      "p2_rejects_white": true,
+      "mean_zero_p": 0.999999999999463,
+      "normality_p": 1.5224779270731489e-31
+    },
     "_p2_direction": {
-      "verdict": "FAIL_DIRECTION",
-      "n": 3,
-      "spearman_rho_ar1": -0.5,
-      "spearman_p_ar1": 0.6666666666666667,
-      "spearman_rho_ljungbox": -1.0,
-      "spearman_p_ljungbox": 0.0
+      "verdict": "WEAK_PASS",
+      "n": 5,
+      "spearman_rho_ar1": 0.35909242322980395,
+      "spearman_p_ar1": 0.5528147466433505,
+      "spearman_rho_ljungbox": -0.7631578947368421,
+      "spearman_p_ljungbox": 0.1333391195318063
     }
   }
 }
