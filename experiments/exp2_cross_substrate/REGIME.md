@@ -1,8 +1,8 @@
 # Exp 2 — Substrate Fractality Across Agency Levels: Regime
 
-**Status:** v1.3 (P2 amendment A4 + re-run; **VERDICT: INCONCLUSIVE** at ρ = 0.2994, just 0.0006 below the +0.3 WEAK_PASS threshold; 7 of 7 valid; direction-trajectory −0.22 → +0.09 → +0.30 across v1.1/v1.2/v1.3).
-**Predecessor:** v1.2 (commit `b937bfa`).
-**Pre-registration:** `EXP2_PREREGISTRATION.md` v1.3 (A1+A2+A3+A4 amendments), commit `f863568`.
+**Status:** v1.4 (P2 amendment A5 + re-run with V-Dem + CIRIS added; **VERDICT: INCONCLUSIVE** at ρ = +0.120; 9 of 9 valid; adding substrates DROPPED the correlation; per-rung pattern doesn't track agency monotonically).
+**Predecessor:** v1.3 (commit `6ddfe52`).
+**Pre-registration:** `EXP2_PREREGISTRATION.md` v1.4 (A1+A2+A3+A4+A5 amendments), commit `00f0328`.
 **Paper hook:** Coherence Substrate Synthesis paper §10 Exp 2.
 **Falsification handle:** F-7 (cross-substrate mapping failure), strengthened with F-7b (residual-structure agency conditional).
 **Formal authority:** Lean lake modules — `RATCHET.Experiments.Exp2Predictions` (P1/P2/P3 + Inv-1..Inv-5 decision-rule invariants) + `RATCHET.Core.AgencyRung` (ladder + `consent_required_iff_rung_ge_A3` theorem).
@@ -299,7 +299,98 @@ python3 experiments/exp2_cross_substrate/phase0_tier1_revalidation.py
 # + Spearman correlation of (p-value, agency_rung) across the available Tier-1 points.
 ```
 
-### v1.3 P2 third-run result (2026-05-16) — INCONCLUSIVE at ρ=0.2994 (just 0.0006 below threshold)
+### v1.4 P2 fourth-run result (2026-05-16) — adding V-Dem + CIRIS DROPPED the correlation
+
+After amendment A5 (committed BEFORE re-run at `00f0328`) added V-Dem A4 + CIRIS A3:
+
+```
+Spearman ρ(rung, mean|φ|) = +0.120  (p = 0.76)
+→ INCONCLUSIVE
+```
+
+**Per-substrate mean|φ| (v1.4, all 9 substrates valid):**
+
+| Substrate | Rung | n | mean\|φ\| | 95% CI | New? |
+|---|---|---|---|---|---|
+| battery | A0 | 100 | 0.079 | [0.044, 0.117] | — |
+| AlphaFold | A0 | 74 | 0.052 | [0.053, 0.141] | — |
+| PMU | A0 | 20 | 0.080 | [0.080, 0.292] | — |
+| microbiome | A1 | 100 | 0.084 | [0.043, 0.121] | — |
+| Allen | A1 | 96 | 0.131 | [0.048, 0.121] | — |
+| BioTIME | A2 | 100 | 0.091 | [0.042, 0.116] | — |
+| **CIRIS** | **A3** | **100** | **0.051** | [0.040, 0.106] | ✨ new |
+| institutional | A4 | 100 | 0.066 | [0.042, 0.131] | — |
+| **V-Dem** | **A4** | **100** | **0.122** | [0.044, 0.119] | ✨ new |
+
+**Valid substrates: 9 / 9** (largest yet; first time A3 rung represented).
+
+### v1.4 hypothesis tests — both came back negative
+
+| Hypothesis | v1.4 result |
+|---|---|
+| V-Dem A4 replicates Polity5 A4 anomaly (both should be similar if substrate-property) | ✗ V-Dem=0.122 vs Polity=0.066. A4 is operationalization-sensitive, not stably high or low. |
+| CIRIS A3 fills the rung gap with a high |φ| (LLM reasoning is goal-directed) | ✗ CIRIS=0.051, the LOWEST of all 9 substrates. Lower than A0 substrates. Counter-predicted. |
+| Adding 2 substrates increases Spearman power → +0.299 → ≥+0.3 PASS | ✗ Spearman DROPPED to +0.120. More data did NOT confirm the v1.3 trend — it weakened it. |
+
+### Direction trajectory across all 4 runs
+
+| Version | n_substrates | n_per_substrate | ρ_spearman | p-value | Verdict |
+|---|---|---|---|---|---|
+| v1.1 | 5 | 30 | −0.224 | 0.72 | INCONCLUSIVE |
+| v1.2 | 6 | 30 | +0.091 | 0.86 | INCONCLUSIVE |
+| v1.3 | 7 | 100 | **+0.299** | 0.51 | INCONCLUSIVE (just below threshold) |
+| **v1.4** | **9** | **100** | **+0.120** | **0.76** | **INCONCLUSIVE** |
+
+The v1.3 +0.299 was the high-water mark. Adding 2 substrates (V-Dem A4 high, CIRIS A3 low) reduced the correlation. **The v1.3 result was unstable to substrate-set choice.**
+
+### Per-rung means in v1.4 (9 substrates)
+
+| Rung | substrates | mean\|φ\| |
+|---|---|---|
+| A0 | 3 (battery, alphafold, pmu) | 0.070 |
+| A1 | 2 (microbiome, allen) | 0.108 |
+| A2 | 1 (biotime) | 0.091 |
+| **A3** | **1 (CIRIS)** | **0.051** ← counter-predicted (should be highest, is lowest) |
+| **A4** | **2 (institutional, V-Dem)** | **0.094** |
+
+**The per-rung pattern is non-monotonic.** A1 > A4 > A2 > A0 > A3. Framework predicts A0 < A1 < A2 < A3 < A4 monotonically. Empirical pattern: A3 is below A0, contradicting the prediction.
+
+### Honest empirical status after 4 pre-registered runs
+
+**F-7b is neither confirmed nor falsified, but the directional evidence weakened in v1.4 with additional substrates.**
+
+- Strong-fail threshold (ρ < −0.7): never approached in any run
+- Strong-pass threshold (ρ ≥ +0.7): never approached
+- Weak-pass threshold (ρ ≥ +0.3): approached in v1.3 (0.299), retreated in v1.4 (0.120)
+- All 4 runs in central INCONCLUSIVE cell
+
+**The most honest reading:** The mean|φ| metric on Kish-regression residuals does not produce a stable, statistically-significant rung-correlated signal across 9 substrates with this sampling design. This is consistent with three possible explanations:
+
+1. **Metric inadequacy**: mean|φ| isn't capturing the right residual structure (other candidates: PSD slope, Lempel-Ziv complexity, fractal dimension)
+2. **Sampling-design issue**: per-substrate random sampling destroys substrate-native coordination structure
+3. **Framework prediction genuinely doesn't hold** at this granularity: substrate-fractality may exist only at specific scales (e.g. within-substrate temporal dynamics) and not aggregate across-rung as predicted
+
+### For the paper
+
+Report all 4 runs honestly. The empirical record is:
+- Direction-trajectory toward +ρ across v1.1→v1.2→v1.3 as methodology bugs fixed
+- v1.4 with more substrates DECREASED the correlation, showing the v1.3 result wasn't statistically robust
+- 4 pre-registered runs, 4 INCONCLUSIVE verdicts, no rule changes
+- F-7b empirical status: **not confirmed, not strongly falsified, framework prediction lacks statistical support at this metric/sampling**
+
+The K1-K4 algebra remains proven. P1 close-out K=7/7 remains. P2's substrate-fractality bet has had its fair shot under pre-registration discipline and has not produced a clean signal.
+
+### Paper framing options
+
+| Option | Description |
+|---|---|
+| **A** | Report 4-run trajectory as empirical neutral; framework prediction "not adjudicated under tested design" |
+| **B** | Stronger version: 4 runs converge to INCONCLUSIVE; metric/design may not capture the prediction; framework's load-bearing P2 claim needs reformulation before further testing |
+| **C** | Honest negative: the prediction was tested as best we could; signal did not emerge; weak directional consistency in some runs but not robust across substrate-set choices |
+
+I'd recommend **(C)** for the paper — honest negative results have value. The framework's other parts (K1-K4 proofs, P1 close-out, CCA validations) stand. The P2 substrate-fractality claim specifically didn't reach detectability under 4 pre-registered runs.
+
+### v1.3 P2 third-run result (2026-05-16) — INCONCLUSIVE at ρ=0.2994 (superseded by v1.4)
 
 After amendment A4 (committed BEFORE re-run at `f863568`) added Allen neuron-subsetting and bumped n_per_substrate 30→100:
 

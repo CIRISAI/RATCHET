@@ -1,8 +1,8 @@
 {
   "status": "ok",
-  "n_valid": 7,
-  "spearman_rho": 0.2993924754260479,
-  "spearman_p": 0.5142052729695439,
+  "n_valid": 9,
+  "spearman_rho": 0.11969747440993464,
+  "spearman_p": 0.7590469815868943,
   "verdict": "INCONCLUSIVE",
   "per_substrate": {
     "battery": {
@@ -155,6 +155,31 @@
       "phi_ci_high": 0.11594839013872432,
       "decay_rate": -0.01557949117109276
     },
+    "ciris": {
+      "status": "ok",
+      "substrate": "ciris",
+      "rung": 3,
+      "source": "real_ciris_chains",
+      "n": 100,
+      "k_spread": 4,
+      "k_range": [
+        2,
+        6
+      ],
+      "rho_range": [
+        0.01,
+        0.99
+      ],
+      "sigma_range": [
+        0.1075,
+        0.99
+      ],
+      "p1_r_squared": 0.4113248732078988,
+      "mean_abs_phi": 0.050633289462900265,
+      "phi_ci_low": 0.03979735061152439,
+      "phi_ci_high": 0.10585380802296265,
+      "decay_rate": -0.12095226590709801
+    },
     "institutional": {
       "status": "ok",
       "substrate": "institutional",
@@ -179,6 +204,31 @@
       "phi_ci_low": 0.04198536984181035,
       "phi_ci_high": 0.1304613600442702,
       "decay_rate": -0.1898957394594665
+    },
+    "vdem": {
+      "status": "ok",
+      "substrate": "vdem",
+      "rung": 4,
+      "source": "real_vdem_v15",
+      "n": 100,
+      "k_spread": 3,
+      "k_range": [
+        3,
+        6
+      ],
+      "rho_range": [
+        0.0,
+        1.0
+      ],
+      "sigma_range": [
+        0.018,
+        0.9086000000000001
+      ],
+      "p1_r_squared": 0.021301719651868112,
+      "mean_abs_phi": 0.12181834652788592,
+      "phi_ci_low": 0.04444893814681017,
+      "phi_ci_high": 0.11856696762135915,
+      "decay_rate": -0.004953416341217605
     }
   }
 }
