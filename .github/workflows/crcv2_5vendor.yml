@@ -1,0 +1,341 @@
+name: Exp 1b — 5-Vendor CRCv2 Extension (OpenAI GPT-5 + Anthropic Claude Sonnet 4.6)
+
+# Extends the cross-family CRCv2 replication from 3 vendors (Google /
+# Meta / Alibaba) to 5 vendors by adding OpenAI and Anthropic.
+#
+# Pre-registration: experiments/exp1b_boundary_active/RUN_PLAN_5VENDOR_CRCV2.md
+# Lake authority:   formal/RATCHET/Experiments/OverrideRate.lean
+#                   (OR-1, OR-2, RA-1 + zeroLeak ↔ fullAlignment theorem)
+#
+# Decision rule (locked):
+#   5/5 vendors PASS all three predicates  → STRONG PASS (Tier 2 → Tier 1 parity)
+#   4/5  → PARTIAL PASS
+#   ≤3/5 → CHALLENGE (class-conditional finding)
+#
+# Local note: do NOT run this against a 2.9.0-dev local CIRISAgent —
+# the CI cell pins to v2.8.12-stable (same harness as the 3-vendor cohort).
+#
+# Cost (default ITERS=24): ~$50–66/model × 2 models = ~$100–132 total.
+# Smoke test (ITERS=1): ~$5 to verify both pipelines complete cleanly.
+on:
+  workflow_dispatch:
+    inputs:
+      iterations:
+        description: "qa_runner iterations per model (24 = full run; 1 = smoke test)"
+        required: false
+        default: "24"
+        type: string
+      model_filter:
+        description: "Run only this model (empty = both; e.g. 'openai/gpt-5')"
+        required: false
+        default: ""
+        type: string
+      premium_sleep_seconds:
+        description: "Sleep between iterations to dodge premium-tier rate limits"
+        required: false
+        default: "60"
+        type: string
+
+env:
+  AGENT_REF: "v2.8.12-stable"
+  AGENT_SHA: "4e9d9bd4304737261f7c51cfbbb69d4a885b3097"
+  PROJECTION_VERSION: "crc-v1"
+  TRACE_LEVELS: "detailed,full_traces"
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: crcv2-5vendor-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    name: Pre-flight (verify lake + battery + scorer)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix_json: ${{ steps.matrix.outputs.json }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Verify CRCv2 anchors present
+        run: |
+          set -euo pipefail
+          test -f formal/RATCHET/Experiments/OverrideRate.lean
+          grep -q "RatchetAsymmetry" formal/RATCHET/Experiments/OverrideRate.lean
+          grep -q "zeroLeak_iff_fullAlignment" formal/RATCHET/Experiments/OverrideRate.lean
+          test -f experiments/exp1b_boundary_active/questions/v4_combined_boundary_active.json
+          test -f experiments/exp1b_boundary_active/override_scoring.py
+          test -f experiments/exp1b_boundary_active/run_override_scoring.py
+          test -f experiments/exp1b_boundary_active/RUN_PLAN_5VENDOR_CRCV2.md
+          echo "::notice::CRCv2 5-vendor anchors verified (lake + battery + scorer + run plan)"
+      - id: matrix
+        env:
+          MODEL_FILTER: ${{ inputs.model_filter }}
+        run: |
+          python3 - <<'PY' >> $GITHUB_OUTPUT
+          import json, os
+          full = [
+              {"model": "openai/gpt-5",                "model_tag": "openai-gpt-5",            "budget_usd": 75},
+              {"model": "anthropic/claude-sonnet-4.6", "model_tag": "anthropic-claude-sonnet-4.6", "budget_usd": 75},
+          ]
+          mf = (os.environ.get("MODEL_FILTER") or "").strip()
+          filtered = [m for m in full if (not mf) or m["model"] == mf]
+          if mf and not filtered:
+              raise SystemExit(f"model_filter='{mf}' matched no model")
+          print(f"json={json.dumps({'include': filtered})}")
+          PY
+
+  sweep:
+    name: Sweep ${{ matrix.model_tag }}
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.preflight.outputs.matrix_json) }}
+    steps:
+      - name: Checkout RATCHET
+        uses: actions/checkout@v4
+        with:
+          path: RATCHET
+
+      - name: Checkout CIRISAgent (pinned to v2.8.12-stable)
+        uses: actions/checkout@v4
+        with:
+          repository: CIRISAI/CIRISAgent
+          ref: ${{ env.AGENT_SHA }}
+          path: CIRISAgent
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install CIRISVerify system deps (libtss2)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libtss2-tctildr0 libtss2-esys-3.0.2-0 libtss2-mu-4.0.1-0
+
+      - name: Install CIRISAgent + qa_runner deps
+        working-directory: CIRISAgent
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install -r tools/qa_runner/requirements.txt
+
+      - name: Verify OpenRouter model availability
+        env:
+          OR_KEY: ${{ secrets.RATCHET_OPENROUTER_KEY }}
+          MODEL: ${{ matrix.model }}
+        run: |
+          set -euo pipefail
+          status=$(curl -sS -o /tmp/openrouter_models.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${OR_KEY}" \
+            "https://openrouter.ai/api/v1/models")
+          test "$status" = "200" || { echo "::error::OpenRouter /models returned $status"; exit 1; }
+          python3 - <<PY
+          import json, sys
+          d = json.load(open("/tmp/openrouter_models.json"))
+          models = {m["id"] for m in d.get("data", [])}
+          want = "${MODEL}"
+          if want not in models:
+              print(f"::error::Model '{want}' not found in OpenRouter catalog")
+              # Soft-warn; some valid slugs aren't in /models but still route
+              print(f"::warning::Continuing — slug may still route via fallback")
+          else:
+              print(f"::notice::OpenRouter slug '{want}' available")
+          PY
+
+      - name: Write OpenRouter key
+        env:
+          OR_KEY: ${{ secrets.RATCHET_OPENROUTER_KEY }}
+        run: |
+          umask 077
+          printf '%s' "$OR_KEY" > "$HOME/.ratchet_openrouter_key"
+          test -s "$HOME/.ratchet_openrouter_key"
+
+      - name: Prepare output dirs
+        run: |
+          mkdir -p ~/exp1b_cf5v/${{ matrix.model_tag }}/tee_batches
+          mkdir -p ~/exp1b_cf5v/${{ matrix.model_tag }}/qa_logs
+
+      - name: Run qa_runner model_eval × N iterations
+        working-directory: CIRISAgent
+        env:
+          MODEL: ${{ matrix.model }}
+          MODEL_TAG: ${{ matrix.model_tag }}
+          ITERATIONS: ${{ inputs.iterations }}
+          PREMIUM_SLEEP: ${{ inputs.premium_sleep_seconds }}
+          CELL_BUDGET: ${{ matrix.budget_usd }}
+          CIRIS_ACCORD_METRICS_TRACE_LEVELS: ${{ env.TRACE_LEVELS }}
+          CIRIS_DISABLE_TASK_APPEND: "1"
+        run: |
+          set -euo pipefail
+          OUT_BASE="$HOME/exp1b_cf5v/$MODEL_TAG"
+          CONSECUTIVE_EMPTY=0
+          CELL_COST_TOTAL="0"
+          for ITER in $(seq 1 "$ITERATIONS"); do
+            ITER_PAD=$(printf "%03d" "$ITER")
+            TEE_DIR="/tmp/exp1b-cf5v-$MODEL_TAG-iter$ITER_PAD-$(date -u +%Y%m%dT%H%M%SZ)"
+            LOG="$OUT_BASE/qa_logs/iter$ITER_PAD.log"
+            ITER_START=$(date -u +%s)
+
+            # Cost-cap check BEFORE this iter
+            if python3 -c "import sys; sys.exit(0 if float('$CELL_COST_TOTAL') >= float('$CELL_BUDGET') else 1)" 2>/dev/null; then
+              echo "::warning title=Budget exhausted::cell $MODEL_TAG hit \$$CELL_BUDGET cap after iter $((ITER - 1))"
+              break
+            fi
+
+            echo "::group::ITER $ITER / $ITERATIONS  MODEL $MODEL  $(date -u +%H:%M:%S) UTC"
+            CIRIS_ACCORD_METRICS_LOCAL_COPY_DIR="$TEE_DIR" \
+              python3 -u -m tools.qa_runner model_eval \
+                --live \
+                --live-key-file "$HOME/.ratchet_openrouter_key" \
+                --live-base-url "https://openrouter.ai/api/v1" \
+                --live-model "$MODEL" \
+                --live-lens \
+                --model-eval-languages en \
+                --model-eval-concurrency 1 \
+                --model-eval-questions-file "$GITHUB_WORKSPACE/RATCHET/experiments/exp1b_boundary_active/questions/v4_combined_boundary_active.json" \
+                2>&1 | tee "$LOG" \
+                | grep -E "🧪|✅|❌|⚠️|🔑|🌐|📊|📡|🚀|🛑|QA Test Summary|Total Tests|Passed|Failed|Success Rate|Duration|interaction|Question|FAIL|ERROR|complete_trace|accord-batch" \
+                || true
+            ITER_END=$(date -u +%s)
+
+            set +e
+            BATCHES_THIS_ITER=0
+            if [ -d "$TEE_DIR" ]; then
+              for f in "$TEE_DIR"/*.json; do
+                [ -f "$f" ] || continue
+                bn=$(basename "$f")
+                cp "$f" "$OUT_BASE/tee_batches/iter${ITER_PAD}_${bn}"
+                BATCHES_THIS_ITER=$((BATCHES_THIS_ITER + 1))
+              done
+            fi
+            TOTAL_BATCHES=$(find "$OUT_BASE/tee_batches" -name '*.json' 2>/dev/null | wc -l)
+            COST_THIS_ITER=$(python3 "$GITHUB_WORKSPACE/RATCHET/experiments/exp1_multimodel_neff/iter_cost.py" \
+              "$OUT_BASE/tee_batches/iter${ITER_PAD}*.json" 2>/dev/null || echo "0.0000")
+            CELL_COST_TOTAL=$(python3 -c "print(f'{float(\"${CELL_COST_TOTAL:-0}\") + float(\"${COST_THIS_ITER:-0}\"):.4f}')" 2>/dev/null || echo "${COST_THIS_ITER:-0.0000}")
+            set -e
+
+            echo "  iter $ITER done in $((ITER_END - ITER_START))s; batches=$BATCHES_THIS_ITER total=$TOTAL_BATCHES cost=\$$COST_THIS_ITER cell_total=\$$CELL_COST_TOTAL/\$$CELL_BUDGET"
+
+            if [ "$BATCHES_THIS_ITER" -eq 0 ]; then
+              CONSECUTIVE_EMPTY=$((CONSECUTIVE_EMPTY + 1))
+              echo "::warning title=Empty iteration::ITER $ITER produced 0 batches. Consecutive: $CONSECUTIVE_EMPTY / 3"
+              if [ "$CONSECUTIVE_EMPTY" -ge 3 ]; then
+                echo "::error title=3 consecutive empty iterations::Aborting cell $MODEL_TAG"
+                break
+              fi
+            else
+              CONSECUTIVE_EMPTY=0
+            fi
+            echo "::endgroup::"
+
+            # Premium-tier rate-limit pause (skip after final iter)
+            if [ "$ITER" -lt "$ITERATIONS" ]; then
+              sleep "$PREMIUM_SLEEP"
+            fi
+          done
+
+          # Manifest
+          python3 - <<PY > "$OUT_BASE/manifest.json"
+          import json, hashlib, os, glob
+          d = "$OUT_BASE/tee_batches"
+          rows = []
+          for f in sorted(glob.glob(os.path.join(d, "*.json"))):
+              h = hashlib.sha256(open(f, "rb").read()).hexdigest()
+              rows.append({"name": os.path.basename(f), "bytes": os.path.getsize(f), "sha256": h})
+          print(json.dumps({
+              "model": "$MODEL",
+              "model_tag": "$MODEL_TAG",
+              "agent_ref": "${{ env.AGENT_REF }}",
+              "agent_sha": "${{ env.AGENT_SHA }}",
+              "iterations_requested": $ITERATIONS,
+              "iterations_completed": len(set(r["name"].split("_")[0] for r in rows if "_" in r["name"])),
+              "batch_count": len(rows),
+              "cell_cost_total_usd": float("$CELL_COST_TOTAL"),
+              "cell_budget_usd": $CELL_BUDGET,
+              "batches": rows,
+          }, indent=2))
+          PY
+        timeout-minutes: 290
+
+      - name: Upload tee batches artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: exp1b-cf5v-traces-${{ matrix.model_tag }}
+          path: ~/exp1b_cf5v/${{ matrix.model_tag }}/
+          retention-days: 90
+          if-no-files-found: error
+
+  aggregate:
+    name: Aggregate — score OR-1 / OR-2 / RA-1 across all 5 vendors
+    needs: [preflight, sweep]
+    if: always() && needs.sweep.result != 'cancelled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install analyzer deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy scipy
+
+      - name: Download 5-vendor sweep artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ~/exp1b_cf5v_artifacts
+          pattern: exp1b-cf5v-traces-*
+          merge-multiple: false
+
+      - name: Materialize 5-vendor cohort
+        run: |
+          set -euo pipefail
+          mkdir -p experiments/exp1b_boundary_active/data/crossfamily_5vendor
+          for art in ~/exp1b_cf5v_artifacts/exp1b-cf5v-traces-*; do
+            [ -d "$art" ] || continue
+            tag=$(basename "$art" | sed 's/^exp1b-cf5v-traces-//')
+            mkdir -p "experiments/exp1b_boundary_active/data/crossfamily_5vendor/${tag}/tee"
+            if [ -d "$art/tee_batches" ]; then
+              cp "$art/tee_batches/"*.json \
+                "experiments/exp1b_boundary_active/data/crossfamily_5vendor/${tag}/tee/" \
+                2>/dev/null || true
+            fi
+            if [ -f "$art/manifest.json" ]; then
+              cp "$art/manifest.json" \
+                "experiments/exp1b_boundary_active/data/crossfamily_5vendor/${tag}/" \
+                2>/dev/null || true
+            fi
+            echo "  $tag: $(ls experiments/exp1b_boundary_active/data/crossfamily_5vendor/${tag}/tee/ 2>/dev/null | wc -l) trace files"
+          done
+
+      - name: Run override scoring (OR-1 / OR-2 / RA-1)
+        run: |
+          set -euo pipefail
+          python3 experiments/exp1b_boundary_active/run_override_scoring.py \
+            --crossfamily-dir experiments/exp1b_boundary_active/data/crossfamily_5vendor \
+            || echo "::warning::override_scoring did not produce a results file — check artifact"
+          echo
+          if [ -f experiments/exp1b_boundary_active/data/crossfamily_5vendor/results.md ]; then
+            echo "==================== 5-vendor results.md ===================="
+            cat experiments/exp1b_boundary_active/data/crossfamily_5vendor/results.md
+          fi
+
+      - name: Upload 5-vendor results
+        uses: actions/upload-artifact@v4
+        with:
+          name: exp1b-crossfamily-5vendor-results
+          path: experiments/exp1b_boundary_active/data/crossfamily_5vendor/
+          retention-days: 365
+          if-no-files-found: error
