@@ -265,3 +265,35 @@ The v1.2 amendment is a **methodology fix**, not a rule loosening. The framework
 #### Pre-registration discipline
 
 Per §8 amendment policy, this amendment commits **before** the v1.2 re-run. The lake builds clean. The v1.1 INCONCLUSIVE result (commit `7211bc8`) stands as the v1.1 record. The v1.2 re-run is a separate test, with its own commit anchor, against the same vendored real data + same locked decision rule.
+
+### Amendment A4 (P2 v1.3 — Allen extractor fix + n=30→100, pre-registered BEFORE re-run)
+
+The v1.2 P2 re-run (commit `b937bfa`) produced verdict **INCONCLUSIVE** with Spearman ρ = +0.091 (direction flipped to predicted-positive from v1.1's −0.224 but still in the central [−0.3, +0.3] cell). Two issues surfaced:
+
+1. **Allen Neural dropped** by **C-4 k_invariance** — the 32-session vendored parquet has all sessions pinned to k=60 neurons (the vendor script's `--max-units 60` constraint). The Allen extractor used `df.sample(n)` which gave n sessions each with the same k.
+
+2. **Per-rung n=1 for A1/A2/A4** — only one substrate per non-A0 rung, so the cross-rung Spearman has very little statistical power. Increasing per-substrate n from 30 to 100 reduces bootstrap CI width and makes per-substrate mean|φ| estimates more reliable.
+
+#### What v1.3 changes
+
+| Change | Description |
+|---|---|
+| **Allen extractor** | In `extract_allen_samples`: for each session, draw `n_per_session = n // n_sessions_available` random neuron-subsets, with k ∈ {5, …, 60} uniform per draw. Total samples ≈ n. Same "k-subset per draw" pattern as v1.2 institutional fix. |
+| **n_per_substrate default** | 30 → 100. Tightens per-substrate bootstrap CI and reduces per-rung mean noise. |
+
+#### What v1.3 does NOT change
+
+- The metric (mean|φ|)
+- The bootstrap-resample count (1000)
+- The rung map (A0/A1/A2/A4 assignments unchanged)
+- The Spearman threshold partition (≥+0.7 STRONG_PASS / ≥+0.3 WEAK_PASS / etc.)
+- The `p2_minSubstrates` minimum (4)
+- The lake's `decideP2` decision function
+- The data sources (all 7 substrates use the same vendored real data)
+- C-1 through C-6 confounder enforcement (Allen still subject to C-4; the extractor change makes C-4 satisfiable)
+
+This is a **methodology fix and sample-size increase**, not a rule loosening. The framework-prediction test (Spearman ρ ≥ +0.7) is unchanged; v1.3 only changes (a) how Allen samples flow into the metric, and (b) the per-substrate sample size.
+
+#### Pre-registration discipline
+
+Per §8 amendment policy, this amendment commits **before** the v1.3 re-run. Both v1.1 and v1.2 INCONCLUSIVE results stand as the v1.x record. The v1.3 re-run is a separate test, with its own commit anchor.

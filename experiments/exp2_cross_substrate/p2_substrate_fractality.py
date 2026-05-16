@@ -229,12 +229,13 @@ def extract_allen_samples(n: int = 30, seed: int = 42):
     except Exception:
         return None
     rng = np.random.default_rng(seed)
-    df = df.sample(min(n, len(df)), random_state=int(rng.integers(0, 2**31 - 1)))
+    # v1.3: use all available sessions; draw multiple k-subsets per session
+    # so the 30-100 samples come from varying neuron subsets, not session count.
     rows = []
+    n_sessions = len(df)
+    n_per_session = max(1, n // max(1, n_sessions))
     for _, row in df.iterrows():
-        k = int(row.get("n_neurons", 0))
-        # spike_train_matrix may be stored as a list/array (3-session sample)
-        # OR as raw uint8 bytes (32-session scaled parquet)
+        n_neurons_total = int(row.get("n_neurons", 0))
         try:
             raw = row["spike_train_matrix"]
             if isinstance(raw, (bytes, bytearray)):
@@ -245,28 +246,30 @@ def extract_allen_samples(n: int = 30, seed: int = 42):
                 spike_flat = np.asarray(raw, dtype=float)
         except Exception:
             continue
-        if k < 3 or len(spike_flat) < 100:
+        if n_neurons_total < 5 or len(spike_flat) < 100:
             continue
-        # Reshape: known shape is (n_neurons, n_time_bins) — total bins = n_trials × bins_per_trial
         try:
-            mat = spike_flat.reshape(k, -1)
+            mat_full = spike_flat.reshape(n_neurons_total, -1)
         except ValueError:
             continue
-        # ρ: mean off-diagonal correlation across neurons
-        try:
-            corr = np.corrcoef(mat)
-            off = corr[np.triu_indices(k, k=1)]
-            rho = float(np.clip(abs(np.nanmean(off)), 0.0, 1.0))
-        except Exception:
-            rho = 0.0
-        # σ: 1 - CV of mean firing rates across neurons (high evenness → high σ)
-        rates = mat.mean(axis=1)
-        if np.mean(rates) > 1e-9:
-            cv = float(np.std(rates) / np.mean(rates))
-            sigma = float(np.clip(1.0 / (1.0 + cv), 0.01, 0.99))
-        else:
-            sigma = 0.5
-        rows.append((k, rho, sigma))
+        # Per-session, draw n_per_session random k-subsets
+        for _ in range(n_per_session):
+            k = int(rng.integers(5, n_neurons_total + 1))
+            neuron_idx = rng.choice(n_neurons_total, size=k, replace=False)
+            mat = mat_full[neuron_idx]
+            try:
+                corr = np.corrcoef(mat)
+                off = corr[np.triu_indices(k, k=1)]
+                rho = float(np.clip(abs(np.nanmean(off)), 0.0, 1.0))
+            except Exception:
+                rho = 0.0
+            rates = mat.mean(axis=1)
+            if np.mean(rates) > 1e-9:
+                cv = float(np.std(rates) / np.mean(rates))
+                sigma = float(np.clip(1.0 / (1.0 + cv), 0.01, 0.99))
+            else:
+                sigma = 0.5
+            rows.append((k, rho, sigma))
     if len(rows) < 4:
         return None
     k_a, rho_a, sigma_a = (np.asarray([r[i] for r in rows]) for i in range(3))
@@ -405,7 +408,7 @@ def compute_substrate_phi(
 # ─── Cross-substrate Spearman ────────────────────────────────────────
 
 
-def run_p2(n_per_substrate: int = 30, seed: int = 42,
+def run_p2(n_per_substrate: int = 100, seed: int = 42,
            n_bootstrap: int = 1000) -> dict:
     print("Exp 2 P2 — Cross-substrate Spearman (v1.1 pre-registered)")
     print("=" * 70)
@@ -477,7 +480,7 @@ def run_p2(n_per_substrate: int = 30, seed: int = 42,
 def main() -> int:
     out_dir = Path(__file__).parent / "data"
     out_dir.mkdir(parents=True, exist_ok=True)
-    res = run_p2(n_per_substrate=30, seed=42, n_bootstrap=1000)
+    res = run_p2(n_per_substrate=100, seed=42, n_bootstrap=1000)
     out = out_dir / "p2_substrate_fractality_results.json"
     out.write_text(json.dumps(res, indent=2, default=str))
     print(f"\nWrote {out.relative_to(REPO_ROOT)}")
