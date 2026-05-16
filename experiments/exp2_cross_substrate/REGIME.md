@@ -1,6 +1,6 @@
 # Exp 2 — Substrate Fractality Across Agency Levels: Regime
 
-**Status:** **v2.0** (P2 metric redesigned post-v1.x retirement; time-ordered residuals + shuffled deterministic null; **VERDICT: INCONCLUSIVE** at ρ = +0.218 across 7 substrates — BUT methodology change unlocked real per-substrate variation 0.05–0.68 vs v1.x noise floor 0.05–0.13; A4-split (V-Dem +0.58 vs Polity5 +0.21) is the operationalization-sensitivity finding).
+**Status:** **v2.0 + WGI (8 substrates)** — Spearman dropped to **-0.012 (near zero)**, INCONCLUSIVE. WGI (continuous z-scores, 3rd A4 substrate) gave excess|φ|=+0.188 — LOW like Polity5 (+0.211), NOT like V-Dem (+0.582). **V-Dem is the anomaly**; the "categorical-vs-continuous" hypothesis was wrong. V-Dem is uniquely smooth (composite index) among the 3 A4 substrates. v2.0 metric is dominated by σ_t temporal smoothness from indicator-aggregation pipelines, not agency. **v3.0 redesign in progress** — ρ_t direct + AR(1)-residual.
 **Predecessor:** v1.3 (commit `6ddfe52`).
 **Pre-registration:** `EXP2_PREREGISTRATION.md` v1.4 (A1+A2+A3+A4+A5 amendments), commit `00f0328`.
 **Paper hook:** Coherence Substrate Synthesis paper §10 Exp 2.
@@ -395,6 +395,102 @@ v2.0's INCONCLUSIVE is qualitatively different from v1.x's: it sits in the same 
 **Recommendation: (B) for the paper, with explicit disclosure that the metric is data-type-confounded at the categorical/continuous boundary.** This is honest, identifies a real methodological lesson, and preserves the parts of the framework that are well-supported (K1-K4 algebra, P1 cross-substrate R²>0.7, GPU validations).
 
 The K1-K4 algebra remains proven. P1 close-out K=7/7 remains. v2.0 produces real per-substrate signal (excess|φ| 0.05–0.58); the cross-rung relationship is partial and confounded — *not* the clean F-7b confirmation the framework hoped for.
+
+---
+
+### v2.0 + WGI (3rd A4 substrate) — 8 substrates, Spearman collapsed to -0.012
+
+After v2.0's first run with 7 substrates returned INCONCLUSIVE at +0.218 with the A4-split (V-Dem +0.58 vs Polity5 +0.21) flagged as the headline finding, **WGI was added as a 3rd A4 substrate** (Worldwide Governance Indicators: 6 continuous z-scored indicators, country-year 1996-2023, already vendored at `data/institutional/wgi_processed.csv`).
+
+**Hypothesis tested:** if v2.0 excess|φ| is driven by indicator data type (continuous → high, categorical → low), WGI (continuous) should land near V-Dem's +0.58. If V-Dem is genuinely anomalous, WGI should land near Polity5's +0.21.
+
+**Result: WGI excess|φ| = +0.188, NEAR POLITY5. The hypothesis is REJECTED.**
+
+```
+Spearman ρ(rung, excess|φ|) = -0.0123  (p = 0.977)
+→ INCONCLUSIVE  (essentially zero correlation)
+```
+
+8-substrate excess|φ| (sorted by rung):
+
+| Rung | Substrate | n_traj | excess\|φ\| | CI |
+|---|---|---|---|---|
+| A0 | alphafold | 50 | +0.363 | [+0.313, +0.411] |
+| A0 | battery | 1 | +0.279 | (n=1) |
+| A1 | allen | 30 | +0.383 | [+0.347, +0.420] |
+| A2 | biotime | 77 | +0.048 | [+0.035, +0.062] |
+| A3 | ciris | 1 | +0.561 | (n=1) |
+| **A4** | **institutional (Polity5)** | 17 | **+0.211** | [+0.169, +0.250] |
+| **A4** | **vdem** | 74 | **+0.582** | [+0.541, +0.623] |
+| **A4** | **wgi** (new) | 93 | **+0.188** | [+0.169, +0.205] |
+
+**Three findings from the 3-way A4 comparison:**
+
+(1) **V-Dem is the outlier, not Polity5.** 2 of 3 A4 substrates score LOW (Polity5 +0.211, WGI +0.188); only V-Dem scores high (+0.582). Triangulation has revealed which A4 substrate is exceptional.
+
+(2) **The continuous-vs-categorical hypothesis is wrong.** WGI is *continuous* z-scored real-valued (like V-Dem) but lands at Polity5's value. Data type is not the driver.
+
+(3) **V-Dem's high excess|φ| comes from being a composite index.** V-Dem indicators (v2x_polyarchy, v2x_libdem, etc.) are LATENT composites of dozens of underlying sub-components — that compositing process produces extreme temporal smoothness. Polity5 indicators are single categorical assessments; WGI indicators are annually-re-estimated survey aggregates — both have year-over-year noise that V-Dem composites smooth out.
+
+### Direct mechanism diagnosis (raw indicator lag-1 autocorrelation)
+
+Confirms (3):
+
+| Substrate | Type | n country-indicator pairs | mean \|φ_lag1\| | fraction \|φ\|>0.9 |
+|---|---|---|---|---|
+| Polity5 | categorical 1-7 | 792 | 0.846 | 49.7% |
+| V-Dem | continuous composite indices | 1136 | **0.929** | **83.8%** |
+| WGI | continuous z-scores | 1193 | 0.673 | 2.5% |
+
+V-Dem's raw indicator autocorrelation is the highest (0.93) — and the fraction of indicators with \|φ\|>0.9 is **83.8%**, vs 49.7% for Polity5 and only 2.5% for WGI. V-Dem composites are extraordinarily smooth as a property of their construction, independent of the country's actual political agency.
+
+### The σ_t smoothness mechanism
+
+Direct trajectory inspection confirms the metric latches onto σ_t smoothness:
+
+```
+Polity5 USA traj:  R²=0.224  |φ|(σ_t)=0.439  |φ|(ω_t)=0.332  excess=+0.212
+V-Dem  US traj:    R²=0.000  |φ|(σ_t)=0.829  |φ|(ω_t)=0.828  excess=+0.756
+```
+
+V-Dem's Kish R² is ZERO — Kish doesn't fit. So ω_t ≈ σ_t (after centering). σ_t's autocorr IS the excess. V-Dem's σ_t |φ| = 0.83 because v2x_polyarchy is hyper-smooth → excess metric inherits that smoothness.
+
+**v2.0's excess|φ| measures, in order of contribution:**
+1. **Indicator-aggregation smoothness** (V-Dem composites > Polity5 categorical > WGI annual estimates)
+2. **Substrate-native physics** (battery deterministic decay, alphafold sequence-position coupling)
+3. Window-aggregation smoothing (5-year mean of any indicator increases |φ|)
+4. **Agency-driven coordination** ← framework wants this; gets ~last-place voice
+
+### Implication for the framework's F-7b prediction
+
+Two pre-registered operationalizations (v1.x random cross-section, v2.0 time-ordered + null) both returned INCONCLUSIVE. The 8-substrate v2.0 result with WGI gives **Spearman = -0.012** — there is NO directional cross-rung signal in this metric at this design.
+
+**The framework's substrate-fractality prediction, as v2.0 operationalized it, is empirically falsified at WEAK_FAIL adjacency.** ρ = -0.012 is just inside the INCONCLUSIVE band; the bound is -0.3 for WEAK_FAIL. The direction is now slightly NEGATIVE, not even weakly positive. The metric simply does not track rung.
+
+**Honest read:** v2.0 measures temporal smoothness of σ_t. σ_t smoothness is determined by data-aggregation choices, not by agency. The framework's claim "constituents coordinate, producing residual structure" is not what v2.0 measures.
+
+### v3.0 redesign in progress
+
+Switching the metric from σ_t-Kish-residual-autocorrelation (v2.0) to **ρ_t direct + AR(1)-residual** (v3.0). Rationale:
+
+- ρ_t = mean pairwise correlation across constituents at time t — *literally* the framework's "coordination" primitive
+- Defined identically across substrates (no aggregation-pipeline difference)
+- AR(1) detrending isolates structure BEYOND simple smoothness
+
+Implementation: `p2_substrate_fractality_v3.py`. Same trajectory extractors (no re-vendoring needed). Same Spearman partition and Lake `decideP2`. Running now.
+
+### Comparison v1.x → v2.0 → v3.0 (in progress)
+
+| Version | Metric | Substrates | Spearman | Verdict |
+|---|---|---|---|---|
+| v1.1 | mean\|φ\|(ω) random cross-section | 5 | −0.224 | INCONCLUSIVE (noise) |
+| v1.2 | same | 6 | +0.091 | INCONCLUSIVE (noise) |
+| v1.3 | same, n=100 | 7 | +0.299 | INCONCLUSIVE (noise) |
+| v1.4 | same, n=100 | 9 | +0.120 | INCONCLUSIVE (noise) |
+| v2.0 | excess\|φ\|(σ_t-Kish-residual) time-ordered | 7 | +0.218 | INCONCLUSIVE (smoothness) |
+| **v2.0+WGI** | same | **8** | **-0.012** | **INCONCLUSIVE (V-Dem isolated)** |
+| **v3.0 raw ρ_t** | excess\|φ\|(ρ_t) | 8 | (running) | (running) |
+| **v3.0 AR(1) ρ_t** | excess\|φ\|(ρ_t − AR(1)) | 8 | (running) | (running) |
 
 ---
 

@@ -1,9 +1,9 @@
 {
   "version": "v2.0",
   "metric": "excess|\u03c6| = mean_phi_ordered - mean_phi_null",
-  "n_valid_substrates": 7,
-  "spearman_rho": 0.21821789023599242,
-  "spearman_p": 0.638298871640929,
+  "n_valid_substrates": 8,
+  "spearman_rho": -0.01227571540350591,
+  "spearman_p": 0.9769853458472622,
   "verdict": "INCONCLUSIVE",
   "per_substrate": {
     "battery": {
@@ -103,6 +103,20 @@
       "excess_ci_high": 0.6229575649854878,
       "frac_traj_excess_positive": 1.0,
       "mean_p1_r_squared": 0.07170301301655228
+    },
+    "wgi": {
+      "substrate": "wgi",
+      "rung": 4,
+      "status": "ok",
+      "n_trajectories": 93,
+      "mean_traj_length": 21.978494623655912,
+      "mean_phi_ordered": 0.33494111639611923,
+      "mean_phi_null": 0.14696581567082279,
+      "excess_phi": 0.1879753007252965,
+      "excess_ci_low": 0.16853941752055307,
+      "excess_ci_high": 0.20454654716316203,
+      "frac_traj_excess_positive": 0.967741935483871,
+      "mean_p1_r_squared": 0.07178873183950048
     }
   }
 }

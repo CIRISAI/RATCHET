@@ -555,6 +555,75 @@ def get_vdem_trajectories(window: int = 5, max_countries: int = 80,
     return trajectories
 
 
+def get_wgi_trajectories(window: int = 3, max_countries: int = 100,
+                         seed: int = 42) -> List[Trajectory]:
+    """Worldwide Governance Indicators (WGI) country-year. One trajectory per country.
+
+    Third A4 substrate — continuous real-valued indicators, year range 1996-2023
+    (28 years). The point of including WGI alongside V-Dem (continuous) and
+    Polity5 (categorical) is to test the v2.0 finding that excess|φ| at A4 is
+    driven by indicator-data-type rather than agency level.
+
+    Hypothesis: if WGI looks like V-Dem (high excess|φ|), the indicator-type
+    confounder is confirmed. If WGI looks like Polity5 (low excess|φ|), V-Dem
+    is anomalous.
+
+    At year y, sliding window of `window` years:
+      k_t   = number of indicators with ≥3 non-null values in window (≤6)
+      σ_t   = mean of (mean across indicators, normalized to [0.01, 0.99])
+      ρ_t   = mean pairwise indicator correlation within window
+    """
+    try:
+        import pandas as pd
+    except ImportError:
+        return []
+    csv_path = REPO_ROOT / "data" / "institutional" / "wgi_processed.csv"
+    if not csv_path.exists():
+        return []
+    indicators = ["CC.EST", "GE.EST", "PV.EST", "RQ.EST", "RL.EST", "VA.EST"]
+    df = pd.read_csv(csv_path, usecols=["country", "year"] + indicators)
+    df = df.dropna(subset=["country", "year"])
+    rng = np.random.default_rng(seed)
+    countries = list(df["country"].unique())
+    rng.shuffle(countries)
+    countries = countries[:max_countries]
+    trajectories = []
+    for country in countries:
+        grp = df[df["country"] == country].sort_values("year").reset_index(drop=True)
+        if len(grp) < MIN_TRAJ_LEN + window:
+            continue
+        k_arr, rho_arr, sigma_arr = [], [], []
+        for y in range(0, len(grp) - window):
+            w = grp.iloc[y: y + window]
+            non_null = [c for c in indicators if w[c].notna().sum() >= 3]
+            k = len(non_null)
+            if k < 3:
+                continue
+            sub = w[non_null].apply(pd.to_numeric, errors="coerce").dropna()
+            if len(sub) < 3:
+                continue
+            # WGI indicators range roughly [-2.5, +2.5]; map to (0, 1) for σ
+            sigma = float(np.clip((sub.values.mean() + 2.5) / 5.0, 0.01, 0.99))
+            corr = sub.corr().values
+            off = corr[np.triu_indices(corr.shape[0], k=1)]
+            if len(off) == 0 or np.all(np.isnan(off)):
+                continue
+            rho = float(np.clip(abs(np.nanmean(off)), 0.0, 1.0))
+            k_arr.append(k)
+            rho_arr.append(rho)
+            sigma_arr.append(sigma)
+        if len(k_arr) < MIN_TRAJ_LEN:
+            continue
+        k_a = np.asarray(k_arr); r_a = np.asarray(rho_arr)
+        if (k_a.max() - k_a.min() < 2) and (r_a.max() - r_a.min() < 0.1):
+            continue
+        trajectories.append((k_a, r_a, np.asarray(sigma_arr)))
+    return trajectories
+
+
+SUBSTRATE_RUNGS["wgi"] = 4
+
+
 TRAJECTORY_GETTERS = {
     "battery":       get_battery_trajectories,
     "alphafold":     get_alphafold_trajectories,
@@ -563,6 +632,7 @@ TRAJECTORY_GETTERS = {
     "ciris":         get_ciris_trajectories,
     "institutional": get_institutional_trajectories,
     "vdem":          get_vdem_trajectories,
+    "wgi":           get_wgi_trajectories,
 }
 
 
