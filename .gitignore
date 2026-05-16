@@ -102,3 +102,16 @@ data/protein/alphafold_sample/.cache/
 data/powergrid/pmu1_real.csv
 data/powergrid/pmu2_real.csv
 data/neural/allen_neuropixels_sessions.parquet
+
+# Real BioTIME data from Zenodo 5026943 (1.4GB unzipped, gitignored)
+data/ecological/BioTIMEQuery_24_06_2021.csv
+data/ecological/biotime_query.zip
+data/ecological/biotime_query.csv
+data/ecological/biotime_metadata.csv
+
+# Real microbiome HF CRC (vendored)
+data/microbiome/hf_crc/
+
+# Real AlphaFold sample (HF)
+data/protein/cath_s40_alphafold_sample.csv
+data/protein/alphafold_sample/
