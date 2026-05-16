@@ -86,3 +86,8 @@ data/pipeline/*/*/__pycache__/
 !data/pipeline/**/__init__.py
 !data/*/validation_results.json
 !data/*/README.md
+
+# Exp 1b cross-family raw traces — large, available via CI artifacts
+experiments/exp1b_boundary_active/data/crossfamily/*/tee/
+experiments/exp1b_boundary_active/data/crossfamily/*/tee_batches/
+experiments/exp1b_boundary_active/data/crossfamily/*/qa_logs/
