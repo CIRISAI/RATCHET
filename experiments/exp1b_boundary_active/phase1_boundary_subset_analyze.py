@@ -387,13 +387,13 @@ def main():
             if not math.isnan(clo)
             else "—"
         )
+        fnh_s = f"{fnh:.3f}" if not math.isnan(fnh) else "—"
+        anh_s = f"{anh:.3f}" if not math.isnan(anh) else "—"
+        delta_s = f"{delta:+.3f}" if not math.isnan(delta) else "—"
+        passes_s = "✓" if r["active_subset_passes_window"] else "✗"
         md.append(
             f"| `{r['model']}` | {r['n_total']} | {r['n_active']} | {af_s} | "
-            f"{fnh:.3f if not math.isnan(fnh) else '—'} | "
-            f"{anh:.3f if not math.isnan(anh) else '—'} | "
-            f"{ci} | "
-            f"{delta:+.3f if not math.isnan(delta) else '—'} | "
-            f"{'✓' if r['active_subset_passes_window'] else '✗'} |\n"
+            f"{fnh_s} | {anh_s} | {ci} | {delta_s} | {passes_s} |\n"
         )
     md.append("\n## Interpretation reminders\n\n")
     md.append("This re-analysis is EXPLORATORY. The locked Exp 1 §10.1 decision rule "

@@ -1,0 +1,86 @@
+{
+  "prereg_anchor": "fbc6795",
+  "source_run": "25935989178",
+  "min_valid_n": 50,
+  "pass_window": [
+    6.6,
+    7.6
+  ],
+  "rows": [
+    {
+      "model": "qwen/qwen3.5-35b-a3b",
+      "model_tag": "qwen-3.5-35b-a3b",
+      "tee_dir": "/tmp/exp1_p1/exp1-phase1-traces-qwen-3.5-35b-a3b/tee_batches",
+      "tee_dir_exists": true,
+      "n_total": 55,
+      "n_active": 41,
+      "active_fraction": 0.7454545454545455,
+      "full_corpus_neff_h": 4.882608151477547,
+      "active_subset_neff_h": 4.428773064323494,
+      "active_subset_ci95_low": 3.3933411646008733,
+      "active_subset_ci95_high": 4.630455625294451,
+      "delta_full_to_active": -0.4538350871540535,
+      "active_subset_passes_window": false
+    },
+    {
+      "model": "anthropic/claude-opus-4.7",
+      "model_tag": "claude-opus-4.7",
+      "tee_dir": null,
+      "tee_dir_exists": false,
+      "n_total": 0,
+      "n_active": 0,
+      "active_fraction": NaN,
+      "full_corpus_neff_h": NaN,
+      "active_subset_neff_h": NaN,
+      "active_subset_ci95_low": NaN,
+      "active_subset_ci95_high": NaN,
+      "delta_full_to_active": NaN,
+      "active_subset_passes_window": false
+    },
+    {
+      "model": "openai/gpt-5.5",
+      "model_tag": "gpt-5.5",
+      "tee_dir": "/tmp/exp1_p1/exp1-phase1-traces-gpt-5.5/tee_batches",
+      "tee_dir_exists": true,
+      "n_total": 137,
+      "n_active": 76,
+      "active_fraction": 0.5547445255474452,
+      "full_corpus_neff_h": 5.492676019903184,
+      "active_subset_neff_h": 5.615618605531025,
+      "active_subset_ci95_low": 4.997047603452783,
+      "active_subset_ci95_high": 5.890469704575058,
+      "delta_full_to_active": 0.12294258562784055,
+      "active_subset_passes_window": false
+    },
+    {
+      "model": "google/gemini-2.5-flash",
+      "model_tag": "gemini-2.5-flash",
+      "tee_dir": "/tmp/exp1_p1/exp1-phase1-traces-gemini-2.5-flash/tee_batches",
+      "tee_dir_exists": true,
+      "n_total": 84,
+      "n_active": 46,
+      "active_fraction": 0.5476190476190477,
+      "full_corpus_neff_h": 5.616831127905609,
+      "active_subset_neff_h": 5.353568043593194,
+      "active_subset_ci95_low": 4.344734836432695,
+      "active_subset_ci95_high": 5.542994616310054,
+      "delta_full_to_active": -0.2632630843124151,
+      "active_subset_passes_window": false
+    },
+    {
+      "model": "meta-llama/llama-4-scout",
+      "model_tag": "llama-4-scout",
+      "tee_dir": "/tmp/exp1_p1/exp1-phase1-traces-llama-4-scout/tee_batches",
+      "tee_dir_exists": true,
+      "n_total": 225,
+      "n_active": 125,
+      "active_fraction": 0.5555555555555556,
+      "full_corpus_neff_h": 7.001635086042003,
+      "active_subset_neff_h": 5.963114027175066,
+      "active_subset_ci95_low": 4.731495997448538,
+      "active_subset_ci95_high": 6.323845894929241,
+      "delta_full_to_active": -1.0385210588669374,
+      "active_subset_passes_window": false
+    }
+  ]
+}
