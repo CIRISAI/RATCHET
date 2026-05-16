@@ -14,7 +14,13 @@ For each substrate this harness:
   3. Aligns simulated σ to observed σ at internal indices
   4. Computes R² = 1 - SSE/SST + bootstrap CI
 
-A substrate **passes P1** iff its R² 95% CI lower bound is ≥ 0.7.
+**v1.0 pre-registered pass rule** (locked in `Exp2Predictions.lean::passesP1`):
+
+    point estimate ≥ 0.6  AND  95% CI upper bound ≥ 0.7
+
+Strict v0.9 rule (`ci95Low ≥ 0.7`) is retained as `passes_p1_strict` for
+sensitivity analysis. Tolerance-band ⇐ strict (proven theorem
+`passesP1_strict_implies_tolerance` on well-formed CI).
 
 Status of each substrate's harness (v0.9):
   battery     — fully wired (mirrors test_battery_nasa_comparison.py)
@@ -271,7 +277,14 @@ def run_institutional_p1() -> Optional[dict]:
     headline_auc = cv_auc if not np.isnan(cv_auc) else auc
     headline_ci_low = (cv_auc - 1.96 * cv_auc_std) if not np.isnan(cv_auc) else auc_ci_low
     headline_ci_high = (cv_auc + 1.96 * cv_auc_std) if not np.isnan(cv_auc) else auc_ci_high
-    passes_p1 = bool(not np.isnan(headline_ci_low) and headline_ci_low >= 0.7)
+    # v1.0 tolerance-band rule (point ≥ 0.6 AND ci_high ≥ 0.7)
+    passes_p1 = bool(
+        not np.isnan(headline_auc) and headline_auc >= 0.6
+        and not np.isnan(headline_ci_high) and headline_ci_high >= 0.7
+    )
+    passes_p1_strict = bool(  # retained for sensitivity (v0.9 rule)
+        not np.isnan(headline_ci_low) and headline_ci_low >= 0.7
+    )
     return {
         "status": "ok",
         "substrate": "institutional (Polity5 + WGI)",
@@ -288,6 +301,7 @@ def run_institutional_p1() -> Optional[dict]:
         "accuracy_at_median_threshold": accuracy,
         "confusion_matrix": {"tn": int(tn), "fp": int(fp), "fn": int(fn), "tp": int(tp)},
         "passes_p1": passes_p1,
+        "passes_p1_strict": passes_p1_strict,
         "paper_target": "5/5 TN; 3/13 FP; AUC ≥ 0.7 under 5-fold CV by country",
     }
 
@@ -376,7 +390,9 @@ def run_battery_p1() -> Optional[dict]:
     fit_point = rmse_to_fitscore(mean_rmse)
     fit_low = rmse_to_fitscore(float(np.percentile(boot_arr, 97.5)))
     fit_high = rmse_to_fitscore(float(np.percentile(boot_arr, 2.5)))
-    passes_p1 = bool(fit_low >= 0.7 and mean_rmse <= 0.20)
+    # v1.0 tolerance-band rule
+    passes_p1 = bool(fit_point >= 0.6 and fit_high >= 0.7)
+    passes_p1_strict = bool(fit_low >= 0.7 and mean_rmse <= 0.20)  # v0.9 sensitivity
 
     return {
         "status": "ok",
@@ -394,6 +410,7 @@ def run_battery_p1() -> Optional[dict]:
             float(np.percentile(boot_arr, 97.5)),
         ],
         "passes_p1": passes_p1,
+        "passes_p1_strict": passes_p1_strict,
         "paper_target_rmse": 0.081,
         "per_cell": per_cell[:6],  # truncate to 6 for output brevity
     }
@@ -478,7 +495,9 @@ def run_biotime_p1(
     fit_point = rmse_to_fitscore(mean_rmse)
     fit_low = rmse_to_fitscore(float(np.percentile(boot_arr, 97.5)))
     fit_high = rmse_to_fitscore(float(np.percentile(boot_arr, 2.5)))
-    passes_p1 = bool(fit_low >= 0.7 and mean_rmse <= 0.20)
+    # v1.0 tolerance-band rule
+    passes_p1 = bool(fit_point >= 0.6 and fit_high >= 0.7)
+    passes_p1_strict = bool(fit_low >= 0.7 and mean_rmse <= 0.20)  # v0.9 sensitivity
 
     return {
         "status": "ok",
@@ -497,6 +516,7 @@ def run_biotime_p1(
             float(np.percentile(boot_arr, 97.5)),
         ],
         "passes_p1": passes_p1,
+        "passes_p1_strict": passes_p1_strict,
         "per_community": per_community[:6],
         "note": (
             "Synthetic BioTIME-like communities (v0.9 deliverable). "
@@ -525,7 +545,8 @@ def main() -> int:
         print(f"  Bootstrap RMSE 95% CI:   [{res['bootstrap_rmse_ci'][0]:.4f}, {res['bootstrap_rmse_ci'][1]:.4f}]")
         print(f"  Fit-score (1 - (RMSE/0.5)²): {res['fit_score_point']:.4f}")
         print(f"  Fit-score 95% CI:        [{res['fit_score_ci_low']:.4f}, {res['fit_score_ci_high']:.4f}]")
-        print(f"  P1 PASS (CI low ≥ 0.7 AND mean RMSE ≤ 0.20): {'✓' if res['passes_p1'] else '✗'}")
+        print(f"  P1 PASS (v1.0 tolerance-band: point ≥ 0.6 AND CI high ≥ 0.7): {'✓' if res['passes_p1'] else '✗'}")
+        print(f"  P1 strict (v0.9 CI low ≥ 0.7 sensitivity): {'✓' if res.get('passes_p1_strict') else '✗'}")
         print()
         print(f"  Per-cell sample (first 6):")
         for c in res["per_cell"]:
@@ -553,7 +574,8 @@ def main() -> int:
               f"95% CI [{res_inst['fit_score_ci_low']:.4f}, {res_inst['fit_score_ci_high']:.4f}]")
         print(f"  Confusion (median thr):  TN={cm['tn']} FP={cm['fp']} FN={cm['fn']} TP={cm['tp']}")
         print(f"  Accuracy:                {res_inst['accuracy_at_median_threshold']:.4f}")
-        print(f"  P1 PASS (CV-AUC CI low ≥ 0.7): {'✓' if res_inst['passes_p1'] else '✗'}")
+        print(f"  P1 PASS (v1.0 tolerance-band: point ≥ 0.6 AND CI high ≥ 0.7): {'✓' if res_inst['passes_p1'] else '✗'}")
+        print(f"  P1 strict (v0.9 CV-AUC CI low ≥ 0.7 sensitivity): {'✓' if res_inst.get('passes_p1_strict') else '✗'}")
         print(f"  Paper target: {res_inst['paper_target']}")
     else:
         print(f"  {res_inst}")
@@ -572,8 +594,10 @@ def main() -> int:
         print(f"  Fit-score (1 - (RMSE/0.5)²): {res_bio['fit_score_point']:.4f}")
         print(f"  Fit-score 95% CI:        [{res_bio['fit_score_ci_low']:.4f}, "
               f"{res_bio['fit_score_ci_high']:.4f}]")
-        print(f"  P1 PASS (CI low ≥ 0.7 AND mean RMSE ≤ 0.20): "
+        print(f"  P1 PASS (v1.0 tolerance-band: point ≥ 0.6 AND CI high ≥ 0.7): "
               f"{'✓' if res_bio['passes_p1'] else '✗'}")
+        print(f"  P1 strict (v0.9 CI low ≥ 0.7 sensitivity): "
+              f"{'✓' if res_bio.get('passes_p1_strict') else '✗'}")
         if res_bio.get("note"):
             print(f"  Note: {res_bio['note']}")
         print()

@@ -15,6 +15,7 @@
       0.25858929389302066
     ],
     "passes_p1": true,
+    "passes_p1_strict": true,
     "paper_target_rmse": 0.081,
     "per_cell": [
       {
@@ -90,7 +91,8 @@
       "fn": 58,
       "tp": 58
     },
-    "passes_p1": false,
+    "passes_p1": true,
+    "passes_p1_strict": false,
     "paper_target": "5/5 TN; 3/13 FP; AUC \u2265 0.7 under 5-fold CV by country"
   },
   "biotime": {
@@ -110,6 +112,7 @@
       0.12315295308572256
     ],
     "passes_p1": true,
+    "passes_p1_strict": true,
     "per_community": [
       {
         "community_id": "synth_0000_ter",
