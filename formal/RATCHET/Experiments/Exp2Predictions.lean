@@ -365,6 +365,52 @@ of the P2_monotone_in_rung axiom below):
 This is the same shape as Exp1Predictions.lean's `Decision` partition:
 discrete verdict on a thresholded statistic, with explicit lock on the
 operationalization.
+
+**v2.0 operationalization update (post-v1.4 retirement, 2026-05-16).**
+
+The v1.1 operationalization above measured mean|φ| of residuals from a
+*uniformly random per-substrate sample* of (k, ρ, σ) triples. After 4
+pre-registered runs (v1.1–v1.4, Spearman trajectory −0.224 → +0.091 →
++0.299 → +0.120, all INCONCLUSIVE), post-hoc inspection identified a
+**conceptual mismatch**: the framework predicts coordination structure
+in residuals, which requires sequential ordering; the v1.1 metric was
+autocorrelation of a random permutation, which measures sampling noise
+(E|φ_lag1| ≈ √(1/n)) regardless of substrate. Empirically v1.x mean|φ|
+fell in [0.051, 0.131] — exactly the band predicted by sampling noise
+for n=100.
+
+**v2.0 metric** (locked in `EXP2_PREREGISTRATION.md` §v2.0 before re-run):
+
+  Per substrate, extract TIME-ORDERED trajectories (battery cohort over
+  cycles, country-year, session over time bins, community over years,
+  residues along a protein, chains over timestamp). Per trajectory,
+  fit Kish regression σ ≈ α + β·k_eff on time-ordered samples; compute
+  mean|φ| of TIME-ORDERED residuals AND of a DETERMINISTIC NULL
+  (200 shuffles of the residual vector → median).
+
+  Per-substrate aggregate: mean across trajectories of
+    excess|φ| = phi_ordered - phi_null_median
+
+  Cross-substrate statistic: Spearman ρ(rung, excess|φ|) across the
+  v2.0 substrate set (battery, alphafold, allen, biotime, ciris,
+  institutional, vdem — 7 substrates, A0..A4 ranks covered).
+
+  Substrates DROPPED in v2.0: pmu (k=2 fixed along time → Kish
+  degenerates) and microbiome (HF CRC is cross-sectional, no
+  longitudinal axis).
+
+  New confounder C-7 (v2.0): metrics on random-permuted samples
+  measure sampling noise, not coordination. Substrates must supply
+  time-ordered trajectories with within-trajectory k variation.
+
+  Decision partition is UNCHANGED — same `decideP2` function below,
+  applied to the v2.0 Spearman. v1.x results in
+  data/p2_substrate_fractality_results.json remain unchanged; v2.0
+  writes to data/p2_substrate_fractality_v2_results.json.
+
+  The `P2_monotone_in_rung` axiom below is UNCHANGED — only the
+  operationalization (this doc-comment) is amended. The mathematical
+  prediction is what it always was.
 -/
 
 /-! ## P2 — Residual whiteness is monotone in agency rung -/

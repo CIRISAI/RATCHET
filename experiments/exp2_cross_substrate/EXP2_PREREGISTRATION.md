@@ -337,3 +337,71 @@ If the framework's prediction holds at A4, V-Dem and Polity5 should produce *sim
 #### Pre-registration discipline
 
 Per §8 amendment policy, A5 commits **before** the v1.4 re-run. v1.1/v1.2/v1.3 INCONCLUSIVE results stand as their respective records. v1.4 has its own commit anchor.
+
+---
+
+## v2.0 — P2 metric redesign (post-v1.4 retirement)
+
+**Status:** Locked at this commit anchor (**before** v2.0 re-run). v1.x is retired; v2.0 is the new test.
+
+### Why v1.x was retired
+
+After 4 pre-registered runs (v1.1–v1.4, n_substrates ∈ {5,6,7,9}, Spearman trajectory −0.224 → +0.091 → +0.299 → +0.120), all returned INCONCLUSIVE in the central [−0.3, +0.3] band. Post-hoc inspection of the v1.4 close-out (REGIME.md §v1.4) identified a **conceptual mismatch** between the framework's prediction and the metric:
+
+- **The framework claims** (CCA paper, synthesis paper): higher-agency substrates have *coordination structure* in their residuals beyond what Kish captures.
+- **What v1.x measured**: autocorrelation of residuals from a **uniformly random per-substrate sample** of (k, ρ, σ) triples.
+- **The mismatch**: autocorrelation requires sequential ordering to be meaningful. Random-order samples have expected |φ| ≈ √(1/n) regardless of substrate. Empirically, v1.x mean|φ| values fell in [0.051, 0.131] — exactly the band predicted by sampling noise alone for n=100.
+
+In other words, v1.x measured sampling noise on a random permutation, not coordination structure. The metric could not distinguish substrates even in principle.
+
+### v2.0 locked methodology
+
+**Per substrate:** extract TIME-ORDERED trajectories (battery cohort over cycles, country-year, session over time bins, community over years, residues along a protein, chains over timestamp). Within each trajectory, fit Kish regression σ ≈ α + β·k_eff on time-ordered samples. Compute mean|φ| of TIME-ORDERED residuals AND of a DETERMINISTIC NULL (200 shuffles of the residual vector, take median).
+
+**Per-substrate aggregate:** mean across all valid trajectories of `excess|φ| = phi_ordered - phi_null_median`. Bootstrap 1000× over trajectory resamples for substrate-level 95% CI on excess|φ|.
+
+**Headline statistic:** Spearman ρ(rung, excess|φ|) across ≥4 valid substrates.
+
+**Decision partition** (same numeric thresholds as v1.x — lake's `decideP2` reused):
+
+| ρ_spearman(rung, excess\|φ\|) | Outcome |
+|---|---|
+| ≥ +0.7 | **STRONG_PASS** (F-7b confirmed at v2.0 operationalization) |
+| +0.3 ≤ ρ < +0.7 | **WEAK_PASS** (directional support) |
+| −0.3 ≤ ρ < +0.3 | **INCONCLUSIVE** |
+| −0.7 ≤ ρ < −0.3 | **WEAK_FAIL** |
+| < −0.7 | **STRONG_FAIL** |
+| n_valid < 4 | **INDETERMINATE** |
+
+### Substrate-set change vs v1.x
+
+| Substrate | v1.x status | v2.0 status | Reason |
+|---|---|---|---|
+| battery | A0 | A0 ✓ | NASA cohort over cycles (time-ordered) |
+| alphafold | A0 | A0 ✓ | pLDDT along protein sequence (sequence-ordered) |
+| pmu | A0 | **DROPPED** | k=2 fixed along trace — Kish degenerates |
+| microbiome | A1 | **DROPPED** | HF CRC cohort is cross-sectional, no longitudinal axis |
+| allen | A1 | A1 ✓ | Spike-train time bins per session |
+| biotime | A2 | A2 ✓ | Community species abundances over years |
+| ciris | A3 | A3 ✓ | Chains over timestamp (mtime-ordered) |
+| institutional | A4 | A4 ✓ | Polity5 country-year |
+| vdem | A4 | A4 ✓ | V-Dem v15 country-year |
+
+7 substrates retained. The headline clears the n_valid ≥ 4 minimum and covers 5 ranks (A0, A1, A2, A3, A4).
+
+### New confounder control C-7
+
+C-7 (NEW, v2.0): **Sequential-ordering requirement.** Autocorrelation metrics on random-permuted samples measure sampling noise (E|φ_lag1| ≈ √(1/n)), not coordination structure. Substrates must provide TIME-ORDERED (or natural-sequence-ordered) trajectories with within-trajectory k variation. Cross-sectional-only substrates are dropped from the headline. The shuffled-null contrast (excess|φ|) makes the dependence on ordering explicit: a substrate whose residuals carry no structure beyond sampling noise will produce excess|φ| ≈ 0 within bootstrap CI.
+
+### What v2.0 is NOT
+
+- v2.0 does NOT modify the lake's `P2_monotone_in_rung` axiom — that mathematical prediction is unchanged.
+- v2.0 does NOT modify the lake's `decideP2` thresholds — same Spearman partition.
+- v2.0 does NOT re-anchor `expectedWhiteness` — it only updates the operationalization (the doc-comment text in `Exp2Predictions.lean`) to point at v2.0's time-ordered + shuffled-null metric.
+- v2.0 does NOT claim v1.x is "buggy code" — it's a methodologically misaligned metric. The v1.x results stand as documenting what mean|φ| of a random cross-section measures (i.e., nothing useful about the framework's claim).
+
+### Pre-registration discipline
+
+This v2.0 lock commits **before** any v2.0 run is executed. v1.1–v1.4 results in `data/p2_substrate_fractality_results.json` remain unchanged; v2.0 results write to `data/p2_substrate_fractality_v2_results.json`. The lake `decideP2` function is unchanged.
+
+If v2.0 itself returns INCONCLUSIVE across runs, the honest paper framing is option (C) from REGIME.md v1.4 close-out: "the framework's substrate-fractality prediction was tested under two pre-registered operationalizations and did not produce a stable cross-substrate signal at this design granularity." Tier-1 / Tier-2 claims (Kish fit at P1, GPU validations, CRC replication) stand independently.
