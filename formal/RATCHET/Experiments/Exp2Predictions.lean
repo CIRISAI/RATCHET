@@ -310,6 +310,63 @@ opaque whiteness : Residual → ℝ
 axiom whiteness_bounded (r : Residual) :
   0 ≤ whiteness r ∧ whiteness r ≤ 1
 
+/-! ## P2 — Cross-substrate Spearman test (v1.1 locked operationalization)
+
+**v1.1 pre-registered P2 rule** (locks the empirical operationalization
+of the P2_monotone_in_rung axiom below):
+
+  Metric: mean|φ| over lags 1..min(10, n/3) of the Kish-regression
+  residual ω = σ_obs − σ_engine_pred per substrate.
+
+  Statistic: Spearman ρ(rung, mean|φ|) across all valid substrates.
+  rung is from `RATCHET.Agency.AgencyRung` intrinsic operationalization
+  (A0=0, A1=1, A2=2, A3=3, A4=4, A5=5). Each substrate contributes ONE
+  data point (its bootstrap mean|φ|).
+
+  Sampling: per substrate, draw 30 samples uniformly at random from the
+  vendored real-data corpus (or all samples if n_real < 30). Apply Kish
+  regression σ ≈ α + β·k_eff over these 30 samples. Compute mean|φ| on
+  the residuals. Bootstrap 1000× to get 95% CI on substrate's mean|φ|.
+
+  Confounder controls (all 6 from C-1..C-6 enforced):
+    C-1: sample-size matched at n=30 ± tolerance for cross-substrate
+         comparability; substrates with n_real < 30 use all samples but
+         flag the small-sample-confidence in the report
+    C-2: synthetic data EXCLUDED from the headline Spearman; if a
+         substrate has only synthetic data available, report alongside
+         but exclude from the cross-substrate statistic
+    C-3: temporal-resolution locked per substrate (year-level for
+         institutional/BioTIME; cycle-level for battery; native sampling
+         for Allen/PMU/AlphaFold/microbiome); resolution choices documented
+         in EXP2_PREREGISTRATION.md
+    C-4: k must vary by ≥ 2 within each substrate's 30-sample draw; if
+         not, substrate is dropped from the Spearman (no Kish-regression
+         signal possible with constant k)
+    C-5: cohort-aggregation forbidden — if a substrate has multiple
+         cohorts (e.g. CIRIS model-families), each cohort is a separate
+         data point in the Spearman, not the average
+    C-6: labels independent of σ — for institutional, use Polity5
+         regtrans (not σ-derived); for microbiome, target labels from
+         CRC cohort; for the others, structural-engine output (not
+         data-loop-back)
+
+  Decision partition for ρ_spearman = Spearman ρ(rung, mean|φ|):
+    ρ ≥ +0.7     → STRONG_PASS (F-7b confirmed)
+    +0.3 ≤ ρ < +0.7 → WEAK_PASS (directional support; framework not
+                       falsified but not strongly confirmed)
+    -0.3 ≤ ρ < +0.3 → INCONCLUSIVE (no signal in either direction)
+    -0.7 ≤ ρ < -0.3 → WEAK_FAIL (reversed direction; framework's
+                       interpretation needs revision)
+    ρ < -0.7     → STRONG_FAIL (F-7b falsified at strict threshold)
+
+  Catastrophic-failure clause: if fewer than 4 substrates remain after
+  applying C-1..C-6 filters, the result is INDETERMINATE.
+
+This is the same shape as Exp1Predictions.lean's `Decision` partition:
+discrete verdict on a thresholded statistic, with explicit lock on the
+operationalization.
+-/
+
 /-! ## P2 — Residual whiteness is monotone in agency rung -/
 
 /--
@@ -341,6 +398,76 @@ NOT a derivation. Phase 1b / Exp 2 data either supports or refutes it.
 -/
 axiom P2_monotone_in_rung (r₁ r₂ : AgencyRung) (h : r₁ ≤ r₂) :
   expectedWhiteness r₂ ≤ expectedWhiteness r₁
+
+/-! ## P2 v1.1 — Concrete Spearman-based decision rule -/
+
+/-- Locked thresholds for the cross-substrate Spearman test. -/
+def p2_strongPassThreshold : ℝ := 0.7
+def p2_weakPassThreshold : ℝ := 0.3
+def p2_weakFailThreshold : ℝ := -0.3
+def p2_strongFailThreshold : ℝ := -0.7
+def p2_minSubstrates : ℕ := 4
+
+/-- Outcome of the P2 cross-substrate Spearman test. -/
+inductive P2Outcome
+  | strongPass
+  | weakPass
+  | inconclusive
+  | weakFail
+  | strongFail
+  | indeterminate
+  deriving DecidableEq, Repr
+
+/-- Aggregate summary for the cross-substrate Spearman computation.
+    Each row corresponds to one substrate's bootstrap mean|φ|. -/
+structure P2Summary where
+  nValidSubstrates : ℕ
+  spearmanRho : ℝ
+  spearmanP : ℝ
+
+/-- The locked P2 decision function. Mirrors the v1.0 partition for P1
+    but on the Spearman ρ statistic. -/
+noncomputable def decideP2 (s : P2Summary) : P2Outcome :=
+  if s.nValidSubstrates < p2_minSubstrates then
+    P2Outcome.indeterminate
+  else if s.spearmanRho ≥ p2_strongPassThreshold then
+    P2Outcome.strongPass
+  else if s.spearmanRho ≥ p2_weakPassThreshold then
+    P2Outcome.weakPass
+  else if s.spearmanRho > p2_weakFailThreshold then
+    P2Outcome.inconclusive
+  else if s.spearmanRho > p2_strongFailThreshold then
+    P2Outcome.weakFail
+  else
+    P2Outcome.strongFail
+
+/-- A P2 result PASSES iff the outcome is strongPass or weakPass. -/
+def P2Summary.passes (s : P2Summary) : Prop :=
+  decideP2 s = P2Outcome.strongPass ∨ decideP2 s = P2Outcome.weakPass
+
+/-- A P2 result FALSIFIES F-7b iff the outcome is weakFail or strongFail. -/
+def P2Summary.falsifies (s : P2Summary) : Prop :=
+  decideP2 s = P2Outcome.weakFail ∨ decideP2 s = P2Outcome.strongFail
+
+/-- Sanity: indeterminate / inconclusive are neither pass nor falsify. -/
+theorem p2_partition_disjoint (s : P2Summary) :
+    ¬ (s.passes ∧ s.falsifies) := by
+  intro ⟨hp, hf⟩
+  show False
+  have hp' : decideP2 s = P2Outcome.strongPass ∨ decideP2 s = P2Outcome.weakPass := hp
+  have hf' : decideP2 s = P2Outcome.weakFail ∨ decideP2 s = P2Outcome.strongFail := hf
+  rcases hp' with hp' | hp' <;> rcases hf' with hf' | hf' <;>
+    (rw [hp'] at hf'; cases hf')
+
+/-- Sanity: strong-pass implies pass. -/
+theorem p2_strongPass_implies_passes
+    (s : P2Summary) (h : decideP2 s = P2Outcome.strongPass) : s.passes := by
+  unfold P2Summary.passes; left; exact h
+
+/-- Sanity: strong-fail implies falsifies. -/
+theorem p2_strongFail_implies_falsifies
+    (s : P2Summary) (h : decideP2 s = P2Outcome.strongFail) : s.falsifies := by
+  unfold P2Summary.falsifies; right; exact h
 
 /--
 **P2 corollary (provable from monotonicity):** the highest-agency

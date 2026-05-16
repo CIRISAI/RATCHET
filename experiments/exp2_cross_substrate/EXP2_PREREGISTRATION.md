@@ -138,13 +138,95 @@ No changes to the pre-registered rule. Decision rule K=7 → PASS applied; P1 is
 
 ---
 
-## 9. Next milestone — P2 pre-registration
+## 9. P2 Pre-Registration (v1.1)
 
-After all 7 substrate engines have P1 PASS (or documented FAIL with engine fix), the **P2 pre-registration** locks:
+**Locked at this commit anchor.** P2 is the framework's load-bearing substrate-fractality bet. P1 was engine-adequacy precondition; P2 is what could actually falsify F-7b.
 
-- The whiteness metric (current candidate: mean|φ| across lags 1..N from `analysis.omega.kish_fit.autocorr_decay_profile`)
-- The Spearman ρ(rung, mean|φ|) threshold (current candidate: ≥ +0.7)
-- The confounder controls (C-1 sample-size matching; C-2 real-not-synthetic; C-3 temporal-resolution lock; C-4 k-variation requirement; C-5 cohort treatment; C-6 independent labels)
-- The pre-collapse Δρ sign test (P3, corroborating)
+### 9.1 What P2 tests
 
-P2 is where the framework's substrate-fractality bet actually gets tested. P1 close-out is the gating preliminary.
+**Claim:** Across substrates of varying constituent agency rung (A0 inert → A4 high-agency), the *residual structure* after applying the Kish formula scales monotonically with rung. Higher-agency constituents impose post-selection-like backward-state structure that registers as elevated mean|φ| in the regression residual; lower-agency constituents leave near-white residuals.
+
+**Metric:** mean|φ| over lags 1..min(10, n/3) of the residual series ω = σ_observed − σ_engine_predicted, where σ_engine_predicted comes from per-substrate Kish-regression fit σ ≈ α + β·k_eff (the same regression that defined P1's R² check).
+
+Implementation: `analysis.omega.kish_fit.autocorr_decay_profile()` returns `(lags, phi_profile, mean_abs_phi, decay_rate)`. The `mean_abs_phi` field is the v1.1 PRIMARY P2 metric.
+
+**Statistic:** Spearman ρ(rung, mean|φ|) across all valid substrates, computed by:
+1. For each substrate, draw n=30 random samples from its vendored real-data corpus (or all samples if n_real < 30).
+2. Run Kish regression σ ≈ α + β·k_eff on these 30 samples.
+3. Compute mean|φ| of the residuals.
+4. Bootstrap 1000× → 95% CI on substrate's mean|φ|.
+5. Across valid substrates, compute Spearman ρ of (intrinsic agency rung from `Core.AgencyRung`) vs (mean|φ|).
+
+### 9.2 Substrate × rung mapping (locked)
+
+Pre-registered intrinsic agency rung per `RATCHET.Agency.AgencyRung` (NO outcome-derived rungs):
+
+| Substrate | Rung | Justification |
+|---|---|---|
+| battery | A0 | Inert lithium-ion cells; no goal-state |
+| AlphaFold | A0 | Static protein structure; chemical potential drives folding |
+| PMU grid | A0 | Engineered phasor measurement; deterministic physics |
+| microbiome | A1 | Homeostatic cellular signaling; metabolic-coupled |
+| Allen Neural | A1 | Cellular spike-coding; neuron-level signaling |
+| BioTIME | A2 | Population-dynamics; moderate species-level coordination |
+| institutional | A4 | Full human agency at country-decade level |
+
+### 9.3 Confounder controls (C-1 through C-6 enforced)
+
+| Confounder | v1.1 control |
+|---|---|
+| **C-1** sample-size | Locked at n=30 per substrate; substrates with n_real < 30 use all available and flag small-sample-confidence in report. Mean|φ| over multi-lag is sample-size-invariant for n ≥ ~20 (verified by v0.8 positive control at n=200 vs n=50). |
+| **C-2** synthetic exclusion | Synthetic substrates EXCLUDED from headline Spearman. Status quo: all 7 substrates have real data vendored as of commit `7e2b12a`. If any substrate falls back to synthetic at runtime, the harness reports its mean|φ| but excludes from the cross-substrate statistic. |
+| **C-3** temporal resolution | Locked per substrate. Battery: cycle-level. Institutional: 5-year decade-window. Allen: 1-ms spike-train bins. BioTIME: year-level. PMU: 0.02s (50 Hz reporting). AlphaFold + microbiome are cross-sectional (no time axis). Resolution-mismatch confounder (C-3 from v0.7 finding) is addressed by anchoring each substrate to its substrate-native resolution rather than forcing a common timescale. |
+| **C-4** k variation | Required: within each substrate's 30-sample draw, k_max − k_min ≥ 2. If violated, substrate is DROPPED from the Spearman (no Kish-regression signal possible with constant k). Exception: PMU has fixed k=2 by data source (only 2 PMUs in the Zenodo dataset); waived with explicit note. |
+| **C-5** cohort aggregation | If a substrate has multiple cohorts (e.g. CIRIS model-families in Exp 1), each cohort is a SEPARATE data point in the Spearman, not the average. For Exp 2 P2: substrates are single-cohort so this is satisfied by construction. |
+| **C-6** label independence | σ is the substrate's intrinsic stability/diversity metric (SOH for battery, polity2 for institutional, Shannon for microbiome, mean pLDDT for AlphaFold, decoding-accuracy for Allen, biomass-stability for BioTIME, settling-inverse-CV for PMU). NONE are derived from k or ρ; the residual is genuinely σ_obs − σ_predicted-from-(k, ρ). |
+
+### 9.4 Decision rule (lake-locked at `Exp2Predictions.lean::decideP2`)
+
+| Spearman ρ(rung, mean\|φ\|) | Verdict | Implication |
+|---|---|---|
+| ≥ +0.7 | **STRONG_PASS** | F-7b confirmed; framework's substrate-fractality bet supported |
+| +0.3 ≤ ρ < +0.7 | **WEAK_PASS** | Directional support; framework not falsified |
+| −0.3 ≤ ρ < +0.3 | **INCONCLUSIVE** | No signal in either direction; underpowered or substrate-design issue |
+| −0.7 ≤ ρ < −0.3 | **WEAK_FAIL** | Reversed direction; framework's interpretation needs revision |
+| ρ < −0.7 | **STRONG_FAIL** | F-7b falsified; substrate-fractality claim rejected |
+| n_valid < 4 | **INDETERMINATE** | Insufficient substrates for reliable Spearman |
+
+### 9.5 Harness
+
+Implemented at `experiments/exp2_cross_substrate/p2_substrate_fractality.py`. Mirrors `p1_engine_fit.py`'s structure: per-substrate extractor → Kish regression → autocorr_decay_profile → bootstrap → Spearman → verdict. Output is `data/p2_substrate_fractality_results.json` + console close-out.
+
+### 9.6 What this commit locks
+
+| Item | Locked value |
+|---|---|
+| Metric | mean\|φ\| over lags 1..min(10, n/3) |
+| Sample size per substrate | n=30 (or all if n_real<30) |
+| Bootstrap resamples | 1000 |
+| Rung map | A0={battery, AlphaFold, PMU}, A1={microbiome, Allen}, A2={BioTIME}, A4={institutional} |
+| Strong-pass threshold | ρ_spearman ≥ +0.7 |
+| Strong-fail threshold | ρ_spearman < −0.7 |
+| Minimum valid substrates | 4 |
+| Confounder controls | C-1 through C-6 all enforced |
+
+### 9.7 What this commit DOES NOT lock
+
+- The empirical outcome (Spearman ρ value) — that's the *result* of running the harness on the pre-registered data
+- The pre-collapse Δρ sign test (P3) — corroborating; lake has axiomatic prediction, no decision rule locked yet
+- The agency rung assignments for any future substrate not in the 7-substrate set
+
+### 9.8 Path to P2 result
+
+1. ✅ Pre-registration commit (this one) — locks rule, harness, data sources
+2. Run `p2_substrate_fractality.py` against the 7-substrate vendored real-data corpus
+3. Report verdict + per-substrate mean|φ| table
+4. If STRONG_PASS or WEAK_PASS: F-7b supported; paper §10 Exp 2 closes out
+5. If WEAK_FAIL or STRONG_FAIL: F-7b challenged; framework requires revision (the v0.7 confounder discoveries were a v1.0 dress rehearsal of this exact contingency)
+6. If INDETERMINATE or INCONCLUSIVE: data design needs more substrates or refined extractors
+
+The lake's `decideP2(P2Summary)` function applies the locked partition to a `P2Summary { nValidSubstrates, spearmanRho, spearmanP }` and returns one of `{strongPass, weakPass, inconclusive, weakFail, strongFail, indeterminate}`. Theorems `p2_partition_disjoint`, `p2_strongPass_implies_passes`, `p2_strongFail_implies_falsifies` are proved.
+
+### Amendment A2 (P2 pre-registration)
+
+This commit adds the P2 section (§9) to the pre-registration. P1 close-out (§§1-8) remains unchanged. Future amendments to P2 will follow the same policy as §8 (commit + rationale + lake update).
