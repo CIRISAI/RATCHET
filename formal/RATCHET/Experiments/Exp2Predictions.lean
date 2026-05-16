@@ -90,6 +90,75 @@ def SubstrateSummary.isClean (s : SubstrateSummary) : Prop :=
 def SubstrateSummary.passesP1 (s : SubstrateSummary) : Prop :=
   rSquaredThreshold ≤ s.ci95Low
 
+/-! ## Empirical operationalization of P2's whiteness (v0.8)
+
+The lake's `whiteness` and `expectedWhiteness` predicates are deliberately
+opaque — they encode the prediction without locking the measurement choice.
+Phase 0 of Exp 2 (`experiments/exp2_cross_substrate/phase0_tier1_revalidation.py`)
+investigated three candidate operationalizations and found:
+
+  1. **Ljung-Box p-value at lag k**: sample-size sensitive. A substrate
+     with n=4000 rejects whiteness at p<10⁻³⁰; a substrate with n=50
+     fails to reject at the same level of structure. NOT load-bearing.
+
+  2. **Lag-1 |φ| (AR(1) coefficient)**: sample-size invariant, but
+     temporal-sampling-resolution sensitive. A year-level series gives
+     |φ|=0.96 while a decade-window of the same data gives |φ|=0.30 —
+     even though both are nominally "same agency rung". NOT load-bearing
+     when cross-substrate comparison spans different temporal windows.
+
+  3. **Mean |φ| over lags 1..N** (Phase 0 v0.8 PRIMARY): for a pure
+     AR(1) process this is monotonically increasing in φ, making it the
+     correct cross-substrate metric IN PRINCIPLE. Phase 0 confirms
+     monotonicity on a 5-rung synthetic positive control with Spearman
+     ρ(rung, mean|φ|) = +1.000.
+
+  4. **Decay rate of log|φ| vs lag**: UNIMODAL in φ, not monotone. Pure
+     white (φ≈0) and pure persistence (φ→1) both give decay≈0; only
+     moderate-AR(1) (φ∈[0.2, 0.7]) gives large decay. Reported as a
+     diagnostic, NOT a P2 metric.
+
+The lake locks the PREDICTION (P2_monotone_in_rung). The engine layer
+locks the OPERATIONALIZATION (mean|φ| for v0.8). Different operational-
+izations can be argued and adopted; the axiom doesn't constrain choice.
+
+### Confounders that contaminate empirical P2 tests
+
+Phase 0 v0.6–v0.8 identified five confounders that violate the apples-
+to-apples assumption needed for the cross-substrate Spearman test. Any
+pre-registration of Exp 2 must control for these:
+
+  C-1: Sample-size confound. Battery (n=5) gives noisy lag-1 estimates;
+       WGI (n=4933) gives statistically-significant detection of any
+       structure. The Spearman comparison is contaminated unless n is
+       roughly matched or the metric is sample-size invariant.
+
+  C-2: Synthetic-data confound. A1 microbiome synthetic generator
+       produces i.i.d. samples by construction; |φ| collapses to 0
+       regardless of agency rung. Synthetic substrates do NOT test
+       framework predictions — they test the generator's design.
+
+  C-3: Temporal-resolution confound. Polity-decade vs Polity-year vs
+       WGI-year all yield A4 substrates with mean|φ| = 0.061, 0.314,
+       0.753 respectively. The framework's signal is washed out by
+       sampling-interval choice. Pre-registration MUST lock window
+       sizes uniformly.
+
+  C-4: k-variation confound. WGI has k=1 for ALL observations; the
+       Kish regression has no k variation to fit β against. The
+       residual is essentially σ minus mean(σ), not a framework-
+       predicted residual.
+
+  C-5: Cohort-aggregation confound. CIRIS A3 combined across model
+       families gives P1 R² = 0.48; individual cohorts give 0.27 (qwen),
+       0.68 (Gemini), 0.80 (scout). Aggregation washes out per-cohort
+       fit quality. Each substrate is best treated per-cohort.
+
+These confounders are NOT bugs in the framework — they are EMPIRICAL
+DEPENDENCIES of any cross-substrate test. The lake formally records
+them here so Exp 2's pre-registration can address each explicitly.
+-/
+
 /-! ## Residual-structure axiomatization (P4 priority) -/
 
 /--

@@ -159,6 +159,61 @@ def ar1_coefficient(residual: np.ndarray) -> float:
     return float(abs(phi))
 
 
+def autocorr_at_lag(residual: np.ndarray, lag: int) -> float:
+    """Magnitude of autocorrelation at a specific lag (Pearson-style)."""
+    x = np.asarray(residual, dtype=float)
+    if len(x) < lag + 2 or lag < 1:
+        return 0.0
+    x_centered = x - np.mean(x)
+    denom = float(np.sum(x_centered ** 2))
+    if denom < 1e-15:
+        return 0.0
+    numer = float(np.sum(x_centered[:-lag] * x_centered[lag:]))
+    return float(abs(numer / denom))
+
+
+def autocorr_decay_profile(
+    residual: np.ndarray, max_lag: int = 10
+) -> tuple[list[int], list[float], float, float]:
+    """Multi-lag autocorrelation profile + mean|φ| + decay rate.
+
+    Returns:
+        (lags, |φ|-values, mean_abs_phi, decay_rate)
+
+    `mean_abs_phi` averages |φ(L)| over L in [1, max_lag_actual]. For a
+    pure AR(1) process φ_true, mean|φ| ≈ φ_true·(1-φ_true^N)/(N(1-φ_true)),
+    which is MONOTONICALLY INCREASING in φ_true. This makes mean|φ| the
+    *correct* sampling-resolution-robust monotone metric for cross-
+    substrate comparison. Higher agency rung → higher residual structure
+    → higher |φ| at every lag → higher mean|φ|.
+
+    `decay_rate` = -slope of log|φ| vs lag. NOT monotone with rung:
+    pure white (φ≈0) and pure persistence (φ→1) both give decay≈0; only
+    moderate-AR(1) processes (φ∈[0.2, 0.7]) give large decay. Reported
+    for diagnostic interest, not as the load-bearing P2 metric.
+    """
+    x = np.asarray(residual, dtype=float)
+    n = len(x)
+    max_lag_actual = min(max_lag, max(1, (n - 1) // 3))
+    lags = list(range(1, max_lag_actual + 1))
+    phi_values: list[float] = []
+    for lag in lags:
+        phi_values.append(autocorr_at_lag(x, lag))
+
+    mean_abs_phi = float(np.mean(phi_values)) if phi_values else 0.0
+
+    # Decay rate: slope of log|φ| over lag. Diagnostic only.
+    decay_rate = 0.0
+    valid = [(l, phi) for l, phi in zip(lags, phi_values) if phi > 1e-6]
+    if len(valid) >= 3:
+        ls = np.array([v[0] for v in valid], dtype=float)
+        phis = np.array([v[1] for v in valid], dtype=float)
+        log_phis = np.log(np.maximum(phis, 1e-9))
+        slope, _ = np.polyfit(ls, log_phis, 1)
+        decay_rate = float(-slope)
+    return lags, phi_values, mean_abs_phi, decay_rate
+
+
 def compute_omega_from_kish_fit(
     k: np.ndarray,
     rho: np.ndarray,

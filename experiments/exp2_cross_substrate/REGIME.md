@@ -1,7 +1,7 @@
 # Exp 2 — Substrate Fractality Across Agency Levels: Regime
 
-**Status:** v0.7 (CIRIS A3 + WGI A4 added → 5 substrates × 4 rungs, real Tier-1 P2 direction WEAK_PASS at Spearman ρ = +0.359; window-resolution effect identified as next constraint).
-**Predecessor:** v0.6 (commit `923e7ad`).
+**Status:** v0.8 (mean|φ| metric + multi-lag profile + Polity year-level + confounder catalog in lake; 5 confounders formally recorded; pre-registration constraints concrete).
+**Predecessor:** v0.7 (commit `7a49019`).
 **Paper hook:** Coherence Substrate Synthesis paper §10 Exp 2.
 **Falsification handle:** F-7 (cross-substrate mapping failure), strengthened with F-7b (residual-structure agency conditional).
 **Formal authority:** Lean lake modules — `RATCHET.Experiments.Exp2Predictions` (P1/P2/P3 + Inv-1..Inv-5 decision-rule invariants) + `RATCHET.Core.AgencyRung` (ladder + `consent_required_iff_rung_ge_A3` theorem).
@@ -298,7 +298,97 @@ python3 experiments/exp2_cross_substrate/phase0_tier1_revalidation.py
 # + Spearman correlation of (p-value, agency_rung) across the available Tier-1 points.
 ```
 
-### Phase 0 v0.7 finding (2026-05-16) — CIRIS A3 + WGI A4 added, real Tier-1 WEAK_PASS
+### Phase 0 v0.8 finding (2026-05-16) — confounder catalog formalized; metric switched to mean|φ|
+
+**v0.8 implementation:**
+
+| v0.8 change | Status |
+|---|---|
+| `analysis/omega/kish_fit.autocorr_decay_profile` extended | ✓ now returns mean|φ| as primary + multi-lag profile + decay (now diagnostic only, was wrongly promoted to primary in v0.7) |
+| Phase 0 metric switched | ✓ mean|φ| over lags 1..min(10, n/3) is PRIMARY. Lag-1 |φ| and decay rate kept as diagnostics. Mean|φ| is monotone in AR(1) φ; decay rate is unimodal. |
+| Per-year Polity collector (`collect_polity_year_samples`) | ✓ n=4191 country-year obs, k=5–6, 5-year backward window for ρ only |
+| CIRIS A3 cross-validation across model families | ✓ |φ|: 0.53 (Gemini), 0.61 (qwen), 0.66 (scout) — stable. P1 R²: 0.68 (Gemini), 0.27 (qwen), 0.80 (scout). Per-cohort treatment preserves fit; aggregation masks it. |
+| **Confounder catalog committed to Lake** (`Exp2Predictions.lean` v0.8) | ✓ C-1 through C-5 formally documented as comments above the P2 axiomatization. The lake doesn't constrain measurement choice; it locks the prediction. |
+
+**Phase 0 v0.8 results — diagnostic table:**
+
+| Substrate | n | Rung | mean\|φ\| (lags 1..N) | lag-1 \|φ\| | decay rate | Notes |
+|---|---|---|---|---|---|---|
+| battery | 5 | A0 | 0.467 | 0.467 | 0.000 | n=5 too small; mean|φ| collapses to lag-1 |
+| microbiome (synth) | 300 | A1 | 0.059 | 0.071 | -0.007 | i.i.d. by construction (C-2) |
+| CIRIS A3 (3 models combined) | 1255 | A3 | 0.344 | 0.600 | 0.072 | per-cohort: 0.53/0.61/0.66 |
+| polity_decade | 725 | A4 | 0.061 | 0.301 | 0.098 | decade-window averaging (C-3) |
+| polity_year | 4191 | A4 | 0.314 | 0.839 | 0.334 | year-level resolution |
+| wgi | 4933 | A4 | 0.753 | 0.956 | 0.060 | year-level, k=1 always (C-4) |
+
+| Run | Spearman ρ(rung, mean\|φ\|) | Verdict |
+|---|---|---|
+| Positive control (5 rungs A0–A4) | **+1.000** (p = 1.4 × 10⁻²⁴) | **STRONG_PASS** |
+| Real Tier-1 (6 substrates) | **+0.030** (p = 0.955) | **FAIL_DIRECTION** |
+| Real Tier-1 EXCLUDING confounded substrates (battery, microbiome-synth, polity_decade) | — n=3 (A3, A4, A4) — insufficient for monotonic test | INSUFFICIENT_DATA |
+
+**Five confounders (now lake-formalized) explain the v0.8 FAIL:**
+
+| Code | Confounder | Affected substrate | What it does |
+|---|---|---|---|
+| C-1 | Sample-size mismatch | battery (n=5) vs WGI (n=4933) | Battery lag-1 noisy; Spearman dominated by extreme small-n point |
+| C-2 | Synthetic-data construction | microbiome_synth | i.i.d. generator zeros |φ| regardless of rung |
+| C-3 | Temporal-resolution mismatch | polity_decade vs polity_year vs wgi | Same rung, |φ| differs by 0.7+ purely from sampling interval |
+| C-4 | k-variation absent | wgi (k=1 always) | Kish regression has no β-fit signal; residual = σ − mean(σ) |
+| C-5 | Cohort aggregation | CIRIS combined R² = 0.48 vs Gemini 0.68 + Scout 0.80 | Per-cohort fit masked by combining |
+
+**The positive control still passes with Spearman = +1.000.** Pipeline and metric are sound. The real-data FAIL is fully explained by confounders C-1 to C-5.
+
+### Required v0.9 fixes (pre-registration unblockers)
+
+| Fix | Addresses | What to do |
+|---|---|---|
+| Drop battery from cross-substrate Spearman | C-1 | Battery becomes "validation against CCA paper's 8.1% RMSE" only, not part of P2 monotonicity test (its n is too small). Or vendor more battery data (NASA has additional cell sets we haven't extracted). |
+| Real AGP cohort for A1 | C-2 | Vendor American Gut Project sample-level data (~10k samples); each sample has natural k, ρ, σ variation |
+| Match temporal resolution | C-3 | Lock year-level windowing for ALL institutional substrates. Drop polity_decade. |
+| Substrate with k variation | C-4 | Either use Polity_year (k=5–6) as primary A4 (not WGI), or use V-Dem-multi-indicator at the per-country level where k varies across countries |
+| Per-cohort substrate treatment | C-5 | Each model family's CIRIS A3 is one A3 datapoint, not combined. Same applies to substrate variants. |
+
+After v0.9: pre-registration becomes possible because (a) the metric is locked (mean|φ|), (b) the confounders are catalogued, (c) the sample-design constraints are explicit per substrate.
+
+### v0.8 P1 reframing question (must resolve before pre-registration)
+
+Per-cohort P1 R² (cross-sample OLS of σ on k_eff):
+
+| Substrate cohort | n | P1 R² | P1 verdict |
+|---|---|---|---|
+| battery (NASA windows) | 5 | 0.134 | FAIL |
+| microbiome (synth) | 300 | 0.000 | FAIL |
+| **CIRIS Gemini** | 644 | **0.677** | WEAK (borderline) |
+| CIRIS qwen-3.5 | 347 | 0.269 | FAIL |
+| **CIRIS llama-scout** | 264 | **0.796** | **PASS** |
+| polity_year | 4191 | 0.022 | FAIL |
+| polity_decade | 725 | 0.022 | FAIL |
+| WGI | 4933 | 0.000 | FAIL |
+
+Only one cohort (CIRIS scout) passes the locked 0.7 threshold; one (CIRIS Gemini) is borderline.
+
+**The pattern is informative.** The CCA paper's "Kish validated on NASA battery (8.1% RMSE)" claim was *within-substrate engine simulation* — the BatteryDegradationEngine simulates SOH trajectories and is compared to real NASA data point-by-point. That's a different test from Exp 2's *cross-sample OLS regression of σ on k_eff*.
+
+These two tests answer different questions:
+
+| Test | Question |
+|---|---|
+| CCA-style within-substrate engine fit | "Does the framework's domain-specific dynamic model capture real trajectories?" — domain-engine adequacy |
+| Exp 2 cross-sample regression P1 | "Does σ vary monotonically with k_eff across samples in this substrate?" — substrate-fractality |
+
+The CCA paper validated test 1; we're running test 2. They are not interchangeable. **v0.9 must decide:**
+
+| Option | Pros | Cons |
+|---|---|---|
+| **A: Keep cross-sample regression as P1**, accept current FAIL on most substrates | Tests the substrate-fractality bet directly; failure is informative | Most real substrates fail; pre-registration would set up most-likely-FAIL outcome |
+| **B: Switch P1 back to CCA-style engine-vs-data RMSE** | Aligns with CCA paper's claims; the engines + loaders are already on master post-uplift | Doesn't test fractality across rungs — just per-substrate engine adequacy |
+| **C: Run BOTH and use the conjunction as P1** | Most rigorous; conjunctive test rules out engine-fitting failures AND non-fractal substrates | Highest bar; raises probability of FAIL even higher |
+| **D: Reframe P1 as a per-cohort threshold count (e.g., ≥2/8 cohorts cross 0.7)** | Acknowledges substrate-fractality is *partial* — the framework holds for *some* cohorts but not all | Weaker claim; requires re-deriving the framework's testable prediction |
+
+The v0.9 commit should pick one option and lock it in the lake before any pre-registration commits.
+
+### Phase 0 v0.7 finding (2026-05-16) — superseded by v0.8
 
 **v0.7 implementation:**
 

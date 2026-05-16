@@ -32,7 +32,7 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from analysis.omega.kish_fit import (
     compute_omega_from_kish_fit, fit_kish_regression, compute_k_eff,
-    ar1_coefficient,
+    ar1_coefficient, autocorr_decay_profile,
 )
 from analysis.omega.residuals import DomainType
 from analysis.omega.null_test import (
@@ -46,7 +46,8 @@ AGENCY_RUNG = {
     "battery": 0,        # A0 — inert
     "microbiome": 1,     # A1 — low (cellular signaling)
     "ciris": 3,          # A3 — moderate-high (goal-directed LLM reasoning chains)
-    "polity": 4,         # A4 — high (full human agency, Polity5 country-decades)
+    "polity_decade": 4,  # A4 — high (Polity5 country-decades; decade-window averaged)
+    "polity_year": 4,    # A4 — high (Polity5 country-years; matches WGI temporal resolution)
     "wgi": 4,            # A4 — high (full human agency, WGI country-years)
 }
 
@@ -220,6 +221,69 @@ def collect_wgi_samples() -> Optional[tuple[np.ndarray, np.ndarray, np.ndarray, 
     if len(k_arr) < 20:
         return None
     return np.asarray(k_arr), np.asarray(rho_arr), np.asarray(sigma_arr), sids
+
+
+def collect_polity_year_samples() -> Optional[tuple[np.ndarray, np.ndarray, np.ndarray, list]]:
+    """A4 — Per-year Polity5 sampling (matches WGI's annual resolution).
+
+    Each sample is one country-year observation. To get a per-sample ρ
+    without a window, we use a 5-year backward rolling window for the
+    correlation computation only; σ and k remain at the focal year.
+    This lets us compare A4 substrates at the same temporal resolution
+    as WGI (annual), addressing the v0.7 disagreement finding.
+    """
+    polity_path = REPO_ROOT / "data" / "institutional" / "polity5.xls"
+    if not polity_path.exists():
+        return None
+    try:
+        import pandas as pd
+        df = pd.read_excel(polity_path)
+    except Exception:
+        return None
+
+    cols_indicator = ["xconst", "xrcomp", "xropen", "xrreg", "exrec", "exconst"]
+    cols_present = [c for c in cols_indicator if c in df.columns]
+    if "polity2" not in df.columns or "country" not in df.columns or "year" not in df.columns:
+        return None
+    if len(cols_present) < 3:
+        return None
+
+    df = df[df["polity2"].notna()].copy()
+    df["polity2"] = pd.to_numeric(df["polity2"], errors="coerce")
+    df = df[(df["polity2"] >= -10) & (df["polity2"] <= 10)].copy()
+
+    k_list, rho_list, sigma_list, sid_list = [], [], [], []
+    backward_window = 5
+    for country, grp in df.groupby("country"):
+        grp = grp.sort_values("year").reset_index(drop=True)
+        for i in range(backward_window, len(grp)):
+            focal = grp.iloc[i]
+            window_df = grp.iloc[i - backward_window: i + 1]
+            sigma = (float(focal["polity2"]) + 10.0) / 20.0
+            sigma = float(np.clip(sigma, 0.01, 0.99))
+            non_null_cols = [c for c in cols_present if window_df[c].notna().sum() >= 3]
+            k = len(non_null_cols)
+            if k < 3:
+                continue
+            sub = window_df[non_null_cols].apply(pd.to_numeric, errors="coerce").dropna()
+            if len(sub) < 3:
+                continue
+            corr = sub.corr().values
+            off = corr[np.triu_indices(corr.shape[0], k=1)]
+            if len(off) == 0 or np.all(np.isnan(off)):
+                continue
+            rho = float(np.nanmean(off))
+            if np.isnan(rho):
+                continue
+            rho = float(np.clip(abs(rho), 0.0, 1.0))
+            k_list.append(int(k))
+            rho_list.append(rho)
+            sigma_list.append(sigma)
+            sid_list.append(f"polity_year_{country[:12].replace(' ', '_')}_y{int(focal['year'])}")
+
+    if len(k_list) < 20:
+        return None
+    return np.asarray(k_list), np.asarray(rho_list), np.asarray(sigma_list), sid_list
 
 
 def collect_polity_samples(
@@ -402,6 +466,8 @@ def _score_substrate(name: str, sample, domain, rung: int, results: dict, verbos
         return
     # AR(1) — sample-size invariant, always computable for n ≥ 2
     ar1 = ar1_coefficient(fit.omega)
+    # Multi-lag profile + mean|φ| + decay rate
+    lags, phi_profile, mean_abs_phi, decay_rate = autocorr_decay_profile(fit.omega, max_lag=10)
     # Adaptive Ljung-Box lag (needs lag < (n-1)/2 for reasonable test)
     n = len(fit.omega)
     lb_lag = max(1, min(10, (n - 1) // 2))
@@ -426,7 +492,12 @@ def _score_substrate(name: str, sample, domain, rung: int, results: dict, verbos
     except Exception:
         nm_p = float("nan"); nm_reject = False
     if verbose:
-        print(f"  P2 — AR(1) |φ| (v0.6 PRIMARY): {ar1:.4f}")
+        print(f"  P2 — Mean|φ| over lags 1..{max(lags) if lags else 1}:   {mean_abs_phi:.4f}  (v0.8 PRIMARY — monotone in AR(1) φ)")
+        print(f"       Lag-1 |φ|:                {ar1:.4f}")
+        print(f"       Decay rate (diagnostic):  {decay_rate:.4f}  (peaks at moderate φ — not monotone)")
+        if len(phi_profile) >= 3:
+            tail = ", ".join(f"L{l}={phi:.2f}" for l, phi in zip(lags[:6], phi_profile[:6]))
+            print(f"       Profile {tail}")
         if lb_lag is not None and not np.isnan(lb_p):
             print(f"       Ljung-Box p (lag {lb_lag}):     {lb_p:.4g}  "
                   f"({'reject (structured)' if lb_reject else 'fail-to-reject (white)'})")
@@ -446,8 +517,12 @@ def _score_substrate(name: str, sample, domain, rung: int, results: dict, verbos
         "sigma_range": [float(sigma_arr.min()), float(sigma_arr.max())],
         "omega_mean": float(np.mean(fit.omega)),
         "omega_std": float(np.std(fit.omega)),
-        "p2_ar1_abs_phi": float(ar1),       # v0.6 PRIMARY metric (sample-size invariant)
-        "p2_ljung_box_p": lb_p,             # secondary (sample-size sensitive)
+        "p2_ar1_abs_phi": float(ar1),            # lag-1 (sample-size invariant)
+        "p2_mean_abs_phi": float(mean_abs_phi),  # v0.8 PRIMARY (monotone in φ for AR(1))
+        "p2_decay_rate": float(decay_rate),      # diagnostic (unimodal in φ)
+        "p2_profile_lags": lags,
+        "p2_profile_phi": [float(p) for p in phi_profile],
+        "p2_ljung_box_p": lb_p,                  # secondary (sample-size sensitive)
         "p2_ljung_box_lag": lb_lag,
         "p2_rejects_white": lb_reject,
         "mean_zero_p": mz_p,
@@ -456,17 +531,23 @@ def _score_substrate(name: str, sample, domain, rung: int, results: dict, verbos
 
 
 def _spearman_direction(label: str, results: dict, key_prefix: str = "") -> dict:
-    """v0.6 — Spearman ρ(rung, AR(1)|φ|) across substrates. Predicted ρ ≥ +0.7.
+    """v0.8 — Spearman ρ(rung, mean|φ|) PRIMARY.
 
-    AR(1) magnitude is sample-size invariant, so different-n substrates
-    can be compared directly. Higher |φ| = more residual structure =
-    higher predicted agency rung.
+    Mean|φ| over lags 1..max_lag is monotonically increasing in AR(1) φ,
+    so cross-substrate comparison of agency-conditioned residual structure
+    is directly testable: higher rung → higher mean|φ|. Spearman ρ(rung,
+    mean|φ|) ≥ +0.7 PASS.
+
+    Lag-1 |φ| and decay rate kept as diagnostics. decay rate is unimodal
+    in φ (both white and high-persistence give ≈ 0), so it is NOT used
+    for the headline verdict.
     """
-    points = [(r["rung"], r["p2_ar1_abs_phi"], r["p2_ljung_box_p"], name)
+    points = [(r["rung"], r["p2_mean_abs_phi"], r["p2_ar1_abs_phi"],
+               r["p2_decay_rate"], r["p2_ljung_box_p"], name)
               for name, r in results.items()
               if r.get("status") == "ok" and not name.startswith("_")]
     print()
-    print(f"=== {label} — Spearman ρ(rung, AR(1) |φ|)  +  ρ(rung, Ljung-Box p) ===")
+    print(f"=== {label} — direction test (mean|φ| PRIMARY) ===")
     if len(points) < 2:
         print(f"  insufficient substrates: {len(points)} (need ≥ 2)")
         return {"verdict": "INSUFFICIENT_DATA", "n": len(points)}
@@ -475,21 +556,27 @@ def _spearman_direction(label: str, results: dict, key_prefix: str = "") -> dict
     except ImportError:
         print("  (scipy unavailable)")
         return {"verdict": "NO_SCIPY"}
-    rungs = [p[0] for p in points]
-    ar1s  = [p[1] for p in points]
-    pvals = [p[2] for p in points]
-    rho_ar1, p_ar1 = spearmanr(rungs, ar1s)
-    rho_lb,  p_lb  = spearmanr(rungs, pvals)
-    for r, ar, lbp, nm in points:
-        print(f"    A{r} {nm}: |φ|={ar:.4f}   ljung-box p={lbp:.4g}")
-    print(f"  Spearman ρ(rung, |φ|)         = {rho_ar1:.3f}   significance p={p_ar1:.4g}")
-    print(f"  Spearman ρ(rung, ljung_box_p) = {rho_lb:.3f}   significance p={p_lb:.4g}")
-    print(f"  Prediction (v0.6 PRIMARY): ρ(rung, |φ|) ≥ +0.7")
-    if np.isnan(rho_ar1):
+    rungs    = [p[0] for p in points]
+    means    = [p[1] for p in points]
+    ar1s     = [p[2] for p in points]
+    decays   = [p[3] for p in points]
+    pvals    = [p[4] for p in points]
+    rho_mean, p_mean   = spearmanr(rungs, means)
+    rho_ar1,  p_ar1    = spearmanr(rungs, ar1s)
+    rho_decay,p_decay  = spearmanr(rungs, decays)
+    rho_lb,   p_lb     = spearmanr(rungs, pvals)
+    for r, mn, ar, dc, lbp, nm in points:
+        print(f"    A{r} {nm}: mean|φ|={mn:.4f}  lag1|φ|={ar:.4f}  decay={dc:.4f}")
+    print(f"  Spearman ρ(rung, mean|φ|) = {rho_mean:.3f}   p={p_mean:.4g}   (PRIMARY)")
+    print(f"  Spearman ρ(rung, lag1|φ|) = {rho_ar1:.3f}   p={p_ar1:.4g}     (secondary)")
+    print(f"  Spearman ρ(rung, decay)   = {rho_decay:.3f}   p={p_decay:.4g}   (diagnostic, unimodal)")
+    print(f"  Spearman ρ(rung, lb_p)    = {rho_lb:.3f}   p={p_lb:.4g}      (tertiary, n-sensitive)")
+    print(f"  Prediction (PRIMARY): ρ(rung, mean|φ|) ≥ +0.7")
+    if np.isnan(rho_mean):
         verdict = "INDETERMINATE_NaN"
-    elif rho_ar1 >= 0.7:
+    elif rho_mean >= 0.7:
         verdict = "STRONG_PASS"
-    elif rho_ar1 >= 0.3:
+    elif rho_mean >= 0.3:
         verdict = "WEAK_PASS"
     else:
         verdict = "FAIL_DIRECTION"
@@ -497,8 +584,12 @@ def _spearman_direction(label: str, results: dict, key_prefix: str = "") -> dict
     return {
         "verdict": verdict,
         "n": len(points),
+        "spearman_rho_mean_abs_phi": (None if np.isnan(rho_mean) else float(rho_mean)),
+        "spearman_p_mean_abs_phi": (None if np.isnan(p_mean) else float(p_mean)),
         "spearman_rho_ar1": (None if np.isnan(rho_ar1) else float(rho_ar1)),
         "spearman_p_ar1": (None if np.isnan(p_ar1) else float(p_ar1)),
+        "spearman_rho_decay": (None if np.isnan(rho_decay) else float(rho_decay)),
+        "spearman_p_decay": (None if np.isnan(p_decay) else float(p_decay)),
         "spearman_rho_ljungbox": (None if np.isnan(rho_lb) else float(rho_lb)),
         "spearman_p_ljungbox": (None if np.isnan(p_lb) else float(p_lb)),
     }
@@ -525,11 +616,12 @@ def main() -> int:
     # ─── Real Tier-1 substrates ─────────────────────────────────────────
     print("\n\n--- REAL TIER-1 SUBSTRATES ---")
     collectors = {
-        "battery":    (collect_battery_samples,    DomainType.BATTERY),
-        "microbiome": (collect_microbiome_samples, DomainType.MICROBIOME),
-        "ciris":      (collect_ciris_a3_samples,   DomainType.GENERIC),
-        "polity":     (collect_polity_samples,     DomainType.INSTITUTIONAL),
-        "wgi":        (collect_wgi_samples,        DomainType.INSTITUTIONAL),
+        "battery":       (collect_battery_samples,     DomainType.BATTERY),
+        "microbiome":    (collect_microbiome_samples,  DomainType.MICROBIOME),
+        "ciris":         (collect_ciris_a3_samples,    DomainType.GENERIC),
+        "polity_decade": (collect_polity_samples,      DomainType.INSTITUTIONAL),
+        "polity_year":   (collect_polity_year_samples, DomainType.INSTITUTIONAL),
+        "wgi":           (collect_wgi_samples,         DomainType.INSTITUTIONAL),
     }
 
     results: dict[str, dict] = {}

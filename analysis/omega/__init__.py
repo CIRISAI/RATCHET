@@ -34,6 +34,8 @@ from .kish_fit import (
     compute_omega_from_kish_fit,
     compute_k_eff,
     ar1_coefficient,
+    autocorr_at_lag,
+    autocorr_decay_profile,
 )
 
 from .null_test import (
