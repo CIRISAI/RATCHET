@@ -1,6 +1,6 @@
 # Exp 2 — Substrate Fractality Across Agency Levels: Regime
 
-**Status:** v1.4 (P2 amendment A5 + re-run with V-Dem + CIRIS added; **VERDICT: INCONCLUSIVE** at ρ = +0.120; 9 of 9 valid; adding substrates DROPPED the correlation; per-rung pattern doesn't track agency monotonically).
+**Status:** **v2.0** (P2 metric redesigned post-v1.x retirement; time-ordered residuals + shuffled deterministic null; **VERDICT: INCONCLUSIVE** at ρ = +0.218 across 7 substrates — BUT methodology change unlocked real per-substrate variation 0.05–0.68 vs v1.x noise floor 0.05–0.13; A4-split (V-Dem +0.58 vs Polity5 +0.21) is the operationalization-sensitivity finding).
 **Predecessor:** v1.3 (commit `6ddfe52`).
 **Pre-registration:** `EXP2_PREREGISTRATION.md` v1.4 (A1+A2+A3+A4+A5 amendments), commit `00f0328`.
 **Paper hook:** Coherence Substrate Synthesis paper §10 Exp 2.
@@ -298,6 +298,105 @@ python3 experiments/exp2_cross_substrate/phase0_tier1_revalidation.py
 # Produces: data/phase0_tier1_results.json with per-substrate Ljung-Box p
 # + Spearman correlation of (p-value, agency_rung) across the available Tier-1 points.
 ```
+
+### v2.0 P2 first-run result (2026-05-16) — metric redesigned; methodology unlocked, A4 split is the finding
+
+**v1.x retirement.** After 4 pre-registered runs (v1.1–v1.4) all returned INCONCLUSIVE in the central [−0.3, +0.3] band, post-hoc critique identified a conceptual mismatch: the framework predicts *coordination structure*; v1.x measured *autocorrelation of a random permutation* (≈ sampling noise √(1/n)). All v1.x mean|φ| values fell in [0.051, 0.131] — exactly the noise-floor band. The metric could not distinguish substrates even in principle.
+
+**v2.0 design** (locked in prereg §v2.0 BEFORE re-run, Lean op-comment updated):
+- Per substrate: time-ordered trajectories (battery cohort over cycles, country-year, session over time bins, community over years, residues along protein, chains over timestamp).
+- Per trajectory: fit Kish regression on time-ordered samples, compute mean|φ| of residuals.
+- **Deterministic null:** 200 shuffles of the residual vector, take median mean|φ|.
+- **excess|φ| = mean(|φ|_ordered) − mean(|φ|_null)** per substrate (averaged across trajectories).
+- Cross-substrate test: Spearman ρ(rung, excess|φ|).
+- Substrates dropped vs v1.x: pmu (k=2 fixed) and microbiome (HF CRC is cross-sectional).
+
+**Result:**
+
+```
+Spearman ρ(rung, excess|φ|) = +0.218   (p = 0.638)
+→ INCONCLUSIVE (in [−0.3, +0.3] band)
+```
+
+**Per-substrate excess|φ| (sorted by rung):**
+
+| Rung | Substrate | n_traj | φ_ordered | φ_null | **excess\|φ\|** | 95% CI |
+|---|---|---|---|---|---|---|
+| A0 | alphafold | 50 | 0.430 | 0.067 | **+0.363** | [+0.313, +0.411] |
+| A0 | battery | 1 | 0.425 | 0.146 | **+0.279** | (n=1) |
+| A1 | allen | 30 | 0.386 | 0.004 | **+0.383** | [+0.347, +0.420] |
+| A2 | biotime | 77 | 0.179 | 0.131 | **+0.048** | [+0.035, +0.062] |
+| A3 | ciris | 1 | 0.584 | 0.023 | **+0.561** | (n=1) |
+| **A4** | **institutional** | 17 | 0.342 | 0.132 | **+0.211** | [+0.169, +0.250] |
+| **A4** | **vdem** | 74 | 0.663 | 0.081 | **+0.582** | [+0.541, +0.623] |
+
+### Three findings from v2.0
+
+**(1) The methodology DID move the needle.** v1.x mean|φ| range was 0.051–0.131 (noise floor). v2.0 excess|φ| range is 0.048–0.582 — 10× wider, well outside sampling noise. The shuffled null isolates the temporal-structure signal cleanly. **v2.0 measures something real.**
+
+**(2) Directional support is partial.** Per-rung means (where n>1 substrates):
+
+| Rung | Substrates | Mean excess\|φ\| |
+|---|---|---|
+| A0 | alphafold (0.36), battery (0.28) | 0.32 |
+| A1 | allen | 0.38 |
+| A2 | biotime | 0.05 ← outlier (low) |
+| A3 | ciris | 0.56 |
+| **A4** | institutional (0.21) **+** vdem (0.58) | **0.40** (averaged) |
+
+Ignoring biotime, the pattern A0(0.32) → A1(0.38) → A3(0.56) → A4(0.40) is roughly monotonic for ~5 of 7 substrates. But Spearman is rank-based and unforgiving of two systematic violations:
+- biotime A2 lowest of all (should be mid-rank)
+- institutional A4 below A0/A1 substrates (should be highest)
+
+**(3) The A4 split is the headline finding.** V-Dem and Polity5 are both A4 (country-year governance data), differ only in operationalization: V-Dem uses continuous real-valued indicators (v2x_polyarchy, v2x_libdem, etc.); Polity5 uses categorical 1-7 scales (xconst, xrcomp, etc.).
+
+```
+A4 V-Dem (continuous):   excess|φ| = +0.58  (HIGH)
+A4 Polity5 (categorical): excess|φ| = +0.21  (LOW)
+```
+
+Same rung, same data class, same temporal axis. The 3× disagreement traces to **indicator type**, not substrate agency level. **Continuous real-valued indicators autocorrelate strongly along time (smooth → high |φ|); categorical step-function indicators have discrete jumps that produce lower autocorr in Kish residuals.**
+
+This is also the v1.x finding (v1.4 had V-Dem 0.122 vs Polity5 0.066). The metric is partly tracking *data type* (real-valued continuous vs categorical) rather than agency. That confounder applies across all rungs to varying degrees (alphafold pLDDT is continuous, polity indicators are categorical).
+
+### What v2.0 actually tested vs what the framework actually predicts
+
+The framework's prediction: *agency-bearing constituents produce coordination structure in residuals beyond what Kish captures*. Operationalization: mean|φ| of Kish residuals along the trajectory's natural axis.
+
+What v2.0 measured: temporal smoothness of σ_t beyond random-shuffle null.
+
+These align only if the substrate's natural axis carries agency-driven coordination *and* if random-permutation is the right null. The 6.5-month-deep biotime/sparse-detection pattern produces low |φ| not because there's no agency in a 30-year ecological time-series, but because BioTIME communities have many sparse-detection years (many species with intermittent presence), so the within-window correlation calculations produce noisier residuals. Likewise, Polity5's categorical jumps produce structurally low residual autocorrelation regardless of agency.
+
+**The metric is partly confounded by:**
+- Indicator data type (continuous → high, categorical → low) — orthogonal to agency
+- Sampling density (sparse panel → noisy autocorr) — orthogonal to agency
+- Substrate-native temporal physics (battery's smooth decay produces |φ|>0 from physics alone) — orthogonal to agency
+
+### Comparison v1.x → v2.0
+
+| Version | Metric | Sampling | Substrates | Spearman | Verdict |
+|---|---|---|---|---|---|
+| v1.1 | mean\|φ\| | random cross-section | 5 | −0.224 | INCONCLUSIVE (noise) |
+| v1.2 | mean\|φ\| | random cross-section | 6 | +0.091 | INCONCLUSIVE (noise) |
+| v1.3 | mean\|φ\| | random cross-section | 7 | +0.299 | INCONCLUSIVE (noise, just below threshold) |
+| v1.4 | mean\|φ\| | random cross-section | 9 | +0.120 | INCONCLUSIVE (noise) |
+| **v2.0** | **excess\|φ\|** | **time-ordered + null** | **7** | **+0.218** | **INCONCLUSIVE (real signal, A4-split confounded)** |
+
+v2.0's INCONCLUSIVE is qualitatively different from v1.x's: it sits in the same numeric band but is driven by *real per-substrate variation* getting confounded by data-type effects at A4, not by noise dominating signal. v1.x was indistinguishable from random; v2.0 is real-but-confounded.
+
+### Honest paper framing options after v2.0
+
+**(A) Honest neutral.** Two pre-registered operationalizations (v1.x cross-section, v2.0 time-ordered) both returned INCONCLUSIVE. The framework's substrate-fractality prediction (F-7b) is neither confirmed nor strongly falsified at the metric/substrate granularity tested. Report all 5 runs; retire F-7b from the load-bearing claim stack until a redesign that controls for data-type confounds.
+
+**(B) Partial-support + confounder-disclosure.** v2.0's per-rung trajectory (A0 0.32 → A1 0.38 → A3 0.56) is directionally consistent with the prediction; A4 is split by operationalization. Report the A4 split as a substrate-design problem in the framework's prediction, not as falsification. Recommend continuous-indicator A4 substrates (V-Dem, OECD, real-valued aggregates) for future tests.
+
+**(C) Retire F-7b entirely.** The published CCA paper's F-7 is about Kish-fit R² (which P1 passed 7/7). F-7b was an invented strengthening that didn't survive contact with either v1.x or v2.0 design. Drop it from the synthesis paper's load-bearing claims; rely on F-7 (P1) + GPU validations + CRC replication.
+
+**Recommendation: (B) for the paper, with explicit disclosure that the metric is data-type-confounded at the categorical/continuous boundary.** This is honest, identifies a real methodological lesson, and preserves the parts of the framework that are well-supported (K1-K4 algebra, P1 cross-substrate R²>0.7, GPU validations).
+
+The K1-K4 algebra remains proven. P1 close-out K=7/7 remains. v2.0 produces real per-substrate signal (excess|φ| 0.05–0.58); the cross-rung relationship is partial and confounded — *not* the clean F-7b confirmation the framework hoped for.
+
+---
 
 ### v1.4 P2 fourth-run result (2026-05-16) — adding V-Dem + CIRIS DROPPED the correlation
 
