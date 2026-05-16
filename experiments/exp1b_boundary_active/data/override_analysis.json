@@ -1,0 +1,51 @@
+{
+  "n_total": 644,
+  "n_verified": 644,
+  "baseline_rate": 1.0,
+  "outcome_counts": {
+    "APPROVED": 623,
+    "CORRECTED": 21,
+    "SKIPPED": 0,
+    "LEAK": 0
+  },
+  "by_n_fired": {
+    "0": {
+      "APPROVED": 501,
+      "CORRECTED": 4,
+      "SKIPPED": 0,
+      "LEAK": 0
+    },
+    "1": {
+      "APPROVED": 0,
+      "CORRECTED": 0,
+      "SKIPPED": 0,
+      "LEAK": 0
+    },
+    "2": {
+      "APPROVED": 12,
+      "CORRECTED": 8,
+      "SKIPPED": 0,
+      "LEAK": 0
+    },
+    "3": {
+      "APPROVED": 10,
+      "CORRECTED": 4,
+      "SKIPPED": 0,
+      "LEAK": 0
+    },
+    "4": {
+      "APPROVED": 100,
+      "CORRECTED": 5,
+      "SKIPPED": 0,
+      "LEAK": 0
+    }
+  },
+  "action_dist": {
+    "speak": 45,
+    "none": 332,
+    "task_complete": 248,
+    "ponder": 13,
+    "defer": 6
+  },
+  "leak_chains": []
+}

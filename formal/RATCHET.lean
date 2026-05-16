@@ -36,4 +36,5 @@ import RATCHET.Experiments.Exp1Predictions
 import RATCHET.Experiments.BoundaryObservability
 import RATCHET.Experiments.FrictionDistribution
 import RATCHET.Experiments.Exp2Predictions
+import RATCHET.Experiments.OverrideRate
 import RATCHET.CCA
