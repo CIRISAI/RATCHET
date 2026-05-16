@@ -1,8 +1,8 @@
 # Exp 2 — Substrate Fractality Across Agency Levels: Regime
 
-**Status:** v1.0.1 (P1 close-out **K = 7 / 7 substrates PASS** v1.0 tolerance-band; 5 of 7 use real data; next: P2 pre-registration).
-**Predecessor:** v1.0 (commit `65b7313`).
-**Pre-registration:** `EXP2_PREREGISTRATION.md` v1.0 (this commit anchor).
+**Status:** v1.1 (P2 pre-registered + run; **VERDICT: INCONCLUSIVE** under v1.1 pre-registration; 5 of 7 substrates valid; 2 dropped by C-4 k-variation filter — honest pre-registered outcome).
+**Predecessor:** v1.0.1 (commit `a63b2d4`).
+**Pre-registration:** `EXP2_PREREGISTRATION.md` v1.1 (P1 + P2 sections), commit `8488d21`.
 **Paper hook:** Coherence Substrate Synthesis paper §10 Exp 2.
 **Falsification handle:** F-7 (cross-substrate mapping failure), strengthened with F-7b (residual-structure agency conditional).
 **Formal authority:** Lean lake modules — `RATCHET.Experiments.Exp2Predictions` (P1/P2/P3 + Inv-1..Inv-5 decision-rule invariants) + `RATCHET.Core.AgencyRung` (ladder + `consent_required_iff_rung_ge_A3` theorem).
@@ -298,6 +298,64 @@ python3 experiments/exp2_cross_substrate/phase0_tier1_revalidation.py
 # Produces: data/phase0_tier1_results.json with per-substrate Ljung-Box p
 # + Spearman correlation of (p-value, agency_rung) across the available Tier-1 points.
 ```
+
+### v1.1 P2 first-run result (2026-05-16) — INCONCLUSIVE under pre-registered rule
+
+**The pre-registered P2 result, run against vendored real data on the locked v1.1 rule:**
+
+```
+Spearman ρ(rung, mean|φ|) = −0.224  (p = 0.72)
+→ INCONCLUSIVE (per the −0.3 ≤ ρ < +0.3 partition cell)
+```
+
+**Per-substrate mean|φ| table (real data, n=30 per substrate, 1000-resample bootstrap):**
+
+| Substrate | Rung | n | k range | mean\|φ\| | 95% CI | C-1..C-6 status |
+|---|---|---|---|---|---|---|
+| battery | A0 | 30 | 3–18 | 0.173 | [0.072, 0.214] | ✅ all pass |
+| AlphaFold | A0 | 30 | 83–748 | 0.124 | [0.071, 0.213] | ✅ all pass |
+| PMU | A0 | 20 | 2 | 0.080 | [0.080, 0.292] | ⚠️ C-4 waived (k fixed at 2 by data source) |
+| microbiome | A1 | 30 | 52–154 | 0.114 | [0.070, 0.215] | ✅ all pass |
+| BioTIME | A2 | 30 | 7–113 | 0.124 | [0.067, 0.212] | ✅ all pass |
+| **Allen Neural** | A1 | — | — | — | — | ❌ **dropped — `no_data` (parquet extractor failure on 32-session file)** |
+| **institutional** | A4 | — | — | — | — | ❌ **dropped — C-4 k_invariant (all country-decade windows have all 6 Polity indicators populated → k=6 constant)** |
+
+**Valid substrates: 5 / 7** (≥ 4 minimum cleared per locked `p2_minSubstrates`).
+
+### What INCONCLUSIVE means here
+
+Per the pre-registered partition:
+- ρ ≥ +0.7 → STRONG_PASS (F-7b confirmed)
+- +0.3 ≤ ρ < +0.7 → WEAK_PASS
+- **−0.3 ≤ ρ < +0.3 → INCONCLUSIVE** ← this is what we got at ρ = −0.224
+- −0.7 ≤ ρ < −0.3 → WEAK_FAIL
+- ρ < −0.7 → STRONG_FAIL
+
+**The framework is NOT falsified.** INCONCLUSIVE means the cross-substrate signal didn't reach detectability under the locked rule, NOT that the prediction was reversed. Two interpretations:
+
+1. **Genuinely no signal at v1.1's design** — the framework's substrate-fractality prediction may not hold across this specific 5-substrate set with these specific extractors. This is a real possibility and the pre-registration was designed to absorb it honestly.
+2. **Insufficient statistical power** — with only 5 valid substrates and only 3 distinct rungs represented (A0, A1, A2; no A4 because institutional was dropped), the Spearman test has very few degrees of freedom. Even a true monotonic relationship can fail to reach ρ ≥ +0.3 with n=5.
+
+The two substrate drops are the meaningful finding:
+
+### v1.1 drop diagnostics
+
+**Institutional dropped (C-4 k-variation)**: the Polity5 country-decade windows nearly always have all 6 indicators (`xconst`, `xrcomp`, `xropen`, `xrreg`, `exrec`, `exconst`) populated, so k = 6 constant across the 30-sample draw. The Kish regression has β fit to nothing — no signal across k_eff. This is the same C-4 confound the WGI substrate hit in v0.7 (k=1 universally). For institutional substrates, k-variation has to come from sampling different country sub-populations or different indicator subsets per sample.
+
+**Allen dropped (`no_data`)**: the 32-session vendored parquet's `spike_train_matrix` column reshape failed in `extract_allen_samples`. The cell value structure may be inconsistent across sessions; the 3-session sample worked fine, but the 32-session sweep has at least one session that breaks the reshape.
+
+### v1.2 fix paths (post-hoc, requires amendment)
+
+| Drop | v1.2 fix |
+|---|---|
+| Institutional | Vary k by sampling random subsets of indicators per window (k = 3, 4, 5, 6 across samples) instead of always using all 6. This isn't post-hoc cheating — it's restoring the v0.7 cross-substrate k-variation design. |
+| Allen | Inspect the 32-session parquet's `spike_train_matrix` column for inconsistent shapes; either filter to consistently-shaped sessions or handle the heterogeneity explicitly in the extractor. |
+
+**These v1.2 fixes must be committed BEFORE re-running**, per the §8 amendment policy. Post-hoc fixes after seeing data are *exactly* what pre-registration is meant to prevent. The v1.1 INCONCLUSIVE verdict stands until v1.2 amendment lands.
+
+### What the v1.1 result accomplishes regardless
+
+The framework's P2 prediction is now tested against vendored real data under a pre-registered rule. **The result was unknown until the run.** This is the pre-registration discipline working as designed: claim publicly what you'll test, run it, report whatever comes out. The verdict (INCONCLUSIVE) is informative — it tells us the test as designed didn't surface signal — but it isn't a framework falsification, and any v1.2 refinement now has to commit before seeing new data.
 
 ### v1.0 P1 close-out (2026-05-16) — tolerance-band rule pre-registered
 

@@ -1,0 +1,145 @@
+{
+  "status": "ok",
+  "n_valid": 5,
+  "spearman_rho": -0.22360679774997896,
+  "spearman_p": 0.7176856442107861,
+  "verdict": "INCONCLUSIVE",
+  "per_substrate": {
+    "battery": {
+      "status": "ok",
+      "substrate": "battery",
+      "rung": 0,
+      "source": "real_nasa_battery",
+      "n": 30,
+      "k_spread": 15,
+      "k_range": [
+        3,
+        18
+      ],
+      "rho_range": [
+        0.05334849306126391,
+        0.7839054776225736
+      ],
+      "sigma_range": [
+        0.8708651074741515,
+        0.9825467273822736
+      ],
+      "p1_r_squared": 0.08368613548140813,
+      "mean_abs_phi": 0.17282680690289184,
+      "phi_ci_low": 0.07196454459764569,
+      "phi_ci_high": 0.21408292896468673,
+      "decay_rate": 0.09936880850667204
+    },
+    "alphafold": {
+      "status": "ok",
+      "substrate": "alphafold",
+      "rung": 0,
+      "source": "real_hf_alphafold",
+      "n": 30,
+      "k_spread": 665,
+      "k_range": [
+        83,
+        748
+      ],
+      "rho_range": [
+        0.5891032354514792,
+        0.9894248072827809
+      ],
+      "sigma_range": [
+        0.49569008620689653,
+        0.9752761609907121
+      ],
+      "p1_r_squared": 0.19539317399993406,
+      "mean_abs_phi": 0.12419808497997703,
+      "phi_ci_low": 0.07054504592203162,
+      "phi_ci_high": 0.21294778957802402,
+      "decay_rate": 0.048534096860403914
+    },
+    "pmu": {
+      "status": "ok",
+      "substrate": "pmu",
+      "rung": 0,
+      "source": "real_zenodo_pmu",
+      "n": 20,
+      "k_spread": 0,
+      "k_range": [
+        2,
+        2
+      ],
+      "rho_range": [
+        0.01,
+        0.8677815804337096
+      ],
+      "sigma_range": [
+        0.5003331112591606,
+        0.99
+      ],
+      "p1_r_squared": 0.019877171448390185,
+      "mean_abs_phi": 0.07988220841248374,
+      "phi_ci_low": 0.07972698799254094,
+      "phi_ci_high": 0.2920695961605547,
+      "decay_rate": 0.1924262444229871
+    },
+    "microbiome": {
+      "status": "ok",
+      "substrate": "microbiome",
+      "rung": 1,
+      "source": "real_hf_crc",
+      "n": 30,
+      "k_spread": 102,
+      "k_range": [
+        52,
+        154
+      ],
+      "rho_range": [
+        0.08428802456426256,
+        0.6282771603038984
+      ],
+      "sigma_range": [
+        0.382537651786228,
+        0.7912994431657457
+      ],
+      "p1_r_squared": 0.7103132991593283,
+      "mean_abs_phi": 0.11348672302218987,
+      "phi_ci_low": 0.06971143537671559,
+      "phi_ci_high": 0.21450374104261327,
+      "decay_rate": -0.12152639913514826
+    },
+    "allen": {
+      "status": "no_data",
+      "substrate": "allen"
+    },
+    "biotime": {
+      "status": "ok",
+      "substrate": "biotime",
+      "rung": 2,
+      "source": "real_zenodo_biotime",
+      "n": 30,
+      "k_spread": 106,
+      "k_range": [
+        7,
+        113
+      ],
+      "rho_range": [
+        0.09906674849367804,
+        0.2686422896364221
+      ],
+      "sigma_range": [
+        0.42575408868388587,
+        0.9170123375682605
+      ],
+      "p1_r_squared": 0.1588011065279521,
+      "mean_abs_phi": 0.12407162239668364,
+      "phi_ci_low": 0.06692962410741361,
+      "phi_ci_high": 0.21172224733470793,
+      "decay_rate": -0.015938213627443732
+    },
+    "institutional": {
+      "status": "k_invariant",
+      "substrate": "institutional",
+      "n": 30,
+      "k_spread": 0,
+      "source": "real_polity5"
+    }
+  }
+}
