@@ -34,5 +34,6 @@ import RATCHET.Core.ConsentGate
 import RATCHET.Core.AgencyRung
 import RATCHET.Experiments.Exp1Predictions
 import RATCHET.Experiments.BoundaryObservability
+import RATCHET.Experiments.FrictionDistribution
 import RATCHET.Experiments.Exp2Predictions
 import RATCHET.CCA
