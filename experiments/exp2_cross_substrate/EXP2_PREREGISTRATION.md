@@ -230,3 +230,38 @@ The lake's `decideP2(P2Summary)` function applies the locked partition to a `P2S
 ### Amendment A2 (P2 pre-registration)
 
 This commit adds the P2 section (§9) to the pre-registration. P1 close-out (§§1-8) remains unchanged. Future amendments to P2 will follow the same policy as §8 (commit + rationale + lake update).
+
+### Amendment A3 (P2 v1.2 — extractor fixes, pre-registered BEFORE re-run)
+
+The v1.1 P2 first-run (commit `7211bc8`) produced verdict **INCONCLUSIVE** with Spearman ρ = −0.224. Two substrates were dropped under C-1..C-6 filters:
+
+1. **Institutional dropped** by **C-4 k-invariance** — Polity5 country-decade windows nearly always have all 6 indicators (xconst/xrcomp/xropen/xrreg/exrec/exconst) populated → k = 6 constant in the 30-sample draw → Kish regression has no signal across k_eff.
+
+2. **Allen Neural dropped** by `no_data` — the 32-session vendored parquet stores `spike_train_matrix` as raw `uint8` bytes (different format than the 3-session sample which used a Python list); the extractor's `np.asarray(raw, dtype=float)` failed on bytes input.
+
+**Both drops are extractor / harness bugs, not framework signals.** No framework-level signal was visible because the gate filtered the substrates out before any framework hypothesis could be tested.
+
+#### What v1.2 changes
+
+| Drop | v1.2 extractor fix |
+|---|---|
+| Institutional k-invariance | In `extract_institutional_samples`: per window, sample k ∈ {3, 4, 5, 6} uniformly and pick a random k-subset of indicators. This restores the v0.7 cross-substrate k-variation design that the v1.1 implementation accidentally collapsed by always using all 6 indicators. |
+| Allen extractor | In `extract_allen_samples`: detect bytes input and decode as `np.frombuffer(raw, dtype=np.uint8)` before reshaping to `(n_neurons, n_time_bins)`. The 3-session-sample list-format path is preserved as a fallback for backward compatibility. |
+
+#### What v1.2 does NOT change
+
+- The metric (mean|φ|)
+- The sample size (n=30)
+- The bootstrap-resample count (1000)
+- The rung map (A0/A1/A2/A4 assignments)
+- The Spearman threshold partition (≥+0.7 STRONG_PASS / ≥+0.3 WEAK_PASS / etc.)
+- The `p2_minSubstrates` minimum (4)
+- The lake's `decideP2` decision function
+- The data sources (all 7 substrates still use the same vendored real data as v1.1)
+- The decision rule of which confounders trigger drops (C-1 through C-6 enforcement unchanged)
+
+The v1.2 amendment is a **methodology fix**, not a rule loosening. The framework-prediction test (Spearman ρ ≥ +0.7) is unchanged; v1.2 only changes how raw data flows into the metric.
+
+#### Pre-registration discipline
+
+Per §8 amendment policy, this amendment commits **before** the v1.2 re-run. The lake builds clean. The v1.1 INCONCLUSIVE result (commit `7211bc8`) stands as the v1.1 record. The v1.2 re-run is a separate test, with its own commit anchor, against the same vendored real data + same locked decision rule.

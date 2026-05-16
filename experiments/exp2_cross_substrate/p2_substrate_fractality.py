@@ -124,10 +124,13 @@ def extract_institutional_samples(n: int = 30, seed: int = 42):
             sigma = float((window_df["polity2"].mean() + 10.0) / 20.0)
             sigma = float(np.clip(sigma, 0.01, 0.99))
             non_null = [c for c in cols if window_df[c].notna().sum() >= 3]
-            k = len(non_null)
-            if k < 3:
+            if len(non_null) < 3:
                 continue
-            sub = window_df[non_null].apply(pd.to_numeric, errors="coerce").dropna()
+            # v1.2 fix C-4: vary k by sampling random indicator-subsets per window
+            # k ∈ {3, 4, 5, 6} sampled uniformly so k_spread > 0 in the 30-sample draw
+            k = int(rng.integers(3, len(non_null) + 1))
+            picked = list(rng.choice(non_null, size=k, replace=False))
+            sub = window_df[picked].apply(pd.to_numeric, errors="coerce").dropna()
             if len(sub) < 3:
                 continue
             corr_mat = sub.corr().values
@@ -230,12 +233,16 @@ def extract_allen_samples(n: int = 30, seed: int = 42):
     rows = []
     for _, row in df.iterrows():
         k = int(row.get("n_neurons", 0))
-        # spike_train_matrix is stored as a flattened list/array
+        # spike_train_matrix may be stored as a list/array (3-session sample)
+        # OR as raw uint8 bytes (32-session scaled parquet)
         try:
             raw = row["spike_train_matrix"]
-            if hasattr(raw, "tolist"):
-                raw = raw.tolist()
-            spike_flat = np.asarray(raw, dtype=float)
+            if isinstance(raw, (bytes, bytearray)):
+                spike_flat = np.frombuffer(raw, dtype=np.uint8).astype(float)
+            else:
+                if hasattr(raw, "tolist"):
+                    raw = raw.tolist()
+                spike_flat = np.asarray(raw, dtype=float)
         except Exception:
             continue
         if k < 3 or len(spike_flat) < 100:
