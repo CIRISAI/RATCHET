@@ -297,3 +297,43 @@ This is a **methodology fix and sample-size increase**, not a rule loosening. Th
 #### Pre-registration discipline
 
 Per §8 amendment policy, this amendment commits **before** the v1.3 re-run. Both v1.1 and v1.2 INCONCLUSIVE results stand as the v1.x record. The v1.3 re-run is a separate test, with its own commit anchor.
+
+### Amendment A5 (P2 v1.4 — 2 new substrates for statistical power + anomaly diagnosis)
+
+The v1.3 P2 re-run (commit `6ddfe52`) produced **ρ = +0.2994, INCONCLUSIVE by 0.0006**. All 7 substrates valid for the first time. Two findings:
+
+1. **Per-rung n=1 at A2, A3 (absent), A4 limits Spearman power.** With only 1 substrate per non-A0 rung, individual-substrate noise dominates the cross-rung test. The locked +0.3 WEAK_PASS threshold isn't passed despite directional consistency.
+
+2. **Institutional A4 anomalously low (|φ| = 0.066)**. Empirical investigation (in REGIME v1.3 §"v1.3 anomaly diagnosis") showed that the institutional |φ| is sampling-order-sensitive: random sampling gives 0.054, country-then-year ordering 0.047, year-only ordering 0.067. **The institutional substrate's polity2 σ doesn't have the temporal-coordination structure the framework predicts at country-decade granularity.** This is a *substrate property*, not an extractor bug. It cannot be fixed without changing the substrate or the metric.
+
+#### What v1.4 adds
+
+| New substrate | Rung | Source | n_available | Rationale |
+|---|---|---|---|---|
+| **V-Dem v15** | **A4** | HF `mnshakoor06/Vdem` (27,913 country-years × 4,607 indicators) | 27k+ | 2nd A4 substrate. Different (higher-resolution country-year vs Polity5 country-decade) operationalization of same agency level. Tests whether the A4 institutional anomaly is V-Dem-replicated or Polity-specific. |
+| **CIRIS chains** | **A3** | Exp 1 cross-family vendored (1,899 chains across Gemini + qwen + scout) | 1,899 | Fills the empty A3 rung. Goal-directed LLM reasoning is the canonical A3 substrate per `Core.AgencyRung`. Per-chain (k, ρ, σ) extracted via the v0.7-validated consensus-from-CONSCIENCE+DMA method. |
+
+New rung distribution: A0=3, A1=2, A2=1, **A3=1 (NEW)**, A4=**2 (was 1)** = 9 total substrates.
+
+#### What v1.4 does NOT change
+
+- The metric (mean|φ|)
+- The sample size (n=100)
+- The bootstrap-resample count (1000)
+- The Spearman threshold partition (≥+0.7 STRONG_PASS / ≥+0.3 WEAK_PASS / etc.)
+- The `p2_minSubstrates` minimum (4) — easily cleared
+- The lake's `decideP2` decision function
+- C-1 through C-6 confounder enforcement
+
+#### What v1.4 specifically does NOT do
+
+- Does NOT change the institutional extractor (the v1.3 anomaly is now diagnosed as substrate-property; "fixing" it would be either (a) post-hoc cherry-picking or (b) acknowledging the framework doesn't apply at this granularity for this substrate, which the v1.4 V-Dem replication will test directly).
+- Does NOT remove institutional from the test — it stays as v1.3's measurement; V-Dem joins at the same rung as an independent A4 datapoint.
+
+#### Hypothesis the V-Dem addition tests
+
+If the framework's prediction holds at A4, V-Dem and Polity5 should produce *similar* |φ| values (both moderate-to-high). If V-Dem also produces low |φ| (~0.07), that's evidence the framework's substrate-fractality claim doesn't hold at the country-aggregate level. If V-Dem produces high |φ| (>0.10), the Polity5 result is an extractor artifact (per-window indicator-subset destroys the signal).
+
+#### Pre-registration discipline
+
+Per §8 amendment policy, A5 commits **before** the v1.4 re-run. v1.1/v1.2/v1.3 INCONCLUSIVE results stand as their respective records. v1.4 has its own commit anchor.

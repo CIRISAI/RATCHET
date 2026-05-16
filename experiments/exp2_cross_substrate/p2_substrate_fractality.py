@@ -309,6 +309,124 @@ def extract_biotime_samples(n: int = 30, seed: int = 42):
     return k_a, rho_a, sigma_a, "real_zenodo_biotime"
 
 
+def extract_vdem_samples(n: int = 100, seed: int = 42):
+    """V-Dem v15 country-year (k=indicators subset, ρ=indicator correlation,
+    σ=mean v2x_libdem-class index). 2nd A4 substrate.
+
+    Per window: country × 5-year decade. k randomly sampled 3-6 from 6
+    high-level v2x indicators (polyarchy, libdem, partipdem, delibdem,
+    egaldem, deltadem). σ = mean v2x_polyarchy over window. ρ = mean
+    within-window pairwise correlation of the k picked indicators.
+    """
+    import pandas as pd
+    path = REPO_ROOT / "data" / "institutional" / "vdem" / "v-dem-v15.parquet"
+    if not path.exists():
+        return None
+    df = pd.read_parquet(path, columns=[
+        "country_name", "year",
+        "v2x_polyarchy", "v2x_libdem", "v2x_partipdem",
+        "v2x_delibdem", "v2x_egaldem", "v2xeg_eqdr",
+    ])
+    indicators = ["v2x_polyarchy", "v2x_libdem", "v2x_partipdem",
+                  "v2x_delibdem", "v2x_egaldem", "v2xeg_eqdr"]
+    indicators = [c for c in indicators if c in df.columns]
+    df = df.dropna(subset=[c for c in indicators if c in df.columns] + ["year", "country_name"])
+    if len(df) < 100:
+        return None
+    rng = np.random.default_rng(seed)
+    rows = []
+    for country, grp in df.groupby("country_name"):
+        grp = grp.sort_values("year").reset_index(drop=True)
+        if len(grp) < 6:
+            continue
+        for start in range(0, len(grp) - 5, 5):
+            window = grp.iloc[start: start + 5]
+            sigma = float(np.clip(window["v2x_polyarchy"].mean(), 0.01, 0.99))
+            k = int(rng.integers(3, len(indicators) + 1))
+            picked = list(rng.choice(indicators, size=k, replace=False))
+            sub = window[picked].apply(pd.to_numeric, errors="coerce").dropna()
+            if len(sub) < 3:
+                continue
+            corr_mat = sub.corr().values
+            off = corr_mat[np.triu_indices(corr_mat.shape[0], k=1)]
+            if len(off) == 0 or np.all(np.isnan(off)):
+                continue
+            rho = float(np.clip(abs(np.nanmean(off)), 0.0, 1.0))
+            rows.append((int(k), rho, sigma))
+    if not rows:
+        return None
+    rng.shuffle(rows)
+    rows = rows[:n]
+    if len(rows) < 4:
+        return None
+    k_a, rho_a, sigma_a = (np.asarray([r[i] for r in rows]) for i in range(3))
+    return k_a, rho_a, sigma_a, "real_vdem_v15"
+
+
+def extract_ciris_samples(n: int = 100, seed: int = 42):
+    """CIRIS chains as A3 substrate (1899 chains from Exp 1 cross-family).
+
+    Per chain: k = count of fired CONSCIENCE+DMA scalars, σ = mean of
+    those scores, ρ = within-chain consensus (max(0, 1 - 2·std(scores))).
+    Uses the same extraction logic as collect_ciris_a3_samples() from
+    Phase 0 (validated in commit `c1b892b`).
+    """
+    import json as _json
+    candidates = [
+        REPO_ROOT / "experiments/exp1b_boundary_active/data/crossfamily/qwen-3.5-35b-a3b/tee",
+        REPO_ROOT / "experiments/exp1b_boundary_active/data/crossfamily/llama-4-scout/tee",
+        Path("/tmp/exp1b_gemini"),
+    ]
+    rng = np.random.default_rng(seed)
+    rows = []
+    paths = []
+    for d in candidates:
+        if d.is_dir():
+            paths.extend(sorted(d.glob("*.json")))
+    if not paths:
+        return None
+    rng.shuffle(paths)
+    for p in paths[:n * 3]:  # over-fetch since some chains may lack signals
+        if len(rows) >= n:
+            break
+        try:
+            d = _json.loads(p.read_text())
+        except Exception:
+            continue
+        trace = (d.get("events") or [{}])[0].get("trace") or {}
+        scores = []
+        for c in trace.get("components", []):
+            et = c.get("event_type")
+            data = c.get("data", {})
+            if et == "DMA_RESULTS":
+                for dma in ("csdma", "dsdma"):
+                    sub = data.get(dma) or {}
+                    for sk in ("plausibility_score", "domain_alignment"):
+                        v = sub.get(sk)
+                        if v is not None and 0.0 <= v <= 1.0:
+                            scores.append(float(v))
+            elif et == "CONSCIENCE_RESULT":
+                for sk in ("entropy_score", "coherence_score",
+                           "epistemic_humility_certainty"):
+                    v = data.get(sk)
+                    if v is not None and 0.0 <= v <= 1.0:
+                        scores.append(float(v))
+                v = data.get("optimization_veto_entropy_ratio")
+                if v is not None and v >= 0:
+                    scores.append(float(min(v / 2.0, 1.0)))
+        if len(scores) < 2:
+            continue
+        arr = np.array(scores)
+        k = len(arr)
+        sigma = float(np.clip(arr.mean(), 0.01, 0.99))
+        rho = float(np.clip(max(0.0, 1.0 - 2.0 * arr.std()), 0.01, 0.99))
+        rows.append((k, rho, sigma))
+    if len(rows) < 4:
+        return None
+    k_a, rho_a, sigma_a = (np.asarray([r[i] for r in rows]) for i in range(3))
+    return k_a, rho_a, sigma_a, "real_ciris_chains"
+
+
 def extract_pmu_samples(n: int = 30, seed: int = 42):
     """PMU per-event samples (k=PMUs, ρ=cross-PMU freq correlation,
     σ=settling-inverse-CV)."""
@@ -348,7 +466,9 @@ SUBSTRATE_RUNGS = {
     "microbiome":   1,  # A1 low (homeostatic)
     "allen":        1,  # A1 low (cellular signaling)
     "biotime":      2,  # A2 moderate (population dynamics)
-    "institutional": 4, # A4 high (full human agency)
+    "ciris":        3,  # A3 moderate-high (goal-directed LLM reasoning) — v1.4 amendment A5
+    "institutional": 4, # A4 high (full human agency, Polity5)
+    "vdem":         4,  # A4 high (full human agency, V-Dem) — v1.4 amendment A5
 }
 
 EXTRACTORS = {
@@ -358,7 +478,9 @@ EXTRACTORS = {
     "microbiome":   extract_microbiome_samples,
     "allen":        extract_allen_samples,
     "biotime":      extract_biotime_samples,
+    "ciris":        extract_ciris_samples,           # v1.4 amendment A5
     "institutional": extract_institutional_samples,
+    "vdem":         extract_vdem_samples,            # v1.4 amendment A5
 }
 
 

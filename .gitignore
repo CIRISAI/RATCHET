@@ -115,3 +115,6 @@ data/microbiome/hf_crc/
 # Real AlphaFold sample (HF)
 data/protein/cath_s40_alphafold_sample.csv
 data/protein/alphafold_sample/
+
+# V-Dem v15 from HF mnshakoor06/Vdem (vendored, gitignored)
+data/institutional/vdem/
