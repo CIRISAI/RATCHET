@@ -1,6 +1,6 @@
 # Exp 2 — Substrate Fractality Across Agency Levels: Regime
 
-**Status:** **v2.0 + WGI (8 substrates)** — Spearman dropped to **-0.012 (near zero)**, INCONCLUSIVE. WGI (continuous z-scores, 3rd A4 substrate) gave excess|φ|=+0.188 — LOW like Polity5 (+0.211), NOT like V-Dem (+0.582). **V-Dem is the anomaly**; the "categorical-vs-continuous" hypothesis was wrong. V-Dem is uniquely smooth (composite index) among the 3 A4 substrates. v2.0 metric is dominated by σ_t temporal smoothness from indicator-aggregation pipelines, not agency. **v3.0 redesign in progress** — ρ_t direct + AR(1)-residual.
+**Status:** **v3.0** (ρ_t direct + AR(1)-residual, 8 substrates) — RAW ρ_t Spearman = +0.098 INCONCLUSIVE; **AR(1)-residual Spearman = −0.503 WEAK_FAIL**. AR(1) absorbs almost all cross-substrate variation; the only substrate with structure beyond AR(1) is **A3 CIRIS (+0.174)**, every other substrate ≤±0.025. Framework's monotonic-in-rung prediction is **technically falsified** under the AR(1)-residual null. Most likely confound: substrate temporal-resolution mismatch (CIRIS chains-over-minutes vs A4 country-year aggregates).
 **Predecessor:** v1.3 (commit `6ddfe52`).
 **Pre-registration:** `EXP2_PREREGISTRATION.md` v1.4 (A1+A2+A3+A4+A5 amendments), commit `00f0328`.
 **Paper hook:** Coherence Substrate Synthesis paper §10 Exp 2.
@@ -395,6 +395,125 @@ v2.0's INCONCLUSIVE is qualitatively different from v1.x's: it sits in the same 
 **Recommendation: (B) for the paper, with explicit disclosure that the metric is data-type-confounded at the categorical/continuous boundary.** This is honest, identifies a real methodological lesson, and preserves the parts of the framework that are well-supported (K1-K4 algebra, P1 cross-substrate R²>0.7, GPU validations).
 
 The K1-K4 algebra remains proven. P1 close-out K=7/7 remains. v2.0 produces real per-substrate signal (excess|φ| 0.05–0.58); the cross-rung relationship is partial and confounded — *not* the clean F-7b confirmation the framework hoped for.
+
+---
+
+### v3.0 — ρ_t (cross-constituent coordination time-series) — first WEAK_FAIL across all P2 testing
+
+**v3.0 design.** Bypass σ_t entirely. The framework's claim is "constituents coordinate"; ρ_t encodes exactly that (mean pairwise correlation across constituents at time t). Same statistic for every substrate, no aggregation-pipeline confound.
+
+Two metrics tested:
+- **RAW ρ_t:** excess|φ| = mean|φ|(ρ_t) − mean|φ|(shuffled ρ_t)
+- **AR(1)-residual ρ_t:** excess|φ| = mean|φ|(ε_t) − mean|φ|(shuffled ε_t), where ε_t = ρ_t − â − b̂·ρ_{t-1}
+
+AR(1) detrending isolates "structure beyond simple smoothness" — the closest operationalization to the framework's "structure beyond what trivial dynamics predict."
+
+**Result (8 substrates, all valid):**
+
+| Metric | Spearman ρ(rung, excess) | p | Verdict |
+|---|---|---|---|
+| RAW ρ_t | +0.098 | 0.82 | INCONCLUSIVE |
+| **AR(1)-residual ρ_t** | **−0.503** | **0.20** | **WEAK_FAIL** |
+
+The AR(1)-residual metric registers **WEAK_FAIL** under the locked Spearman partition. This is the first time across v1.1/v1.2/v1.3/v1.4/v2.0/v2.0+WGI/v3.0-raw/v3.0-AR(1) — 8 pre-registered or pre-locked operationalizations — that the result fell outside the central INCONCLUSIVE band.
+
+**Per-substrate breakdown (AR(1)-residual ρ_t):**
+
+| Rung | Substrate | n_traj | excess (AR1-residual) |
+|---|---|---|---|
+| A0 | alphafold | 50 | +0.015 |
+| A0 | battery | 1 | +0.022 |
+| A1 | allen | 30 | +0.025 |
+| A2 | biotime | 77 | −0.005 |
+| **A3** | **ciris** | **1** | **+0.174** ← outlier |
+| A4 | institutional | 17 | −0.002 |
+| A4 | vdem | 74 | +0.005 |
+| A4 | wgi | 93 | −0.014 |
+
+**Key observation: 7 of 8 substrates have AR(1)-residual excess in [−0.014, +0.025] — essentially zero, indicating their ρ_t dynamics are well-described by AR(1) drift.** Only CIRIS A3 (+0.174) shows substantial structure beyond AR(1).
+
+### Why the AR(1)-residual metric falls into WEAK_FAIL
+
+The Spearman is dragged negative because:
+- CIRIS A3 sits in the middle of the rung axis (rank 3 of 7 distinct rungs) with the highest excess
+- Three A4 substrates have lower excess than three A0/A1 substrates (institutional, vdem, wgi all ≤ +0.005; alphafold +0.015, battery +0.022, allen +0.025)
+- Spearman rank-correlation between [rung] and [excess] is therefore weakly negative
+
+But the rank-pattern is not really "agency-decreasing-with-excess." It's: **everything is near zero except CIRIS**. The Spearman picks up the CIRIS outlier and the slight A4-low-vs-A1-high pattern, but the underlying signal is just "CIRIS stands alone."
+
+### Most likely confound: temporal-resolution mismatch
+
+CIRIS chains are minute/hour timescale events; alphafold residues are millisecond protein-folding; battery cells are hour/day cycling; A4 country-year is **YEAR-scale**. The framework's "coordination structure" could plausibly only manifest at temporal scales that match the substrate's natural coordination cycle:
+
+- CIRIS: agent decisions happen in seconds-to-minutes → ρ_t at chain-scale samples coordination cleanly
+- Allen: neural population coordination at millisecond-to-second → spike-train bins sample coordination
+- A4 institutional/vdem/wgi: regime coordination at YEAR-to-DECADE scales → year-by-year ρ_t is at the **slow drift** end of coordination, may be sampling pure drift not the actual coordination cycle
+
+The "year-aggregate is too slow" hypothesis predicts: if we resampled A4 substrates at **decade-scale**, the ρ_t structure beyond AR(1) might emerge. But decade-scale gives only ~3-5 datapoints per country since 1950 — too few for the autocorr test.
+
+### What v3.0 has actually shown
+
+Across the v1.x → v2.0 → v3.0 sweep, with progressive methodology refinement:
+
+| Run | Metric | Substrates | Spearman | Direction |
+|---|---|---|---|---|
+| v1.1 | mean\|φ\|(ω) random | 5 | −0.224 | (noise) |
+| v1.2 | same | 6 | +0.091 | (noise) |
+| v1.3 | same n=100 | 7 | +0.299 | (noise) |
+| v1.4 | same n=100 | 9 | +0.120 | (noise) |
+| v2.0 | excess\|φ\|(σ-Kish-residual) ordered | 7 | +0.218 | (smoothness) |
+| v2.0+WGI | same | 8 | −0.012 | (smoothness) |
+| v3.0 RAW | excess\|φ\|(ρ_t) | 8 | +0.098 | (coordination total) |
+| **v3.0 AR(1)** | **excess\|φ\|(ε of ρ_t)** | **8** | **−0.503** | **(coordination beyond smoothness)** |
+
+The metric progression has each step moved closer to the framework's actual claim:
+- v1.x: noise + indirect
+- v2.0: smoothness + indirect (operates on σ_t)
+- v3.0 RAW: coordination total (operates on ρ_t)
+- v3.0 AR(1): coordination structure (beyond smoothness)
+
+**At each refinement step, the cross-rung signal got WEAKER.** v1.x's noise oscillated around zero. v2.0's +0.218 collapsed to −0.012 when WGI was added. v3.0 RAW dropped to +0.098. v3.0 AR(1) went to −0.503.
+
+**Interpretation:** the framework's prediction (excess|φ| monotone in rung) is NOT supported by any of 8 operationalizations across 5-9 substrates. The closer the metric gets to the framework's literal claim, the worse the result.
+
+### Possible interpretations of the v3.0 result
+
+**(i) The framework's substrate-fractality claim is wrong.** Agency does not produce monotone-in-rung residual coordination structure in the way the synthesis paper hypothesizes.
+
+**(ii) The framework's claim is right but the operationalization is wrong.** Specifically:
+   - Temporal-resolution mismatch (year-scale for A4 vs minute-scale for A3) confounds Spearman
+   - "Coordination" needs to be measured at substrate-native timescales
+   - Decade-scale resampling of A4 might recover the signal
+
+**(iii) The "rungs" are wrong.** A3 CIRIS standing alone at +0.174 may mean that LLM-reasoning agency is qualitatively different from institutional aggregate agency. A flat "A0..A4" ladder may not be the right ordering.
+
+**(iv) The metric is still wrong.** ρ_t at window-mean granularity averages out the within-window coordination signal. A finer metric (e.g., participation ratio computed from the constituent covariance eigenspectrum per window) might preserve more structure.
+
+### What stands after v3.0
+
+- **K1-K4 Kish algebra proofs: SOLID** (Lean lake; mathematical identity)
+- **P1 cross-substrate Kish-fit R² > 0.7 in 7/7: SOLID** (this IS the published F-7)
+- **GPU strain-gauge CCA validations (R² = 0.798 n=21, F-series corridor): SOLID**
+- **CRC paper N_eff ≈ 7.1 emergence + n=264 independent replication: SOLID**
+- **F-7b substrate-fractality bet: NOT SUPPORTED** across 8 operationalizations × 5-9 substrates; v3.0 AR(1)-residual produces the first formal WEAK_FAIL
+
+### Paper recommendation
+
+**Drop F-7b from the synthesis paper's load-bearing claims.** Specifically:
+- Synthesis paper §9 (Falsification Framework) F-7: KEEP. P1 7/7 R²>0.7 confirms it.
+- Synthesis paper F-7b (added during regime development): RETIRE. The published F-7 is what the paper actually bet on. F-7b was an invented strengthening that has now been tested under 8 operationalizations and produced no monotone cross-rung signal.
+- Document the v3.0 AR(1) finding honestly: "The framework's prediction that residual coordination structure beyond AR(1)-smoothness rises monotonically with constituent-agency rung was tested across 8 substrates spanning rungs A0..A4. The cross-substrate Spearman correlation was −0.503 (WEAK_FAIL under the pre-registered threshold), driven primarily by A3 LLM-reasoning standing alone with positive excess (+0.174) while all 8 other substrates fell within ±0.025. The temporal-resolution mismatch between minute-scale CIRIS chains and year-scale country-year aggregates is a plausible confound; we have not adjudicated whether this falsifies the framework's claim or only the operationalization."
+
+This is option (C) from REGIME v1.4 close-out: honest negative.
+
+### Optional next step (NOT recommended given the trajectory)
+
+A v4.0 could test:
+- Participation-ratio (PR_t) from constituent covariance eigenspectrum per window (different metric of cross-constituent coordination)
+- Substrate-native-timescale ρ_t (resample each substrate to its natural coordination period)
+- Across-substrate-matched ρ_t (subsample at common temporal resolution)
+
+But: after 8 progressively-better operationalizations all failing to find monotone cross-rung signal, additional ones look like motivated reasoning. The honest paper move is to acknowledge F-7b didn't survive testing and rely on F-7 + GPU + CRC for the framework's empirical support.
 
 ---
 

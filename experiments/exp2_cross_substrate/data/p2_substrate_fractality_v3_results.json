@@ -1,0 +1,204 @@
+{
+  "version": "v3.0",
+  "n_valid_substrates": 8,
+  "per_substrate": {
+    "battery": {
+      "substrate": "battery",
+      "rung": 0,
+      "status": "ok",
+      "n_trajectories": 1,
+      "mean_traj_length": 23.0,
+      "rho_mean_traj_mean": 0.3751217514580163,
+      "rho_std_traj_mean": 0.18276182993207704,
+      "phi_rho_raw_ordered": 0.15862275418897395,
+      "phi_rho_raw_null": 0.1406222060748166,
+      "excess_rho_raw": 0.018000548114157355,
+      "excess_rho_raw_ci": [
+        0.018000548114157355,
+        0.018000548114157355
+      ],
+      "phi_rho_AR1_ordered": 0.166288800456213,
+      "phi_rho_AR1_null": 0.1446957910151518,
+      "excess_rho_AR1": 0.02159300944106121,
+      "excess_rho_AR1_ci": [
+        0.02159300944106121,
+        0.02159300944106121
+      ]
+    },
+    "alphafold": {
+      "substrate": "alphafold",
+      "rung": 0,
+      "status": "ok",
+      "n_trajectories": 50,
+      "mean_traj_length": 224.96,
+      "rho_mean_traj_mean": 0.35282384499253683,
+      "rho_std_traj_mean": 0.18259787500795174,
+      "phi_rho_raw_ordered": 0.16546865495278495,
+      "phi_rho_raw_null": 0.06557275574661457,
+      "excess_rho_raw": 0.09989589920617035,
+      "excess_rho_raw_ci": [
+        0.08403835228642134,
+        0.11713472202984844
+      ],
+      "phi_rho_AR1_ordered": 0.08037044181481966,
+      "phi_rho_AR1_null": 0.06561742652114777,
+      "excess_rho_AR1": 0.014753015293671883,
+      "excess_rho_AR1_ci": [
+        0.008805310150996589,
+        0.02089381558844671
+      ]
+    },
+    "allen": {
+      "substrate": "allen",
+      "rung": 1,
+      "status": "ok",
+      "n_trajectories": 30,
+      "mean_traj_length": 47954.13333333333,
+      "rho_mean_traj_mean": 0.10181153495418313,
+      "rho_std_traj_mean": 0.03477619321667335,
+      "phi_rho_raw_ordered": 0.17687868938011758,
+      "phi_rho_raw_null": 0.0036056426600475427,
+      "excess_rho_raw": 0.17327304672007,
+      "excess_rho_raw_ci": [
+        0.16190438559287804,
+        0.18762569401932785
+      ],
+      "phi_rho_AR1_ordered": 0.028784596008562736,
+      "phi_rho_AR1_null": 0.0036050053953116234,
+      "excess_rho_AR1": 0.02517959061325112,
+      "excess_rho_AR1_ci": [
+        0.023197446414443164,
+        0.027338123903199577
+      ]
+    },
+    "biotime": {
+      "substrate": "biotime",
+      "rung": 2,
+      "status": "ok",
+      "n_trajectories": 77,
+      "mean_traj_length": 30.532467532467532,
+      "rho_mean_traj_mean": 0.06400018420272689,
+      "rho_std_traj_mean": 0.06498508204530236,
+      "phi_rho_raw_ordered": 0.16155336536375808,
+      "phi_rho_raw_null": 0.1258101596128674,
+      "excess_rho_raw": 0.03574320575089068,
+      "excess_rho_raw_ci": [
+        0.024435529374401938,
+        0.04761991822535267
+      ],
+      "phi_rho_AR1_ordered": 0.11927931717329289,
+      "phi_rho_AR1_null": 0.12443816711481229,
+      "excess_rho_AR1": -0.005158849941519367,
+      "excess_rho_AR1_ci": [
+        -0.012310046386996155,
+        0.002201608221647291
+      ]
+    },
+    "ciris": {
+      "substrate": "ciris",
+      "rung": 3,
+      "status": "ok",
+      "n_trajectories": 1,
+      "mean_traj_length": 1250.0,
+      "rho_mean_traj_mean": 0.7414593313279707,
+      "rho_std_traj_mean": 0.23824247265983972,
+      "phi_rho_raw_ordered": 0.4136839324036927,
+      "phi_rho_raw_null": 0.022804456120917874,
+      "excess_rho_raw": 0.39087947628277486,
+      "excess_rho_raw_ci": [
+        0.39087947628277486,
+        0.39087947628277486
+      ],
+      "phi_rho_AR1_ordered": 0.19529615565053898,
+      "phi_rho_AR1_null": 0.021397702227409453,
+      "excess_rho_AR1": 0.17389845342312954,
+      "excess_rho_AR1_ci": [
+        0.17389845342312954,
+        0.17389845342312954
+      ]
+    },
+    "institutional": {
+      "substrate": "institutional",
+      "rung": 4,
+      "status": "ok",
+      "n_trajectories": 17,
+      "mean_traj_length": 30.529411764705884,
+      "rho_mean_traj_mean": 0.8266843946148625,
+      "rho_std_traj_mean": 0.25094097806956844,
+      "phi_rho_raw_ordered": 0.22660586568976715,
+      "phi_rho_raw_null": 0.12632468611894632,
+      "excess_rho_raw": 0.10028117957082079,
+      "excess_rho_raw_ci": [
+        0.06635126108772703,
+        0.135943209394083
+      ],
+      "phi_rho_AR1_ordered": 0.09916885554256304,
+      "phi_rho_AR1_null": 0.10145608983221474,
+      "excess_rho_AR1": -0.0022872342896517093,
+      "excess_rho_AR1_ci": [
+        -0.019476691863434748,
+        0.014430286423629542
+      ]
+    },
+    "vdem": {
+      "substrate": "vdem",
+      "rung": 4,
+      "status": "ok",
+      "n_trajectories": 74,
+      "mean_traj_length": 107.78378378378379,
+      "rho_mean_traj_mean": 0.6404129200179342,
+      "rho_std_traj_mean": 0.3086708504379558,
+      "phi_rho_raw_ordered": 0.22867450729908625,
+      "phi_rho_raw_null": 0.0805651746015723,
+      "excess_rho_raw": 0.14810933269751392,
+      "excess_rho_raw_ci": [
+        0.13182902322449494,
+        0.16465420247967913
+      ],
+      "phi_rho_AR1_ordered": 0.08416527078336196,
+      "phi_rho_AR1_null": 0.07904585541808501,
+      "excess_rho_AR1": 0.005119415365276942,
+      "excess_rho_AR1_ci": [
+        0.0005986567591433347,
+        0.010050693683770597
+      ]
+    },
+    "wgi": {
+      "substrate": "wgi",
+      "rung": 4,
+      "status": "ok",
+      "n_trajectories": 93,
+      "mean_traj_length": 21.978494623655912,
+      "rho_mean_traj_mean": 0.25175953317879196,
+      "rho_std_traj_mean": 0.22202647745656895,
+      "phi_rho_raw_ordered": 0.15905216949322754,
+      "phi_rho_raw_null": 0.1421628419756416,
+      "excess_rho_raw": 0.016889327517585876,
+      "excess_rho_raw_ci": [
+        0.0052192052620974915,
+        0.029539158524882377
+      ],
+      "phi_rho_AR1_ordered": 0.13138596956730403,
+      "phi_rho_AR1_null": 0.1452873109363372,
+      "excess_rho_AR1": -0.01390134136903321,
+      "excess_rho_AR1_ci": [
+        -0.022813163556936397,
+        -0.00401800758845072
+      ]
+    }
+  },
+  "spearman": {
+    "RAW \u03c1_t": {
+      "spearman_rho": 0.09820572322804728,
+      "spearman_p": 0.8170447582024245,
+      "verdict": "INCONCLUSIVE",
+      "n_substrates": 8
+    },
+    "AR(1)-residual \u03c1_t": {
+      "spearman_rho": -0.5033043315437423,
+      "spearman_p": 0.2035615782786643,
+      "verdict": "WEAK_FAIL",
+      "n_substrates": 8
+    }
+  }
+}
