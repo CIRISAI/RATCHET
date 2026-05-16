@@ -31,6 +31,24 @@ __all__ = [
     'SyntheticBioTIMEGenerator',
     'load_biotime_data',
     'load_biotime_communities',
+    # Neural / Allen Neuropixels data
+    'NeuralSession',
+    'AllenNeuropixelsDataset',
+    'SyntheticAllenNeuropixelsGenerator',
+    'load_allen_neuropixels_sessions',
+    'load_allen_neuropixels_data',
+    # Power-grid / PNNL PMU data
+    'PMUEvent',
+    'PNNLPMUDataset',
+    'SyntheticPMUEventGenerator',
+    'load_pnnl_pmu_events',
+    'load_pnnl_grid_events',
+    # Protein / AlphaFold data
+    'ProteinSample',
+    'CATHS40ProteinDataset',
+    'SyntheticAlphaFoldGenerator',
+    'load_cath_s40_alphafold_data',
+    'load_alphafold_cath_s40',
 ]
 
 # Lazy imports to avoid heavy dependencies at module load time
@@ -71,6 +89,36 @@ def __getattr__(name: str):
             SyntheticBioTIMEGenerator,
             load_biotime_data,
             load_biotime_communities,
+        )
+        return locals()[name]
+    if name in ('NeuralSession', 'AllenNeuropixelsDataset', 'SyntheticAllenNeuropixelsGenerator',
+                'load_allen_neuropixels_sessions', 'load_allen_neuropixels_data'):
+        from ratchet.data.neural_loader import (
+            NeuralSession,
+            AllenNeuropixelsDataset,
+            SyntheticAllenNeuropixelsGenerator,
+            load_allen_neuropixels_sessions,
+            load_allen_neuropixels_data,
+        )
+        return locals()[name]
+    if name in ('PMUEvent', 'PNNLPMUDataset', 'SyntheticPMUEventGenerator',
+                'load_pnnl_pmu_events', 'load_pnnl_grid_events'):
+        from ratchet.data.powergrid_loader import (
+            PMUEvent,
+            PNNLPMUDataset,
+            SyntheticPMUEventGenerator,
+            load_pnnl_pmu_events,
+            load_pnnl_grid_events,
+        )
+        return locals()[name]
+    if name in ('ProteinSample', 'CATHS40ProteinDataset', 'SyntheticAlphaFoldGenerator',
+                'load_cath_s40_alphafold_data', 'load_alphafold_cath_s40'):
+        from ratchet.data.protein_loader import (
+            ProteinSample,
+            CATHS40ProteinDataset,
+            SyntheticAlphaFoldGenerator,
+            load_cath_s40_alphafold_data,
+            load_alphafold_cath_s40,
         )
         return locals()[name]
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

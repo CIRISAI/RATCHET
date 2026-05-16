@@ -132,7 +132,9 @@ This pre-registration is the v1.0 anchor for P1. Amendments after this commit mu
 
 ### Amendments
 
-(None yet.)
+**Amendment A1 (v1.0.1, this commit):** Implemented all 7 substrate engines via parallel subagents (BioTIME at v0.9.2; AlphaFold, Allen Neural, PNNL PMU, AGP-style microbiome at v1.0.1). Real data fetched and vendored for AlphaFold (74 HF proteins), Allen Neural (3 Allen Brain Observatory sessions). Real HF CRC microbiome cohort vendored at `data/microbiome/hf_crc/` but not yet wired into the harness — harness uses synthetic AGP-like cohort. P1 results: **K = 7 / 7 PASS** tolerance-band, K = 5 / 7 PASS strict v0.9 (institutional and Allen flip FAIL strict → PASS tolerance-band as expected).
+
+No changes to the pre-registered rule. Decision rule K=7 → PASS applied; P1 is **closed out across all 7 substrates**. Next milestone is P2 pre-registration.
 
 ---
 

@@ -188,5 +188,349 @@
       }
     ],
     "note": "Synthetic BioTIME-like communities (v0.9 deliverable). Vendor `data/ecological/biotime_query.csv` to switch the harness to real BioTIME 2.0 data without code changes."
+  },
+  "microbiome": {
+    "status": "ok",
+    "substrate": "microbiome (AGP / synthetic)",
+    "rung": 1,
+    "source": "synthetic_agp_like",
+    "n_samples": 100,
+    "mean_rmse": 0.13028134561717153,
+    "rmse_per_sample_min": 0.06697564343769853,
+    "rmse_per_sample_max": 0.26221030718831834,
+    "fit_score_point": 0.9321070839367164,
+    "fit_score_ci_low": 0.9235497314854806,
+    "fit_score_ci_high": 0.9397973367654646,
+    "bootstrap_rmse_ci": [
+      0.12268115506724679,
+      0.1382482084101991
+    ],
+    "passes_p1": true,
+    "passes_p1_strict": true,
+    "per_sample": [
+      {
+        "sample_id": "agp_dysbiotic_0000",
+        "profile_type": "dysbiotic",
+        "k": 29,
+        "rmse": 0.14546747189149858,
+        "final_sigma_error": 0.09524233013369943
+      },
+      {
+        "sample_id": "agp_dysbiotic_0001",
+        "profile_type": "dysbiotic",
+        "k": 32,
+        "rmse": 0.1706627568762343,
+        "final_sigma_error": 0.09666162935871286
+      },
+      {
+        "sample_id": "agp_dysbiotic_0002",
+        "profile_type": "dysbiotic",
+        "k": 46,
+        "rmse": 0.1411157767819123,
+        "final_sigma_error": 0.041695572225760924
+      },
+      {
+        "sample_id": "agp_dysbiotic_0003",
+        "profile_type": "dysbiotic",
+        "k": 50,
+        "rmse": 0.11976044015763998,
+        "final_sigma_error": 0.04195756573343623
+      },
+      {
+        "sample_id": "agp_dysbiotic_0004",
+        "profile_type": "dysbiotic",
+        "k": 23,
+        "rmse": 0.25273792127126343,
+        "final_sigma_error": 0.003217215228392162
+      },
+      {
+        "sample_id": "agp_dysbiotic_0005",
+        "profile_type": "dysbiotic",
+        "k": 50,
+        "rmse": 0.11084662887331759,
+        "final_sigma_error": 0.0984955296891587
+      }
+    ]
+  },
+  "alphafold": {
+    "status": "ok",
+    "substrate": "AlphaFold protein folding",
+    "rung": 0,
+    "source": "alphafold_csv",
+    "n_proteins": 74,
+    "mean_rmse": 0.1869055619705466,
+    "rmse_per_protein_min": 0.03164379463761448,
+    "rmse_per_protein_max": 0.3199529210578343,
+    "fit_score_point": 0.8602652436178966,
+    "fit_score_ci_low": 0.835254159482741,
+    "fit_score_ci_high": 0.8836467675473771,
+    "bootstrap_rmse_ci": [
+      0.17055294812214689,
+      0.20294447548360303
+    ],
+    "passes_p1": true,
+    "passes_p1_strict": true,
+    "per_protein": [
+      {
+        "uniprot_id": "A0A024R1R8",
+        "k": 64,
+        "num_residues": 64,
+        "cath_class": null,
+        "rmse": 0.14256778669688788,
+        "rmse_plddt_scale": 14.256778669688789,
+        "final_plddt_error": 2.926278856490272,
+        "final_sigma_error": 0.02926278856490272,
+        "empirical_rho": 0.5204860543230763,
+        "simulated_rho": 0.27032421877779766,
+        "empirical_sigma": 0.7222031250000001,
+        "simulated_sigma": 0.6929403364350973
+      },
+      {
+        "uniprot_id": "A0A087WYE8",
+        "k": 117,
+        "num_residues": 117,
+        "cath_class": null,
+        "rmse": 0.150723966791063,
+        "rmse_plddt_scale": 15.0723966791063,
+        "final_plddt_error": 3.3419547111440573,
+        "final_sigma_error": 0.03341954711144057,
+        "empirical_rho": 0.4663732289762527,
+        "simulated_rho": 0.26361302953415217,
+        "empirical_sigma": 0.9108427350427353,
+        "simulated_sigma": 0.8774231879312947
+      },
+      {
+        "uniprot_id": "A0A0B4J1V2",
+        "k": 119,
+        "num_residues": 119,
+        "cath_class": null,
+        "rmse": 0.1408250762441192,
+        "rmse_plddt_scale": 14.082507624411917,
+        "final_plddt_error": 2.349703802576708,
+        "final_sigma_error": 0.02349703802576708,
+        "empirical_rho": 0.4670327727807979,
+        "simulated_rho": 0.26863277839787675,
+        "empirical_sigma": 0.9220655462184872,
+        "simulated_sigma": 0.8985685081927202
+      },
+      {
+        "uniprot_id": "A0A0G2JN01",
+        "k": 328,
+        "num_residues": 328,
+        "cath_class": null,
+        "rmse": 0.18674068699702082,
+        "rmse_plddt_scale": 18.67406869970208,
+        "final_plddt_error": 0.5496298280855627,
+        "final_sigma_error": 0.005496298280855627,
+        "empirical_rho": 0.4662592540423719,
+        "simulated_rho": 0.2650785422207182,
+        "empirical_sigma": 0.8706527439024392,
+        "simulated_sigma": 0.8651564456215836
+      },
+      {
+        "uniprot_id": "A0A1B0GUA7",
+        "k": 166,
+        "num_residues": 166,
+        "cath_class": null,
+        "rmse": 0.21128100241264605,
+        "rmse_plddt_scale": 21.128100241264605,
+        "final_plddt_error": 1.2158669793227217,
+        "final_sigma_error": 0.012158669793227217,
+        "empirical_rho": 0.45778563672765443,
+        "simulated_rho": 0.2703740244152886,
+        "empirical_sigma": 0.6714885542168675,
+        "simulated_sigma": 0.6836472240100947
+      },
+      {
+        "uniprot_id": "A0A1W2PRE2",
+        "k": 83,
+        "num_residues": 83,
+        "cath_class": null,
+        "rmse": 0.07931688457445449,
+        "rmse_plddt_scale": 7.931688457445452,
+        "final_plddt_error": 0.7328178550240261,
+        "final_sigma_error": 0.007328178550240261,
+        "empirical_rho": 0.4352571448446241,
+        "simulated_rho": 0.28234874737375787,
+        "empirical_sigma": 0.6089807228915662,
+        "simulated_sigma": 0.601652544341326
+      }
+    ],
+    "note": "Real AlphaFold DB v6 CATH-S40 proteins loaded from vendored parquet."
+  },
+  "allen": {
+    "status": "ok",
+    "substrate": "Allen Neuropixels (A1)",
+    "rung": 1,
+    "source": "allen_parquet",
+    "n_sessions": 3,
+    "mean_rmse": 0.21838083151722743,
+    "rmse_per_session_min": 0.17006556590887917,
+    "rmse_per_session_max": 0.2939024771589955,
+    "fit_score_point": 0.8092392497033774,
+    "fit_score_ci_low": 0.6544853356792246,
+    "fit_score_ci_high": 0.8843108131683708,
+    "bootstrap_rmse_ci": [
+      0.17006556590887914,
+      0.2939024771589955
+    ],
+    "passes_p1": true,
+    "passes_p1_strict": false,
+    "per_session": [
+      {
+        "session_id": "session_715093703",
+        "k": 60,
+        "n_trials": 598,
+        "num_neurons": 60,
+        "rmse": 0.17006556590887917,
+        "final_sigma_error": 0.011304494012108868,
+        "empirical_rho": 0.0073833657413829275,
+        "simulated_rho": 0.006882360985086195,
+        "empirical_sigma": 0.4683565229370437,
+        "simulated_sigma": 0.4796610169491526,
+        "visual_area": "VISp"
+      },
+      {
+        "session_id": "session_719161530",
+        "k": 60,
+        "n_trials": 598,
+        "num_neurons": 60,
+        "rmse": 0.19117445148380763,
+        "final_sigma_error": 0.020236219522540955,
+        "empirical_rho": 0.006288033472652117,
+        "simulated_rho": 0.005373678750296903,
+        "empirical_sigma": 0.459622537539606,
+        "simulated_sigma": 0.479858757062147,
+        "visual_area": "VISp"
+      },
+      {
+        "session_id": "session_721123822",
+        "k": 60,
+        "n_trials": 598,
+        "num_neurons": 60,
+        "rmse": 0.2939024771589955,
+        "final_sigma_error": 0.1780776600720867,
+        "empirical_rho": 0.010283437187206885,
+        "simulated_rho": 0.018875991673278893,
+        "empirical_sigma": 0.7222895715663314,
+        "simulated_sigma": 0.9003672316384181,
+        "visual_area": "VISp"
+      }
+    ],
+    "note": "Real Allen Brain Observatory Neuropixels sessions loaded from vendored parquet."
+  },
+  "pmu": {
+    "status": "ok",
+    "substrate": "PMU grid (PNNL)",
+    "rung": 0,
+    "source": "synthetic",
+    "n_events": 50,
+    "mean_rmse": 0.03899350620384481,
+    "rmse_per_event_min": 0.007418316511180879,
+    "rmse_per_event_max": 0.11250883788900615,
+    "mean_freq_rmse_hz": 0.0371506185990074,
+    "median_freq_rmse_hz": 0.03382367338200035,
+    "fit_score_point": 0.9939180258957229,
+    "fit_score_ci_low": 0.9917045245298669,
+    "fit_score_ci_high": 0.9956483935206579,
+    "bootstrap_rmse_ci": [
+      0.032983353677810176,
+      0.04553975041140734
+    ],
+    "passes_p1": true,
+    "passes_p1_strict": true,
+    "per_event": [
+      {
+        "event_id": "synth_0000_lin_WECC",
+        "k": 10,
+        "num_pmus": 10,
+        "num_timepoints": 1800,
+        "rmse": 0.04006739739335671,
+        "freq_rmse_hz": 0.017175033291888523,
+        "final_sigma_error": 0.00415506842542035,
+        "empirical_rho": 0.6267521536722658,
+        "simulated_rho": 0.5578245315614735,
+        "empirical_sigma": 0.9481787371276359,
+        "simulated_sigma": 0.9523338055530562,
+        "event_type": "line_trip",
+        "region": "WECC"
+      },
+      {
+        "event_id": "synth_0001_gen_ERCOT",
+        "k": 4,
+        "num_pmus": 4,
+        "num_timepoints": 1800,
+        "rmse": 0.046967550556431294,
+        "freq_rmse_hz": 0.018623173929586147,
+        "final_sigma_error": 0.0033668250400600286,
+        "empirical_rho": 0.6616552763312492,
+        "simulated_rho": 0.31553454051425595,
+        "empirical_sigma": 0.99663317495994,
+        "simulated_sigma": 1.0,
+        "event_type": "gen_loss",
+        "region": "ERCOT"
+      },
+      {
+        "event_id": "synth_0002_loa_EI",
+        "k": 6,
+        "num_pmus": 6,
+        "num_timepoints": 1800,
+        "rmse": 0.043839220154838945,
+        "freq_rmse_hz": 0.05381247488550157,
+        "final_sigma_error": 0.0394456488162086,
+        "empirical_rho": 0.4604033314152815,
+        "simulated_rho": 0.36329004732188663,
+        "empirical_sigma": 1.0,
+        "simulated_sigma": 0.9605543511837914,
+        "event_type": "load_shed",
+        "region": "EI"
+      },
+      {
+        "event_id": "synth_0003_osc_WECC",
+        "k": 22,
+        "num_pmus": 22,
+        "num_timepoints": 1800,
+        "rmse": 0.01911132795800277,
+        "freq_rmse_hz": 0.039017506170029914,
+        "final_sigma_error": 0.07159235595425917,
+        "empirical_rho": 0.6698487418603444,
+        "simulated_rho": 0.6644987154866283,
+        "empirical_sigma": 0.9999999999999998,
+        "simulated_sigma": 0.9284076440457406,
+        "event_type": "oscillation",
+        "region": "WECC"
+      },
+      {
+        "event_id": "synth_0004_lin_ERCOT",
+        "k": 6,
+        "num_pmus": 6,
+        "num_timepoints": 1800,
+        "rmse": 0.06206972404861162,
+        "freq_rmse_hz": 0.08153958565876714,
+        "final_sigma_error": 0.025852840308777436,
+        "empirical_rho": 0.38105267149592004,
+        "simulated_rho": 0.48070926553265825,
+        "empirical_sigma": 1.0,
+        "simulated_sigma": 0.9741471596912226,
+        "event_type": "line_trip",
+        "region": "ERCOT"
+      },
+      {
+        "event_id": "synth_0005_gen_EI",
+        "k": 4,
+        "num_pmus": 4,
+        "num_timepoints": 1800,
+        "rmse": 0.05188295097168815,
+        "freq_rmse_hz": 0.08575078151361111,
+        "final_sigma_error": 0.005759448661749489,
+        "empirical_rho": 0.36408540443614495,
+        "simulated_rho": 0.3353235580766563,
+        "empirical_sigma": 1.0,
+        "simulated_sigma": 0.9942405513382505,
+        "event_type": "gen_loss",
+        "region": "EI"
+      }
+    ],
+    "note": "Synthetic PNNL-like PMU events (v1.0 deliverable). Vendor `data/powergrid/pnnl_events.parquet` to switch the harness to real PNNL-30492 / DOE OEDI synchrophasor traces without code changes. PMU loader also accepts `pnnl_events_sample.parquet` and a few alias filenames; see data/powergrid/README.md."
   }
 }

@@ -178,6 +178,81 @@ try:
 except ImportError:
     pass
 
+# Neural population engine (Allen Brain Observatory / A1 substrate)
+try:
+    from .neural import (
+        NeuralPopulationEngine,
+        NeuralParams,
+        NeuronState,
+        NeuralShock,
+        NeuralIntervention,
+        NeuralShockType,
+        NeuralInterventionType,
+        create_neural_engine,
+    )
+    __all__.extend([
+        "NeuralPopulationEngine",
+        "NeuralParams",
+        "NeuronState",
+        "NeuralShock",
+        "NeuralIntervention",
+        "NeuralShockType",
+        "NeuralInterventionType",
+        "create_neural_engine",
+    ])
+except ImportError:
+    pass
+
+# Power-grid PMU engine (PNNL / A0 substrate)
+try:
+    from .powergrid import (
+        PMUGridEngine,
+        PMUGridParams,
+        PMUState,
+        PMUGridShock,
+        PMUGridIntervention,
+        PMUGridShockType,
+        PMUGridInterventionType,
+        create_pmu_grid_engine,
+    )
+    __all__.extend([
+        "PMUGridEngine",
+        "PMUGridParams",
+        "PMUState",
+        "PMUGridShock",
+        "PMUGridIntervention",
+        "PMUGridShockType",
+        "PMUGridInterventionType",
+        "create_pmu_grid_engine",
+    ])
+except ImportError:
+    pass
+
+# Protein folding engine (AlphaFold / A0 substrate)
+try:
+    from .protein import (
+        ProteinFoldingEngine,
+        ProteinParams,
+        ResidueState,
+        ProteinShock,
+        ProteinIntervention,
+        ProteinShockType,
+        ProteinInterventionType,
+        create_protein_engine,
+    )
+    __all__.extend([
+        "ProteinFoldingEngine",
+        "ProteinParams",
+        "ResidueState",
+        "ProteinShock",
+        "ProteinIntervention",
+        "ProteinShockType",
+        "ProteinInterventionType",
+        "create_protein_engine",
+    ])
+except ImportError:
+    pass
+
 # Institutional collapse engine (history domain)
 try:
     from .institutional import (

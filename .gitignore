@@ -91,3 +91,9 @@ data/pipeline/*/*/__pycache__/
 experiments/exp1b_boundary_active/data/crossfamily/*/tee/
 experiments/exp1b_boundary_active/data/crossfamily/*/tee_batches/
 experiments/exp1b_boundary_active/data/crossfamily/*/qa_logs/
+
+# Real data fetched from HuggingFace (large, vendored locally; SHA-pinned in data_sources.yaml)
+data/microbiome/hf_crc/
+data/microbiome/hf_crc/.cache/
+data/protein/alphafold_sample/
+data/protein/alphafold_sample/.cache/

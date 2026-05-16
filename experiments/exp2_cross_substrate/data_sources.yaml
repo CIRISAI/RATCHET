@@ -10,7 +10,7 @@
 # Refresh cadence is per-source; CI cron runs quarterly regardless.
 
 version: "0.1"
-last_updated: "2026-05-15"
+last_updated: "2026-05-16"
 
 substrates:
   # ─────────────────────────────────────────────────────────────────
@@ -19,23 +19,42 @@ substrates:
   alphafold:
     rung: A0
     engine: ratchet.engines.protein
+    loader: ratchet.data.protein_loader
     name: "AlphaFold Protein Structure Database"
     version: "v6"  # UniProt 2025_03 sync; 241M structures
     license: "CC-BY-4.0"
     primary_source:
       kind: "ftp"
       url: "https://ftp.ebi.ac.uk/pub/databases/alphafold/v4/"
+      per_protein_url_template: "https://alphafold.ebi.ac.uk/files/AF-{uniprot}-F1-model_v4.pdb"
       proteome_subset: "CATH-S40 representative single-domain"
       expected_count: 10000
     mirror:
       kind: "https"
       url: "https://storage.googleapis.com/public-datasets-deepmind/alphafold/"
-    expected_sha256: null  # filled on first fetch
+    vendored_path: "data/protein/cath_s40_alphafold.parquet"  # placeholder for the full 10k set
+    vendored_sample_path: "data/protein/cath_s40_alphafold_sample.csv"  # 74 real AlphaFold v6 proteins (real-data smoke set)
+    expected_sha256: null  # filled on first full-set fetch
+    sample_sha256: "acf51e5f11a519d0308ab855220b58bb240e18f0b1f82cb03bea99021360ab44"  # SHA of the 74-protein sample CSV
+    sample_count: 74
     refresh_cadence: "annual (major)"
+    note: |
+      Loader wired at ratchet.data.protein_loader.load_cath_s40_alphafold_data().
+      Auto-detects vendored data and prefers it over synthetic. Currently
+      vendored: 74 real AlphaFold DB v6 proteins (sourced from the HF
+      dataset HUBioDataLab/AlphafoldStructures + EBI direct fetches) at
+      `data/protein/cath_s40_alphafold_sample.csv`. Falls back to
+      SyntheticAlphaFoldGenerator only when no vendored data is present,
+      which parameterises on the published AlphaFold pLDDT marginal
+      distributions (Jumper et al. 2021 Nature). pLDDT scores are
+      extracted from the B-factor column of the per-protein PDB files at
+      the per_protein_url_template above. Full 10k CATH-S40 set vendoring
+      is the next milestone (sample SHA pinned in `sample_sha256`).
 
   pmu_pnnl:
     rung: A0
     engine: ratchet.engines.powergrid
+    loader: ratchet.data.powergrid_loader
     name: "PNNL Open-Source PMU Library"
     version: "PNNL-30492"
     license: "open-source (DOE)"
@@ -43,9 +62,25 @@ substrates:
       kind: "https"
       url: "https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-30492.pdf"
       data_url: "https://gridevents.pnnl.gov"  # event registry
+      alt_data_url: "https://data.openei.org/submissions"  # DOE OEDI submissions
+      alt_synthetic_url: "https://open-power-system-data.org/"  # OPSD frequency series
       expected_count: 1694  # transmission events
+    filter_criteria:
+      min_pmus: 3
+      min_post_event_s: 5.0
+    vendored_path: "data/powergrid/pnnl_events.parquet"  # placeholder until first fetch
     expected_sha256: null
     refresh_cadence: "static (one-time pin)"
+    note: |
+      Loader wired at ratchet.data.powergrid_loader.load_pnnl_pmu_events().
+      Falls back to SyntheticPMUEventGenerator when vendored parquet is
+      absent, parameterised on PNNL-30492's published synchronous-machine
+      swing dynamics (Bergen-Vittal / Kundur; IEEE C37.118 30 Hz PMU
+      sampling). Synthetic-validated engine is the v1.0 deliverable;
+      real-data validation lands once the PNNL parquet is vendored at
+      data/powergrid/pnnl_events.parquet and its SHA pinned here. Loader
+      also accepts pnnl_events_sample.parquet and a few common aliases
+      for small-sample drops.
 
   # ─────────────────────────────────────────────────────────────────
   # A1 — agency low (homeostatic / cellular signaling)
@@ -53,6 +88,7 @@ substrates:
   allen_neuropixels:
     rung: A1
     engine: ratchet.engines.neural
+    loader: ratchet.data.neural_loader
     name: "Allen Brain Observatory — Visual Coding Neuropixels"
     version: "2019-release-with-extensions"
     license: "ABO data-use-agreement (permissive research)"
@@ -61,9 +97,36 @@ substrates:
       bucket: "allen-brain-observatory"
       path: "visual-coding-neuropixels/ecephys-cache/"
       sdk: "allensdk"
+    vendored_path: "data/neural/allen_neuropixels_sessions.parquet"  # full canonical path
+    sample_vendored_path: "data/neural/allen_neuropixels_sample.parquet"  # 3-session real-data sample
+    sample_sha256: "061d9cc18e49fd9794d7eda525acbd1ae44f2d88e9e514470219fa3298ee259f"
+    sample_session_ids: [715093703, 719161530, 721123822]
+    sample_extraction:
+      bin_ms: 10.0
+      max_units_per_session: 60
+      quality_filter: "good + isi<0.5 + snr>1.0"
+      trial_window_s: [0.0, 2.0]
+      vendor_script: "scripts/vendor_allen_neuropixels.py"
+      sdk_required: false  # uses h5py + fsspec + aiohttp instead of allensdk
     expected_session_count: 80
-    expected_sha256: null
+    expected_sha256: null  # for the full vendoring (all 58 NWB sessions)
     refresh_cadence: "static (one-time pin)"
+    note: |
+      Loader wired at ratchet.data.neural_loader.load_allen_neuropixels_sessions().
+      Tries canonical parquet first, then `allen_neuropixels_sample.parquet`
+      (the 3-session real-data sample vendored 2026-05-16 from the public
+      s3://allen-brain-observatory anonymous S3 bucket via h5py + fsspec —
+      NO allensdk dependency required). Falls back to
+      SyntheticAllenNeuropixelsGenerator only if neither parquet is on disk;
+      the synthetic generator parameterises on Siegle et al. (2021) Nature
+      592 Visual Coding Neuropixels distributions (per-neuron Poisson firing
+      with shared AR(1) common-input modulation drives ρ; orientation-tuned
+      drives across 8 drifting gratings drive σ via cross-validated linear
+      decoding). The sample parquet anchors v1.0 P1 validation against real
+      data (fit_score_point = 0.814, CI [0.68, 0.88]; passes_p1 = True).
+      Re-run `python3 scripts/vendor_allen_neuropixels.py --n-sessions N` to
+      grow the sample or vendor all 58 sessions. See data/neural/README.md
+      for the full extraction recipe and parquet schema.
 
   # ─────────────────────────────────────────────────────────────────
   # A2 — agency moderate (population dynamics)
@@ -133,6 +196,7 @@ substrates:
   agp_microbiome:
     rung: A1
     engine: ratchet.engines.microbiome
+    loader: ratchet.data.microbiome_loader
     name: "American Gut Project / Microsetta"
     version: "public-archive-2026-02"
     license: "Public Domain (after scrubbing)"
@@ -140,6 +204,27 @@ substrates:
       kind: "https"
       url: "https://microsetta.ucsd.edu/american-gut-project/"
       qiita_study: "10317"
+    mirror:
+      kind: "ftp"
+      url: "ftp://ftp.microbio.me/AmericanGut/latest/"
+    filter_criteria:
+      body_site: "UBERON:feces"
+      taxonomic_level: "L6"   # genus-level; loader also supports L2 / L3
+      min_taxa_per_sample: 20
+      expected_sample_count: 5000  # AGP fecal subset post-QC; varies
+    vendored_path: "data/microbiome/otu_table_L6.txt"  # placeholder until first fetch
+    metadata_path: "data/microbiome/ag-cleaned.txt"    # placeholder until first fetch
     expected_sha256: null
     refresh_cadence: "periodic (enrollment paused as of Feb 2026)"
-    note: "AGP/Microsetta paused enrollment Feb 2026. Public data archives remain accessible."
+    note: |
+      Loader wired at ratchet.data.microbiome_loader.load_american_gut_project().
+      Falls back to SyntheticMicrobiomeGenerator when vendored OTU table is
+      absent, which parameterises on AGP + HMP + DIABIMMUNE marginal
+      distributions (k ∈ [80, 400], σ ∈ [0.6, 0.95] for healthy adults;
+      antibiotic-perturbation trajectories from Dethlefsen & Relman 2011).
+      Synthetic-validated engine + cohort harness is the v1.0 deliverable
+      (tests/test_microbiome_p1.py); real-data validation lands once the
+      AGP OTU table is vendored at `data/microbiome/otu_table_L6.txt`
+      (genus-level) and its SHA pinned here. AGP/Microsetta paused
+      enrollment Feb 2026; public archives remain accessible via Qiita
+      study 10317 (auth-walled but free).
