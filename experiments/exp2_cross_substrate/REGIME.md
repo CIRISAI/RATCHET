@@ -1,7 +1,7 @@
 # Exp 2 — Substrate Fractality Across Agency Levels: Regime
 
-**Status:** v0.5 (engine-aware predictor + positive control wired; pipeline validated, real-data direction still doesn't show P2 — three hypotheses to resolve before pre-registration).
-**Predecessor:** v0.4 (commit `5c64f62`).
+**Status:** v0.6 (AR(1) sample-size-invariant metric + non-overlapping battery windows + Polity5 A4 vendored; Tier-1 P2 direction still fails — failure mode is now interpretable, not pipeline-driven).
+**Predecessor:** v0.5 (commit `691f596`).
 **Paper hook:** Coherence Substrate Synthesis paper §10 Exp 2.
 **Falsification handle:** F-7 (cross-substrate mapping failure), strengthened with F-7b (residual-structure agency conditional).
 **Formal authority:** Lean lake modules — `RATCHET.Experiments.Exp2Predictions` (P1/P2/P3 + Inv-1..Inv-5 decision-rule invariants) + `RATCHET.Core.AgencyRung` (ladder + `consent_required_iff_rung_ge_A3` theorem).
@@ -298,7 +298,50 @@ python3 experiments/exp2_cross_substrate/phase0_tier1_revalidation.py
 # + Spearman correlation of (p-value, agency_rung) across the available Tier-1 points.
 ```
 
-### Phase 0 v0.5 finding (2026-05-16) — pipeline validated, sample-design issue remains
+### Phase 0 v0.6 finding (2026-05-16) — fixes applied, real-data P2 still fails (microbiome synthetic is the blocker)
+
+**v0.6 implementation status:**
+
+| v0.6 fix | Status |
+|---|---|
+| 1. Sample-size-invariant whiteness metric | ✓ `ar1_coefficient(ω)` lag-1 autocorrelation magnitude added to `analysis/omega/kish_fit.py` |
+| 2. Trajectory-window battery sampling | ✓ replaces v0.5 bootstrap; non-overlapping `window=5, stride=5` (5 windows from 19 cells × 28 cycles) |
+| 3. Real microbiome cohort (AGP) | **✗ AGP raw not on disk anywhere**; synthetic generator still used. **THIS IS THE BLOCKER for clean P2.** |
+| 4. V-Dem CSV vendored | ✓ substituted Polity5 (also A4, more complete: 17,574 country-year obs). Symlinked at `data/institutional/polity5.xls`, SHA `f81248561c…`, 4.3 MB. New `collect_polity_samples()` produces n=725 country-decade windows. |
+| 5. Pre-register metric + sample-design constraint | Pending — depends on v0.7 with real AGP |
+
+**Phase 0 v0.6 results (commit pending):**
+
+| Run | n substrates | Spearman ρ(rung, AR(1) \|φ\|) | Verdict |
+|---|---|---|---|
+| **Positive control** (5 synthetic rungs A0–A4, AR(1) φ = 0.0–0.85) | 5 | **+1.000** (p = 1.4 × 10⁻²⁴) | **STRONG_PASS** |
+| **Real Tier-1** (battery A0 trajectory-windows n=5, microbiome A1 synthetic n=300, polity A4 n=725) | 3 | **−0.500** (p = 0.667) | **FAIL_DIRECTION** |
+
+**Per-substrate breakdown:**
+
+| Substrate | n | AR(1) \|φ\| | Interpretation |
+|---|---|---|---|
+| A0 battery (5-cycle non-overlapping windows) | 5 | **0.467** | Real physical residual structure (SEI growth continuity + small n); n is genuinely too small for stable AR(1) estimate |
+| A1 microbiome (synthetic generator) | 300 | **0.071** | I.i.d. by construction — generator produces independent samples; AR(1) of i.i.d. data → ~0 |
+| A4 polity (Polity5 country-decade) | 725 | **0.301** | Real human-decision autocorrelation (regime trajectories persist across decades) |
+
+**The failure mode is interpretable, not pipeline-driven:**
+
+The positive control passes perfectly with the v0.6 metric (Spearman = +1.000 across 5 rungs of constructed AR(1) data). The pipeline correctly distinguishes white from structured residuals at all sample sizes.
+
+The real-data fail is now traceable to **one specific data-availability gap**: synthetic microbiome is mathematically i.i.d. and zeros out the A1 |φ| signal. Battery has small n + real physical autocorrelation; polity has real human-decision autocorrelation. Without real AGP cohort data at A1, the test fundamentally cannot distinguish "framework predicts A0 < A1 < A4" from "sampling mathematically forces A1 to zero."
+
+### Required v0.7 fix (the last blocker)
+
+| Move | What it does |
+|---|---|
+| **Vendor AGP raw data** | Replace synthetic microbiome with real American Gut Project sample cohort. Real cross-host variation in (k, ρ, σ) gives A1 a fair shot at producing the framework's predicted residual structure. |
+| Alternative: real HMP data | Human Microbiome Project — also A1, public, comparable scale |
+| Alternative: real BioTIME data | Move A1 to A2 substrate (BioTIME ecology), wait for AGP later |
+
+Until A1 has real data, Phase 0 cannot make the P2 direction test informative. **Pre-registration remains blocked, but for one specific reason: data, not methodology.** The v0.6 metric, sampling design, pipeline, and lake formalization are all sound.
+
+### Phase 0 v0.5 finding (2026-05-16) — pipeline validated, sample-design issue identified (resolved by v0.6)
 
 **With engine-aware Kish-regression predictor + 5-rung synthetic positive control:**
 

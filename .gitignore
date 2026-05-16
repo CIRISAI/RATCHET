@@ -74,6 +74,9 @@ data/microbiome/*.biom
 data/microbiome/*.qza
 data/institutional/*.csv
 data/institutional/*.dta
+data/institutional/*.xls
+data/institutional/*.xlsx
+data/institutional/*.parquet
 data/pipeline/cache/
 data/pipeline/__pycache__/
 data/pipeline/*/__pycache__/

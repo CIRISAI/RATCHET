@@ -32,6 +32,7 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from analysis.omega.kish_fit import (
     compute_omega_from_kish_fit, fit_kish_regression, compute_k_eff,
+    ar1_coefficient,
 )
 from analysis.omega.residuals import DomainType
 from analysis.omega.null_test import (
@@ -44,17 +45,22 @@ from analysis.omega.null_test import (
 AGENCY_RUNG = {
     "battery": 0,        # A0 — inert
     "microbiome": 1,     # A1 — low (cellular signaling)
-    "vdem": 4,           # A4 — high (full human agency)
+    "polity": 4,         # A4 — high (full human agency, Polity5 country-decades)
 }
 
 
 def collect_battery_samples(
-    rng_seed: int = 42, n_samples: int = 40
+    rng_seed: int = 42, window: int = 5, stride: int = 5
 ) -> Optional[tuple[np.ndarray, np.ndarray, np.ndarray, list]]:
-    """Build per-sample (k, ρ, σ) triples for battery.
+    """v0.6 trajectory-window sampling for NASA battery (A0).
 
-    Strategy: bootstrap-sample subsets of NASA cells. For each draw,
-      k = subset size, ρ = mean pairwise SOH correlation, σ = mean final SOH.
+    Each sample is a (cycle-window, k=cells-alive, ρ=cross-cell SOH
+    correlation in window, σ=mean SOH at window end). As windows slide
+    forward in cycle space, σ falls (cells degrade) while ρ rises (cells
+    increasingly synchronized in their decay), giving genuine σ vs k_eff
+    dependence — the framework's actual setup. This replaces the v0.5
+    bootstrap-of-arbitrary-cell-subsets, which collapsed σ variability
+    away from the cycle-time axis and yielded R²=0.04.
     """
     try:
         from ratchet.data.battery_loader import load_nasa_battery_data
@@ -69,39 +75,114 @@ def collect_battery_samples(
         return None
 
     cells = list(dataset.cells.values())
-    if len(cells) < 3:
-        return None
-
-    # Per-cell SOH trajectory truncated to common length
-    soh_arrays = [np.asarray(c.soh_values, dtype=float) for c in cells if hasattr(c, 'soh_values')]
-    soh_arrays = [s for s in soh_arrays if len(s) >= 20]
+    soh_arrays = [np.asarray(c.soh_values, dtype=float)
+                  for c in cells if hasattr(c, "soh_values")]
+    soh_arrays = [s for s in soh_arrays if len(s) >= window + 1]
     if len(soh_arrays) < 3:
         return None
-    common_len = min(len(s) for s in soh_arrays)
-    soh_mat = np.array([s[:common_len] for s in soh_arrays])  # (n_cells, n_cycles)
 
-    rng = np.random.default_rng(rng_seed)
-    n_cells = soh_mat.shape[0]
+    common_len = min(len(s) for s in soh_arrays)
+    soh_mat = np.array([s[:common_len] for s in soh_arrays])
+    n_cells, n_cycles = soh_mat.shape
+
     k_list, rho_list, sigma_list, sid_list = [], [], [], []
-    for i in range(n_samples):
-        # Random subset size in [3, n_cells]
-        k = int(rng.integers(3, n_cells + 1))
-        idx = rng.choice(n_cells, size=k, replace=False)
-        subset = soh_mat[idx]
-        # Mean pairwise correlation across cell trajectories
-        corr_mat = np.corrcoef(subset)
-        # Off-diagonal mean
-        off_diag = corr_mat[np.triu_indices(k, k=1)]
-        rho = float(np.mean(off_diag)) if len(off_diag) > 0 else 0.0
-        rho = float(np.clip(rho, 0.0, 1.0))  # Kish convention
-        # σ = mean final-window SOH
-        sigma = float(np.mean(subset[:, -10:]))
-        sigma = float(np.clip(sigma, 0.0, 1.0))
+    for end in range(window, n_cycles + 1, stride):
+        win = soh_mat[:, end - window: end]                          # (cells, window)
+        # σ = mean SOH at window end across cells
+        sigma = float(np.mean(win[:, -1]))
+        sigma = float(np.clip(sigma, 0.01, 0.99))
+        # ρ = mean pairwise correlation of cell SOH series within window
+        corr_mat = np.corrcoef(win)
+        off_diag = corr_mat[np.triu_indices(n_cells, k=1)]
+        if len(off_diag) == 0:
+            continue
+        rho = float(np.nanmean(off_diag))
+        if np.isnan(rho):
+            continue
+        # Kish convention: ρ in [0, 1]. Pre-collapse ρ can be negative for
+        # battery (cells drift apart); clip but record sign in context.
+        rho = float(np.clip(rho, 0.0, 1.0))
+        # k = number of cells contributing (constant here; window-invariant)
+        k = int(n_cells)
         k_list.append(k)
         rho_list.append(rho)
         sigma_list.append(sigma)
-        sid_list.append(f"battery_bootstrap_{i:03d}")
+        sid_list.append(f"battery_w{window}_end{end:04d}")
 
+    if len(k_list) < 4:
+        return None
+    return np.asarray(k_list), np.asarray(rho_list), np.asarray(sigma_list), sid_list
+
+
+def collect_polity_samples(
+    rng_seed: int = 42, decade_step: int = 5
+) -> Optional[tuple[np.ndarray, np.ndarray, np.ndarray, list]]:
+    """A4 — Polity5 country-window sampling.
+
+    Each sample is a (country, decade-window) observation. Within the window:
+      k = number of distinct institutional dimensions tracked (executive
+          constraints + competition + openness etc.; capped at the count
+          of non-null indicator columns)
+      ρ = within-country correlation of institutional indicators over the window
+      σ = mean Polity2 score normalized to [0, 1] = (polity2 + 10) / 20
+
+    Polity2 scale is [-10, +10] where higher = more democratic-stable.
+    """
+    polity_path = REPO_ROOT / "data" / "institutional" / "polity5.xls"
+    if not polity_path.exists():
+        return None
+    try:
+        import pandas as pd
+        df = pd.read_excel(polity_path)
+    except Exception:
+        return None
+
+    cols_indicator = ["xconst", "xrcomp", "xropen", "xrreg", "exrec", "exconst"]
+    cols_present = [c for c in cols_indicator if c in df.columns]
+    if "polity2" not in df.columns or "country" not in df.columns or "year" not in df.columns:
+        return None
+    if len(cols_present) < 3:
+        return None
+
+    df = df[df["polity2"].notna()].copy()
+    df["polity2"] = pd.to_numeric(df["polity2"], errors="coerce")
+    df = df[(df["polity2"] >= -10) & (df["polity2"] <= 10)].copy()
+
+    k_list, rho_list, sigma_list, sid_list = [], [], [], []
+    for country, grp in df.groupby("country"):
+        grp = grp.sort_values("year")
+        years = grp["year"].values
+        if len(years) < decade_step + 1:
+            continue
+        for start in range(0, len(years) - decade_step, decade_step):
+            window_df = grp.iloc[start: start + decade_step]
+            # σ = normalized mean polity2 over window
+            sigma = (float(window_df["polity2"].mean()) + 10.0) / 20.0
+            sigma = float(np.clip(sigma, 0.01, 0.99))
+            # k = number of indicator columns with valid data in window
+            non_null_cols = [c for c in cols_present if window_df[c].notna().sum() >= 3]
+            k = len(non_null_cols)
+            if k < 3:
+                continue
+            # ρ = mean pairwise correlation of these indicators across years in window
+            sub = window_df[non_null_cols].apply(pd.to_numeric, errors="coerce").dropna()
+            if len(sub) < 3:
+                continue
+            corr = sub.corr().values
+            off = corr[np.triu_indices(corr.shape[0], k=1)]
+            if len(off) == 0 or np.all(np.isnan(off)):
+                continue
+            rho = float(np.nanmean(off))
+            if np.isnan(rho):
+                continue
+            rho = float(np.clip(abs(rho), 0.0, 1.0))  # use magnitude — Kish convention
+            k_list.append(int(k))
+            rho_list.append(rho)
+            sigma_list.append(sigma)
+            sid_list.append(f"polity_{country[:12].replace(' ', '_')}_y{int(window_df['year'].iloc[0])}")
+
+    if len(k_list) < 20:
+        return None
     return np.asarray(k_list), np.asarray(rho_list), np.asarray(sigma_list), sid_list
 
 
@@ -193,7 +274,7 @@ def positive_control_samples(
 
 
 def _score_substrate(name: str, sample, domain, rung: int, results: dict, verbose: bool = True) -> None:
-    """Run P1 (Kish fit R²) + P2 (Ljung-Box on residual) on one substrate's samples."""
+    """Run P1 (Kish fit R²) + P2 (Ljung-Box p + AR(1) |φ|) on one substrate's samples."""
     if sample is None:
         if verbose:
             print(f"  SKIP: data not available")
@@ -208,16 +289,42 @@ def _score_substrate(name: str, sample, domain, rung: int, results: dict, verbos
     fit = fit_kish_regression(k_arr, rho_arr, sigma_arr, fit_intercept=True)
     if verbose:
         print(f"  P1 — σ = {fit.alpha:.4f} + {fit.beta:.4f}·k_eff   R² = {fit.r_squared:.4f}")
-    if len(fit.omega) < 20:
+    if len(fit.omega) < 4:
         results[name] = {"status": "too_short", "rung": rung}
         return
-    lb = nh_test_autocorrelation(fit.omega, lags=[10])
-    mz = nh_test_mean_zero(fit.omega)
-    nm = nh_test_normality(fit.omega)
+    # AR(1) — sample-size invariant, always computable for n ≥ 2
+    ar1 = ar1_coefficient(fit.omega)
+    # Adaptive Ljung-Box lag (needs lag < (n-1)/2 for reasonable test)
+    n = len(fit.omega)
+    lb_lag = max(1, min(10, (n - 1) // 2))
+    try:
+        lb = nh_test_autocorrelation(fit.omega, lags=[lb_lag])
+        lb_p = float(lb.p_value)
+        lb_reject = bool(lb.reject_null)
+    except Exception as e:
+        lb_p = float("nan")
+        lb_reject = False
+        lb_lag = None
+    try:
+        mz = nh_test_mean_zero(fit.omega)
+        mz_p = float(mz.p_value)
+        mz_reject = bool(mz.reject_null)
+    except Exception:
+        mz_p = float("nan"); mz_reject = False
+    try:
+        nm = nh_test_normality(fit.omega)
+        nm_p = float(nm.p_value)
+        nm_reject = bool(nm.reject_null)
+    except Exception:
+        nm_p = float("nan"); nm_reject = False
     if verbose:
-        print(f"  P2 — Ljung-Box p (lag 10): {lb.p_value:.4g}  "
-              f"({'reject (structured)' if lb.reject_null else 'fail-to-reject (white)'})")
-        print(f"       Mean-zero p: {mz.p_value:.4g}    Normality p: {nm.p_value:.4g}")
+        print(f"  P2 — AR(1) |φ| (v0.6 PRIMARY): {ar1:.4f}")
+        if lb_lag is not None and not np.isnan(lb_p):
+            print(f"       Ljung-Box p (lag {lb_lag}):     {lb_p:.4g}  "
+                  f"({'reject (structured)' if lb_reject else 'fail-to-reject (white)'})")
+        else:
+            print(f"       Ljung-Box: n too small for valid lag-{lb_lag} test")
+        print(f"       Mean-zero p: {mz_p:.4g}    Normality p: {nm_p:.4g}")
     results[name] = {
         "status": "ok",
         "rung": rung,
@@ -231,20 +338,27 @@ def _score_substrate(name: str, sample, domain, rung: int, results: dict, verbos
         "sigma_range": [float(sigma_arr.min()), float(sigma_arr.max())],
         "omega_mean": float(np.mean(fit.omega)),
         "omega_std": float(np.std(fit.omega)),
-        "p2_ljung_box_p_lag10": float(lb.p_value),
-        "p2_rejects_white": bool(lb.reject_null),
-        "mean_zero_p": float(mz.p_value),
-        "normality_p": float(nm.p_value),
+        "p2_ar1_abs_phi": float(ar1),       # v0.6 PRIMARY metric (sample-size invariant)
+        "p2_ljung_box_p": lb_p,             # secondary (sample-size sensitive)
+        "p2_ljung_box_lag": lb_lag,
+        "p2_rejects_white": lb_reject,
+        "mean_zero_p": mz_p,
+        "normality_p": nm_p,
     }
 
 
 def _spearman_direction(label: str, results: dict, key_prefix: str = "") -> dict:
-    """Compute Spearman ρ(rung, ljung-box p) across substrates with status=ok."""
-    points = [(r["rung"], r["p2_ljung_box_p_lag10"], name)
+    """v0.6 — Spearman ρ(rung, AR(1)|φ|) across substrates. Predicted ρ ≥ +0.7.
+
+    AR(1) magnitude is sample-size invariant, so different-n substrates
+    can be compared directly. Higher |φ| = more residual structure =
+    higher predicted agency rung.
+    """
+    points = [(r["rung"], r["p2_ar1_abs_phi"], r["p2_ljung_box_p"], name)
               for name, r in results.items()
               if r.get("status") == "ok" and not name.startswith("_")]
     print()
-    print(f"=== {label} — Spearman ρ(rung, ljung_box_p) across substrates ===")
+    print(f"=== {label} — Spearman ρ(rung, AR(1) |φ|)  +  ρ(rung, Ljung-Box p) ===")
     if len(points) < 2:
         print(f"  insufficient substrates: {len(points)} (need ≥ 2)")
         return {"verdict": "INSUFFICIENT_DATA", "n": len(points)}
@@ -254,17 +368,20 @@ def _spearman_direction(label: str, results: dict, key_prefix: str = "") -> dict
         print("  (scipy unavailable)")
         return {"verdict": "NO_SCIPY"}
     rungs = [p[0] for p in points]
-    pvals = [p[1] for p in points]
-    rho, p_val = spearmanr(rungs, pvals)
-    for r, pv, nm in points:
-        print(f"    A{r} {nm}: p = {pv:.4g}")
-    print(f"  Spearman ρ = {rho:.3f}  (significance p = {p_val:.4g})")
-    print(f"  Prediction (P2): ρ ≤ -0.7")
-    if np.isnan(rho):
+    ar1s  = [p[1] for p in points]
+    pvals = [p[2] for p in points]
+    rho_ar1, p_ar1 = spearmanr(rungs, ar1s)
+    rho_lb,  p_lb  = spearmanr(rungs, pvals)
+    for r, ar, lbp, nm in points:
+        print(f"    A{r} {nm}: |φ|={ar:.4f}   ljung-box p={lbp:.4g}")
+    print(f"  Spearman ρ(rung, |φ|)         = {rho_ar1:.3f}   significance p={p_ar1:.4g}")
+    print(f"  Spearman ρ(rung, ljung_box_p) = {rho_lb:.3f}   significance p={p_lb:.4g}")
+    print(f"  Prediction (v0.6 PRIMARY): ρ(rung, |φ|) ≥ +0.7")
+    if np.isnan(rho_ar1):
         verdict = "INDETERMINATE_NaN"
-    elif rho <= -0.7:
+    elif rho_ar1 >= 0.7:
         verdict = "STRONG_PASS"
-    elif rho <= -0.3:
+    elif rho_ar1 >= 0.3:
         verdict = "WEAK_PASS"
     else:
         verdict = "FAIL_DIRECTION"
@@ -272,8 +389,10 @@ def _spearman_direction(label: str, results: dict, key_prefix: str = "") -> dict
     return {
         "verdict": verdict,
         "n": len(points),
-        "spearman_rho": (None if np.isnan(rho) else float(rho)),
-        "spearman_p": (None if np.isnan(p_val) else float(p_val)),
+        "spearman_rho_ar1": (None if np.isnan(rho_ar1) else float(rho_ar1)),
+        "spearman_p_ar1": (None if np.isnan(p_ar1) else float(p_ar1)),
+        "spearman_rho_ljungbox": (None if np.isnan(rho_lb) else float(rho_lb)),
+        "spearman_p_ljungbox": (None if np.isnan(p_lb) else float(p_lb)),
     }
 
 
@@ -300,7 +419,7 @@ def main() -> int:
     collectors = {
         "battery":    (collect_battery_samples,    DomainType.BATTERY),
         "microbiome": (collect_microbiome_samples, DomainType.MICROBIOME),
-        "vdem":       (collect_vdem_samples,       DomainType.INSTITUTIONAL),
+        "polity":     (collect_polity_samples,     DomainType.INSTITUTIONAL),
     }
 
     results: dict[str, dict] = {}

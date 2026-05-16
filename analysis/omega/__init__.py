@@ -33,6 +33,7 @@ from .kish_fit import (
     fit_kish_regression,
     compute_omega_from_kish_fit,
     compute_k_eff,
+    ar1_coefficient,
 )
 
 from .null_test import (

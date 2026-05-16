@@ -136,6 +136,29 @@ def fit_kish_regression(
     )
 
 
+def ar1_coefficient(residual: np.ndarray) -> float:
+    """Lag-1 autocorrelation coefficient |φ| of a residual series.
+
+    Sample-size-invariant measure of residual structure suitable for
+    cross-substrate comparison. Bounded in [0, 1] (returns the absolute
+    value; sign is reported separately if needed).
+
+    Computation: φ = Σ (x_t - x̄)(x_{t-1} - x̄) / Σ (x_t - x̄)²
+
+    Returns 0.0 if series has zero variance or n < 2.
+    """
+    x = np.asarray(residual, dtype=float)
+    if len(x) < 2:
+        return 0.0
+    x_centered = x - np.mean(x)
+    denom = float(np.sum(x_centered ** 2))
+    if denom < 1e-15:
+        return 0.0
+    numer = float(np.sum(x_centered[:-1] * x_centered[1:]))
+    phi = numer / denom
+    return float(abs(phi))
+
+
 def compute_omega_from_kish_fit(
     k: np.ndarray,
     rho: np.ndarray,
