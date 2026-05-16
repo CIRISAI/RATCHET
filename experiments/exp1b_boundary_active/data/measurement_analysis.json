@@ -1,0 +1,144 @@
+{
+  "gemini": {
+    "n_total": 280,
+    "excluded": 0,
+    "firing_distribution": {
+      "0": 128,
+      "1": 0,
+      "2": 8,
+      "3": 12,
+      "4": 132
+    },
+    "all_chains_bootstrap": {
+      "point": 8.96654931645219,
+      "mean": 8.170275109338155,
+      "ci95_low": 6.921090126898881,
+      "ci95_high": 9.195227251557517,
+      "n_valid": 10000,
+      "n_resamples": 10000
+    },
+    "n3_bootstrap": {
+      "point": 7.277360115250434,
+      "mean": 6.545826474785515,
+      "ci95_low": 5.376042635148765,
+      "ci95_high": 7.491577437989854,
+      "n_valid": 10000,
+      "n_resamples": 10000
+    },
+    "n4_bootstrap": {
+      "point": 6.933305231738768,
+      "mean": 6.2944271873787,
+      "ci95_low": 5.112977059234669,
+      "ci95_high": 7.1347267406817725,
+      "n_valid": 10000,
+      "n_resamples": 10000
+    },
+    "sensitivity": {
+      "sensitivity": [
+        {
+          "subset": "all_chains",
+          "n": 280,
+          "neff_h": 8.96654931645219,
+          "retained_dim": 14
+        },
+        {
+          "subset": "conscience_N>=1",
+          "n": 152,
+          "neff_h": 7.987729424406455,
+          "retained_dim": 14
+        },
+        {
+          "subset": "conscience_N>=2",
+          "n": 152,
+          "neff_h": 7.987729424406455,
+          "retained_dim": 14
+        },
+        {
+          "subset": "conscience_N>=3",
+          "n": 144,
+          "neff_h": 7.277360115250434,
+          "retained_dim": 14
+        },
+        {
+          "subset": "conscience_N>=4",
+          "n": 132,
+          "neff_h": 6.933305231738768,
+          "retained_dim": 13
+        },
+        {
+          "subset": "conscience_N==3",
+          "n": 12,
+          "neff_h": 2.382760837207061,
+          "retained_dim": 10
+        },
+        {
+          "subset": "conscience_N==4",
+          "n": 132,
+          "neff_h": 6.933305231738768,
+          "retained_dim": 13
+        },
+        {
+          "subset": "dma_n>=1",
+          "n": 279,
+          "neff_h": 8.872687824807711,
+          "retained_dim": 14
+        },
+        {
+          "subset": "dma_n>=2",
+          "n": 278,
+          "neff_h": 8.697887174332232,
+          "retained_dim": 14
+        },
+        {
+          "subset": "dma_n>=3",
+          "n": 107,
+          "neff_h": 7.609967292113895,
+          "retained_dim": 13
+        },
+        {
+          "subset": "dma_n>=4",
+          "n": 1,
+          "neff_h": NaN,
+          "retained_dim": 0
+        },
+        {
+          "subset": "combined_friction",
+          "n": 279,
+          "neff_h": 8.726443350645521,
+          "retained_dim": 14
+        },
+        {
+          "subset": "conscience_N>=3_rt=1e-12",
+          "n": 144,
+          "neff_h": 7.277360115250434,
+          "retained_dim": 14
+        },
+        {
+          "subset": "conscience_N>=3_rt=1e-09",
+          "n": 144,
+          "neff_h": 7.277360115250434,
+          "retained_dim": 14
+        },
+        {
+          "subset": "conscience_N>=3_rt=1e-06",
+          "n": 144,
+          "neff_h": 7.277360115250434,
+          "retained_dim": 14
+        },
+        {
+          "subset": "conscience_N>=3_rt=1e-03",
+          "n": 144,
+          "neff_h": 7.277360115250434,
+          "retained_dim": 14
+        },
+        {
+          "subset": "conscience_N>=3_rt=1e-01",
+          "n": 144,
+          "neff_h": 4.007721130973583,
+          "retained_dim": 7
+        }
+      ]
+    }
+  },
+  "v01_calibration": null
+}
