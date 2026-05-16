@@ -1,7 +1,7 @@
 # Exp 2 — Substrate Fractality Across Agency Levels: Regime
 
-**Status:** v0.9 (P1 reframed per paper — within-substrate engine-vs-data fit, NOT cross-sample OLS; aligns with Tier-1 RMSE/TN-FP operationalizations; pre-registration unblocker resolved).
-**Predecessor:** v0.8 (commit `01237c9`).
+**Status:** v0.9.1 (P1 reframed + battery PASS + institutional implementation reveals labeling-choice confound C-6).
+**Predecessor:** v0.9 (commit `76a36d2`).
 **Paper hook:** Coherence Substrate Synthesis paper §10 Exp 2.
 **Falsification handle:** F-7 (cross-substrate mapping failure), strengthened with F-7b (residual-structure agency conditional).
 **Formal authority:** Lean lake modules — `RATCHET.Experiments.Exp2Predictions` (P1/P2/P3 + Inv-1..Inv-5 decision-rule invariants) + `RATCHET.Core.AgencyRung` (ladder + `consent_required_iff_rung_ge_A3` theorem).
@@ -336,17 +336,32 @@ P2 (cross-substrate residual structure × agency rung) IS inherently a cross-run
 | Decision rule | K=4 PASS / K=3 PARTIAL / K≤2 FAIL on P1 | unchanged (just operationalization of "passes P1" tightened) |
 | Lake `SubstrateSummary` | `rSquared` = ambiguous | `rSquared` = engine-vs-data fit, explicitly noted at field |
 
-**v0.9 status on each substrate's P1:**
+**v0.9.1 status on each substrate's P1:**
 
-| Substrate | P1 status (v0.9 reframe) | Source |
+| Substrate | P1 status | Source / number |
 |---|---|---|
-| battery (NASA Li-ion) | ✅ **PASS** at 8.1% RMSE (R² ≈ 0.92 reproducing CCA paper) | `tests/test_battery_nasa_comparison.py` works on master |
-| institutional (Polity/QoG) | Existing CCA validation says 5/5 TN, 3/13 FP — needs engine-RMSE conversion to a clean R² | Engine on master, harness needed |
-| microbiome (AGP) | "Qualitative fit" in paper; engine on master but real AGP data not vendored | Blocked on data |
+| battery (NASA Li-ion) | ✅ **PASS** | B0005 RMSE=0.0810; mean across 19 cells RMSE=0.180; fit-score CI [0.733, 0.949]. `experiments/exp2_cross_substrate/p1_engine_fit.py:run_battery_p1` |
+| institutional (Polity5 + WGI) | ❌ **FAIL** on regtrans labels; ✅ PASS on σ-drop-proxy (circular — see C-6) | CV-AUC=0.6315 ± 0.046 (CI [0.541, 0.722]) on regtrans-based 5-yr-lookahead. `experiments/exp2_cross_substrate/p1_engine_fit.py:run_institutional_p1` |
+| microbiome (AGP) | Pending | Engine on master, blocked on AGP raw data |
 | AlphaFold (Exp 2 new) | Engine stub (75 LOC); needs implementation | Pending |
 | Allen neural (Exp 2 new) | Engine stub (76 LOC); needs implementation | Pending |
-| BioTIME (Exp 2 new) | Engine stub (100 LOC); needs implementation | Pending |
+| BioTIME (Exp 2 new) | Engine stub (100 LOC); subagent in progress | In flight |
 | PMU grid (Exp 2 new) | Engine stub (101 LOC); needs implementation | Pending |
+
+### New confounder C-6 (institutional labeling) — discovered v0.9.1
+
+While implementing `run_institutional_p1`, found that the original `wgi_polity_validation.py` script in `experiments/exp0_cca_validation/` reports two AUC numbers depending on labeling pathway:
+
+| Labeling | CV-AUC (5-fold by country) | Honest? |
+|---|---|---|
+| **Polity5 `regtrans ∈ {-1, -2}` + 5-yr lookahead** (real regime transitions) | **0.6315** | ✅ honest |
+| **Top-5% σ-drops as proxy collapses + 5-yr lookahead** | **0.886** | ❌ **circular** — k_eff and ρ are both derived from the same WGI indicators that produce σ; predicting σ-drops from σ-derivatives is trivially high-AUC |
+
+The pre-existing `results/wgi_validation_results.csv` (AUC=0.886) came from the σ-drop-proxy pathway, which is the **fallback** branch the script takes when there are too few regtrans-positives. The 0.886 figure should NOT be cited as institutional P1 evidence — it's a circular labeling.
+
+**C-6: Labeling-proxy circularity confound.** Some substrates may have insufficient ground-truth collapse events to reliably AUC-test the framework, prompting use of substrate-derived proxies (e.g. σ-drops). Such proxies often share inputs with the predictor, producing inflated AUC. Pre-registration must lock labels to genuinely-independent ground truth (regtrans for institutions, SEI failure for batteries, etc.).
+
+Adding C-6 to the lake's confounder catalog. With C-6 acknowledged, institutional P1 is **honestly FAIL** under the 0.7 threshold — a meaningful result, not a methodology failure.
 
 ### Phase 0 v0.8 finding (2026-05-16) — superseded by v0.9
 

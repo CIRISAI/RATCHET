@@ -66,5 +66,31 @@
         "simulated_final_soh": 0.938783476190296
       }
     ]
+  },
+  "institutional": {
+    "status": "ok",
+    "substrate": "institutional (Polity5 + WGI)",
+    "rung": 4,
+    "n_country_years": 5028,
+    "n_positive_collapse_5yr": 116,
+    "auc_single_pass": 0.6376581278782433,
+    "auc_single_pass_ci": [
+      0.5940261679529684,
+      0.6790458284174316
+    ],
+    "auc_cv5_mean": 0.6315368762956677,
+    "auc_cv5_std": 0.04598074037931894,
+    "fit_score_point": 0.6315368762956677,
+    "fit_score_ci_low": 0.5414146251522025,
+    "fit_score_ci_high": 0.7216591274391329,
+    "accuracy_at_median_threshold": 0.7098249801113763,
+    "confusion_matrix": {
+      "tn": 3511,
+      "fp": 1401,
+      "fn": 58,
+      "tp": 58
+    },
+    "passes_p1": false,
+    "paper_target": "5/5 TN; 3/13 FP; AUC \u2265 0.7 under 5-fold CV by country"
   }
 }

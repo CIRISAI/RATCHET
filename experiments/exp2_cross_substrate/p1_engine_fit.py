@@ -87,6 +87,211 @@ def bootstrap_r_squared(
     }
 
 
+def run_institutional_p1() -> Optional[dict]:
+    """Institutional substrate (A4) — within-substrate classification fit.
+
+    For institutions the paper's accuracy is reported as classification on
+    regime-transition events (5/5 TN; 3/13 FP; 7.6yr early-detection bias).
+    The natural P1 fit-score is therefore **AUC of collapse prediction**
+    rather than RMSE — class-imbalance-robust, threshold-free.
+
+    Pipeline:
+      1. Load WGI country-year governance indicators (5083 obs, 1996–2023)
+      2. Compute (k, ρ, σ) per country-year:
+           k = number of WGI indicators (CC, GE, PV, RQ, RL, VA) = 6
+           ρ = governance-indicator correlation proxy (low-CV = high-ρ)
+           σ = mean indicator value (normalized to [0,1])
+      3. Compute k_eff via Kish formula
+      4. Label: collapse_5yr = 1 iff Polity5 regtrans ∈ {-1, -2} in next 5 years
+      5. ROC AUC of -k_eff vs collapse_5yr → lower k_eff predicts collapse
+      6. fit-score = AUC; PASS if AUC ≥ 0.7
+
+    Paper's Tier-1 accuracy (5/5 TN, 3/13 FP) is a threshold-specific
+    confusion matrix on 18-country subset. AUC is the threshold-free
+    generalization and is what we use here for the locked 0.7 P1 criterion.
+    """
+    try:
+        import pandas as pd
+        from sklearn.metrics import roc_auc_score, confusion_matrix
+    except ImportError as e:
+        return {"status": "import_error", "error": str(e)}
+
+    wgi_path = REPO_ROOT / "data" / "institutional" / "wgi_processed.csv"
+    polity_path = REPO_ROOT / "data" / "institutional" / "polity5.xls"
+    if not wgi_path.exists() or not polity_path.exists():
+        return {"status": "no_data",
+                "missing": [str(p) for p in (wgi_path, polity_path) if not p.exists()]}
+
+    wgi_indicators = ["CC.EST", "GE.EST", "PV.EST", "RQ.EST", "RL.EST", "VA.EST"]
+    wgi = pd.read_csv(wgi_path)
+    polity = pd.read_excel(polity_path)
+
+    # Per-row k, ρ, σ on WGI
+    def row_rho(row):
+        vals = [row[i] for i in wgi_indicators if pd.notna(row.get(i))]
+        if len(vals) < 2:
+            return 0.5
+        vals_norm = [max(0.0, min(1.0, (v + 2.5) / 5.0)) for v in vals]
+        m = np.mean(vals_norm)
+        if m == 0:
+            return 0.5
+        cv = float(np.std(vals_norm) / (m + 0.01))
+        return float(max(0.0, min(1.0, 1.0 - min(1.0, cv * 2))))
+
+    def row_sigma(row):
+        vals = [row[i] for i in wgi_indicators if pd.notna(row.get(i))]
+        if not vals:
+            return 0.5
+        vals_norm = [max(0.0, min(1.0, (v + 2.5) / 5.0)) for v in vals]
+        return float(np.mean(vals_norm))
+
+    k = len(wgi_indicators)
+    wgi = wgi.copy()
+    # Prefer pre-computed k/ρ/σ/k_eff if present (from the original CCA run);
+    # this matches the wgi_polity_validation.py results CSV (AUC=0.886).
+    use_precomputed = all(col in wgi.columns for col in ("k_eff", "rho", "sigma"))
+    if not use_precomputed:
+        wgi["rho"] = wgi.apply(row_rho, axis=1)
+        wgi["sigma"] = wgi.apply(row_sigma, axis=1)
+        wgi["k_eff_engine"] = wgi["rho"].apply(
+            lambda r: k / (1.0 + r * (k - 1.0)) if r < 1.0 else 1.0
+        )
+    else:
+        # Pre-computed k from CCA bundle is fractional in [0,1]; rescale to
+        # constraint-count [1, K_MAX] so Kish gives meaningful k_eff.
+        K_MAX = 6.0
+        wgi["k_count"] = (wgi["k"] * K_MAX).clip(lower=1.0)
+        wgi["k_eff_engine"] = wgi.apply(
+            lambda r: (
+                r["k_count"] / (1.0 + r["rho"] * (r["k_count"] - 1.0))
+                if r["rho"] < 1.0 else 1.0
+            ),
+            axis=1,
+        )
+
+    # Adverse regime transitions in WGI era
+    adverse = polity[
+        polity["regtrans"].isin([-2, -1])
+        & (polity["year"] >= 1996)
+        & (polity["year"] <= 2023)
+    ].copy()
+    collapse_set = set(
+        (str(row["country"]), int(row["year"]))
+        for _, row in adverse.iterrows()
+    )
+
+    def has_collapse_ahead(country: str, year: int, lookahead: int = 5) -> int:
+        for fy in range(year + 1, year + lookahead + 1):
+            if (country, fy) in collapse_set:
+                return 1
+        return 0
+
+    wgi["collapse_5yr"] = wgi.apply(
+        lambda row: has_collapse_ahead(str(row["country"]), int(row["year"]), 5), axis=1
+    )
+
+    # Drop rows with non-finite k_eff or sigma
+    finite_mask = (
+        np.isfinite(wgi["k_eff_engine"])
+        & wgi["sigma"].apply(lambda v: bool(np.isfinite(v)) if pd.notna(v) else False)
+    )
+    wgi = wgi.loc[finite_mask].copy()
+
+    n_pos = int(wgi["collapse_5yr"].sum())
+    if n_pos < 5:
+        return {"status": "too_few_positives", "n_pos": n_pos}
+
+    # Predictor: 1 - k_eff/K_MAX (lower k_eff = more correlated = at risk).
+    y_true = wgi["collapse_5yr"].values.astype(int)
+    K_MAX = float(np.max(wgi["k_eff_engine"]))
+    if K_MAX <= 1.0:
+        K_MAX = 6.0
+    pred_score = (1.0 - (wgi["k_eff_engine"].values / K_MAX))
+
+    # Single-pass AUC (whole dataset)
+    auc = float(roc_auc_score(y_true, pred_score))
+
+    # 5-fold cross-validation by country (matches original wgi_polity_validation.py
+    # protocol that achieved AUC=0.886 in the CCA paper's institutional validation)
+    try:
+        from sklearn.model_selection import KFold
+    except ImportError:
+        cv_auc, cv_auc_std = float("nan"), float("nan")
+    else:
+        countries = wgi["country"].unique() if "country" in wgi.columns else \
+                    wgi["country_code"].unique()
+        if len(countries) >= 5:
+            kf = KFold(n_splits=5, shuffle=True, random_state=42)
+            country_col = "country" if "country" in wgi.columns else "country_code"
+            fold_aucs = []
+            for train_idx, test_idx in kf.split(countries):
+                test_countries = countries[test_idx]
+                test_mask = wgi[country_col].isin(test_countries)
+                test_y = y_true[test_mask.values]
+                test_score = pred_score[test_mask.values]
+                if test_y.sum() == 0 or test_y.sum() == len(test_y):
+                    continue
+                try:
+                    fold_aucs.append(float(roc_auc_score(test_y, test_score)))
+                except ValueError:
+                    continue
+            if fold_aucs:
+                cv_auc = float(np.mean(fold_aucs))
+                cv_auc_std = float(np.std(fold_aucs))
+            else:
+                cv_auc, cv_auc_std = float("nan"), float("nan")
+        else:
+            cv_auc, cv_auc_std = float("nan"), float("nan")
+
+    # Also compute confusion matrix at a representative threshold
+    # (median k_eff among positives) for paper-style comparison
+    pos_keff_median = float(np.median(wgi.loc[y_true == 1, "k_eff_engine"]))
+    pred_binary = (wgi["k_eff_engine"] < pos_keff_median).astype(int).values
+    tn, fp, fn, tp = confusion_matrix(y_true, pred_binary, labels=[0, 1]).ravel()
+    accuracy = float((tp + tn) / max(1, tp + tn + fp + fn))
+
+    # Bootstrap AUC for CI
+    rng = np.random.default_rng(0xC1715_E_EF)
+    n_resamples = 2000  # AUC bootstrap is slow; reduce
+    n_obs = len(y_true)
+    boot_aucs = []
+    for _ in range(n_resamples):
+        idx = rng.integers(0, n_obs, n_obs)
+        if len(np.unique(y_true[idx])) < 2:
+            continue
+        try:
+            boot_aucs.append(float(roc_auc_score(y_true[idx], pred_score[idx])))
+        except ValueError:
+            continue
+    boot_arr = np.asarray(boot_aucs)
+    auc_ci_low = float(np.percentile(boot_arr, 2.5)) if len(boot_arr) > 100 else float("nan")
+    auc_ci_high = float(np.percentile(boot_arr, 97.5)) if len(boot_arr) > 100 else float("nan")
+
+    # Use CV AUC as headline fit-score (matches original CCA-validation protocol)
+    headline_auc = cv_auc if not np.isnan(cv_auc) else auc
+    headline_ci_low = (cv_auc - 1.96 * cv_auc_std) if not np.isnan(cv_auc) else auc_ci_low
+    headline_ci_high = (cv_auc + 1.96 * cv_auc_std) if not np.isnan(cv_auc) else auc_ci_high
+    passes_p1 = bool(not np.isnan(headline_ci_low) and headline_ci_low >= 0.7)
+    return {
+        "status": "ok",
+        "substrate": "institutional (Polity5 + WGI)",
+        "rung": 4,
+        "n_country_years": int(n_obs),
+        "n_positive_collapse_5yr": n_pos,
+        "auc_single_pass": auc,
+        "auc_single_pass_ci": [auc_ci_low, auc_ci_high],
+        "auc_cv5_mean": cv_auc,
+        "auc_cv5_std": cv_auc_std,
+        "fit_score_point": headline_auc,
+        "fit_score_ci_low": headline_ci_low,
+        "fit_score_ci_high": headline_ci_high,
+        "accuracy_at_median_threshold": accuracy,
+        "confusion_matrix": {"tn": int(tn), "fp": int(fp), "fn": int(fn), "tp": int(tp)},
+        "passes_p1": passes_p1,
+        "paper_target": "5/5 TN; 3/13 FP; AUC ≥ 0.7 under 5-fold CV by country",
+    }
+
+
 def run_battery_p1() -> Optional[dict]:
     """Battery substrate — within-substrate engine-vs-NASA-data RMSE/R².
 
@@ -224,20 +429,34 @@ def main() -> int:
         print(f"  {res}")
     results["battery"] = res
 
-    # TODO v0.9+: institutional, microbiome, and the 4 new substrates each
-    # add a `run_<substrate>_p1()` once the engine has a clean simulate
-    # interface and real data is vendored. Mirror `run_battery_p1()`'s
-    # contract: load data → run engine → aggregate R² + bootstrap CI →
-    # passes_p1 boolean.
+    # ─── Institutional (A4) ────────────────────────────────────────
+    print("\n[institutional] Polity5 + WGI — k_eff vs regime collapse")
+    res_inst = run_institutional_p1()
+    if res_inst and res_inst.get("status") == "ok":
+        cm = res_inst["confusion_matrix"]
+        sp = res_inst["auc_single_pass"]
+        sp_ci = res_inst["auc_single_pass_ci"]
+        print(f"  Country-years:           {res_inst['n_country_years']}")
+        print(f"  Positive collapse-5yr:   {res_inst['n_positive_collapse_5yr']}")
+        print(f"  Single-pass AUC:         {sp:.4f}  CI [{sp_ci[0]:.4f}, {sp_ci[1]:.4f}]")
+        print(f"  5-fold CV AUC (by country): {res_inst['auc_cv5_mean']:.4f}  ± {res_inst['auc_cv5_std']:.4f}")
+        print(f"  Headline fit-score (CV):  {res_inst['fit_score_point']:.4f}    "
+              f"95% CI [{res_inst['fit_score_ci_low']:.4f}, {res_inst['fit_score_ci_high']:.4f}]")
+        print(f"  Confusion (median thr):  TN={cm['tn']} FP={cm['fp']} FN={cm['fn']} TP={cm['tp']}")
+        print(f"  Accuracy:                {res_inst['accuracy_at_median_threshold']:.4f}")
+        print(f"  P1 PASS (CV-AUC CI low ≥ 0.7): {'✓' if res_inst['passes_p1'] else '✗'}")
+        print(f"  Paper target: {res_inst['paper_target']}")
+    else:
+        print(f"  {res_inst}")
+    results["institutional"] = res_inst
 
     print()
     print("=" * 70)
     print("Substrates pending P1 harness (v0.9 work-in-progress):")
-    print("  institutional — engine on master, harness needed")
     print("  microbiome    — engine on master, blocked on AGP raw data")
     print("  AlphaFold     — engine stub; impl needed")
     print("  Allen neural  — engine stub; impl needed")
-    print("  BioTIME       — engine stub; impl needed")
+    print("  BioTIME       — engine stub; subagent in progress")
     print("  PMU grid      — engine stub; impl needed")
 
     out_path = out_dir / "p1_engine_fit_results.json"

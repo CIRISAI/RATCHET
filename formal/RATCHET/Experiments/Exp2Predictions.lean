@@ -177,6 +177,18 @@ pre-registration of Exp 2 must control for these:
        0.68 (Gemini), 0.80 (scout). Aggregation washes out per-cohort
        fit quality. Each substrate is best treated per-cohort.
 
+  C-6: Labeling-proxy circularity confound (added v0.9.1). When ground-
+       truth collapse events are sparse, validation scripts may fall
+       back to substrate-derived proxies (e.g. top-5% σ-drops as a
+       collapse signal). Such proxies share inputs with the predictor:
+       at the institutional substrate, σ-drop-proxy AUC = 0.886 vs
+       regtrans-label AUC = 0.6315 — the same WGI indicators produce
+       both σ and the k_eff/ρ predictor, so σ-drop labels are trivially
+       predictable from k_eff. Pre-registration must lock labels to
+       *genuinely independent* ground truth (e.g. Polity5 `regtrans` for
+       institutions, NASA SEI failure cycle for batteries, AGP dysbiosis
+       diagnosis for microbiome).
+
 These confounders are NOT bugs in the framework — they are EMPIRICAL
 DEPENDENCIES of any cross-substrate test. The lake formally records
 them here so Exp 2's pre-registration can address each explicitly.
