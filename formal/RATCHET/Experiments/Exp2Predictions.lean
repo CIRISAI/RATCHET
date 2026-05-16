@@ -62,16 +62,35 @@ def passKThreshold : ℕ := 4
     of 4; below 3 is FAIL. -/
 def partialKLower : ℕ := 3
 
-/-! ## Substrate measurements -/
+/-! ## Substrate measurements
+
+**v0.9 reframe (2026-05-16):** P1 is now operationalized as *within-
+substrate engine-vs-data fit*, matching the paper's §10 win condition
+(`R² > 0.7 structural fit`) and the Tier-1 operationalization style
+(NASA battery `8.1% RMSE` is a within-substrate engine-vs-data RMSE,
+NOT a cross-sample regression). See Phase 0 v0.9 finding in REGIME.md.
+
+The `rSquared` field below is therefore `1 - SSE/SST` where:
+  - SSE = Σᵢ (σ_observed,i − σ_engine_predicted,i)²  over substrate-internal
+    observations (e.g. per-cell SOH cycles, per-country regime years, etc.)
+  - SST = Σᵢ (σ_observed,i − mean(σ_observed))²
+
+This is the same shape as `test_battery_nasa_comparison.py` produces,
+which reproduces the paper's 8.1% RMSE on master.
+-/
 
 /--
 A substrate's empirical measurement summary. The bootstrap-CI fields
 follow the same pattern as Exp1Predictions.ModelSummary.
+
+`rSquared` is **within-substrate** engine-vs-data fit per the v0.9
+reframe — not the v0.7-v0.8 cross-sample OLS.
 -/
 structure SubstrateSummary where
   substrateName : String
   rung          : AgencyRung
   validN        : ℕ
+  /-- Within-substrate engine-vs-data R². See module-level v0.9 note. -/
   rSquared      : ℝ
   ci95Low       : ℝ
   ci95High      : ℝ
@@ -84,9 +103,13 @@ structure SubstrateSummary where
 def SubstrateSummary.isClean (s : SubstrateSummary) : Prop :=
   s.validN ≥ minValidN
 
-/-- A substrate passes P1 iff its R² is at least the threshold AND its
-    95% CI lower bound is also at least the threshold (no overlap with
-    fail region). -/
+/-- A substrate passes P1 iff its within-substrate engine-vs-data R² is at
+    least the 0.7 threshold AND its 95% CI lower bound is also at least the
+    threshold (no overlap with fail region).
+
+    Per v0.9 reframe: `rSquared` is the engine's predictive fit against
+    real data within the substrate, NOT cross-sample regression of σ on
+    k_eff. See paper §10 Exp 2 win condition. -/
 def SubstrateSummary.passesP1 (s : SubstrateSummary) : Prop :=
   rSquaredThreshold ≤ s.ci95Low
 

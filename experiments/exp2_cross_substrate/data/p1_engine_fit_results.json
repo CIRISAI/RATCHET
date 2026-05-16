@@ -1,0 +1,70 @@
+{
+  "battery": {
+    "status": "ok",
+    "substrate": "battery (NASA Li-ion)",
+    "rung": 0,
+    "n_cells": 19,
+    "mean_rmse": 0.17970228483336398,
+    "rmse_per_cell_min": 0.049215588468907195,
+    "rmse_per_cell_max": 0.5403728050392249,
+    "fit_score_point": 0.8708283553026741,
+    "fit_score_ci_low": 0.7325263083356359,
+    "fit_score_ci_high": 0.9492222445763748,
+    "bootstrap_rmse_ci": [
+      0.11266960040714749,
+      0.25858929389302066
+    ],
+    "passes_p1": true,
+    "paper_target_rmse": 0.081,
+    "per_cell": [
+      {
+        "cell_id": "B0005",
+        "n_cycles": 168,
+        "rmse": 0.0810014630897072,
+        "final_soh_error": 0.08604151570591467,
+        "empirical_final_soh": 0.7137561578838874,
+        "simulated_final_soh": 0.799797673589802
+      },
+      {
+        "cell_id": "B0006",
+        "n_cycles": 168,
+        "rmse": 0.11015392851442753,
+        "final_soh_error": 0.2172688254588958,
+        "empirical_final_soh": 0.582544752296905,
+        "simulated_final_soh": 0.7998135777558009
+      },
+      {
+        "cell_id": "B0007",
+        "n_cycles": 168,
+        "rmse": 0.0746879781268795,
+        "final_soh_error": 0.04238836707784199,
+        "empirical_final_soh": 0.7574910940083355,
+        "simulated_final_soh": 0.7998794610861775
+      },
+      {
+        "cell_id": "B0018",
+        "n_cycles": 132,
+        "rmse": 0.055657849200007506,
+        "final_soh_error": 0.07676273372668596,
+        "empirical_final_soh": 0.7229370201580871,
+        "simulated_final_soh": 0.7996997538847731
+      },
+      {
+        "cell_id": "B0025",
+        "n_cycles": 28,
+        "rmse": 0.05701214521408391,
+        "final_soh_error": 0.040029392863339286,
+        "empirical_final_soh": 0.9560868603224244,
+        "simulated_final_soh": 0.9160574674590851
+      },
+      {
+        "cell_id": "B0026",
+        "n_cycles": 28,
+        "rmse": 0.05600688644443061,
+        "final_soh_error": 0.03565655307801974,
+        "empirical_final_soh": 0.9744400292683157,
+        "simulated_final_soh": 0.938783476190296
+      }
+    ]
+  }
+}
