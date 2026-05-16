@@ -91,6 +91,7 @@ substrates:
   nasa_battery:
     rung: A0
     engine: ratchet.engines.battery
+    loader: ratchet.data.battery_loader
     name: "NASA PCoE Li-ion Battery Aging Datasets"
     version: "static"
     license: "Public Domain (NASA)"
@@ -98,9 +99,13 @@ substrates:
       kind: "https"
       url: "https://phm-datasets.s3.amazonaws.com/NASA/5.+Battery+Data+Set.zip"
       contact: "christopher.a.teubert@nasa.gov"
-    expected_sha256: null
+    vendored_path: "data/battery/battery_dataset.zip"
+    extracted_path: "data/battery/5. Battery Data Set"
+    expected_sha256: "82302a7db4fc1b34e0b6676326610438d43b816bdf11a69d1d012a464ef2f92e"
+    expected_size_bytes: 209708670
+    expected_cell_count: 19  # high-quality subset (full archive is 34 cells)
     refresh_cadence: "static (one-time pin; re-validate quarterly against pinned hash)"
-    note: "Dataset is fixed historical. Re-validation means re-running engine on pinned data; alert only on SHA drift."
+    note: "Pinned SHA computed against the 6-zip archive vendored from RATCHET-RESET on 2026-05-16. The loader at ratchet.data.battery_loader.load_nasa_battery_data() extracts and returns NASABatteryDataset."
 
   vdem:
     rung: A4

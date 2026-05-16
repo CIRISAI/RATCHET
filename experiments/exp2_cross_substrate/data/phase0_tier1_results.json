@@ -1,0 +1,37 @@
+{
+  "battery": {
+    "status": "ok",
+    "rung": 0,
+    "n_sigma": 1518,
+    "n_omega": 1488,
+    "omega_mean": 1.681802963362872e-05,
+    "omega_std": 0.19096115945035794,
+    "ljung_box_p_lag10": 0.0,
+    "ljung_box_rejects_white": true,
+    "mean_zero_p": 0.9972907332590162,
+    "normality_p": 5.448571651261607e-43
+  },
+  "microbiome": {
+    "status": "ok",
+    "rung": 1,
+    "n_sigma": 300,
+    "n_omega": 270,
+    "omega_mean": 0.001606651792181701,
+    "omega_std": 0.040866029049553144,
+    "ljung_box_p_lag10": 0.09378961343011485,
+    "ljung_box_rejects_white": false,
+    "mean_zero_p": 0.519596282631101,
+    "normality_p": 3.222179714040494e-08
+  },
+  "vdem": {
+    "status": "skipped_no_data",
+    "rung": 4
+  },
+  "_p2_direction": {
+    "n_substrates": 2,
+    "spearman_rho": 0.9999999999999999,
+    "spearman_p": NaN,
+    "passes_strong": false,
+    "passes_weak": false
+  }
+}

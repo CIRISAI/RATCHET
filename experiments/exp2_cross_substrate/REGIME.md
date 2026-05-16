@@ -1,11 +1,29 @@
 # Exp 2 — Substrate Fractality Across Agency Levels: Regime
 
-**Status:** v0.3 (regime locked; pre-registration pending engine implementation + dataset SHA pins).
-**Paper hook:** Coherence Substrate Synthesis paper §10 Exp 2 (renamed from "Cross-substrate extension").
+**Status:** v0.4 (CRCv2-aligned; P2 reframed as load-bearing; loaders + omega module landed).
+**Predecessor:** v0.3 (commit `a93fd58`).
+**Paper hook:** Coherence Substrate Synthesis paper §10 Exp 2.
 **Falsification handle:** F-7 (cross-substrate mapping failure), strengthened with F-7b (residual-structure agency conditional).
 **Formal authority:** Lean lake modules — `RATCHET.Experiments.Exp2Predictions` (P1/P2/P3 + Inv-1..Inv-5 decision-rule invariants) + `RATCHET.Core.AgencyRung` (ladder + `consent_required_iff_rung_ge_A3` theorem).
-**Pairs with:** existing `ratchet/engines/{battery,institutional,microbiome}.py` Tier-1 fits.
-**Companions:** Counter-RII consent-gate work (FSD/COUNTER_RII_DETECTION.md) — same construction, different rung.
+**Pairs with:** Tier-1 validation rig at `experiments/exp0_cca_validation/` (re-uplifted to master 2026-05-16; reproduces CCA paper's 8.1% RMSE / 5/5 TN / Shannon=0.580 from clean checkout).
+**Implementation now available:**
+  - Loaders: `ratchet/data/{battery,institutional,microbiome}_loader.py` (Tier-1, on master)
+  - Residual analysis (P2): `analysis/omega/{residuals,null_test,distribution,outliers,correlations}.py`
+  - Data pipeline: `data/pipeline/fetchers/{fred,faostat,vdem,gdelt,iucn,comtrade,openalex}.py` + `SQLiteCache` + `TemporalAligner`
+**Companions:** Counter-RII consent-gate work (FSD/COUNTER_RII_DETECTION.md) — same construction, different rung; CRCv2 override-rate (`OverrideRate.lean`) — operator-property template applied here.
+
+---
+
+### v0.4 changes (this revision)
+
+| Change | Reason |
+|---|---|
+| **P2 promoted to load-bearing** alongside P1 | CRCv2 lesson: operator-property claims (structural relationships) beat anchor-value claims (per-substrate thresholds). P2 IS the substrate-fractality bet; P1 is a necessary supporting threshold. |
+| **P2 whiteness statistic concretized** | Now defined as Ljung-Box p-value via `analysis.omega.null_test.test_autocorrelation(omega_series).p_value`, NOT an opaque `expectedWhiteness` axiom. Lake's `expectedWhiteness` becomes a *bound* on the empirical statistic; commit pre-registers the test choice. |
+| **Tier-1 reproducibility verified** | NASA battery 8.1% RMSE reproduces from master in 30s (`python3 tests/test_battery_nasa_comparison.py --cell B0005`). The Tier-1 baseline R² values are no longer hearsay — they're computable. |
+| **Substrate loader paths added** | Per-substrate `loader:` field in `data_sources.yaml` points to the implementation module. NASA SHA-256 pinned. |
+| **Exp 2 Phase 0 added** | Smoke phase: re-run all 3 Tier-1 substrates through the omega module and verify the predicted whiteness ordering (A0 battery → A1 microbiome → A4 V-Dem) holds *on master* before any new-substrate work. Cheap; gates engine development. |
+| **Decision rule restructured** | Old: P1 alone drives PASS/PARTIAL/FAIL; P2/P3 are corroborating. New: P1 + P2 are *both* pre-registered headline tests with separate K-counts. Combined verdict matrix shown below. |
 
 ### Operationalization note: "agency" as label
 
@@ -73,7 +91,7 @@ Substrates ranked by constituent agency. Existing RATCHET validations + Exp 2 ad
 
 The original Exp 2 framing tested ONE prediction (Kish R² > 0.7). The fractal-agency reframe adds TWO more predictions, both empirically tractable:
 
-### Primary (P1) — Kish formula fits everywhere
+### P1 (necessary) — Kish formula fits at each substrate
 
 | Substrate | $R^2$ threshold | Bootstrap CI |
 |---|---|---|
@@ -82,17 +100,42 @@ The original Exp 2 framing tested ONE prediction (Kish R² > 0.7). The fractal-a
 | BioTIME ecology | > 0.7 | 95% via 10k resamples |
 | PMU grid | > 0.7 | 95% via 10k resamples |
 
-PASS: all 4 of 4 above threshold. PARTIAL: 3/4. FAIL: ≤2/4.
+P1 PASS: all 4 substrates above threshold. P1 PARTIAL: 3/4. P1 FAIL: ≤2/4.
 
-### Secondary (P2) — Residual is noise at low agency, structured at high
+**What P1 tests:** that the Kish *structural form* applies at all. Per-substrate anchor — necessary but not sufficient for the load-bearing claim.
 
-After fitting $\sigma = f(k_{\text{eff}}) + \varepsilon$, test the residual $\varepsilon$ for:
-- **Whiteness** (Ljung-Box, spectral flatness): high p-value at A0 substrates, dropping monotonically as we ascend the rungs
-- **Cross-constituent covariance** in $\varepsilon$: near-zero at A0, increasing with rung
+### P2 (load-bearing) — Residual whiteness monotone in agency rung
 
-If P2 holds (residual whiteness correlates negatively with agency rung), the fractal-agency reframe is empirically grounded. If P2 fails (residuals look the same regardless of rung), the reframe was overreach — primary prediction still stands but the interpretation weakens.
+This is the actual substrate-fractality bet. CRCv2 lesson: operator-property claims (relationships across substrates) are what falsify or confirm the framework — not per-substrate anchor values.
 
-### Tertiary (P3) — Pre-collapse Δρ sign tracks agency
+**Concrete operationalization (NEW in v0.4):**
+
+After fitting $\sigma = f(k_{\text{eff}}) + \varepsilon$ via the per-substrate engine, compute the residual series $\omega = \sigma_{\text{observed}} - \sigma_{\text{predicted}}$ using `analysis.omega.residuals.compute_omega_series`. Then run the null-hypothesis battery on $\omega$:
+
+```python
+from analysis.omega.null_test import run_null_hypothesis_battery
+battery = run_null_hypothesis_battery(omega_series, alpha=0.05)
+# Headline P2 statistic: Ljung-Box p-value at lag 10
+whiteness_lb = battery.tests['autocorrelation_lag10'].p_value
+```
+
+**P2 prediction (pre-registered):** the Ljung-Box p-value is monotonically non-increasing across substrates ordered by agency rung. Concretely, when substrates are sorted by their pre-assigned `AgencyRung` (intrinsic-only per `Core.AgencyRung`):
+
+| Rung | Expected Ljung-Box p (loose) | Interpretation |
+|---|---|---|
+| A0 (battery, PMU, AlphaFold) | > 0.10 | Whiteness preserved — no structure beyond Kish |
+| A1 (microbiome, Allen neural) | 0.01 – 0.10 | Mild structure (homeostatic feedback) |
+| A2 (BioTIME) | 0.001 – 0.05 | Population-dynamic structure |
+| A3 (CIRIS LLM) | < 0.01 | Heavy structure (goal-directed coordination) |
+| A4 (V-Dem) | < 0.001 | Heaviest structure (intentional alignment) |
+
+**P2 PASS:** the substrates' p-values are Spearman-rank-correlated with their agency rung at $\rho_{\text{Spearman}} \le -0.7$ (i.e., higher rung → lower whiteness p-value, monotonically).
+**P2 PARTIAL:** $-0.7 < \rho_{\text{Spearman}} \le -0.3$.
+**P2 FAIL:** $\rho_{\text{Spearman}} > -0.3$ or sign-reversed.
+
+The Spearman correlation is the operator-property statistic — it tests the *relationship across rungs*, not a per-substrate threshold. This is what makes P2 load-bearing in the CRCv2 sense.
+
+### P3 (corroborating) — Pre-collapse Δρ sign tracks agency
 
 Re-derive the CCA paper's pre-collapse Δρ pattern across all 4 new substrates:
 
@@ -101,25 +144,30 @@ Re-derive the CCA paper's pre-collapse Δρ pattern across all 4 new substrates:
 | − (falls) | AlphaFold (when used in degradation-event context), PMU (pre-fault), Allen (pre-anesthesia) |
 | + (rises) | BioTIME ecology (pre-collapse during invasive coordination) |
 
-This is a corroborating prediction, not a falsification handle. If signs go the wrong way, the reframe needs refinement.
+Strengthens or weakens the interpretation; does not drive headline pass/fail.
 
 ---
 
-## Locked decision rule
+## Locked decision rule (v0.4 — combined P1 + P2)
 
-Primary (P1) drives the headline decision:
+Both P1 (necessary structural-fit threshold) and P2 (load-bearing substrate-fractality relationship) gate the headline verdict. P3 strengthens or weakens interpretation but does not drive PASS/FAIL.
 
-| Outcome | Condition | Verdict |
-|---|---|---|
-| **PASS** | 4/4 substrates achieve $R^2 > 0.7$ | F-7 passes; substrate-independence at structural-mapping level confirmed across A0–A2 |
-| **PARTIAL** | 3/4 pass | Substrate-specificity in one domain — note which rung and which substrate |
-| **FAIL** | ≤ 2/4 pass | F-7 falsified; structural-mapping substrate-independence is contested |
+|  | **P2 PASS** ($\rho_{\text{Sp}} \le -0.7$) | **P2 PARTIAL** | **P2 FAIL** |
+|---|---|---|---|
+| **P1 PASS (4/4 substrates R²>0.7)** | ✓ **FULL PASS** — structural form holds AND substrate-fractality relationship confirmed (F-7 passes; F-7b passes) | **MIXED PASS** — Kish form universal but residual signature not monotone in agency; the strong reframe overreached, the weak reframe survives | **STRUCTURAL-ONLY PASS** — Kish fits everywhere but the fractal-agency interpretation is falsified (F-7 passes; F-7b fails) |
+| **P1 PARTIAL (3/4)** | **MIXED PASS** — interesting because the one fitting-failure substrate shows what type of fit fails AND across the 3 that fit, agency-rank structure holds | **PARTIAL** — note which substrate fails P1 and which falls outside P2 monotonicity | **FAIL** — both load-bearing claims weaken |
+| **P1 FAIL (≤2/4)** | **STRUCTURAL FAIL** even if P2 holds — Kish form doesn't generalize; report this honestly | **FAIL** | **FAIL** — F-7 falsified |
+| **Any cell n < `minValidN`** | INDETERMINATE — catastrophic-failure clause (mirrors Exp 1 §7) |
 
-P2 and P3 are reported alongside, not used for headline pass/fail. They strengthen or weaken the *interpretation* of P1's result.
+**Headline reporting requirement (any verdict):** the per-substrate $R^2$ + 95% CI from P1 AND the per-substrate Ljung-Box p-value + the cross-substrate Spearman correlation from P2 are ALL reported. No P1-only or P2-only headline.
+
+**Why P2 must be load-bearing now:** CRCv2's lesson was that a framework claim worth defending describes a *structural relationship*, not a *value*. P1's "R²>0.7" is a value threshold per substrate. P2's "Spearman $\rho \le -0.7$ across rungs" is a structural relationship. The latter is what makes the framework's universal-fractality claim testable rather than merely fittable.
 
 ---
 
 ## Per-substrate operationalization
+
+Each substrate maps domain variables to RATCHET's `(k, ρ, σ)` via a *loader* module (mirrors the Tier-1 pattern at `ratchet.data.*_loader`).
 
 ### A0 — AlphaFold residues
 | Variable | Definition | Source |
@@ -128,6 +176,7 @@ P2 and P3 are reported alongside, not used for headline pass/fail. They strength
 | ρ | Mean pairwise correlation of per-residue B-factor predictions | Computed from pLDDT covariance |
 | σ | Mean pLDDT (structural stability proxy) | AlphaFold DB |
 | n | ~10,000 CATH-S40 representative single-domain structures | EBI FTP |
+| Loader | `ratchet.data.protein_loader.load_cath_s40_alphafold_data()` (TODO; engine stub at `ratchet/engines/protein.py`) |
 
 ### A0 — PMU grid
 | Variable | Definition | Source |
@@ -136,6 +185,7 @@ P2 and P3 are reported alongside, not used for headline pass/fail. They strength
 | ρ | Mean pairwise correlation of pre-event frequency time series (5-min baseline) | Computed |
 | σ | Inverse of post-event settling-time CV | Computed |
 | n | ~1,694 grid events | PNNL-30492 corpus |
+| Loader | `ratchet.data.powergrid_loader.load_pnnl_pmu_events()` (TODO; engine stub at `ratchet/engines/powergrid.py`) |
 
 ### A1 — Allen neural firing
 | Variable | Definition | Source |
@@ -144,6 +194,7 @@ P2 and P3 are reported alongside, not used for headline pass/fail. They strength
 | ρ | Mean pairwise spike-train correlation (1-ms bins) | Computed |
 | σ | Population-decoding accuracy on drifting gratings (cross-validated linear classifier) | Computed |
 | n | ~80 Neuropixels recording sessions | Allen Brain Observatory |
+| Loader | `ratchet.data.neural_loader.load_allen_neuropixels_sessions()` (TODO; engine stub at `ratchet/engines/neural.py`) |
 
 ### A2 — BioTIME macro-ecology
 | Variable | Definition | Source |
@@ -152,6 +203,16 @@ P2 and P3 are reported alongside, not used for headline pass/fail. They strength
 | ρ | Mean pairwise correlation of species-abundance time series | Computed |
 | σ | Inverse CV of total biomass over time (stability) | Computed |
 | n | ~500 community time series (≥ 10 years, ≥ 5 species) | BioTIMEr R package + raw |
+| Loader | `ratchet.data.ecological_loader.load_biotime_communities()` (TODO; engine stub at `ratchet/engines/ecological.py`) |
+
+### Reference pattern (on master, working)
+
+The Tier-1 loaders at `ratchet/data/{battery,institutional,microbiome}_loader.py` are the template. New-substrate loaders must:
+
+1. Define a domain-specific `*Dataset` dataclass with the substrate's per-sample structure.
+2. Expose `load_<source>_data(data_dir, **filters) -> Dataset` returning the dataclass.
+3. Implement `Dataset.get_k() -> int`, `get_rho() -> float`, `get_sigma() -> float`, `get_k_eff() -> float` so engines + omega module can consume uniformly.
+4. Reference the SHA pin in `data_sources.yaml` for vendored archives.
 
 ---
 
@@ -218,13 +279,66 @@ The fractal-agency reframe and the Counter-RII work are the same insight from di
 
 ---
 
-## Execution sequence
+## Exp 2 Phase 0 — Tier-1 re-validation through omega (NEW in v0.4)
+
+Before any new-substrate engine work, prove the P2 pipeline by re-running the 3 Tier-1 substrates (battery A0, microbiome A1, V-Dem A4) through the loader → engine → omega chain on master and verifying:
+
+1. **Reproducibility:** P1's R² values match the CCA paper for all 3 Tier-1 substrates (battery 8.1% RMSE / k=19 / ρ=0 / k_eff=19 already verified 2026-05-16).
+2. **P2 baseline:** the Ljung-Box p-values at A0 (battery), A1 (microbiome), A4 (V-Dem) show the predicted monotone drop (high → mid → low). Even with only 3 points this is a directional check on the pipeline.
+3. **Pipeline hygiene:** the omega module accepts engine output cleanly; no schema mismatches; reproducible from clean checkout.
+
+**Cost:** $0 (vendored NASA data + cached QoG/V-Dem; public APIs only if a refresh is needed).
+**Gate:** if Phase 0 passes, write `EXP2_PREREGISTRATION.md` locking the rest. If Phase 0 fails (e.g., omega doesn't produce sane Ljung-Box on Tier-1), debug the pipeline before pre-registering and before any new-substrate engine work.
+
+**Phase 0 entry point:**
+
+```bash
+python3 experiments/exp2_cross_substrate/phase0_tier1_revalidation.py
+# Produces: data/phase0_tier1_results.json with per-substrate Ljung-Box p
+# + Spearman correlation of (p-value, agency_rung) across the available Tier-1 points.
+```
+
+### Phase 0 first-run finding (2026-05-16) — pipeline ordering issue surfaced
+
+Phase 0 was run with the battery (A0, NASA Li-ion concatenated detrended trajectories) and microbiome (A1, synthetic Shannon cohort of n=300) substrates. V-Dem (A4) is awaiting source-data vendoring.
+
+| Substrate | Rung | Ljung-Box p (lag 10) | Interpretation |
+|---|---|---|---|
+| battery | A0 | **0.0000** | heavily structured residual |
+| microbiome | A1 | **0.0938** | nearly white |
+
+Direction is **inverted** relative to P2's prediction (which expects A0 whitest, A1 less white). Spearman ρ(rung, ljung_box_p) = +1.0 (wrong sign).
+
+**Root cause (diagnostic, not a framework falsification yet):** Phase 0 currently uses `predictor='mean'`, which produces:
+- For battery (decaying time series): residual = σ − mean(σ), dominated by the un-captured aging trend → spurious autocorrelation.
+- For microbiome (cohort cross-section): residual = σ − mean(σ), genuinely the cross-host variation → nearly white by construction.
+
+These are not the same residual. The framework's P2 requires the residual to be $\omega = \sigma_{\text{observed}} - \sigma_{\text{Kish-predicted}}$, where $\sigma_{\text{Kish-predicted}}$ comes from the substrate's engine (the Kish formula applied to that substrate's $(k, \rho)$), not from a trivial mean baseline.
+
+**Resolution required before pre-registering Exp 2:**
+
+1. **Engine-aware predictor:** add `predictor='engine'` (or per-substrate-specific predictor) to `compute_omega_series`, accepting a callable that runs the substrate's engine to produce $\sigma_{\text{Kish-predicted}}(k, \rho)$. The omega residual is then strictly framework-predicted, not naive-mean-predicted.
+2. **Comparable units:** decide whether P2's residual is computed across time (within-substrate time series) or across constituents (cross-section). The choice must be uniform across substrates or the test compares incommensurable structures.
+3. **Re-run Phase 0** with the engine-aware predictor on battery + V-Dem (canonical examples: A0 inert vs A4 high-agency). Only then is the P2 direction check meaningful.
+
+This is exactly the kind of pipeline issue Phase 0 is meant to catch. Caught it on the Tier-1 baseline before propagating to 4 new substrates and a pre-registration commit. **This is the right kind of failure.**
+
+---
+
+## Execution sequence (v0.4)
 
 | Step | Status |
 |---|---|
-| 1. Lock regime (this doc) | ✓ v0.3 |
-| 2. Stub 4 engines + data_fetch.py | In flight |
-| 3. Pre-register `EXP2_PREREGISTRATION.md` + `Exp2Predictions.lean` | Pending engine implementation + dataset SHA pins |
-| 4. CI substrate_revalidation.yml workflow | Drafted alongside engines |
-| 5. Run Exp 2 once Phase 1 of Exp 1 lands | After Exp 1 results |
-| 6. Paper §10 Exp 2 + Zenodo data release | After Exp 2 results |
+| 0a. Lock regime v0.3 | ✓ commit `a93fd58` |
+| 0b. Lake locks P1/P2/P3 + Inv-1..Inv-5 | ✓ `Exp2Predictions.lean` (272 lines, all theorems proved) |
+| 0c. Stub 4 new-substrate engines + `data_fetch.py` | ✓ skeletons committed (raise NotImplementedError until Phase 1) |
+| **0d. Cherry-pick CCA Tier-1 rig to master** | **✓ commit `2573149` (2026-05-16) — loaders + omega + run scripts + design docs** |
+| **0e. Update regime to v0.4 (CRCv2 reframe + P2 load-bearing)** | **✓ this commit** |
+| 0f. Write Phase 0 `phase0_tier1_revalidation.py` | Next |
+| 0g. Run Phase 0 + record baseline R² + Ljung-Box per Tier-1 substrate | Next |
+| 1. Pre-register `EXP2_PREREGISTRATION.md` + commit-hash lock | After 0g (gates new-substrate engine work) |
+| 2. Implement 4 new-substrate loaders + engines (mirror `battery_loader.py` shape) | After 1 |
+| 3. Pin SHA-256 + version for each new substrate in `data_sources.yaml` | After 2 |
+| 4. CI `substrate_revalidation.yml` activates (cron + workflow_dispatch) | After 3 |
+| 5. Run Exp 2 once Phase 1 of Exp 1 lands | After Exp 1 cross-family + after 4 |
+| 6. Paper §10 Exp 2 + Zenodo data release | After 5 |
