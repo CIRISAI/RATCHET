@@ -42,6 +42,54 @@ namespace RATCHET.Exp2
 
 open Classical RATCHET.Agency
 
+/-! ## F-7b RETIRED (2026-05-16)
+
+**F-7b STATUS: RETIRED from load-bearing claim stack.**
+
+F-7b was a falsification handle internal to RATCHET regime development for
+"residual coordination structure is monotone in constituent-agency rung."
+It is NOT present in the synthesis paper's published F-1..F-10. It was
+invented during Exp 2 regime work as an "operator-property strengthening"
+of F-7 (the published handle, "cross-substrate Kish R² > 0.7").
+
+F-7b was tested under 8 pre-registered or pre-locked operationalizations:
+
+  v1.1 mean|φ|(ω) random cross-section, 5 substrates:  ρ = −0.224  INCONCLUSIVE
+  v1.2 same, 6 substrates:                              ρ = +0.091  INCONCLUSIVE
+  v1.3 same n=100, 7 substrates:                        ρ = +0.299  INCONCLUSIVE
+  v1.4 same n=100, 9 substrates:                        ρ = +0.120  INCONCLUSIVE
+  v2.0 excess|φ|(σ-Kish-residual) ordered, 7 substrates:ρ = +0.218  INCONCLUSIVE
+  v2.0+WGI same, 8 substrates:                          ρ = −0.012  INCONCLUSIVE
+  v3.0 RAW excess|φ|(ρ_t), 8 substrates:                ρ = +0.098  INCONCLUSIVE
+  v3.0 AR(1)-residual excess|φ|(ε of ρ_t), 8 substrates:ρ = −0.503  WEAK_FAIL
+
+At each progressive methodology refinement, the cross-rung signal got
+weaker. The closer the metric got to the framework's literal claim
+("structure beyond simple drift, monotone in agency rung"), the worse
+the result.
+
+**Decision (2026-05-16): F-7b is formally retired.**
+
+Active falsification handles remaining for substrate-level claims:
+  - F-7 (published, in synthesis paper §9): cross-substrate Kish R² > 0.7
+    → P1 PASSES 7/7 substrates. Framework's load-bearing F-7 stands.
+
+The formal machinery below (`expectedWhiteness`, `P2_monotone_in_rung`,
+`P2Outcome`, `decideP2`, partition theorems) is PRESERVED as historical
+record of how the bet was formally specified and tested. The axiom
+`P2_monotone_in_rung` continues to type-check; it is no longer claimed
+as a load-bearing prediction. Future code should not gate on `decideP2`.
+
+What stands after F-7b retirement:
+  - K1-K4 Kish algebra (Lean lake, mathematical identity)
+  - P1 cross-substrate Kish R² > 0.7 in 7/7 (THIS is the published F-7)
+  - GPU strain-gauge CCA validations (R² = 0.798 n=21, F-series corridor)
+  - CRC paper N_eff ≈ 7.1 emergence + n=264 independent replication
+
+No further P2 / F-7b runs are pre-registered. The synthesis paper's
+substrate-level support comes from F-7 (P1 R²>0.7), not F-7b.
+-/
+
 /-! ## Locked constants from pre-registration -/
 
 /-- F-7 threshold from the Coherence Substrate Synthesis paper §9.

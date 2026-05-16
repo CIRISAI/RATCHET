@@ -1,6 +1,8 @@
 # Exp 2 — Substrate Fractality Across Agency Levels: Regime
 
-**Status:** **v3.0** (ρ_t direct + AR(1)-residual, 8 substrates) — RAW ρ_t Spearman = +0.098 INCONCLUSIVE; **AR(1)-residual Spearman = −0.503 WEAK_FAIL**. AR(1) absorbs almost all cross-substrate variation; the only substrate with structure beyond AR(1) is **A3 CIRIS (+0.174)**, every other substrate ≤±0.025. Framework's monotonic-in-rung prediction is **technically falsified** under the AR(1)-residual null. Most likely confound: substrate temporal-resolution mismatch (CIRIS chains-over-minutes vs A4 country-year aggregates).
+**Status:** **F-7b RETIRED** (post-v3.0). After 8 pre-registered or pre-locked operationalizations across v1.1, v1.2, v1.3, v1.4, v2.0, v2.0+WGI, v3.0 RAW, v3.0 AR(1) — covering 5–9 substrates and 4 distinct metric formulations — the framework's substrate-fractality bet produced no monotone cross-rung signal. v3.0 AR(1)-residual reached WEAK_FAIL (ρ = −0.503). **F-7b is formally retired from the load-bearing claim stack.** The synthesis paper's F-7 (cross-substrate Kish R² > 0.7), which P1 passes 7/7, remains the framework's load-bearing cross-substrate claim. F-7b was an invention internal to RATCHET regime development; it is not in the synthesis paper.
+
+**Falsification handle (active):** F-7 only (Kish formula structural fit). F-7b machinery in `Exp2Predictions.lean` (`P2_monotone_in_rung`, `decideP2`, `expectedWhiteness`) is preserved as historical record of the tested hypothesis.
 **Predecessor:** v1.3 (commit `6ddfe52`).
 **Pre-registration:** `EXP2_PREREGISTRATION.md` v1.4 (A1+A2+A3+A4+A5 amendments), commit `00f0328`.
 **Paper hook:** Coherence Substrate Synthesis paper §10 Exp 2.

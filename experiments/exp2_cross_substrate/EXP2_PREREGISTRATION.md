@@ -5,6 +5,8 @@
 **Paper hook:** `papers/coherence_substrate_synthesis/main.tex` §10 Exp 2.
 **Status:** P1 only. P2 pre-registration follows after Phase 0 confounders C-1..C-6 are addressed in v1.x.
 
+> **F-7b RETIRED (2026-05-16):** All P2 sections below (v1.1, v1.2, v1.3, v1.4, v2.0, v2.0+WGI) describe progressively-refined operationalizations of F-7b — a falsification handle for "residual structure monotone in agency rung" that was invented internal to RATCHET regime development, NOT present in the synthesis paper's published F-1..F-10. After 8 pre-registered or pre-locked operationalizations across 5–9 substrates and 4 distinct metric formulations, no monotone cross-rung signal emerged; v3.0 AR(1)-residual reached WEAK_FAIL (ρ = −0.503). **F-7b is formally retired from the load-bearing claim stack.** The framework now rests on F-7 (cross-substrate Kish R² > 0.7 — P1 PASSES 7/7), the GPU validations, and CRC replication. All P2 partition language (STRONG_PASS / WEAK_PASS / INCONCLUSIVE / WEAK_FAIL / STRONG_FAIL) below is preserved as historical record of how the bet was specified and tested; the verdicts stand for the record. No further P2 runs are pre-registered.
+
 This document locks the **P1 engine-adequacy test** before any Exp 2 substrate data is finalized. Per the v1.0 lake clarification, **P1 is a precondition (does the engine reasonably fit its substrate?), not the framework's substrate-fractality bet**. The actual framework test is **P2** (residual structure × agency rung), which receives its own pre-registration once the metric and sample-design constraints are locked.
 
 ---
