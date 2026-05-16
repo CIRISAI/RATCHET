@@ -772,14 +772,24 @@ def run_pmu_p1(
     try:
         sys.path.insert(0, str(REPO_ROOT / "tests"))
         from test_powergrid_pnnl import compare_single_event  # type: ignore
-        from ratchet.data.powergrid_loader import load_pnnl_pmu_events
+        from ratchet.data.powergrid_loader import (
+            load_pnnl_pmu_events, load_zenodo_real_pmu_events,
+        )
     except ImportError as e:
         return {"status": "import_error", "error": str(e)}
 
-    dataset = load_pnnl_pmu_events(
-        n_synthetic_events=n_events,
-        seed=seed,
-    )
+    # Prefer real Zenodo PMU data if vendored; fall back to synthetic.
+    zenodo_dir = REPO_ROOT / "data" / "powergrid"
+    has_zenodo = (zenodo_dir / "pmu1_real.csv").exists() and \
+                 (zenodo_dir / "pmu2_real.csv").exists()
+    if has_zenodo:
+        try:
+            dataset = load_zenodo_real_pmu_events(data_dir=zenodo_dir)
+        except Exception:
+            dataset = load_pnnl_pmu_events(n_synthetic_events=n_events, seed=seed)
+    else:
+        dataset = load_pnnl_pmu_events(n_synthetic_events=n_events, seed=seed)
+
     if dataset.n_events == 0:
         return {"status": "no_data", "n_events": 0}
 

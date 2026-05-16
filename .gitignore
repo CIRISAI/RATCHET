@@ -97,3 +97,8 @@ data/microbiome/hf_crc/
 data/microbiome/hf_crc/.cache/
 data/protein/alphafold_sample/
 data/protein/alphafold_sample/.cache/
+
+# Real PMU data (vendored from Zenodo 8343635, ~15 MB; SHA-pinned in data_sources.yaml)
+data/powergrid/pmu1_real.csv
+data/powergrid/pmu2_real.csv
+data/neural/allen_neuropixels_sessions.parquet

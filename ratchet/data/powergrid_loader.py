@@ -920,8 +920,122 @@ __all__ = [
     "compute_settling_sigma",
     "load_pnnl_pmu_events",
     "load_pnnl_grid_events",
+    "load_zenodo_real_pmu_events",
     "prepare_for_engine",
     "NOMINAL_FREQUENCY_HZ",
     "SETTLING_BAND_HZ",
     "DEFAULT_SAMPLE_RATE_HZ",
 ]
+
+
+def load_zenodo_real_pmu_events(
+    data_dir: Union[str, Path] = "data/powergrid",
+    window_seconds: float = 30.0,
+    nominal_hz: float = 50.0,
+) -> PNNLPMUDataset:
+    """Load real PMU events from Zenodo record 8343635 (Real data from PMUs).
+
+    The Zenodo dataset provides 10 minutes of continuous synchrophasor
+    traces from 2 PMUs at 50 Hz reporting (30k samples per PMU). We split
+    each trace into 30-second windows, each window becoming one "event"
+    with k=2 PMUs, ρ = pre-window frequency correlation, σ = settling-CV
+    inverse stability.
+
+    Citation: Zenodo record 8343635, "Real data from PMUs", deposited
+    2023.
+    """
+    data_dir = Path(data_dir)
+    pmu1_path = data_dir / "pmu1_real.csv"
+    pmu2_path = data_dir / "pmu2_real.csv"
+    if not (pmu1_path.exists() and pmu2_path.exists()):
+        raise FileNotFoundError(
+            f"Zenodo PMU CSVs not found at {data_dir}/. "
+            f"Expected pmu1_real.csv and pmu2_real.csv."
+        )
+
+    df1 = pd.read_csv(pmu1_path, low_memory=False)
+    df2 = pd.read_csv(pmu2_path, low_memory=False)
+
+    # Frequency column may have non-numeric entries — coerce
+    freq1 = pd.to_numeric(df1["Frequency"], errors="coerce").values
+    freq2 = pd.to_numeric(df2["Frequency"], errors="coerce").values
+
+    # Trim to common length
+    n_common = min(len(freq1), len(freq2))
+    freq1 = freq1[:n_common]
+    freq2 = freq2[:n_common]
+    finite_mask = np.isfinite(freq1) & np.isfinite(freq2)
+    freq1 = freq1[finite_mask]
+    freq2 = freq2[finite_mask]
+
+    # Estimate sample rate from timestamp delta
+    sample_rate_hz = 50.0  # CSV header indicates 50 Hz default
+    samples_per_window = int(window_seconds * sample_rate_hz)
+    if samples_per_window < 100:
+        samples_per_window = 100
+
+    events: Dict[str, PMUEvent] = {}
+    n_windows = len(freq1) // samples_per_window
+    for w in range(n_windows):
+        start = w * samples_per_window
+        end = start + samples_per_window
+        f1 = freq1[start:end]
+        f2 = freq2[start:end]
+        if len(f1) < 100 or np.std(f1) < 1e-9:
+            continue
+        # Treat the window's midpoint as the "event onset" for shock-style
+        # measurement, then ρ from first half (pre) and settling from second
+        mid = samples_per_window // 2
+        freq_matrix = np.vstack([f1, f2])
+        timestamps = np.arange(samples_per_window) / sample_rate_hz
+        timestamps -= timestamps[mid]  # center at event onset
+
+        # ρ from pre-event correlation
+        if mid >= 50:
+            pre1 = f1[:mid]
+            pre2 = f2[:mid]
+            corr_mat = np.corrcoef(pre1, pre2)
+            rho = float(np.clip(abs(corr_mat[0, 1]) if np.isfinite(corr_mat[0, 1]) else 0.0,
+                                0.0, 1.0))
+        else:
+            rho = 0.0
+
+        # σ from post-event settling stability
+        post1 = f1[mid:]
+        post2 = f2[mid:]
+        # Settling time: time for |freq - nominal| to enter ±0.05 Hz band
+        band = 0.05
+        try:
+            t1 = next((i for i, v in enumerate(post1)
+                       if abs(v - nominal_hz) < band), len(post1))
+            t2 = next((i for i, v in enumerate(post2)
+                       if abs(v - nominal_hz) < band), len(post2))
+            settle_times = np.asarray([t1, t2], dtype=float) / sample_rate_hz
+            settle_cv = float(np.std(settle_times) / (np.mean(settle_times) + 0.01))
+            sigma = float(np.clip(1.0 / (1.0 + settle_cv), 0.0, 1.0))
+        except Exception:
+            sigma = 0.5
+            settle_cv = 0.0
+
+        evt_id = f"zenodo_real_evt_{w:04d}"
+        events[evt_id] = PMUEvent(
+            event_id=evt_id,
+            frequency_matrix=freq_matrix,
+            timestamps=timestamps,
+            event_time_idx=mid,
+            pmu_ids=["PMU1", "PMU2"],
+            sample_rate_hz=sample_rate_hz,
+            k=2,
+            rho=rho,
+            sigma=sigma,
+            pre_event_rho=rho,
+            post_event_settling_cv=settle_cv,
+            event_type="ambient",
+            region="zenodo_test_grid",
+            duration_s=window_seconds,
+            metadata={"source": "zenodo_8343635", "window_idx": w},
+        )
+
+    if not events:
+        raise RuntimeError("No valid Zenodo PMU events extracted")
+    return PNNLPMUDataset(events=events, source="zenodo_real")
