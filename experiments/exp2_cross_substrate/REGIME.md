@@ -1,7 +1,7 @@
 # Exp 2 — Substrate Fractality Across Agency Levels: Regime
 
-**Status:** v0.9.1 (P1 reframed + battery PASS + institutional implementation reveals labeling-choice confound C-6).
-**Predecessor:** v0.9 (commit `76a36d2`).
+**Status:** v0.9.2 (BioTIME A2 engine implemented + synthetic-validated P1 PASS; 3 substrates wired in P1 harness; pre-registration still blocked on labeling-decision + real data).
+**Predecessor:** v0.9.1 (commit `c6ee1e7`).
 **Paper hook:** Coherence Substrate Synthesis paper §10 Exp 2.
 **Falsification handle:** F-7 (cross-substrate mapping failure), strengthened with F-7b (residual-structure agency conditional).
 **Formal authority:** Lean lake modules — `RATCHET.Experiments.Exp2Predictions` (P1/P2/P3 + Inv-1..Inv-5 decision-rule invariants) + `RATCHET.Core.AgencyRung` (ladder + `consent_required_iff_rung_ge_A3` theorem).
@@ -345,7 +345,7 @@ P2 (cross-substrate residual structure × agency rung) IS inherently a cross-run
 | microbiome (AGP) | Pending | Engine on master, blocked on AGP raw data |
 | AlphaFold (Exp 2 new) | Engine stub (75 LOC); needs implementation | Pending |
 | Allen neural (Exp 2 new) | Engine stub (76 LOC); needs implementation | Pending |
-| BioTIME (Exp 2 new) | Engine stub (100 LOC); subagent in progress | In flight |
+| BioTIME (Exp 2 new) | ✅ **PASS** (synthetic, v0.9.2): fit-score CI [0.939, 0.973] across 50 communities, mean RMSE 0.10 | Engine + loader + test all on master (`ratchet.engines.ecological`, `ratchet.data.ecological_loader`, `tests/test_ecological_biotime.py`). Real BioTIME 2.0 CSV vendoring pending (registration-gated). |
 | PMU grid (Exp 2 new) | Engine stub (101 LOC); needs implementation | Pending |
 
 ### New confounder C-6 (institutional labeling) — discovered v0.9.1

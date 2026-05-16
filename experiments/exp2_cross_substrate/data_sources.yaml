@@ -71,6 +71,7 @@ substrates:
   biotime:
     rung: A2
     engine: ratchet.engines.ecological
+    loader: ratchet.data.ecological_loader
     name: "BioTIME 2.0 — Global biodiversity time series"
     version: "2.0"  # 2025 release
     license: "CC-BY"
@@ -82,8 +83,16 @@ substrates:
       min_years: 10
       min_species: 5
       expected_count: 500
+    vendored_path: "data/ecological/biotime_query.csv"  # placeholder until first fetch
     expected_sha256: null
     refresh_cadence: "annual"
+    note: |
+      Loader wired at ratchet.data.ecological_loader.load_biotime_data().
+      Falls back to SyntheticBioTIMEGenerator when vendored CSV is absent,
+      which parameterises on the published BioTIME 2.0 marginal
+      distributions. Synthetic-validated engine is the v0.9 deliverable;
+      real-data validation lands once the BioTIME CSV is vendored at
+      `data/ecological/biotime_query.csv` and its SHA pinned here.
 
   # ─────────────────────────────────────────────────────────────────
   # Tier-1 substrates for continuous re-validation

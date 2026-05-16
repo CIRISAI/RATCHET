@@ -153,6 +153,31 @@ try:
 except ImportError:
     pass
 
+# Ecological community engine (BioTIME / A2 substrate)
+try:
+    from .ecological import (
+        EcologicalCommunityEngine,
+        EcologicalParams,
+        SpeciesState,
+        EcologicalShock,
+        EcologicalIntervention,
+        EcologicalShockType,
+        EcologicalInterventionType,
+        create_ecological_engine,
+    )
+    __all__.extend([
+        "EcologicalCommunityEngine",
+        "EcologicalParams",
+        "SpeciesState",
+        "EcologicalShock",
+        "EcologicalIntervention",
+        "EcologicalShockType",
+        "EcologicalInterventionType",
+        "create_ecological_engine",
+    ])
+except ImportError:
+    pass
+
 # Institutional collapse engine (history domain)
 try:
     from .institutional import (

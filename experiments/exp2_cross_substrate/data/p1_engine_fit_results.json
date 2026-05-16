@@ -92,5 +92,98 @@
     },
     "passes_p1": false,
     "paper_target": "5/5 TN; 3/13 FP; AUC \u2265 0.7 under 5-fold CV by country"
+  },
+  "biotime": {
+    "status": "ok",
+    "substrate": "BioTIME ecology",
+    "rung": 2,
+    "source": "synthetic",
+    "n_communities": 50,
+    "mean_rmse": 0.10159453414839553,
+    "rmse_per_community_min": 0.035208516690207504,
+    "rmse_per_community_max": 0.3423838635078506,
+    "fit_score_point": 0.958714202524682,
+    "fit_score_ci_low": 0.9393334005850633,
+    "fit_score_ci_high": 0.9724917165239831,
+    "bootstrap_rmse_ci": [
+      0.08292810662859859,
+      0.12315295308572256
+    ],
+    "passes_p1": true,
+    "per_community": [
+      {
+        "community_id": "synth_0000_ter",
+        "k": 11,
+        "num_years": 36,
+        "rmse": 0.04550713653071731,
+        "biomass_rmse": 0.12672319768711518,
+        "final_sigma_error": 0.03816260023446938,
+        "empirical_rho": 0.6989428789605195,
+        "simulated_rho": 0.8731226745751283,
+        "empirical_sigma": 0.8294378574043636,
+        "simulated_sigma": 0.867600457638833
+      },
+      {
+        "community_id": "synth_0001_mar",
+        "k": 6,
+        "num_years": 27,
+        "rmse": 0.054099714567444175,
+        "biomass_rmse": 0.2801728975073884,
+        "final_sigma_error": 0.030280973211831652,
+        "empirical_rho": 0.6314143294264302,
+        "simulated_rho": 0.5432527638514396,
+        "empirical_sigma": 0.8254568790987049,
+        "simulated_sigma": 0.7951759058868733
+      },
+      {
+        "community_id": "synth_0002_fre",
+        "k": 10,
+        "num_years": 26,
+        "rmse": 0.052351016463371154,
+        "biomass_rmse": 0.11040912833551646,
+        "final_sigma_error": 0.0197726241436742,
+        "empirical_rho": 0.6224535980888616,
+        "simulated_rho": 0.5460616821155696,
+        "empirical_sigma": 0.8708510962436579,
+        "simulated_sigma": 0.8510784720999837
+      },
+      {
+        "community_id": "synth_0003_ter",
+        "k": 13,
+        "num_years": 31,
+        "rmse": 0.09246792977267144,
+        "biomass_rmse": 0.34088816509917463,
+        "final_sigma_error": 0.025138802831365825,
+        "empirical_rho": 0.7774920697560408,
+        "simulated_rho": 0.5054244389870064,
+        "empirical_sigma": 0.8009689633993556,
+        "simulated_sigma": 0.8261077662307215
+      },
+      {
+        "community_id": "synth_0004_mar",
+        "k": 8,
+        "num_years": 18,
+        "rmse": 0.0817212875037086,
+        "biomass_rmse": 0.33202569181511216,
+        "final_sigma_error": 0.03892581779868465,
+        "empirical_rho": 0.527040503404199,
+        "simulated_rho": 0.8333470674012122,
+        "empirical_sigma": 0.7430361737495423,
+        "simulated_sigma": 0.781961991548227
+      },
+      {
+        "community_id": "synth_0005_fre",
+        "k": 10,
+        "num_years": 34,
+        "rmse": 0.08723829804679387,
+        "biomass_rmse": 0.280088160473608,
+        "final_sigma_error": 0.015442650338520547,
+        "empirical_rho": 0.5655653573549314,
+        "simulated_rho": 0.6006457296947398,
+        "empirical_sigma": 0.830506220843973,
+        "simulated_sigma": 0.8459488711824935
+      }
+    ],
+    "note": "Synthetic BioTIME-like communities (v0.9 deliverable). Vendor `data/ecological/biotime_query.csv` to switch the harness to real BioTIME 2.0 data without code changes."
   }
 }

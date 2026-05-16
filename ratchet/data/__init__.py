@@ -25,6 +25,12 @@ __all__ = [
     'get_high_quality_cells',
     'save_processed_data',
     'prepare_for_engine',
+    # Ecological / BioTIME data
+    'EcologicalSample',
+    'BioTIMECommunityDataset',
+    'SyntheticBioTIMEGenerator',
+    'load_biotime_data',
+    'load_biotime_communities',
 ]
 
 # Lazy imports to avoid heavy dependencies at module load time
@@ -55,6 +61,16 @@ def __getattr__(name: str):
             get_high_quality_cells,
             save_processed_data,
             prepare_for_engine,
+        )
+        return locals()[name]
+    if name in ('EcologicalSample', 'BioTIMECommunityDataset', 'SyntheticBioTIMEGenerator',
+                'load_biotime_data', 'load_biotime_communities'):
+        from ratchet.data.ecological_loader import (
+            EcologicalSample,
+            BioTIMECommunityDataset,
+            SyntheticBioTIMEGenerator,
+            load_biotime_data,
+            load_biotime_communities,
         )
         return locals()[name]
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

@@ -399,6 +399,115 @@ def run_battery_p1() -> Optional[dict]:
     }
 
 
+def run_biotime_p1(
+    n_communities: int = 50,
+    seed: int = 42,
+) -> Optional[dict]:
+    """BioTIME (A2) substrate — within-substrate engine-vs-data RMSE/R².
+
+    Delegates per-community calibration to `compare_single_community` from
+    `tests/test_ecological_biotime.py`. If a vendored BioTIME CSV is
+    present at `data/ecological/biotime_query.csv`, that drives the
+    comparison; otherwise the synthetic BioTIME generator (parameterised
+    on the published BioTIME 2.0 distributions) is used.
+
+    Aggregation mirrors `run_battery_p1`:
+      - mean per-community sigma-trajectory RMSE
+      - bootstrap 95% CI on the mean RMSE
+      - fit-score = 1 - (RMSE / 0.5)² mapped to [0, 1]
+      - passes_p1 iff fit_low ≥ 0.7 AND mean_rmse ≤ 0.20
+    """
+    try:
+        sys.path.insert(0, str(REPO_ROOT / "tests"))
+        from test_ecological_biotime import compare_single_community  # type: ignore
+        from ratchet.data.ecological_loader import load_biotime_data
+    except ImportError as e:
+        return {"status": "import_error", "error": str(e)}
+
+    dataset = load_biotime_data(
+        n_synthetic_communities=n_communities,
+        seed=seed,
+    )
+
+    if dataset.n_communities == 0:
+        return {"status": "no_data", "n_communities": 0}
+
+    per_community = []
+    rmse_values = []
+    for i, cid in enumerate(sorted(dataset.communities.keys())):
+        try:
+            comp = compare_single_community(cid, dataset, verbose=False, seed=seed + i)
+        except Exception as e:
+            per_community.append({"community_id": cid, "error": str(e)})
+            continue
+        rmse = float(comp.get("rmse", float("nan")))
+        if np.isnan(rmse):
+            continue
+        rmse_values.append(rmse)
+        per_community.append({
+            "community_id": cid,
+            "k": int(comp.get("k", 0)),
+            "num_years": int(comp.get("num_years", 0)),
+            "rmse": rmse,
+            "biomass_rmse": float(comp.get("biomass_rmse", float("nan"))),
+            "final_sigma_error": float(comp.get("final_sigma_error", float("nan"))),
+            "empirical_rho": float(comp.get("empirical_rho", float("nan"))),
+            "simulated_rho": float(comp.get("simulated_rho", float("nan"))),
+            "empirical_sigma": float(comp.get("empirical_sigma", float("nan"))),
+            "simulated_sigma": float(comp.get("simulated_sigma", float("nan"))),
+        })
+
+    if not rmse_values:
+        return {"status": "no_data", "n_communities": 0}
+
+    rmse_arr = np.asarray(rmse_values)
+    mean_rmse = float(np.mean(rmse_arr))
+
+    rng = np.random.default_rng(0xB10718E)
+    n_resamples = 10_000
+    boot_rmse_means = []
+    for _ in range(n_resamples):
+        idx = rng.integers(0, len(rmse_arr), len(rmse_arr))
+        boot_rmse_means.append(float(np.mean(rmse_arr[idx])))
+    boot_arr = np.asarray(boot_rmse_means)
+
+    # Sigma ∈ (0, 1]; spread baseline 0.5 = same convention as battery.
+    def rmse_to_fitscore(r):
+        return float(max(0.0, 1.0 - (r / 0.5) ** 2))
+
+    fit_point = rmse_to_fitscore(mean_rmse)
+    fit_low = rmse_to_fitscore(float(np.percentile(boot_arr, 97.5)))
+    fit_high = rmse_to_fitscore(float(np.percentile(boot_arr, 2.5)))
+    passes_p1 = bool(fit_low >= 0.7 and mean_rmse <= 0.20)
+
+    return {
+        "status": "ok",
+        "substrate": "BioTIME ecology",
+        "rung": 2,
+        "source": dataset.source,
+        "n_communities": len(per_community),
+        "mean_rmse": mean_rmse,
+        "rmse_per_community_min": float(np.min(rmse_arr)),
+        "rmse_per_community_max": float(np.max(rmse_arr)),
+        "fit_score_point": fit_point,
+        "fit_score_ci_low": fit_low,
+        "fit_score_ci_high": fit_high,
+        "bootstrap_rmse_ci": [
+            float(np.percentile(boot_arr, 2.5)),
+            float(np.percentile(boot_arr, 97.5)),
+        ],
+        "passes_p1": passes_p1,
+        "per_community": per_community[:6],
+        "note": (
+            "Synthetic BioTIME-like communities (v0.9 deliverable). "
+            "Vendor `data/ecological/biotime_query.csv` to switch the "
+            "harness to real BioTIME 2.0 data without code changes."
+        ) if dataset.source == "synthetic" else (
+            "Real BioTIME 2.0 communities loaded from vendored CSV."
+        ),
+    }
+
+
 def main() -> int:
     out_dir = Path(__file__).parent / "data"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -450,13 +559,41 @@ def main() -> int:
         print(f"  {res_inst}")
     results["institutional"] = res_inst
 
+    # ─── BioTIME ecology (A2) ──────────────────────────────────────
+    print("\n[biotime] BioTIME 2.0 (A2) — ecology engine-vs-data")
+    res_bio = run_biotime_p1()
+    if res_bio and res_bio.get("status") == "ok":
+        print(f"  Communities:             {res_bio['n_communities']}  (source: {res_bio['source']})")
+        print(f"  Mean per-community RMSE: {res_bio['mean_rmse']:.4f}")
+        print(f"  RMSE range:              [{res_bio['rmse_per_community_min']:.3f}, "
+              f"{res_bio['rmse_per_community_max']:.3f}]")
+        print(f"  Bootstrap RMSE 95% CI:   [{res_bio['bootstrap_rmse_ci'][0]:.4f}, "
+              f"{res_bio['bootstrap_rmse_ci'][1]:.4f}]")
+        print(f"  Fit-score (1 - (RMSE/0.5)²): {res_bio['fit_score_point']:.4f}")
+        print(f"  Fit-score 95% CI:        [{res_bio['fit_score_ci_low']:.4f}, "
+              f"{res_bio['fit_score_ci_high']:.4f}]")
+        print(f"  P1 PASS (CI low ≥ 0.7 AND mean RMSE ≤ 0.20): "
+              f"{'✓' if res_bio['passes_p1'] else '✗'}")
+        if res_bio.get("note"):
+            print(f"  Note: {res_bio['note']}")
+        print()
+        print(f"  Per-community sample (first 6):")
+        for c in res_bio["per_community"]:
+            if "error" in c:
+                continue
+            print(f"    {c['community_id']}: RMSE={c['rmse']:>6.4f}  "
+                  f"final-sigma-err={c.get('final_sigma_error', 0):>+6.4f}  "
+                  f"k={c.get('k', 0):>2d}  n_years={c.get('num_years', 0)}")
+    else:
+        print(f"  {res_bio}")
+    results["biotime"] = res_bio
+
     print()
     print("=" * 70)
     print("Substrates pending P1 harness (v0.9 work-in-progress):")
     print("  microbiome    — engine on master, blocked on AGP raw data")
     print("  AlphaFold     — engine stub; impl needed")
     print("  Allen neural  — engine stub; impl needed")
-    print("  BioTIME       — engine stub; subagent in progress")
     print("  PMU grid      — engine stub; impl needed")
 
     out_path = out_dir / "p1_engine_fit_results.json"
