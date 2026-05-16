@@ -28,6 +28,13 @@ from .residuals import (
     sigma_predictor_baseline,
 )
 
+from .kish_fit import (
+    KishFitResult,
+    fit_kish_regression,
+    compute_omega_from_kish_fit,
+    compute_k_eff,
+)
+
 from .null_test import (
     NullTestResult,
     test_mean_zero,

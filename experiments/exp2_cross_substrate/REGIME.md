@@ -1,7 +1,7 @@
 # Exp 2 — Substrate Fractality Across Agency Levels: Regime
 
-**Status:** v0.4 (CRCv2-aligned; P2 reframed as load-bearing; loaders + omega module landed).
-**Predecessor:** v0.3 (commit `a93fd58`).
+**Status:** v0.5 (engine-aware predictor + positive control wired; pipeline validated, real-data direction still doesn't show P2 — three hypotheses to resolve before pre-registration).
+**Predecessor:** v0.4 (commit `5c64f62`).
 **Paper hook:** Coherence Substrate Synthesis paper §10 Exp 2.
 **Falsification handle:** F-7 (cross-substrate mapping failure), strengthened with F-7b (residual-structure agency conditional).
 **Formal authority:** Lean lake modules — `RATCHET.Experiments.Exp2Predictions` (P1/P2/P3 + Inv-1..Inv-5 decision-rule invariants) + `RATCHET.Core.AgencyRung` (ladder + `consent_required_iff_rung_ge_A3` theorem).
@@ -298,7 +298,41 @@ python3 experiments/exp2_cross_substrate/phase0_tier1_revalidation.py
 # + Spearman correlation of (p-value, agency_rung) across the available Tier-1 points.
 ```
 
-### Phase 0 first-run finding (2026-05-16) — pipeline ordering issue surfaced
+### Phase 0 v0.5 finding (2026-05-16) — pipeline validated, sample-design issue remains
+
+**With engine-aware Kish-regression predictor + 5-rung synthetic positive control:**
+
+| Run | Spearman ρ(rung, ljung-box p) | Verdict |
+|---|---|---|
+| **Positive control** (synthetic, AR(1) noise φ = 0.0/0.2/0.45/0.7/0.85 across rungs A0–A4) | **−1.000** (p < 10⁻²³) | **STRONG_PASS** — pipeline correctly distinguishes white from structured residuals across the agency ladder |
+| **Real Tier-1** (battery A0 n=40, microbiome A1 synthetic n=300) | **+1.000** (p = NaN, n=2) | **FAIL_DIRECTION** — the two available real substrates do not show the predicted ordering |
+
+**What this tells us:**
+
+| Hypothesis | Status |
+|---|---|
+| ❌ "Pipeline has a bug" | Falsified — positive control passes perfectly |
+| ❌ "P2 needs a trivial-mean predictor" (v0.4 hypothesis) | Falsified — Kish-regression predictor still gives wrong direction on real data |
+| ⚠️ **"Sample design contamination"** | **Open** — battery uses bootstrap of correlated cells (retains cross-cell ρ that *isn't* the framework's intended ρ); microbiome uses synthetic generator producing i.i.d. samples by construction. Not commensurable. |
+| ⚠️ **"Sample-size sensitivity of Ljung-Box"** | **Open** — battery n=40 vs microbiome n=300; Ljung-Box power differs sharply, so direct p-value comparison across n is *not* apples-to-apples |
+| ⚠️ **"P2 prediction may be sign-reversed"** | **Open** — possible that at A0 (inert), real physical coupling (electrochemistry) creates real residual structure, while at higher rungs the structure looks more like additive noise |
+| ⚠️ **"P1 fit is near-flat, residual ≈ demeaned σ"** | **Open** — battery P1 R²=0.04, microbiome P1 R²=0.0001. With β ≈ 0, the regression contributes nothing; ω is essentially σ−mean(σ). Need genuine k_eff dependence in σ for the residual to be the framework's residual. |
+
+**Required v0.6 fixes before pre-registration:**
+
+1. **Sample-size-invariant whiteness statistic:** replace Ljung-Box p-value with AR(1) coefficient magnitude (or equivalent sample-size-invariant measure). The framework's prediction is *strength* of residual structure, not *significance against null*, so a coefficient is more honest.
+2. **Trajectory-window sampling for battery:** each sample = (k_window, ρ_window, σ_window) where k_window = cells in a time window, ρ_window = correlation during that window, σ_window = mean SOH at window end. This captures σ varying with k_eff over time — the framework's actual setup.
+3. **Real (not synthetic) microbiome cohort:** AGP raw with natural across-host variation in (k, ρ, σ). Synthetic i.i.d. samples don't expose the structure the framework predicts.
+4. **V-Dem CSV vendored locally:** so an A4 substrate is in the comparison; n=2 doesn't give meaningful Spearman significance.
+5. **Pre-register the metric AND the sample-design constraint** in `EXP2_PREREGISTRATION.md` before running real-data analysis.
+
+**Why the positive control matters:**
+
+The positive control proves the pipeline can detect the framework's predicted ordering when data conforms to the framework's predicted structure. This shifts the burden of explanation: if Tier-1 data also conformed (and was sampled correctly), Phase 0 would show STRONG_PASS. That it doesn't means the **operationalization** is incomplete, not that the framework is falsified.
+
+This is a meaningful Phase 0 outcome. We've eliminated pipeline-bug and predictor-choice as confounds; we've isolated three remaining hypotheses about sample design and metric choice that v0.6 must resolve before pre-registration.
+
+### Phase 0 v0.4 finding (2026-05-16) — pipeline ordering issue surfaced (resolved by v0.5)
 
 Phase 0 was run with the battery (A0, NASA Li-ion concatenated detrended trajectories) and microbiome (A1, synthetic Shannon cohort of n=300) substrates. V-Dem (A4) is awaiting source-data vendoring.
 
