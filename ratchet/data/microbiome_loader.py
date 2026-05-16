@@ -844,9 +844,102 @@ def load_american_gut_project(
     return loader
 
 
+def load_hf_crc_cohort(
+    data_dir: Union[str, Path] = "data/microbiome/hf_crc",
+    detection_threshold: float = 1e-4,
+) -> List[MicrobiomeSample]:
+    """Load real human gut microbiome cohort from the HF
+    `wwydmanski/colorectal-carcinoma-microbiome-fengq` dataset.
+
+    The dataset provides CLR (centered log-ratio) transformed abundances
+    per sample × species. We invert CLR back to relative abundances via
+    softmax, then compute the standard RATCHET (k, rho, sigma) triple.
+
+    Returns a list of MicrobiomeSample objects, one per row across both
+    CLR_train.csv and CLR_test.csv (n=107 total).
+
+    Citation: Feng et al. (2015). Gut microbiome development along the
+    colorectal adenoma-carcinoma sequence. Nat Commun 6:6528.
+    DOI: 10.1038/ncomms7528.
+    """
+    base = Path(data_dir)
+    csvs = [base / "CLR_train.csv", base / "CLR_test.csv"]
+    parts = []
+    for p in csvs:
+        if not p.exists():
+            continue
+        df = pd.read_csv(p)
+        df["__split__"] = p.stem
+        parts.append(df)
+    if not parts:
+        raise FileNotFoundError(
+            f"No CRC microbiome CSV files found at {data_dir}/. "
+            f"Expected CLR_train.csv and/or CLR_test.csv."
+        )
+    df = pd.concat(parts, ignore_index=True)
+
+    abundance_cols = [c for c in df.columns
+                      if c.startswith("s__") or c.startswith("g__")]
+    target_col = "target" if "target" in df.columns else None
+    taxa_ids = list(abundance_cols)
+
+    samples: List[MicrobiomeSample] = []
+    for i, row in df.iterrows():
+        clr_vec = row[abundance_cols].astype(float).values
+        # Invert CLR (softmax) → relative abundances
+        clr_centered = clr_vec - np.mean(clr_vec)
+        clr_centered = np.clip(clr_centered, -20, 20)
+        rel_abundance = np.exp(clr_centered)
+        rel_abundance = rel_abundance / max(float(np.sum(rel_abundance)), 1e-12)
+
+        detected_mask = rel_abundance > detection_threshold
+        k = int(np.sum(detected_mask))
+
+        x = rel_abundance[detected_mask]
+        if len(x) > 0:
+            H = float(-np.sum(x * np.log(x)))
+            H_max = float(np.log(len(x))) if len(x) > 1 else 1.0
+            sigma = float(H / H_max) if H_max > 0 else 0.0
+        else:
+            sigma = 0.0
+
+        # ρ proxy: Berger-Parker dominance = max(rel_abundance). High values
+        # mean one taxon dominates → high cross-taxon "coupling" (the
+        # community is anti-correlated to its dominant species).
+        # Mapping: dominance ∈ [1/n, 1]; we rescale to [0, 1] via
+        # rho = (dominance - 1/k)/(1 - 1/k) which is 0 for perfect evenness
+        # and 1 for full single-species dominance.
+        if k > 1 and len(x) > 0:
+            dom = float(np.max(rel_abundance))
+            min_dom = 1.0 / k
+            rho = float(np.clip((dom - min_dom) / (1.0 - min_dom + 1e-9), 0.0, 1.0))
+        else:
+            rho = 0.0
+
+        target_val = int(row[target_col]) if target_col else 0
+        f_val = float(0.5 + 0.3 * target_val)  # CRC marker → higher dysbiosis fraction
+
+        samples.append(MicrobiomeSample(
+            sample_id=f"hf_crc_{i:04d}",
+            abundances=rel_abundance,
+            taxa_ids=taxa_ids,
+            k=k,
+            rho=rho,
+            sigma=sigma,
+            f=f_val,
+            metadata={
+                "source": "hf_wwydmanski_crc",
+                "split": str(row.get("__split__", "unknown")),
+                "target": target_val,
+            },
+        ))
+    return samples
+
+
 __all__ = [
     'MicrobiomeDataLoader',
     'MicrobiomeSample',
     'SyntheticMicrobiomeGenerator',
     'load_american_gut_project',
+    'load_hf_crc_cohort',
 ]

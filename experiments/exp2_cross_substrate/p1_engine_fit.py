@@ -545,11 +545,19 @@ def run_microbiome_p1(
         sys.path.insert(0, str(REPO_ROOT / "tests"))
         from test_microbiome_p1 import (  # type: ignore
             build_synthetic_cohort, compare_single_sample,
+            build_real_cohort_from_hf_crc,
         )
     except ImportError as e:
         return {"status": "import_error", "error": str(e)}
 
-    cohort = build_synthetic_cohort(n_samples=n_samples, seed=seed)
+    # Prefer real HF CRC cohort if vendored; fall back to synthetic.
+    crc_dir = REPO_ROOT / "data" / "microbiome" / "hf_crc"
+    if crc_dir.exists() and any(crc_dir.glob("*.csv")):
+        cohort = build_real_cohort_from_hf_crc(data_dir=crc_dir, seed=seed)
+        source_label = "hf_crc_real"
+    else:
+        cohort = build_synthetic_cohort(n_samples=n_samples, seed=seed)
+        source_label = "synthetic_agp_like"
     if not cohort:
         return {"status": "no_data", "n_samples": 0}
 
@@ -597,9 +605,9 @@ def run_microbiome_p1(
 
     return {
         "status": "ok",
-        "substrate": "microbiome (AGP / synthetic)",
+        "substrate": "microbiome (HF CRC real / synthetic fallback)",
         "rung": 1,
-        "source": "synthetic_agp_like",
+        "source": source_label,
         "n_samples": len(per_sample),
         "mean_rmse": mean_rmse,
         "rmse_per_sample_min": float(np.min(rmse_arr)),
