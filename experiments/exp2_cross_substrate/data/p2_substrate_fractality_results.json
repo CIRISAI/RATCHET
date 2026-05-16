@@ -1,8 +1,8 @@
 {
   "status": "ok",
-  "n_valid": 5,
-  "spearman_rho": -0.22360679774997896,
-  "spearman_p": 0.7176856442107861,
+  "n_valid": 6,
+  "spearman_rho": 0.09107651110783746,
+  "spearman_p": 0.8637629700202579,
   "verdict": "INCONCLUSIVE",
   "per_substrate": {
     "battery": {
@@ -106,8 +106,11 @@
       "decay_rate": -0.12152639913514826
     },
     "allen": {
-      "status": "no_data",
-      "substrate": "allen"
+      "status": "k_invariant",
+      "substrate": "allen",
+      "n": 30,
+      "k_spread": 0,
+      "source": "real_allen_s3"
     },
     "biotime": {
       "status": "ok",
@@ -135,11 +138,29 @@
       "decay_rate": -0.015938213627443732
     },
     "institutional": {
-      "status": "k_invariant",
+      "status": "ok",
       "substrate": "institutional",
+      "rung": 4,
+      "source": "real_polity5",
       "n": 30,
-      "k_spread": 0,
-      "source": "real_polity5"
+      "k_spread": 3,
+      "k_range": [
+        3,
+        6
+      ],
+      "rho_range": [
+        0.0,
+        1.0
+      ],
+      "sigma_range": [
+        0.02999999999999998,
+        0.9
+      ],
+      "p1_r_squared": 0.005640903966164235,
+      "mean_abs_phi": 0.1531538103345313,
+      "phi_ci_low": 0.07086980726974104,
+      "phi_ci_high": 0.22885669941397052,
+      "decay_rate": 0.12675775211395196
     }
   }
 }

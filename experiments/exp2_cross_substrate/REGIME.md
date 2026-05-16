@@ -1,8 +1,8 @@
 # Exp 2 — Substrate Fractality Across Agency Levels: Regime
 
-**Status:** v1.1 (P2 pre-registered + run; **VERDICT: INCONCLUSIVE** under v1.1 pre-registration; 5 of 7 substrates valid; 2 dropped by C-4 k-variation filter — honest pre-registered outcome).
-**Predecessor:** v1.0.1 (commit `a63b2d4`).
-**Pre-registration:** `EXP2_PREREGISTRATION.md` v1.1 (P1 + P2 sections), commit `8488d21`.
+**Status:** v1.2 (P2 amendment A3 + re-run; **VERDICT: INCONCLUSIVE** with ρ flipped from −0.224 → +0.091 after institutional fix; 6 of 7 valid; Allen now drops as same C-4 pattern).
+**Predecessor:** v1.1 (commit `7211bc8`).
+**Pre-registration:** `EXP2_PREREGISTRATION.md` v1.2 (A1+A2+A3 amendments), commit `5b66690`.
 **Paper hook:** Coherence Substrate Synthesis paper §10 Exp 2.
 **Falsification handle:** F-7 (cross-substrate mapping failure), strengthened with F-7b (residual-structure agency conditional).
 **Formal authority:** Lean lake modules — `RATCHET.Experiments.Exp2Predictions` (P1/P2/P3 + Inv-1..Inv-5 decision-rule invariants) + `RATCHET.Core.AgencyRung` (ladder + `consent_required_iff_rung_ge_A3` theorem).
@@ -299,7 +299,61 @@ python3 experiments/exp2_cross_substrate/phase0_tier1_revalidation.py
 # + Spearman correlation of (p-value, agency_rung) across the available Tier-1 points.
 ```
 
-### v1.1 P2 first-run result (2026-05-16) — INCONCLUSIVE under pre-registered rule
+### v1.2 P2 second-run result (2026-05-16) — INCONCLUSIVE but direction flipped positive
+
+After amendment A3 (committed BEFORE re-run at `5b66690`) fixed the two v1.1 extractor bugs, the v1.2 re-run produced:
+
+```
+Spearman ρ(rung, mean|φ|) = +0.091  (p = 0.86)
+→ INCONCLUSIVE (per the −0.3 ≤ ρ < +0.3 partition cell)
+```
+
+**Direction flipped from v1.1 (−0.224) to v1.2 (+0.091)** — now slightly *positive* (the framework's predicted direction). Still in INCONCLUSIVE cell.
+
+**Per-substrate mean|φ| (v1.2):**
+
+| Substrate | Rung | n | k range | mean\|φ\| | 95% CI | Change vs v1.1 |
+|---|---|---|---|---|---|---|
+| battery | A0 | 30 | 3–18 | 0.173 | [0.072, 0.214] | unchanged |
+| AlphaFold | A0 | 30 | 83–748 | 0.124 | [0.071, 0.213] | unchanged |
+| PMU | A0 | 20 | 2 | 0.080 | [0.080, 0.292] | unchanged |
+| microbiome | A1 | 30 | 52–154 | 0.114 | [0.070, 0.215] | unchanged |
+| BioTIME | A2 | 30 | 7–113 | 0.124 | [0.067, 0.212] | unchanged |
+| **institutional** | **A4** | **30** | **3–6** | **0.153** | [0.071, 0.229] | **fixed (was DROPPED)** |
+| **Allen** | A1 | — | — | — | — | **DROPPED (was DROPPED) — C-4 k_invariant: vendor script set max-units=60 → 60 neurons fixed in every session** |
+
+**Valid substrates: 6 / 7** (≥ 4 minimum cleared).
+
+### What v1.2 tells us
+
+**The framework's predicted direction is now visible at trace level but underpowered.** Per-rung mean|φ| averages:
+- A0: 0.126 (battery 0.173 + alphafold 0.124 + pmu 0.080) / 3
+- A1: 0.114 (microbiome only — Allen dropped)
+- A2: 0.124 (biotime only)
+- A4: 0.153 (institutional only)
+
+The framework predicts A0 < A1 < A2 < A4 monotone. The v1.2 measurement shows: 0.126 ≈ 0.114 ≈ 0.124 < 0.153. Slight upward trend but battery is anomalously high (A0=0.173 individually) and Allen+more A1/A2/A4 data points are needed to reduce per-rung noise.
+
+**Pre-registered analysis:** Spearman ρ = +0.091 with only 6 substrates × 4 distinct rungs (3 at A0, 1 each at A1/A2/A4) doesn't reach the +0.3 weak-pass threshold. The locked partition gives INCONCLUSIVE.
+
+### v1.3 paths (would need amendment A4 BEFORE another re-run)
+
+| Issue | v1.3 fix |
+|---|---|
+| Allen C-4 k_invariant | Sample random k-subsets of neurons per session (k ∈ {20, 30, 40, 50, 60}) instead of always using all 60. Same pattern as v1.2 institutional fix and v1.2 battery fix. |
+| n=30 / substrate too small | Increase to n=100 per substrate. Bootstrap CI tightens; per-rung averages stabilize. Wall-time cost is moderate (BioTIME is the slow one). |
+| Only 1 substrate per rung at A1/A2/A4 | Add more substrates: V-Dem (A4), additional microbiome cohorts (A1), Allen brain-area subsets (A1 with neuron subsetting). |
+| Battery anomaly | Investigate why A0 battery |φ|=0.17 is higher than A0 alphafold |φ|=0.12 — possibly real-data peculiarity, possibly extractor artifact. |
+
+### Honest summary
+
+v1.1 + v1.2 both produce INCONCLUSIVE. The framework is **neither confirmed nor falsified** by these tests. The pre-registration discipline worked: each rule change committed BEFORE the corresponding run; methodology fixes (v1.2) didn't move the threshold or rule. The slight directional flip (−0.224 → +0.091) is consistent with the framework's prediction but not statistically significant.
+
+**For paper write-up:** report v1.1 + v1.2 honestly. The empirical record is two INCONCLUSIVE runs with directional drift toward the predicted sign as extractor bugs were fixed. This is not a strong-form falsification (which would require ρ < −0.7) but neither is it confirmation. P2 as designed at this n is underpowered for these 6-7 substrates' inherent heterogeneity.
+
+The K1-K4 algebra remains proven. P1 close-out K=7/7 remains. F-7b's empirical status: **not yet adjudicated** under sufficient statistical power.
+
+### v1.1 P2 first-run result (2026-05-16) — INCONCLUSIVE under pre-registered rule (superseded by v1.2 after amendment A3)
 
 **The pre-registered P2 result, run against vendored real data on the locked v1.1 rule:**
 
