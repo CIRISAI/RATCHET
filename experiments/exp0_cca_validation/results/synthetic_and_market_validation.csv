@@ -1,0 +1,11 @@
+test_name,description,expected,actual,correct,granger_ab_p,granger_ba_p,cross_corr_p,multi_metric_stat,direction
+Synthetic_Independent,Two completely independent random systems (negative control),falsified,falsified,True,0.30460572287266363,0.25074209505032496,0.454,0.0,
+Synthetic_Strong_Causal,"A drives B with lag=10, coupling=0.8 (positive control)",not_falsified,not_falsified,True,7.682743330406083e-14,0.13271972734438564,0.0,0.0,A → B
+Synthetic_Weak_Causal,"A drives B with lag=10, coupling=0.4 (weak causal signal)",not_falsified,falsified,False,0.8808615087280691,0.8799023259424416,0.319,0.0,
+Synthetic_Common_Cause,Both systems driven by hidden common cause (confounding),falsified,not_falsified,False,0.03591609574945964,0.06193820461042876,0.173,0.6701294684564472,A → B
+SPY_vs_QQQ,S&P 500 vs NASDAQ 100 ETFs - highly correlated equity indices,not_falsified,falsified,False,0.9918901112815579,0.5539940371888594,0.967,0.5760013699797962,
+VIX_vs_SPY,Volatility Index vs S&P 500 - VIX often leads market moves,not_falsified,not_falsified,True,0.02807996559857051,0.0027385335936269684,0.138,0.31011719385505176,Bidirectional
+SPY_vs_GLD,"S&P 500 vs Gold ETF - different asset classes, weak relationship",falsified,not_falsified,False,0.26262174787904835,0.28493403961638974,0.025,0.0,
+TLT_vs_SPY,Long Treasury vs S&P 500 - flight to quality relationship,not_falsified,falsified,False,0.22428295668676157,0.7303769674496784,0.792,0.0,
+EQ_Magnitude_vs_InterEvent,Earthquake magnitude vs inter-event time (global catalog),not_falsified,falsified,False,0.14177937951269737,0.6815290891488446,0.912,0.0,
+Pacific_vs_Atlantic_EQ,Pacific Ring of Fire vs Atlantic Ridge earthquakes,falsified,falsified,True,0.7687523164123387,0.4096171646305844,0.778,0.0,

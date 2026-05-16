@@ -64,3 +64,22 @@ EXECUTION_PLAN.md
 COORDINATOR.md
 formal/.lake/
 release/data_scrubbed_v1/*.jsonl
+
+# CCA validation data (large, external datasets — vendored locally only)
+data/battery/*.zip
+data/battery/5. Battery Data Set
+data/battery/5. Battery Data Set/
+data/microbiome/*.csv
+data/microbiome/*.biom
+data/microbiome/*.qza
+data/institutional/*.csv
+data/institutional/*.dta
+data/pipeline/cache/
+data/pipeline/__pycache__/
+data/pipeline/*/__pycache__/
+data/pipeline/*/*/__pycache__/
+# Keep pipeline code + sources index + per-substrate validation_results.json
+!data/pipeline/**/*.py
+!data/pipeline/**/__init__.py
+!data/*/validation_results.json
+!data/*/README.md
