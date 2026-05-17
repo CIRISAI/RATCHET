@@ -64,9 +64,15 @@ echo "Iters per model: ${ITERS}  Concurrency: ${CONCURRENCY}  Premium sleep: ${P
 echo "Cell budget cap: \$${CELL_BUDGET_USD} per model" | tee -a "${RUN_LOG}"
 
 MODELS=(
-    "openai/gpt-5"
+    "openai/gpt-5.4"
     "anthropic/claude-sonnet-4.6"
 )
+# NOTE: openai/gpt-5 (no suffix) is reasoning-mandatory on OpenRouter and
+# rejects {"reasoning":{"enabled":false}} with 400. openai/gpt-5.4 is the
+# latest non-reasoning-mandatory GPT-5 variant and accepts the existing
+# CIRISAgent dispatch (verified 2026-05-16 — emits 0 reasoning tokens).
+# See CIRISAI/CIRISAgent PR #769 for the architectural fix that would
+# make openai/gpt-5 itself usable (still pending merge).
 
 # Optional model filter
 if [[ -n "${MODELS_ONLY:-}" ]]; then

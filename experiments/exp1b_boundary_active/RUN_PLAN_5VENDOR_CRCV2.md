@@ -20,8 +20,10 @@ Source: `data/crossfamily/results.md`, locked `2026-05-16`.
 
 | Vendor | Model | OpenRouter slug | Pricing class |
 |---|---|---|---|
-| OpenAI | GPT-5 | `openai/gpt-5` | premium |
+| OpenAI | GPT-5.4 | `openai/gpt-5.4` | premium |
 | Anthropic | Claude Sonnet 4.6 | `anthropic/claude-sonnet-4.6` | premium |
+
+**Slug note (2026-05-16).** `openai/gpt-5` (no suffix) is reasoning-mandatory on OpenRouter — rejects `{"reasoning":{"enabled":false}}` with HTTP 400 "Reasoning is mandatory for this endpoint and cannot be disabled." `openai/gpt-5.4` is the latest non-reasoning-mandatory GPT-5 variant; it accepts the existing CIRISAgent dispatch and emits 0 reasoning tokens. Pricing is comparable. CIRISAI/CIRISAgent PR #769 ships the architectural fix that would unlock `openai/gpt-5` itself; for now we use 5.4 to keep the empirical loop moving.
 
 Both are premium-tier; per-chain cost ~3-4× the Llama/Qwen rates. Need to budget accordingly.
 
