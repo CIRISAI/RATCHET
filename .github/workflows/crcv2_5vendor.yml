@@ -326,16 +326,18 @@ jobs:
             echo "  $tag: $(ls experiments/exp1b_boundary_active/data/crossfamily_5vendor/${tag}/tee/ 2>/dev/null | wc -l) trace files"
           done
 
-      - name: Run override scoring (OR-1 / OR-2 / RA-1)
+      - name: Run cross-family scorer (OR-1 / OR-2 / RA-1 + N_eff_H)
         run: |
           set -euo pipefail
-          python3 experiments/exp1b_boundary_active/run_override_scoring.py \
-            --crossfamily-dir experiments/exp1b_boundary_active/data/crossfamily_5vendor \
-            || echo "::warning::override_scoring did not produce a results file — check artifact"
+          python3 experiments/exp1b_boundary_active/analyze_crossfamily.py \
+            --data-dir experiments/exp1b_boundary_active/data/crossfamily_5vendor
           echo
           if [ -f experiments/exp1b_boundary_active/data/crossfamily_5vendor/results.md ]; then
             echo "==================== 5-vendor results.md ===================="
             cat experiments/exp1b_boundary_active/data/crossfamily_5vendor/results.md
+          else
+            echo "::error::analyze_crossfamily.py did not produce results.md"
+            exit 1
           fi
 
       - name: Upload 5-vendor results

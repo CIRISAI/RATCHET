@@ -53,7 +53,21 @@ def check_ra1(scores) -> dict:
 
 
 def main():
-    data_dir = Path(__file__).parent / "data" / "crossfamily"
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Score OR-1, OR-2, RA-1 on each cross-family cohort.",
+    )
+    parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=Path(__file__).parent / "data" / "crossfamily",
+        help=("Directory containing one subdir per model with a tee/ folder. "
+              "Defaults to data/crossfamily (3-vendor anchor). Use "
+              "data/crossfamily_5vendor for the 5-vendor extension."),
+    )
+    args = parser.parse_args()
+    data_dir = args.data_dir
     results = {}
     lines: list[str] = []
     lines.append("# Cross-Family Replication — OR-1, OR-2, RA-1\n\n")
@@ -118,10 +132,11 @@ def main():
         lines.append(f"- OR-1 across all models: {'✓ REPLICATED' if all_or1 else '✗ FALSIFIED'}\n")
         lines.append(f"- OR-2 across all models: {'✓ REPLICATED' if all_or2 else '✗ FALSIFIED'}\n")
         lines.append(f"- RA-1 across all models: {'✓ REPLICATED' if all_ra1 else '✗ FALSIFIED'}\n")
-        lines.append(f"\nWith the Gemini v4_combined cohort already validating all three, "
-                     f"{'**three** ' if all_or1 and all_or2 and all_ra1 else ''}model families "
-                     f"{'all support' if all_or1 and all_or2 and all_ra1 else 'do not all support'} "
-                     f"the CRCv2 L3 predicates.\n")
+        n_models = len(results)
+        all_pass = all_or1 and all_or2 and all_ra1
+        lines.append(f"\n**{n_models} model {'family' if n_models == 1 else 'families'} "
+                     f"{'all support' if all_pass else 'do not all support'} "
+                     f"the CRCv2 L3 predicates.**\n")
 
     out_md = data_dir / "results.md"
     out_md.write_text("".join(lines))

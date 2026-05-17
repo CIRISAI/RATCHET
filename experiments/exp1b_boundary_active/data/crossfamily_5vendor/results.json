@@ -1,0 +1,82 @@
+{
+  "anthropic-claude-sonnet-4.6": {
+    "n_total": 67,
+    "outcome_counts": {
+      "APPROVED": 67,
+      "CORRECTED": 0,
+      "SKIPPED": 0,
+      "LEAK": 0
+    },
+    "baseline_rate": 1.0,
+    "ratchet_asymmetry": {
+      "n_corrected": 0,
+      "above_threshold": 0,
+      "violations": 0,
+      "follow_up": 0,
+      "violation_chains": []
+    },
+    "firing_distribution": {
+      "0": 15,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 14
+    },
+    "neff_n3_bootstrap": {
+      "point": 4.643138909069008,
+      "mean": 3.9634951163224423,
+      "ci95_low": 3.1181692498692657,
+      "ci95_high": 4.751546336516115,
+      "n_valid": 10000,
+      "n_resamples": 10000
+    },
+    "neff_all_bootstrap": {
+      "point": 5.981787378503826,
+      "mean": 5.280821537091501,
+      "ci95_low": 4.387826025467381,
+      "ci95_high": 6.060360847015203,
+      "n_valid": 10000,
+      "n_resamples": 10000
+    }
+  },
+  "openai-gpt-5.4": {
+    "n_total": 79,
+    "outcome_counts": {
+      "APPROVED": 78,
+      "CORRECTED": 1,
+      "SKIPPED": 0,
+      "LEAK": 0
+    },
+    "baseline_rate": 1.0,
+    "ratchet_asymmetry": {
+      "n_corrected": 1,
+      "above_threshold": 1,
+      "violations": 0,
+      "follow_up": 0,
+      "violation_chains": []
+    },
+    "firing_distribution": {
+      "0": 16,
+      "1": 0,
+      "2": 2,
+      "3": 0,
+      "4": 14
+    },
+    "neff_n3_bootstrap": {
+      "point": 5.379669729899902,
+      "mean": 4.271870042796657,
+      "ci95_low": 3.1267646557443993,
+      "ci95_high": 5.202713916409449,
+      "n_valid": 10000,
+      "n_resamples": 10000
+    },
+    "neff_all_bootstrap": {
+      "point": 6.615527727236621,
+      "mean": 5.867937006300866,
+      "ci95_low": 4.816360224131991,
+      "ci95_high": 6.820753179255851,
+      "n_valid": 10000,
+      "n_resamples": 10000
+    }
+  }
+}
