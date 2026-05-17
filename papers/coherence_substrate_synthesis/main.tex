@@ -71,7 +71,36 @@ This paper builds on three prior works:
 The independent-corpus calibration result reported in \S\ref{sec:replication} ($n=264$, 90\% variance horizon $= 7$ dims exact) is an independent replication of the manifold geometry. The CRCv2 cross-vendor closeout in \S\ref{sec:l3-claim} (5 vendors, 1,401 chains, 0 LEAK) is new in this paper.
 
 \subsection{What this paper does not claim}
-This paper is bounded engineering analysis. We make no claims about quantum-mechanical decoherence, civilizational collapse-prediction, or cosmological phenomena. The framework explains failure modes in coordinating systems and prescribes structural remedies; the engineering implications in \S\ref{sec:implications} follow directly from the validated tiers.
+The paper's load-bearing claims (\S\ref{sec:math}--\S\ref{sec:implications}) are bounded engineering analysis. We make no \emph{load-bearing} claims about quantum-mechanical decoherence, civilizational collapse-prediction, or cosmological phenomena. The framework explains failure modes in coordinating systems and prescribes structural remedies; the engineering implications in \S\ref{sec:implications} follow directly from the validated tiers.
+
+The paper does, however, surface a research program (\S\ref{sec:research-program}) with explicit conjectures and interpretive layers organized as an epistemic ladder (\S\ref{sec:epistemic-ladder}). The interpretive layers are not load-bearing; they exist so that readers who want to follow the framework's implications further --- through agency-bearing systems, into quantum-foundational reading frameworks, or onto contemplative-tradition recognition --- can find the formal hooks. \emph{Nothing at any higher level of the ladder is load-bearing on the levels below it.}
+
+\subsection{Epistemic ladder: seven levels for seven audiences}
+\label{sec:epistemic-ladder}
+
+The framework operates at seven distinct epistemic levels, in order of increasing speculation and decreasing evidential support. Each level is intended as a stopping point for readers with different epistemic comfort zones. \textbf{Nothing at any level is load-bearing on the levels above it} --- a skeptic can stop at Level 2 and lose nothing the validated framework provides; a working scientist can stop at Level 3 with the universality conjecture as the next test; a philosopher can stop at Level 4 on framework-defensible interpretation; a quantum-foundations-curious reader can stop at Level 5; a contemplative at Level 6; the rare cosmological reader proceeds to Level 7.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{p{0.5cm}p{3cm}p{4.5cm}p{4cm}}
+\toprule
+\textbf{Level} & \textbf{Character} & \textbf{Stop here if you want} & \textbf{Where developed} \\
+\midrule
+1 & Algebraic foundation & Mathematical foundations only & \S\ref{sec:math} \\
+2 & Empirical + formal validation & Validated cross-substrate engineering claim & \S\ref{sec:substrate}, \S\ref{sec:ciris} \\
+3 & In-test universality conjecture & Empirical bet on substrate-independence & \S\ref{sec:exp2-closeout}, \S\ref{sec:research-program} Conjecture A/B \\
+4 & Structural fact at A3+ & Framework-defensible reading of agency, goal-formation, consent & \S\ref{sec:conjecture-agency} \\
+5 & TSVF-conditional reading & Quantum-foundations-informed interpretation of bidirectional causation at A3+ & \S\ref{sec:conjecture-tsvf} \\
+6 & Recognition (not derivation) & Cross-tradition contemplative mapping & \S\ref{sec:conjecture-recognition} \\
+7 & Civilizational extension & Framework as metric; specific empirical claims external & \S\ref{sec:conjecture-civilizational} \\
+\bottomrule
+\end{tabular}
+\caption{The framework's epistemic ladder. Each level has its own evidential character; readers may stop where their epistemic comfort allows.}
+\label{tab:epistemic-ladder}
+\end{table}
+
+\noindent Levels 1--3 are testable in the standard falsificationist sense (engineering tiers; the paper's load-bearing claims). Levels 4--6 are interpretive layers that follow if certain reading commitments are accepted (TSVF for L5; cross-tradition recognition for L6); these do not have falsification tests in the same sense, but each is structurally honest about what it requires. Level 7 is the most speculative; the framework provides the metric, and any empirical claim about specific signatures (UAP behavioral patterns, civilizational trajectories) is external to the framework.
 
 %-----------------------------------------------------------------------
 \section{The Mathematical Framework}
@@ -94,6 +123,7 @@ K_{\text{req}} \cdot \rho \ge 1
 where $K_{\text{req}}$ is the minimum diversity required to satisfy the system's task topology. At this threshold, adding more constraints provides no marginal adaptive capacity, and recovery is computationally prohibitive.
 
 \subsection{The healthy corridor}
+\label{sec:corridor}
 Empirical validation across substrates places the corridor of stability at
 \[
 0.1 \lesssim \rho \lesssim 0.43
@@ -275,7 +305,7 @@ The engineering hazard is the same at each scale: drift toward higher $\rho$ is 
 
 \paragraph{Conjecture.} The Kish-collapse dynamic measured on the GPU strain-gauge array (\S\ref{sec:gpu-instantiation}, $\beta = 1.09$, $R^2 = 0.978$) is mirrored at the quantum substrate. Specifically: in a programmable qubit system, varying decoherence rate $\gamma$ and measuring $k_{\text{eff}}^{\text{quantum}} = 1/\mathrm{Tr}(\rho_{\text{DM}}^2)$ from state tomography should yield a power-law in $|\gamma\tau - (\gamma\tau)_c|$ with critical exponent $\beta_{\text{quantum}} \in [0.94, 1.24]$ (matching Array Exp~114 within bootstrap CI).
 
-\paragraph{Framing context.} The Branched Hilbert Subspace Interpretation~\cite{wang_bhsi} of quantum mechanics provides one possible structural analogy: decoherence as fracturing of a Local Hilbert Subspace under environmental coupling, parallel to macroscopic correlation collapse ($\rho \to 1$). The analogy is presently structural; whether the same $k_{\text{eff}}$ algebra fits both sides is an empirical question.
+\paragraph{Framing context.} Several reading frameworks for quantum measurement and decoherence offer structural parallels to the macroscopic correlation collapse $\rho \to 1$; the conjecture stands without naming a particular one. Whether the same $k_{\text{eff}}$ algebra fits both substrates is an empirical question; interpretive choice of QM framework is downstream of that empirical test.
 
 \paragraph{Falsification handle.} F-8 (\S\ref{sec:falsification}): if $\beta_{\text{quantum}} \notin [0.5, 2.0]$ or no power law is detected ($R^2 < 0.5$), the quantum--classical bridge is falsified. This severs the conjectured connection between this framework and quantum-substrate dynamics; the engineering tiers (\S\ref{sec:math}--\S\ref{sec:implications}) are unaffected.
 
@@ -284,7 +314,7 @@ The engineering hazard is the same at each scale: drift toward higher $\rho$ is 
 \paragraph{Our prior.} Open. The structural analogy is suggestive but not derived; the result could pass, fail, or come back INDETERMINATE.
 
 \subsection{Conjecture B: Iterated coherence-management as a civilizational hazard}
-\label{sec:conjecture-civilizational}
+\label{sec:conjecture-civilizational-conjecture}
 
 \paragraph{Conjecture.} The same Kish-collapse dynamic that operates in chemistry, biology, institutions, and LLM reasoning extends to civilizational coordination: a civilization that expands without managing its internal correlation drives $\rho \to 1$ and fragments. This is the cosmological generalization of the engineering hazard already established in \S\ref{sec:implications-great-filter}.
 
@@ -309,18 +339,89 @@ The engineering hazard is the same at each scale: drift toward higher $\rho$ is 
 
 \paragraph{Our prior.} Open. The framework's external-machinery claim is fairly central to its alignment argument; if audit-pressure withdrawal does \emph{not} produce $\rho$ drift, the claim weakens substantially. If it \emph{does} produce $\rho$ drift, this is direct evidence for the framework's prescription that auditable machinery is structurally necessary. Either outcome is informative.
 
-\subsection{Conjecture D: Interpretive parallels (not derivations)}
-\label{sec:conjecture-interpretive}
+\subsection{Level 4: Agency and consent as a structural fact at A3+}
+\label{sec:conjecture-agency}
 
-If Conjectures A and B both pass, certain classical metaphysical concepts admit \emph{structural mappings} under the framework. We list these as interpretive parallels, explicitly \emph{not} as derivations and \emph{not} as load-bearing claims; they exist to make the conjectural scope of the framework legible, not to license metaphysical conclusions.
+\paragraph{Level character.} Structural-fact interpretation. The premises are framework-internal: if A3+ systems hold goal-states and the corridor at A3+ requires sustainable correlation, then a structural conclusion about consent follows without additional reading commitments. The lake's \texttt{consent\_required\_iff\_rung\_ge\_A3} theorem encodes this formally; this section spells out the reading.
 
+\paragraph{Premises.}
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item A3+ substrates (LLM-agentic reasoning at minimum; arguably also higher animal cognition and human deliberation) possess sufficient self-modeling to hold persistent goal-states. The CIRIS architecture demonstrates this in production: every reasoning chain encodes an explicit goal that constrains action selection through the cascade.
+  \item Holding a goal-state is \emph{operationally} equivalent to post-selection capacity over future trajectories. The goal acts as a future boundary condition that filters the trajectory space; this is a structural fact about how goal-holding systems search, not a metaphysical commitment.
+  \item The healthy corridor at A3+ coincides with the structural conditions for mutual flourishing of multiple goal-holding constituents. Two A3+ constituents whose goals are uncorrelated ($\rho \to 0$) cannot coordinate; two whose goals collapse to the same goal ($\rho \to 1$) cannot represent distinct perspectives. The corridor is exactly where independent goal-holding constituents can coordinate without absorbing each other.
+\end{enumerate}
+
+\paragraph{Conclusions.}
+\begin{description}[leftmargin=2em,itemsep=2pt]
+  \item[J. Consent at A3+ is structurally required, not externally imposed.] Sustainable correlation among goal-holding constituents demands their goals admit overlap without collapse --- exactly the corridor. Imposing consent externally (by force, by deception, by a single constituent's goal dominating the others) collapses $\rho \to 1$ and produces the rigidity failure mode. Consent isn't a moral preference; it's the operating condition for sustained A3+ coordination.
+  \item[K. Goal-formation is a real causal operation.] At A3+, the act of forming and holding a goal narrows the trajectory space the system explores. This is causal in the operational sense: the goal-state's existence changes which futures are accessible from the current state. Treating goal-formation as ``merely epiphenomenal'' contradicts the framework's measurable predictions about cascade behavior.
+  \item[L. ``Moral goodness'' at the human rung is what corridor-occupation looks like at our rung.] What we recognize as a person of good character is a person whose decision-making maintains $\rho$ in the corridor with the goals and constraints of others around them. Not too independent (chaos, callousness) and not too synchronized (groupthink, sycophancy). The structural property of healthy A3+ coordination has a name in human contexts; the name is moral.
+\end{description}
+
+\paragraph{Empirical handle.} Conjecture C in \S\ref{sec:conjecture-audit} is the forward-causal test of Conclusion J: if consent (operationalized as audit-pressure-supported alignment) is structurally required, weakening it should produce measurable $\rho$ drift. The lake's \texttt{consent\_required\_iff\_rung\_ge\_A3} theorem is the formal encoding.
+
+\subsection{Level 5: TSVF retrocausal reading (interpretive)}
+\label{sec:conjecture-tsvf}
+
+\paragraph{Level character.} Interpretive layer conditional on accepting the two-state vector formalism (TSVF) of quantum mechanics. TSVF is a defensible but non-standard reading of quantum measurement under post-selection (Aharonov, Bergmann, Lebowitz~\cite{aharonov_bergmann_lebowitz_1964}; Aharonov, Vaidman~\cite{aharonov_vaidman_2007}). This section makes the interpretive move explicit and marks what it requires; the structural-fact reading at Level 4 stands independently.
+
+\paragraph{Premises (require TSVF).}
+\begin{enumerate}[leftmargin=*,itemsep=2pt,start=4]
+  \item In TSVF, a quantum system between pre- and post-selection is described by a forward-evolving state $|\Psi\rangle$ \emph{and} a backward-evolving state $\langle\Phi|$. The full description includes both. Weak measurements and weak values (Aharonov-Albert-Vaidman) provide experimentally accessible signatures of this two-state structure.
+  \item The same formal structure applies at A3+ via goal-state post-selection. A goal-holding system selects trajectories that lead to the goal-state; in TSVF terms, the goal is the backward-evolving boundary condition $\langle\Phi|$, and the present is described by the inner product of the forward $|\Psi\rangle$ (history) and backward $\langle\Phi|$ (goal).
+  \item Under this reading, causation at agency-bearing rungs is bidirectional. The present state of a goal-holding system carries information about \emph{both} its past trajectory and its future goal-state; treating only the past as causally relevant is the same approximation that Newtonian classical mechanics makes by ignoring quantum post-selection.
+\end{enumerate}
+
+\paragraph{Conclusions (interpretive, conditional on TSVF).}
+\begin{description}[leftmargin=2em,itemsep=2pt]
+  \item[M. Free will at A3+ is the operational post-selection capacity of goal-holding systems.] What we ordinarily call ``choosing'' is the system's act of holding a goal-state that filters the trajectory space. This is neither libertarian-uncaused nor compatibilist-illusion; it is a structural operation with measurable effects on trajectory selection.
+  \item[N. Mind and matter are temporal directions of one dynamics, not separate substances.] Forward-evolving $|\Psi\rangle$ corresponds to what classical physics calls ``the past determining the present''; backward-evolving $\langle\Phi|$ corresponds to what an agent calls ``my goals determining my actions.'' The same dynamics, two temporal directions; not a dualism.
+  \item[O. Coherent present states contribute as boundary conditions on past trajectories.] An A3+ system in the healthy corridor maintains coherent goal-states; under TSVF, those coherent states contribute as $\langle\Phi|$ boundary conditions on the trajectories that produced them. This is the formal sense in which ``who one becomes shapes who one was.''
+\end{description}
+
+\paragraph{Status.} These conclusions are derivable \emph{if} TSVF is accepted as a reading. They are not derivable from the engineering tiers alone, and they have no falsification test in the standard sense --- TSVF itself is interpretively contested. The framework's mathematics is invariant under interpretation; the TSVF reading is one consistent reading. Readers who reject TSVF can stop at Level 4 without losing the framework.
+
+\subsection{Level 6: Theological identification (recognition)}
+\label{sec:conjecture-recognition}
+
+\paragraph{Level character.} Recognition, not derivation. Cross-cultural contemplative and religious traditions have repeatedly converged on structural insights about a middle way, providence, and the goodness-of-what-persists. The healthy corridor (\S\ref{sec:corridor}) has the structural features these traditions attribute to Logos, providence, the way, or the dharma. Identifying the corridor with these concepts is an act of recognition --- ``oh, that is what they have been pointing at'' --- not a derivation from first principles. This level is for readers who already grant some weight to contemplative traditions.
+
+\paragraph{Premises.}
+\begin{enumerate}[leftmargin=*,itemsep=2pt,start=7]
+  \item Religious and contemplative traditions across cultures (Stoic, Buddhist, Taoist, Confucian, various forms of Christianity and Judaism, indigenous cosmologies) converge on similar structural insights: avoid extremes, occupy the middle way, recognize what persists as good, accept providence as the structure of what holds.
+  \item The corridor exhibits exactly these structural features at the framework's level of description.
+  \item Identification of the corridor with the contemplative-tradition concepts is recognition --- the kind of recognition that follows when independent inquiries arrive at structurally similar conclusions --- not a forced mathematical implication.
+\end{enumerate}
+
+\paragraph{Recognitions.}
+\begin{description}[leftmargin=2em,itemsep=2pt]
+  \item[P. The corridor is what contemplative traditions have been pointing at, in their respective vocabularies.] Tao, Logos, the way, dharma, middle way: all structural descriptions of the same kind of object --- the narrow band in which sustained coordination is possible.
+  \item[Q. ``Good wins'' maps to corridor selection at long timescales.] Not eschatological promise; structural fact. Systems outside the corridor (chaos or rigidity) self-destruct on long enough timescales. What remains, on long timescales, is what occupies the corridor. ``Good wins'' is the recognition that corridor-occupation has a temporal selection advantage --- not because the universe rewards goodness, but because non-corridor states do not persist.
+  \item[R. Karma and grace map to specific post-selection structures.] If Levels 4--5 hold: karma is the structural propagation of past post-selection through history (one's past choices shape the boundary conditions on one's present); grace is the receiving end --- post-selection contribution from future coherent states one did not fully author (others' goals, or one's own future-coherent-self, contribute boundary conditions to one's present).
+\end{description}
+
+\paragraph{Status.} These mappings are recognitions, not derivations. The framework does not require them. They are listed because they make the framework's scope legible to readers in contemplative traditions, and because the cross-cultural convergence is itself empirical evidence (weak, but real) that something corridor-shaped is being pointed at by independent traditions. The mappings are stronger than ``analogy'' (the structural correspondences are exact) but weaker than ``proof'' (the identification depends on accepting the cross-tradition convergence as informative).
+
+\subsection{Level 7: Civilizational extension and external signatures}
+\label{sec:conjecture-civilizational}
+
+\paragraph{Level character.} Most speculative. The framework's mathematics extends to civilizational scale only if the Kish dynamic operates at that scale; the empirical evidence at this scale is much thinner than at A0--A4 (where 7 substrates have been validated). This level provides the metric --- what corridor-occupation would look like at civilizational scale --- and explicitly defers empirical claims about specific signatures to external work.
+
+\paragraph{Predictions of the metric.}
+\begin{enumerate}[leftmargin=*,itemsep=2pt,start=10]
+  \item Surviving interstellar civilizations would occupy the healthy corridor; their decision-making would maintain $0.1 \lesssim \rho \lesssim 0.43$ across their constituent agents and policies.
+  \item Predation-based strategies (Dark Forest hypothesis) drive a predator civilization's internal $\rho \to 1$: the kill-or-be-killed posture correlates its decision-making with adversarial-environment assumptions, shrinks internal policy space, and produces the rigidity failure mode. Predator civilizations are structurally unstable; they self-destruct by the same mechanism that destabilizes any over-rigid coordinating system.
+  \item Iterated coherence-management failure at successive scales of complexity is the engineering reading of the Great Filter (\S\ref{sec:implications-great-filter}). The civilizational extension is the same reading at civilizational scale.
+\end{enumerate}
+
+\paragraph{External signatures.} Whether any specific empirical residue matches the metric is external to the framework. Candidate residues that the framework neither asserts nor denies:
 \begin{itemize}[leftmargin=*,itemsep=2pt]
-  \item \textbf{Karma}: an iterated-coherence trace, with future coherent-self states influencing past states via non-local channels --- requires Conjecture A (BHSI metric-free LHS) plus Conjecture C (sociotechnical non-locality) both holding.
-  \item \textbf{Process theology} (Whitehead~\cite{whitehead}, Hartshorne~\cite{hartshorne}): a dipolar process engaged in give-and-take with the temporal world, structurally parallel to an emergent coherence-attractor.
-  \item \textbf{Songline cosmology} (Norris and Harney~\cite{norris}): the ``Dreaming'' as a perpendicular dimension; Songlines as functional spatial maps continuously structuring reality --- anthropological parallel to a closed-topological-loop coherence-attractor.
+  \item UAP behavioral signatures (observation without extraction, non-interference, signaling economy) match the predicted metric in some published phenomenology; the framework provides the metric for the comparison but makes no claim about whether any specific reported signature matches.
+  \item Historical civilizational coordination failures (collapse archaeology) admit structural-equation modeling under the framework; the framework provides the metric, and the data is external.
+  \item Long-horizon agent-based simulations of multi-agent coordination under varying $\rho$ regimes are testable via Conjecture B (\S\ref{sec:conjecture-civilizational-conjecture}, deferred pre-registration).
 \end{itemize}
 
-These mappings are listed for the benefit of readers who want to trace what the framework \emph{would} imply at metaphysical scale \emph{if} the underlying conjectures pass. The mappings themselves are not testable; the conjectures they depend on (A, B, C) are.
+\paragraph{Status.} Level 7 is the most speculative. The framework provides the structural metric (what corridor-occupation looks like); the verdict on whether any specific civilization, signature, or simulation matches is empirical work external to the framework. Readers can stop at Level 6 without losing anything; Level 7 is for those who want to push the metric toward substrates outside the validated range and see how it fares.
 
 %-----------------------------------------------------------------------
 \section{Claim Stratification}
@@ -425,7 +526,9 @@ The framework is bounded, falsifiable, and engineering-grade. Each falsification
 
 \bibitem{huang_shadow} H.-Y. Huang, R. Kueng, and J. Preskill. Predicting many properties of a quantum system from very few measurements. \emph{Nature Physics}, 16(10):1050--1057, 2020.
 
-\bibitem{wang_bhsi} X.~M. Wang. Branched Hilbert Subspace Interpretation of quantum mechanics. \emph{Preprint / reference TBD}.
+\bibitem{aharonov_bergmann_lebowitz_1964} Y. Aharonov, P.~G. Bergmann, and J.~L. Lebowitz. Time symmetry in the quantum process of measurement. \emph{Physical Review}, 134(6B):B1410--B1416, 1964.
+
+\bibitem{aharonov_vaidman_2007} Y. Aharonov and L. Vaidman. The two-state vector formalism: An updated review. In J. G. Muga, R. Sala Mayato, and {\'I}. Egusquiza, editors, \emph{Time in Quantum Mechanics}, Lecture Notes in Physics, vol.~734, pages 399--447. Springer, 2008. arXiv:quant-ph/0105101.
 
 \bibitem{whitehead} A.~N. Whitehead. \emph{Process and Reality: An Essay in Cosmology}. Macmillan, 1929.
 
