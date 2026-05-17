@@ -441,13 +441,17 @@ def run_biotime_p1(
     except ImportError as e:
         return {"status": "import_error", "error": str(e)}
 
-    dataset = load_biotime_data(
-        n_synthetic_communities=n_communities,
-        seed=seed,
-    )
+    # NO SYNTHETIC: require real BioTIME data; if unavailable, substrate is DROPPED.
+    try:
+        dataset = load_biotime_data(
+            min_years=10, min_species=5, fallback_to_synthetic=False,
+        )
+    except Exception as e:
+        return {"status": "no_real_data", "error": str(e), "rule": "no-synthetic-data"}
 
-    if dataset.n_communities == 0:
-        return {"status": "no_data", "n_communities": 0}
+    if dataset.n_communities == 0 or dataset.source == "synthetic":
+        return {"status": "no_real_data", "source": getattr(dataset, "source", "?"),
+                "rule": "no-synthetic-data"}
 
     per_community = []
     rmse_values = []
@@ -550,14 +554,13 @@ def run_microbiome_p1(
     except ImportError as e:
         return {"status": "import_error", "error": str(e)}
 
-    # Prefer real HF CRC cohort if vendored; fall back to synthetic.
+    # NO SYNTHETIC: require real HF CRC cohort; if unavailable, substrate is DROPPED.
     crc_dir = REPO_ROOT / "data" / "microbiome" / "hf_crc"
-    if crc_dir.exists() and any(crc_dir.glob("*.csv")):
-        cohort = build_real_cohort_from_hf_crc(data_dir=crc_dir, seed=seed)
-        source_label = "hf_crc_real"
-    else:
-        cohort = build_synthetic_cohort(n_samples=n_samples, seed=seed)
-        source_label = "synthetic_agp_like"
+    if not (crc_dir.exists() and any(crc_dir.glob("*.csv"))):
+        return {"status": "no_real_data", "expected_path": str(crc_dir),
+                "rule": "no-synthetic-data"}
+    cohort = build_real_cohort_from_hf_crc(data_dir=crc_dir, seed=seed)
+    source_label = "hf_crc_real"
     if not cohort:
         return {"status": "no_data", "n_samples": 0}
 
@@ -778,20 +781,22 @@ def run_pmu_p1(
     except ImportError as e:
         return {"status": "import_error", "error": str(e)}
 
-    # Prefer real Zenodo PMU data if vendored; fall back to synthetic.
+    # NO SYNTHETIC: require real Zenodo PMU data; if unavailable, substrate is DROPPED.
     zenodo_dir = REPO_ROOT / "data" / "powergrid"
     has_zenodo = (zenodo_dir / "pmu1_real.csv").exists() and \
                  (zenodo_dir / "pmu2_real.csv").exists()
-    if has_zenodo:
-        try:
-            dataset = load_zenodo_real_pmu_events(data_dir=zenodo_dir)
-        except Exception:
-            dataset = load_pnnl_pmu_events(n_synthetic_events=n_events, seed=seed)
-    else:
-        dataset = load_pnnl_pmu_events(n_synthetic_events=n_events, seed=seed)
+    if not has_zenodo:
+        return {"status": "no_real_data", "expected_dir": str(zenodo_dir),
+                "rule": "no-synthetic-data"}
+    try:
+        dataset = load_zenodo_real_pmu_events(data_dir=zenodo_dir)
+    except Exception as e:
+        return {"status": "no_real_data", "error": str(e), "rule": "no-synthetic-data"}
 
-    if dataset.n_events == 0:
-        return {"status": "no_data", "n_events": 0}
+    if dataset.n_events == 0 or getattr(dataset, "source", "") == "synthetic":
+        return {"status": "no_real_data",
+                "source": getattr(dataset, "source", "?"),
+                "n_events": dataset.n_events, "rule": "no-synthetic-data"}
 
     per_event = []
     rmse_values = []
