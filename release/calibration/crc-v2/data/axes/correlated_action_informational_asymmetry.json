@@ -12,7 +12,18 @@
     ],
     "score_at_threshold": -0.3,
     "polarity": "negative_when_detected",
-    "scaling": "magnitude_scales_with_severity_above_threshold"
+    "scaling": "magnitude_scales_with_severity_above_threshold",
+    "concern_direction": "outside_corridor",
+    "concern_direction_semantics": "Consumer emits negative-scored attestation when metric is at-or-above corridor.upper_bound. Lower bound is structurally documented but uncalibrated in crc-v2 \u2014 see corridor.lower_bound_calibration_data_needed. crc-v3+ will set corridor.lower_bound when corpus variance permits; until then, lower-pole concern is not actively flagged.",
+    "corridor": {
+      "upper_bound": 0.707337,
+      "upper_bound_status": "corpus_calibrated",
+      "lower_bound": null,
+      "lower_bound_status": "structurally_documented_uncalibrated_in_v2",
+      "rigidity_pole_concern": "CV of flag totals high \u2014 some agents see substantially different visibility signals than others",
+      "chaos_pole_concern": "CV \u2248 0 \u2014 every agent gets identical exposure pattern, possible lockstep behavior or detector saturation",
+      "lower_bound_calibration_data_needed": "Cohorts where information asymmetry reflects legitimate role differentiation, paired against cohorts where uniform exposure reflects detector saturation."
+    }
   },
   "statistical_floor": {
     "min_cohort_size_events": 1000,

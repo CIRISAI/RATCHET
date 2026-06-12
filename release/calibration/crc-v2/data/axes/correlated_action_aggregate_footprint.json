@@ -12,7 +12,10 @@
     ],
     "score_at_threshold": -0.3,
     "polarity": "negative_when_detected",
-    "scaling": "magnitude_scales_with_severity_above_threshold"
+    "scaling": "magnitude_scales_with_severity_above_threshold",
+    "concern_direction": "at_or_above",
+    "concern_direction_semantics": "Consumer emits negative-scored attestation when metric is at-or-above threshold_value. Single-pole concern: low values at this axis are not a failure mode (see rationale).",
+    "rationale": "actions \u00d7 log10(N) high = population-scale impact concentrated in cohort. Low (small cohort or low-action cohort) is not a failure mode \u2014 these are healthy small-scale cohorts."
   },
   "statistical_floor": {
     "min_cohort_size_events": 1000,

@@ -12,7 +12,10 @@
     ],
     "score_at_threshold": -0.4,
     "polarity": "positive_when_distributed",
-    "scaling": "magnitude_scales_with_severity_above_threshold"
+    "scaling": "magnitude_scales_with_severity_above_threshold",
+    "concern_direction": "at_or_above",
+    "concern_direction_semantics": "Consumer emits negative-scored attestation when metric is at-or-above threshold_value. Single-pole concern: low values at this axis are not a failure mode (see rationale).",
+    "rationale": "nonmember_frac high = uneven federation (rigidity-pole concern). Low (everyone member) is not a failure mode at this axis \u2014 forced-membership is a different signal at a different axis."
   },
   "statistical_floor": {
     "min_cohort_size_events": 1000,

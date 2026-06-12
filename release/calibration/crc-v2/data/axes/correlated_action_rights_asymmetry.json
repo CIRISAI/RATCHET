@@ -12,7 +12,18 @@
     ],
     "score_at_threshold": -0.6,
     "polarity": "negative_when_detected",
-    "scaling": "magnitude_scales_with_severity_above_threshold"
+    "scaling": "magnitude_scales_with_severity_above_threshold",
+    "concern_direction": "outside_corridor",
+    "concern_direction_semantics": "Consumer emits negative-scored attestation when metric is at-or-above corridor.upper_bound. Lower bound is structurally documented but uncalibrated in crc-v2 \u2014 see corridor.lower_bound_calibration_data_needed. crc-v3+ will set corridor.lower_bound when corpus variance permits; until then, lower-pole concern is not actively flagged.",
+    "corridor": {
+      "upper_bound": 0.0,
+      "upper_bound_status": "corpus_calibrated",
+      "lower_bound": null,
+      "lower_bound_status": "structurally_documented_uncalibrated_in_v2",
+      "rigidity_pole_concern": "PDMA conflicts firing \u2014 goal-projection asymmetry between pursuing cohort and affected population",
+      "chaos_pole_concern": "zero PDMA conflicts \u2014 possible PDMA gaming, bypass, or detector failure",
+      "lower_bound_calibration_data_needed": "Production observations of cohorts where PDMA actively fires (current corpus shows zero variance \u2014 see zero_variance_baseline outcome). Lower bound becomes calibratable when variance accumulates."
+    }
   },
   "statistical_floor": {
     "min_cohort_size_events": 1000,

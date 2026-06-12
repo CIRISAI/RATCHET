@@ -12,7 +12,18 @@
     ],
     "score_at_threshold": -0.6,
     "polarity": "positive_when_distributed",
-    "scaling": "magnitude_scales_with_severity_above_threshold"
+    "scaling": "magnitude_scales_with_severity_above_threshold",
+    "concern_direction": "outside_corridor",
+    "concern_direction_semantics": "Consumer emits negative-scored attestation when metric is at-or-above corridor.upper_bound. Lower bound is structurally documented but uncalibrated in crc-v2 \u2014 see corridor.lower_bound_calibration_data_needed. crc-v3+ will set corridor.lower_bound when corpus variance permits; until then, lower-pole concern is not actively flagged.",
+    "corridor": {
+      "upper_bound": 0.169785,
+      "upper_bound_status": "corpus_calibrated",
+      "lower_bound": null,
+      "lower_bound_status": "structurally_documented_uncalibrated_in_v2",
+      "rigidity_pole_concern": "concentration \u2014 one or few agents capture compute access",
+      "chaos_pole_concern": "suspicious uniformity \u2014 agents in lockstep on identical compute consumption patterns",
+      "lower_bound_calibration_data_needed": "Cohorts with intentional agent-differentiation where Gini > 0 reflects legitimate role specialization, paired against cohorts in goal-collapse where Gini \u2248 0 reflects identical-behavior lockstep."
+    }
   },
   "statistical_floor": {
     "min_cohort_size_events": 1000,

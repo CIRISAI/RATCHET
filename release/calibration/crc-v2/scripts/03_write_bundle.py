@@ -126,6 +126,16 @@ bundle = {
     "consumer_contract": {
         "version_transition_discipline": "Per CEG §15.2 R2: LensCore deployments emit `evidence_refs[]` carrying both crc-v{N} and crc-v{N+1} hashes during transition windows to defeat straddle attacks.",
         "polarity_convention": "polarity=positive_when_distributed → high values = good (broad access); positive_when_detected → high values = concern (concentrated/asymmetric pattern detected). See per-axis threshold_function.polarity.",
+        "concern_direction_convention": {
+            "field": "threshold_function.concern_direction",
+            "values": {
+                "at_or_above": "Trigger when metric >= threshold_value. Lower extreme at this axis is not a failure mode (see per-axis rationale).",
+                "at_or_below": "Trigger when metric <= threshold_value. Upper extreme at this axis is not currently flagged (see per-axis rationale).",
+                "outside_corridor": "Trigger when metric is OUTSIDE the healthy corridor (either pole). Upper bound is calibrated in this crc version; lower bound is structurally documented but uncalibrated in crc-v2 — see per-axis threshold_function.corridor. crc-v3+ sets lower bound when corpus variance permits.",
+            },
+            "framework_basis": "Consent-corridor exit produces fragility at both poles per CCA preprint (DOI 10.5281/zenodo.18217688): rigidity pole (rho → 1, 'too similar') and chaos pole (rho → 0, 'misaligned') both push systems out of sustained coordination. Detection should fire on either pole where the corpus supports calibration.",
+            "consumer_rule": "Read threshold_function.concern_direction directly. Do NOT infer from threshold_pctile_of_observed — that heuristic worked for crc-v2's 8 axes but will mis-fire on future axes where pctile choice and concern direction decouple. Closes RATCHET#6.",
+        },
         "evidence_refs_required_per_attestation": [
             "trace_sample_bundle (hash-pinned)",
             "cohort_delineation (cohort_id and member agent_id_hash list, OR cohort derivation algorithm version)",

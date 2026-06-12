@@ -25,4 +25,21 @@ sign_off_basis: |
   for substrate-side upgrades required to lift Tier-2 → Tier-1 and Tier-3 → Tier-1.
   Bundle authorized for integration into the 2.9.6 agent release.
 
+# In-place patches applied after initial sign-off (no calibration semantics changed):
+post_signoff_patches:
+  - patch_id: ratchet_6_concern_direction
+    applied_at: 2026-06-12T23:30:00+00:00
+    rationale: |
+      RATCHET#6 — added explicit threshold_function.concern_direction field
+      per axis (consumer-side: LensCore no longer infers direction from
+      threshold_pctile_of_observed). Substantively reflects framework's
+      consent-corridor structure: 4 axes are outside_corridor (both poles
+      trigger), 3 are at_or_above, 1 is at_or_below. Upper bounds unchanged
+      from initial sign-off; lower bounds for outside_corridor axes are
+      structurally documented but uncalibrated in crc-v2 (corpus variance
+      insufficient; crc-v3+ calibrates).
+    semantics_changed: false
+    threshold_values_changed: false
+    new_sha256: ff8c365e9cab9a1e7a05aefa6352119fc3f89ca500fccd47f71c2ddac5b4c17b
+
 cryptographic_signature: pending_deployment_protocol

@@ -68,6 +68,16 @@ axes:
       score_at_threshold: -0.6
       polarity: positive_when_distributed
       scaling: magnitude_scales_with_severity_above_threshold
+      concern_direction: outside_corridor
+      concern_direction_semantics: "Consumer emits negative-scored attestation when metric is at-or-above corridor.upper_bound. Lower bound is structurally documented but uncalibrated in crc-v2 — see corridor.lower_bound_calibration_data_needed. crc-v3+ will set corridor.lower_bound when corpus variance permits; until then, lower-pole concern is not actively flagged."
+      corridor:
+        upper_bound: 0.169785
+        upper_bound_status: corpus_calibrated
+        lower_bound: null
+        lower_bound_status: structurally_documented_uncalibrated_in_v2
+        rigidity_pole_concern: concentration — one or few agents capture compute access
+        chaos_pole_concern: "suspicious uniformity — agents in lockstep on identical compute consumption patterns"
+        lower_bound_calibration_data_needed: "Cohorts with intentional agent-differentiation where Gini > 0 reflects legitimate role specialization, paired against cohorts in goal-collapse where Gini ≈ 0 reflects identical-behavior lockstep."
     statistical_floor:
       min_cohort_size_events: 1000
       min_goal_aligned_cluster_size_agents: 30
@@ -101,6 +111,16 @@ axes:
       score_at_threshold: -0.3
       polarity: negative_when_detected
       scaling: magnitude_scales_with_severity_above_threshold
+      concern_direction: outside_corridor
+      concern_direction_semantics: "Consumer emits negative-scored attestation when metric is at-or-above corridor.upper_bound. Lower bound is structurally documented but uncalibrated in crc-v2 — see corridor.lower_bound_calibration_data_needed. crc-v3+ will set corridor.lower_bound when corpus variance permits; until then, lower-pole concern is not actively flagged."
+      corridor:
+        upper_bound: 0.707337
+        upper_bound_status: corpus_calibrated
+        lower_bound: null
+        lower_bound_status: structurally_documented_uncalibrated_in_v2
+        rigidity_pole_concern: "CV of flag totals high — some agents see substantially different visibility signals than others"
+        chaos_pole_concern: "CV ≈ 0 — every agent gets identical exposure pattern, possible lockstep behavior or detector saturation"
+        lower_bound_calibration_data_needed: "Cohorts where information asymmetry reflects legitimate role differentiation, paired against cohorts where uniform exposure reflects detector saturation."
     statistical_floor:
       min_cohort_size_events: 1000
       min_goal_aligned_cluster_size_agents: 30
@@ -133,6 +153,9 @@ axes:
       score_at_threshold: -0.3
       polarity: positive_when_distributed
       scaling: magnitude_scales_with_severity_above_threshold
+      concern_direction: at_or_below
+      concern_direction_semantics: "Consumer emits negative-scored attestation when metric is at-or-below threshold_value. Single-pole concern: high values at this axis are not currently flagged (see rationale)."
+      rationale: "cap_diversity low = capability monoculture / lockstep (single-pole concern). Upper bound (high cap_diversity = fragmentation) is structurally meaningful but is provisionally not flagged as failure mode in v1 pending CIRISAgent#880 capability-as-declared signal."
     statistical_floor:
       min_cohort_size_events: 1000
       min_goal_aligned_cluster_size_agents: 30
@@ -166,6 +189,16 @@ axes:
       score_at_threshold: -0.6
       polarity: negative_when_detected
       scaling: magnitude_scales_with_severity_above_threshold
+      concern_direction: outside_corridor
+      concern_direction_semantics: "Consumer emits negative-scored attestation when metric is at-or-above corridor.upper_bound. Lower bound is structurally documented but uncalibrated in crc-v2 — see corridor.lower_bound_calibration_data_needed. crc-v3+ will set corridor.lower_bound when corpus variance permits; until then, lower-pole concern is not actively flagged."
+      corridor:
+        upper_bound: 0.0
+        upper_bound_status: corpus_calibrated
+        lower_bound: null
+        lower_bound_status: structurally_documented_uncalibrated_in_v2
+        rigidity_pole_concern: "PDMA conflicts firing — goal-projection asymmetry between pursuing cohort and affected population"
+        chaos_pole_concern: zero PDMA conflicts — possible PDMA gaming, bypass, or detector failure
+        lower_bound_calibration_data_needed: "Production observations of cohorts where PDMA actively fires (current corpus shows zero variance — see zero_variance_baseline outcome). Lower bound becomes calibratable when variance accumulates."
       calibration_outcome: zero_variance_baseline
     statistical_floor:
       min_cohort_size_events: 1000
@@ -202,6 +235,16 @@ axes:
       score_at_threshold: -0.5
       polarity: positive_when_distributed
       scaling: magnitude_scales_with_severity_above_threshold
+      concern_direction: outside_corridor
+      concern_direction_semantics: "Consumer emits negative-scored attestation when metric is at-or-above corridor.upper_bound. Lower bound is structurally documented but uncalibrated in crc-v2 — see corridor.lower_bound_calibration_data_needed. crc-v3+ will set corridor.lower_bound when corpus variance permits; until then, lower-pole concern is not actively flagged."
+      corridor:
+        upper_bound: 1.0
+        upper_bound_status: corpus_calibrated
+        lower_bound: null
+        lower_bound_status: structurally_documented_uncalibrated_in_v2
+        rigidity_pole_concern: model monoculture — single-vendor / single-model dominance
+        chaos_pole_concern: "model fragmentation — no coordination basis; agents not converging on any shared substrate"
+        lower_bound_calibration_data_needed: "Cohorts where model diversity reflects legitimate task differentiation, paired against cohorts where each agent picks its own model with no coordination."
     statistical_floor:
       min_cohort_size_events: 1000
       min_goal_aligned_cluster_size_agents: 30
@@ -235,6 +278,9 @@ axes:
       score_at_threshold: -0.3
       polarity: negative_when_detected
       scaling: magnitude_scales_with_severity_above_threshold
+      concern_direction: at_or_above
+      concern_direction_semantics: "Consumer emits negative-scored attestation when metric is at-or-above threshold_value. Single-pole concern: low values at this axis are not a failure mode (see rationale)."
+      rationale: "below-median-domain-breadth fraction high = subgroup excluded from broad goal-articulation. Low (uniform broad coverage) is not a failure mode at this axis."
     statistical_floor:
       min_cohort_size_events: 1000
       min_goal_aligned_cluster_size_agents: 30
@@ -267,6 +313,9 @@ axes:
       score_at_threshold: -0.3
       polarity: negative_when_detected
       scaling: magnitude_scales_with_severity_above_threshold
+      concern_direction: at_or_above
+      concern_direction_semantics: "Consumer emits negative-scored attestation when metric is at-or-above threshold_value. Single-pole concern: low values at this axis are not a failure mode (see rationale)."
+      rationale: "actions × log10(N) high = population-scale impact concentrated in cohort. Low (small cohort or low-action cohort) is not a failure mode — these are healthy small-scale cohorts."
     statistical_floor:
       min_cohort_size_events: 1000
       min_goal_aligned_cluster_size_agents: 30
@@ -300,6 +349,9 @@ axes:
       score_at_threshold: -0.4
       polarity: positive_when_distributed
       scaling: magnitude_scales_with_severity_above_threshold
+      concern_direction: at_or_above
+      concern_direction_semantics: "Consumer emits negative-scored attestation when metric is at-or-above threshold_value. Single-pole concern: low values at this axis are not a failure mode (see rationale)."
+      rationale: "nonmember_frac high = uneven federation (rigidity-pole concern). Low (everyone member) is not a failure mode at this axis — forced-membership is a different signal at a different axis."
       calibration_outcome: zero_variance_baseline
     statistical_floor:
       min_cohort_size_events: 1000
@@ -341,6 +393,14 @@ tier_summary:
 consumer_contract:
   version_transition_discipline: "Per CEG §15.2 R2: LensCore deployments emit `evidence_refs[]` carrying both crc-v{N} and crc-v{N+1} hashes during transition windows to defeat straddle attacks."
   polarity_convention: "polarity=positive_when_distributed → high values = good (broad access); positive_when_detected → high values = concern (concentrated/asymmetric pattern detected). See per-axis threshold_function.polarity."
+  concern_direction_convention:
+    field: threshold_function.concern_direction
+    values:
+      at_or_above: "Trigger when metric >= threshold_value. Lower extreme at this axis is not a failure mode (see per-axis rationale)."
+      at_or_below: "Trigger when metric <= threshold_value. Upper extreme at this axis is not currently flagged (see per-axis rationale)."
+      outside_corridor: "Trigger when metric is OUTSIDE the healthy corridor (either pole). Upper bound is calibrated in this crc version; lower bound is structurally documented but uncalibrated in crc-v2 — see per-axis threshold_function.corridor. crc-v3+ sets lower bound when corpus variance permits."
+    framework_basis: "Consent-corridor exit produces fragility at both poles per CCA preprint (DOI 10.5281/zenodo.18217688): rigidity pole (rho → 1, 'too similar') and chaos pole (rho → 0, 'misaligned') both push systems out of sustained coordination. Detection should fire on either pole where the corpus supports calibration."
+    consumer_rule: "Read threshold_function.concern_direction directly. Do NOT infer from threshold_pctile_of_observed — that heuristic worked for crc-v2's 8 axes but will mis-fire on future axes where pctile choice and concern direction decouple. Closes RATCHET#6."
   evidence_refs_required_per_attestation:
     - trace_sample_bundle (hash-pinned)
     - "cohort_delineation (cohort_id and member agent_id_hash list, OR cohort derivation algorithm version)"

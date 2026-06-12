@@ -12,7 +12,18 @@
     ],
     "score_at_threshold": -0.5,
     "polarity": "positive_when_distributed",
-    "scaling": "magnitude_scales_with_severity_above_threshold"
+    "scaling": "magnitude_scales_with_severity_above_threshold",
+    "concern_direction": "outside_corridor",
+    "concern_direction_semantics": "Consumer emits negative-scored attestation when metric is at-or-above corridor.upper_bound. Lower bound is structurally documented but uncalibrated in crc-v2 \u2014 see corridor.lower_bound_calibration_data_needed. crc-v3+ will set corridor.lower_bound when corpus variance permits; until then, lower-pole concern is not actively flagged.",
+    "corridor": {
+      "upper_bound": 1.0,
+      "upper_bound_status": "corpus_calibrated",
+      "lower_bound": null,
+      "lower_bound_status": "structurally_documented_uncalibrated_in_v2",
+      "rigidity_pole_concern": "model monoculture \u2014 single-vendor / single-model dominance",
+      "chaos_pole_concern": "model fragmentation \u2014 no coordination basis; agents not converging on any shared substrate",
+      "lower_bound_calibration_data_needed": "Cohorts where model diversity reflects legitimate task differentiation, paired against cohorts where each agent picks its own model with no coordination."
+    }
   },
   "statistical_floor": {
     "min_cohort_size_events": 1000,

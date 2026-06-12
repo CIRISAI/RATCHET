@@ -12,7 +12,10 @@
     ],
     "score_at_threshold": -0.3,
     "polarity": "positive_when_distributed",
-    "scaling": "magnitude_scales_with_severity_above_threshold"
+    "scaling": "magnitude_scales_with_severity_above_threshold",
+    "concern_direction": "at_or_below",
+    "concern_direction_semantics": "Consumer emits negative-scored attestation when metric is at-or-below threshold_value. Single-pole concern: high values at this axis are not currently flagged (see rationale).",
+    "rationale": "cap_diversity low = capability monoculture / lockstep (single-pole concern). Upper bound (high cap_diversity = fragmentation) is structurally meaningful but is provisionally not flagged as failure mode in v1 pending CIRISAgent#880 capability-as-declared signal."
   },
   "statistical_floor": {
     "min_cohort_size_events": 1000,

@@ -39,6 +39,20 @@ Per RATCHET#2 spec, every axis carries the same floor:
 
 At the current corpus, **7/8 axes meet floor** with cohort median (15 agents × ~4400 events × 91-day window). LensCore deployments must compute cohort delineation against `agent_id_hash` (NOT `channel_id`, which is source-scrubbed).
 
+## Concern-direction convention (framework's consent-corridor structure)
+
+Per RATCHET#6 and the framework's CCA-corridor reading, each axis carries an explicit `threshold_function.concern_direction` field. Three values:
+
+- `at_or_above` — trigger when metric exceeds upper threshold. Lower extreme at this axis is not a failure mode.
+- `at_or_below` — trigger when metric falls below lower threshold. Upper extreme is not currently flagged.
+- `outside_corridor` — trigger on BOTH poles. Upper bound calibrated in crc-v2; lower bound structurally documented but uncalibrated in this version pending corpus variance.
+
+The framework's load-bearing concern is consent-corridor exit. Exit has two species: **rigidity pole** ("too similar" — goals collapsed, ρ → 1) and **chaos pole** ("misaligned" — no joint trajectory, ρ → 0). Both produce fragility per CCA. Detection fires on either pole where the corpus supports calibration.
+
+crc-v2 maps as: 4 outside_corridor (compute, models, rights_asymmetry, informational_asymmetry) + 3 at_or_above (federation_membership, participation_exclusion, aggregate_footprint) + 1 at_or_below (agent_capabilities). For the 4 outside_corridor axes, the lower bound is uncalibrated in this version and documented per-axis under `threshold_function.corridor.lower_bound_calibration_data_needed`.
+
+Consumers MUST read `concern_direction` directly — do not infer from `threshold_pctile_of_observed`.
+
 ## Polarity convention
 
 - `positive_when_distributed`: high values = good (broad access, low concentration). Negative attestation emitted when the cohort exceeds the concentration threshold.

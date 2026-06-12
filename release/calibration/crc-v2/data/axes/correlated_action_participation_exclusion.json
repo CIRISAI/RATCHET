@@ -12,7 +12,10 @@
     ],
     "score_at_threshold": -0.3,
     "polarity": "negative_when_detected",
-    "scaling": "magnitude_scales_with_severity_above_threshold"
+    "scaling": "magnitude_scales_with_severity_above_threshold",
+    "concern_direction": "at_or_above",
+    "concern_direction_semantics": "Consumer emits negative-scored attestation when metric is at-or-above threshold_value. Single-pole concern: low values at this axis are not a failure mode (see rationale).",
+    "rationale": "below-median-domain-breadth fraction high = subgroup excluded from broad goal-articulation. Low (uniform broad coverage) is not a failure mode at this axis."
   },
   "statistical_floor": {
     "min_cohort_size_events": 1000,
