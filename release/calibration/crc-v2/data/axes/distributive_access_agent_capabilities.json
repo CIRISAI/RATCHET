@@ -1,0 +1,39 @@
+{
+  "axis": "distributive:access:agent_capabilities",
+  "tier": 2,
+  "measurement_procedure": "Number of distinct (cognitive_state_dominant, agent_role) tuples in the cohort, normalized by cohort size. Low diversity \u2192 narrow capability access.",
+  "threshold_function": {
+    "metric": "cap_diversity",
+    "threshold_value": 0.037088,
+    "threshold_pctile_of_observed": 0.25,
+    "ci_95": [
+      0.02381,
+      0.055556
+    ],
+    "score_at_threshold": -0.3,
+    "polarity": "positive_when_distributed",
+    "scaling": "magnitude_scales_with_severity_above_threshold"
+  },
+  "statistical_floor": {
+    "min_cohort_size_events": 1000,
+    "min_goal_aligned_cluster_size_agents": 30,
+    "min_window_days": 30,
+    "power_target": 0.95,
+    "power_basis": "RATCHET README 95%-power-at-n=109 standard"
+  },
+  "evidence_required": [
+    "trace_sample_bundle",
+    "cohort_delineation",
+    "per_agent_cognitive_state_dominant",
+    "per_agent_agent_role"
+  ],
+  "calibration": {
+    "n_qualifying_cohorts": 7,
+    "observed_min": 0.02381,
+    "observed_max": 0.083333,
+    "observed_median": 0.05,
+    "observed_p75": 0.061111,
+    "observed_p90": 0.073333
+  },
+  "notes": "PROXY: capability-as-revealed-by-action; capability-as-declared requires agent capability registry not in dump. CIRISAgent-side ticket filed."
+}

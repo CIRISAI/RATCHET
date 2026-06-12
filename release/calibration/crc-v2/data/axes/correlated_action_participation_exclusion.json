@@ -1,0 +1,38 @@
+{
+  "axis": "correlated_action:participation_exclusion",
+  "tier": 2,
+  "measurement_procedure": "Fraction of agents in the cohort whose distinct-domain count (n_distinct_domains from dsdma.domain field) is below the cohort median. Threshold above which a non-trivial subgroup is judged excluded from broad goal-articulation.",
+  "threshold_function": {
+    "metric": "part_excl_frac",
+    "threshold_value": 0.444444,
+    "threshold_pctile_of_observed": 0.75,
+    "ci_95": [
+      0.333333,
+      0.5
+    ],
+    "score_at_threshold": -0.3,
+    "polarity": "negative_when_detected",
+    "scaling": "magnitude_scales_with_severity_above_threshold"
+  },
+  "statistical_floor": {
+    "min_cohort_size_events": 1000,
+    "min_goal_aligned_cluster_size_agents": 30,
+    "min_window_days": 30,
+    "power_target": 0.95,
+    "power_basis": "RATCHET README 95%-power-at-n=109 standard"
+  },
+  "evidence_required": [
+    "trace_sample_bundle",
+    "cohort_delineation",
+    "per_agent_dsdma_domain_breadth"
+  ],
+  "calibration": {
+    "n_qualifying_cohorts": 7,
+    "observed_min": 0.261905,
+    "observed_max": 0.5,
+    "observed_median": 0.35,
+    "observed_p75": 0.444444,
+    "observed_p90": 0.5
+  },
+  "notes": "PROXY: true 'excluded from goal-articulation phase' requires goal-attestation cluster membership data that is null in the current substrate. CIRISAgent-side ticket filed."
+}

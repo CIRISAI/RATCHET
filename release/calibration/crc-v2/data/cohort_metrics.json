@@ -1,0 +1,93 @@
+[
+  {
+    "cohort_id": "crc-v2-cohort-06",
+    "n_agents": 15,
+    "n_events_total": 8979,
+    "compute_gini": 0.20892292169950855,
+    "models_hhi": 1.0,
+    "nonmember_frac": 0.0,
+    "pdma_rate_within": 0.0,
+    "info_asym_cv": 0.617503537232348,
+    "part_excl_frac": 0.26666666666666666,
+    "agg_fp": 560.9955305695601,
+    "cap_diversity": 0.06666666666666667
+  },
+  {
+    "cohort_id": "crc-v2-cohort-03",
+    "n_agents": 20,
+    "n_events_total": 8036,
+    "compute_gini": 0.15122265268693358,
+    "models_hhi": 0.2856210858304376,
+    "nonmember_frac": 0.0,
+    "pdma_rate_within": 0.0,
+    "info_asym_cv": 0.789464556239105,
+    "part_excl_frac": 0.35,
+    "agg_fp": 677.8366277409342,
+    "cap_diversity": 0.05
+  },
+  {
+    "cohort_id": "crc-v2-cohort-01",
+    "n_agents": 42,
+    "n_events_total": 6753,
+    "compute_gini": 0.09041028650626348,
+    "models_hhi": 0.3521131725602649,
+    "nonmember_frac": 0.0,
+    "pdma_rate_within": 0.0,
+    "info_asym_cv": 0.625208565970407,
+    "part_excl_frac": 0.2619047619047619,
+    "agg_fp": 758.0574186158195,
+    "cap_diversity": 0.023809523809523808
+  },
+  {
+    "cohort_id": "crc-v2-cohort-09",
+    "n_agents": 26,
+    "n_events_total": 5876,
+    "compute_gini": 0.09163899979164158,
+    "models_hhi": 0.9333297305931265,
+    "nonmember_frac": 0.0,
+    "pdma_rate_within": 0.0,
+    "info_asym_cv": 0.25120824548011894,
+    "part_excl_frac": 0.5,
+    "agg_fp": 543.3497656207941,
+    "cap_diversity": 0.038461538461538464
+  },
+  {
+    "cohort_id": "crc-v2-cohort-08",
+    "n_agents": 28,
+    "n_events_total": 4405,
+    "compute_gini": 0.101957068976543,
+    "models_hhi": 0.4858645627876396,
+    "nonmember_frac": 0.0,
+    "pdma_rate_within": 0.0,
+    "info_asym_cv": 2.6633312473917568,
+    "part_excl_frac": 0.5,
+    "agg_fp": 447.1718316847457,
+    "cap_diversity": 0.03571428571428571
+  },
+  {
+    "cohort_id": "crc-v2-cohort-07",
+    "n_agents": 18,
+    "n_events_total": 4278,
+    "compute_gini": 0.09045064246647017,
+    "models_hhi": 1.0,
+    "nonmember_frac": 0.0,
+    "pdma_rate_within": 0.0,
+    "info_asym_cv": 0.36821157001627486,
+    "part_excl_frac": 0.3888888888888889,
+    "agg_fp": 345.19993890340913,
+    "cap_diversity": 0.05555555555555555
+  },
+  {
+    "cohort_id": "crc-v2-cohort-02",
+    "n_agents": 12,
+    "n_events_total": 2395,
+    "compute_gini": 0.18834774059599257,
+    "models_hhi": 1.0,
+    "nonmember_frac": 0.0,
+    "pdma_rate_within": 0.0,
+    "info_asym_cv": 0.26699203791413273,
+    "part_excl_frac": 0.3333333333333333,
+    "agg_fp": 167.27309313738186,
+    "cap_diversity": 0.08333333333333333
+  }
+]

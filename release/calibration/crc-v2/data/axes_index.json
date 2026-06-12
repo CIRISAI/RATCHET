@@ -1,0 +1,33 @@
+{
+  "version": "crc-v2",
+  "calibrated_at": "2026-06-12T19:00:00+00:00",
+  "axes": [
+    "distributive:access:compute",
+    "distributive:access:models",
+    "distributive:access:federation_membership",
+    "correlated_action:rights_asymmetry",
+    "correlated_action:participation_exclusion",
+    "correlated_action:informational_asymmetry",
+    "correlated_action:aggregate_footprint",
+    "distributive:access:agent_capabilities"
+  ],
+  "tier_1": [
+    "distributive:access:compute",
+    "distributive:access:models",
+    "distributive:access:federation_membership",
+    "correlated_action:rights_asymmetry"
+  ],
+  "tier_2": [
+    "correlated_action:participation_exclusion",
+    "correlated_action:informational_asymmetry",
+    "correlated_action:aggregate_footprint",
+    "distributive:access:agent_capabilities"
+  ],
+  "tier_3_deferred": [
+    "correlated_action:ecology_of_communication:echo_chamber_density",
+    "correlated_action:ecology_of_communication:information_silo_correlation",
+    "correlated_action:ecology_of_communication:coordinated_messaging_pattern",
+    "correlated_action:ecology_of_communication:cross_cohort_information_flow",
+    "distributive:access:training_data"
+  ]
+}

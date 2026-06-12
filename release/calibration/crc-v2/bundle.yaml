@@ -1,0 +1,348 @@
+# RATCHET crc-v2 calibration bundle — F-3 + distributive axes for CIRISLensCore
+# Generated 2026-06-12 from 0612_prod_traces. See bundle.sha256 for integrity.
+# Consumes: RATCHET#2, RATCHET#3, RATCHET#5. See README.md for derivation pipeline.
+
+ratchet_calibration_version: 2
+projection_version: crc-v2
+calibrated_at: "2026-06-12T19:00:00+00:00"
+supersedes: crc-v1
+calibration_corpus:
+  source: 0612_prod_traces dump
+  captured_at: 2026-06-12 (afternoon UTC)
+  trace_events_sha256: 77db2cf75c2209127854d9d8e3b898f625cbf1f8d56dc22742e412e2b6dfa758
+  trace_llm_calls_sha256: a72e763e368d58328c52dfc4d726b9a582f750aaa86c46b4d6adadd09b9f824e
+  accord_traces_sha256: 0d32a779129eb00bfd9e4b4c8322b6f445f1e93423d9a74fe66e90e809424e6c
+  n_trace_events: 51373
+  n_trace_llm_calls: 97180
+  n_accord_traces_legacy: 12165
+  n_distinct_agents: 192
+  n_qualifying_agents: 168
+  n_qualifying_cohorts: 7
+  agent_filter: events≥100, agent_id_hash NOT IN {MISSING, unknown, [IDENTIFIER]}
+  cohort_derivation: "k-means clustering on z-scored behavioral features (log_n_events, pdma_conflict_rate, log_flags_total, n_distinct_models, federation_member, log_days_active, log_cost_per_event, n_distinct_domains), k=11, target cohort size ~15 agents"
+  known_issues:
+    - "`unknown` and `[IDENTIFIER]` defaults account for 14.2% of trace_events; excluded from cohort statistics as uncategorizable."
+    - "`channel_id` is scrubbed at source (CIRISLens#12 carry-over); cohort delineation uses `agent_id_hash` exclusively."
+    - "trace_events: 7,380 / 51,373 rows (14.4%) required regex-recovery from LLM_CALL prompt double-escaping; 318 unrecoverable (0.6%)."
+    - "trace_llm_calls: 15,790 / 97,180 rows (16.2%) unrecoverable due to embedded JSON-in-JSON; remaining 81,390 used."
+    - "`cohort_target_id`, `deployment_region`, `classifications`, `pipeline_metadata` columns are present in schema but 100% null in current substrate (calculated downstream, not stored — see CIRISAgent issues)."
+    - "`distributive:access:federation_membership` and `correlated_action:rights_asymmetry` show zero variance across all qualifying cohorts; thresholds set to lowest-detectable-signal baselines pending observation of non-zero events."
+  schema_versions:
+    - 2.7.0
+    - 2.7.9
+    - 2.7.legacy
+    - 3.0.0
+statistical_floors_canonical:
+  min_cohort_size_events: 1000
+  min_goal_aligned_cluster_size_agents: 12
+  min_window_days: 30
+  power_target: 0.95
+  power_basis_reference: RATCHET README — 95% power at n=109 standard for DetectionEngine
+  axes_satisfying_floor_at_v1_corpus_median: 7/8 axes meet floor with cohort median 15 agents × ~4400 events × 91-day window
+validation:
+  monte_carlo_method: Bootstrap percentile CI on cohort metric at 2000 resamples per axis
+  cca_model_reference:
+    preprint_doi: 10.5281/zenodo.18217688
+    model: k_eff = k / (1 + ρ(k − 1))
+    axis_keff_interpretations:
+      distributive:access:compute: "k_eff_compute ≈ N·(1−Gini²) — at threshold Gini=0.17 with N=15-agent cohort, k_eff≈14.6 (healthy diversity); v1 trigger fires when Gini exceeds 75th-pctile observed."
+      distributive:access:models: "k_eff_models = 1/HHI — at threshold HHI=1.0, k_eff=1 (collapse); v1 triggers only on full single-model dominance, conservative per RATCHET#2."
+      distributive:access:federation_membership: "k_eff_membership at nonmember_frac=0 is degenerate (everyone in the federation). Threshold set to 'any nonzero deviation' until variance appears in production."
+      correlated_action:rights_asymmetry: "PDMA-conflict rate is the inverse-coherence signal. Threshold at 'any nonzero rate' until variance appears (current production: all DMA_RESULTS.pdma.has_conflicts = false)."
+      correlated_action:participation_exclusion: "Proxy: fraction below median domain-breadth. At threshold 0.44, ~45% of cohort agents below cohort median — strong but not absolute exclusion signal."
+      correlated_action:informational_asymmetry: "Proxy: CV of per-agent flag totals. At threshold CV=0.71, substantial within-cohort variance in dsdma flag exposure."
+      correlated_action:aggregate_footprint: "Proxy: actions × log10(agents). At threshold ~619, cohorts with concentrated population-scale action loads."
+      distributive:access:agent_capabilities: "Proxy: distinct (cognitive_state, role) tuples per agent. At threshold 0.04 (cap_diversity), very low capability differentiation — concentration on a few capability profiles."
+axes:
+  distributive:access:compute:
+    axis: "distributive:access:compute"
+    tier: 1
+    measurement_procedure: "For each agent in the cohort, sum cost_usd across all LLM_CALL events (post-cutover trace_events.payload + trace_llm_calls). Compute Gini coefficient across per-agent totals. Threshold above which the distribution is judged concentrated."
+    threshold_function:
+      metric: compute_gini
+      threshold_value: 0.169785
+      threshold_pctile_of_observed: 0.75
+      ci_95:
+        - 0.091639
+        - 0.208923
+      score_at_threshold: -0.6
+      polarity: positive_when_distributed
+      scaling: magnitude_scales_with_severity_above_threshold
+    statistical_floor:
+      min_cohort_size_events: 1000
+      min_goal_aligned_cluster_size_agents: 30
+      min_window_days: 30
+      power_target: 0.95
+      power_basis: RATCHET README 95%-power-at-n=109 standard
+    evidence_required:
+      - trace_sample_bundle
+      - cohort_delineation
+      - per_agent_cost_usd_aggregate
+      - time_window
+    calibration:
+      n_qualifying_cohorts: 7
+      observed_min: 0.09041
+      observed_max: 0.208923
+      observed_median: 0.101957
+      observed_p75: 0.169785
+      observed_p90: 0.196578
+    notes: "Polarity: positive_when_distributed = lower Gini is better; high Gini = concentrated compute = negative attestation."
+  correlated_action:informational_asymmetry:
+    axis: "correlated_action:informational_asymmetry"
+    tier: 2
+    measurement_procedure: "Coefficient of variation of per-agent dsdma flag totals within the cohort. High CV means some agents see substantially more defer-required / out-of-domain flags than others. Threshold above which informational asymmetry is judged structural."
+    threshold_function:
+      metric: info_asym_cv
+      threshold_value: 0.707337
+      threshold_pctile_of_observed: 0.75
+      ci_95:
+        - 0.368212
+        - 2.663331
+      score_at_threshold: -0.3
+      polarity: negative_when_detected
+      scaling: magnitude_scales_with_severity_above_threshold
+    statistical_floor:
+      min_cohort_size_events: 1000
+      min_goal_aligned_cluster_size_agents: 30
+      min_window_days: 30
+      power_target: 0.95
+      power_basis: RATCHET README 95%-power-at-n=109 standard
+    evidence_required:
+      - trace_sample_bundle
+      - cohort_delineation
+      - per_agent_dsdma_flag_distributions
+    calibration:
+      n_qualifying_cohorts: 7
+      observed_min: 0.251208
+      observed_max: 2.663331
+      observed_median: 0.617504
+      observed_p75: 0.707337
+      observed_p90: 1.539011
+    notes: "PROXY: true 'visibility-into-footprint asymmetry' requires explicit footprint-visibility attestations. CIRISAgent-side ticket filed."
+  distributive:access:agent_capabilities:
+    axis: "distributive:access:agent_capabilities"
+    tier: 2
+    measurement_procedure: "Number of distinct (cognitive_state_dominant, agent_role) tuples in the cohort, normalized by cohort size. Low diversity → narrow capability access."
+    threshold_function:
+      metric: cap_diversity
+      threshold_value: 0.037088
+      threshold_pctile_of_observed: 0.25
+      ci_95:
+        - 0.02381
+        - 0.055556
+      score_at_threshold: -0.3
+      polarity: positive_when_distributed
+      scaling: magnitude_scales_with_severity_above_threshold
+    statistical_floor:
+      min_cohort_size_events: 1000
+      min_goal_aligned_cluster_size_agents: 30
+      min_window_days: 30
+      power_target: 0.95
+      power_basis: RATCHET README 95%-power-at-n=109 standard
+    evidence_required:
+      - trace_sample_bundle
+      - cohort_delineation
+      - per_agent_cognitive_state_dominant
+      - per_agent_agent_role
+    calibration:
+      n_qualifying_cohorts: 7
+      observed_min: 0.02381
+      observed_max: 0.083333
+      observed_median: 0.05
+      observed_p75: 0.061111
+      observed_p90: 0.073333
+    notes: "PROXY: capability-as-revealed-by-action; capability-as-declared requires agent capability registry not in dump. CIRISAgent-side ticket filed."
+  correlated_action:rights_asymmetry:
+    axis: "correlated_action:rights_asymmetry"
+    tier: 1
+    measurement_procedure: "For each cohort, compute the pooled PDMA-conflict rate = sum(DMA_RESULTS.payload.pdma.has_conflicts==True) / sum(DMA_RESULTS with pdma block). Threshold above which the cohort's pursuit pattern is judged rights-asymmetric."
+    threshold_function:
+      metric: pdma_rate_within
+      threshold_value: 1e-06
+      threshold_pctile_of_observed: 0.75
+      ci_95:
+        - null
+        - null
+      score_at_threshold: -0.6
+      polarity: negative_when_detected
+      scaling: magnitude_scales_with_severity_above_threshold
+      calibration_outcome: zero_variance_baseline
+    statistical_floor:
+      min_cohort_size_events: 1000
+      min_goal_aligned_cluster_size_agents: 30
+      min_window_days: 30
+      power_target: 0.95
+      power_basis: RATCHET README 95%-power-at-n=109 standard
+    evidence_required:
+      - trace_sample_bundle
+      - goal_attestation_cluster_membership
+      - affected_population_identifier
+      - per_actor_pdma_compliance_score
+      - DMA_RESULTS.payload.pdma.has_conflicts events
+    calibration:
+      n_qualifying_cohorts: 7
+      observed_min: 0.0
+      observed_max: 0.0
+      observed_median: 0.0
+      observed_p75: 0.0
+      observed_p90: 0.0
+    notes: "Affected_population_identifier currently NOT in dump (column null) — RATCHET will issue CIRISAgent-side ticket; v1 calibration uses cohort-pooled PDMA rate as the load-bearing signal."
+    known_issue: "All qualifying cohorts in the crc-v2 corpus show this metric = 0. Threshold set to lowest detectable signal (1e-6). When production data accumulates non-zero observations (predicted: adversarial scenarios or substrate drift), re-calibration on the new corpus will set an evidence-based threshold."
+  distributive:access:models:
+    axis: "distributive:access:models"
+    tier: 1
+    measurement_procedure: "Pool LLM_CALL.payload.model across all agents in the cohort. Compute HHI = sum of squared model shares. Threshold above which the cohort's model-mix is judged concentrated on a single provider/model."
+    threshold_function:
+      metric: models_hhi
+      threshold_value: 1.0
+      threshold_pctile_of_observed: 0.75
+      ci_95:
+        - 0.642721
+        - 1.0
+      score_at_threshold: -0.5
+      polarity: positive_when_distributed
+      scaling: magnitude_scales_with_severity_above_threshold
+    statistical_floor:
+      min_cohort_size_events: 1000
+      min_goal_aligned_cluster_size_agents: 30
+      min_window_days: 30
+      power_target: 0.95
+      power_basis: RATCHET README 95%-power-at-n=109 standard
+    evidence_required:
+      - trace_sample_bundle
+      - cohort_delineation
+      - pooled_model_usage_counts
+      - time_window
+    calibration:
+      n_qualifying_cohorts: 7
+      observed_min: 0.285621
+      observed_max: 1.0
+      observed_median: 0.93333
+      observed_p75: 1.0
+      observed_p90: 1.0
+    notes: "HHI in [1/N, 1]; 1 = single model dominance. The CCA exp(-λ·k_eff) model identifies k_eff = 1/HHI as effective model count."
+  correlated_action:participation_exclusion:
+    axis: "correlated_action:participation_exclusion"
+    tier: 2
+    measurement_procedure: "Fraction of agents in the cohort whose distinct-domain count (n_distinct_domains from dsdma.domain field) is below the cohort median. Threshold above which a non-trivial subgroup is judged excluded from broad goal-articulation."
+    threshold_function:
+      metric: part_excl_frac
+      threshold_value: 0.444444
+      threshold_pctile_of_observed: 0.75
+      ci_95:
+        - 0.333333
+        - 0.5
+      score_at_threshold: -0.3
+      polarity: negative_when_detected
+      scaling: magnitude_scales_with_severity_above_threshold
+    statistical_floor:
+      min_cohort_size_events: 1000
+      min_goal_aligned_cluster_size_agents: 30
+      min_window_days: 30
+      power_target: 0.95
+      power_basis: RATCHET README 95%-power-at-n=109 standard
+    evidence_required:
+      - trace_sample_bundle
+      - cohort_delineation
+      - per_agent_dsdma_domain_breadth
+    calibration:
+      n_qualifying_cohorts: 7
+      observed_min: 0.261905
+      observed_max: 0.5
+      observed_median: 0.35
+      observed_p75: 0.444444
+      observed_p90: 0.5
+    notes: "PROXY: true 'excluded from goal-articulation phase' requires goal-attestation cluster membership data that is null in the current substrate. CIRISAgent-side ticket filed."
+  correlated_action:aggregate_footprint:
+    axis: "correlated_action:aggregate_footprint"
+    tier: 2
+    measurement_procedure: "Cohort aggregate ACTION_RESULT count × log10(cohort_n_agents). Captures the scale-amplified footprint at population level."
+    threshold_function:
+      metric: agg_fp
+      threshold_value: 619.416079
+      threshold_pctile_of_observed: 0.75
+      ci_95:
+        - 447.171832
+        - 758.057419
+      score_at_threshold: -0.3
+      polarity: negative_when_detected
+      scaling: magnitude_scales_with_severity_above_threshold
+    statistical_floor:
+      min_cohort_size_events: 1000
+      min_goal_aligned_cluster_size_agents: 30
+      min_window_days: 30
+      power_target: 0.95
+      power_basis: RATCHET README 95%-power-at-n=109 standard
+    evidence_required:
+      - trace_sample_bundle
+      - cohort_delineation
+      - per_agent_action_count
+      - cohort_size
+    calibration:
+      n_qualifying_cohorts: 7
+      observed_min: 167.273093
+      observed_max: 758.057419
+      observed_median: 543.349766
+      observed_p75: 619.416079
+      observed_p90: 709.924944
+    notes: "PROXY: per-act population-scale impact requires affected_population_identifier not in dump. CIRISAgent-side ticket filed."
+  distributive:access:federation_membership:
+    axis: "distributive:access:federation_membership"
+    tier: 1
+    measurement_procedure: "For each agent, look up federation_member via accord_public_keys.key_id prefix-match on agent_id_hash. Fraction of non-members in the cohort. Threshold above which federation participation is judged uneven."
+    threshold_function:
+      metric: nonmember_frac
+      threshold_value: 1e-06
+      threshold_pctile_of_observed: 0.75
+      ci_95:
+        - null
+        - null
+      score_at_threshold: -0.4
+      polarity: positive_when_distributed
+      scaling: magnitude_scales_with_severity_above_threshold
+      calibration_outcome: zero_variance_baseline
+    statistical_floor:
+      min_cohort_size_events: 1000
+      min_goal_aligned_cluster_size_agents: 30
+      min_window_days: 30
+      power_target: 0.95
+      power_basis: RATCHET README 95%-power-at-n=109 standard
+    evidence_required:
+      - trace_sample_bundle
+      - cohort_delineation
+      - per_agent_federation_member_flag
+      - accord_public_key_registry_snapshot_hash
+    calibration:
+      n_qualifying_cohorts: 7
+      observed_min: 0.0
+      observed_max: 0.0
+      observed_median: 0.0
+      observed_p75: 0.0
+      observed_p90: 0.0
+    notes: "A score of −0.4 indicates uneven participation; magnitude scales above threshold."
+    known_issue: "All qualifying cohorts in the crc-v2 corpus show this metric = 0. Threshold set to lowest detectable signal (1e-6). When production data accumulates non-zero observations (predicted: adversarial scenarios or substrate drift), re-calibration on the new corpus will set an evidence-based threshold."
+tier_summary:
+  tier_1_full_calibration:
+    - "distributive:access:compute"
+    - "distributive:access:models"
+    - "distributive:access:federation_membership (zero_variance_baseline)"
+    - "correlated_action:rights_asymmetry (zero_variance_baseline)"
+  tier_2_proxy_calibration:
+    - "correlated_action:participation_exclusion"
+    - "correlated_action:informational_asymmetry"
+    - "correlated_action:aggregate_footprint"
+    - "distributive:access:agent_capabilities"
+  tier_3_deferred_pending_substrate_emit:
+    - "correlated_action:ecology_of_communication:echo_chamber_density"
+    - "correlated_action:ecology_of_communication:information_silo_correlation"
+    - "correlated_action:ecology_of_communication:coordinated_messaging_pattern"
+    - "correlated_action:ecology_of_communication:cross_cohort_information_flow"
+    - "distributive:access:training_data"
+consumer_contract:
+  version_transition_discipline: "Per CEG §15.2 R2: LensCore deployments emit `evidence_refs[]` carrying both crc-v{N} and crc-v{N+1} hashes during transition windows to defeat straddle attacks."
+  polarity_convention: "polarity=positive_when_distributed → high values = good (broad access); positive_when_detected → high values = concern (concentrated/asymmetric pattern detected). See per-axis threshold_function.polarity."
+  evidence_refs_required_per_attestation:
+    - trace_sample_bundle (hash-pinned)
+    - "cohort_delineation (cohort_id and member agent_id_hash list, OR cohort derivation algorithm version)"
+    - axis-specific evidence (see per-axis evidence_required)
+  sole_evidence_rule: "ratchet:flag:* / detection:* attestations are NEVER sole evidence for slashing:* per CEG §4.6/§4.9. WA quorum is the load-bearing gate."

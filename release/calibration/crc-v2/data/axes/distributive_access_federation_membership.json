@@ -1,0 +1,39 @@
+{
+  "axis": "distributive:access:federation_membership",
+  "tier": 1,
+  "measurement_procedure": "For each agent, look up federation_member via accord_public_keys.key_id prefix-match on agent_id_hash. Fraction of non-members in the cohort. Threshold above which federation participation is judged uneven.",
+  "threshold_function": {
+    "metric": "nonmember_frac",
+    "threshold_value": 0.0,
+    "threshold_pctile_of_observed": 0.75,
+    "ci_95": [
+      null,
+      null
+    ],
+    "score_at_threshold": -0.4,
+    "polarity": "positive_when_distributed",
+    "scaling": "magnitude_scales_with_severity_above_threshold"
+  },
+  "statistical_floor": {
+    "min_cohort_size_events": 1000,
+    "min_goal_aligned_cluster_size_agents": 30,
+    "min_window_days": 30,
+    "power_target": 0.95,
+    "power_basis": "RATCHET README 95%-power-at-n=109 standard"
+  },
+  "evidence_required": [
+    "trace_sample_bundle",
+    "cohort_delineation",
+    "per_agent_federation_member_flag",
+    "accord_public_key_registry_snapshot_hash"
+  ],
+  "calibration": {
+    "n_qualifying_cohorts": 7,
+    "observed_min": 0.0,
+    "observed_max": 0.0,
+    "observed_median": 0.0,
+    "observed_p75": 0.0,
+    "observed_p90": 0.0
+  },
+  "notes": "A score of \u22120.4 indicates uneven participation; magnitude scales above threshold."
+}

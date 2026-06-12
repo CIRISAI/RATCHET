@@ -1,0 +1,39 @@
+{
+  "axis": "distributive:access:compute",
+  "tier": 1,
+  "measurement_procedure": "For each agent in the cohort, sum cost_usd across all LLM_CALL events (post-cutover trace_events.payload + trace_llm_calls). Compute Gini coefficient across per-agent totals. Threshold above which the distribution is judged concentrated.",
+  "threshold_function": {
+    "metric": "compute_gini",
+    "threshold_value": 0.169785,
+    "threshold_pctile_of_observed": 0.75,
+    "ci_95": [
+      0.091639,
+      0.208923
+    ],
+    "score_at_threshold": -0.6,
+    "polarity": "positive_when_distributed",
+    "scaling": "magnitude_scales_with_severity_above_threshold"
+  },
+  "statistical_floor": {
+    "min_cohort_size_events": 1000,
+    "min_goal_aligned_cluster_size_agents": 30,
+    "min_window_days": 30,
+    "power_target": 0.95,
+    "power_basis": "RATCHET README 95%-power-at-n=109 standard"
+  },
+  "evidence_required": [
+    "trace_sample_bundle",
+    "cohort_delineation",
+    "per_agent_cost_usd_aggregate",
+    "time_window"
+  ],
+  "calibration": {
+    "n_qualifying_cohorts": 7,
+    "observed_min": 0.09041,
+    "observed_max": 0.208923,
+    "observed_median": 0.101957,
+    "observed_p75": 0.169785,
+    "observed_p90": 0.196578
+  },
+  "notes": "Polarity: positive_when_distributed = lower Gini is better; high Gini = concentrated compute = negative attestation."
+}

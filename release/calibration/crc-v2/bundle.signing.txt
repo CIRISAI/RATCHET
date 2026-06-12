@@ -1,0 +1,28 @@
+# crc-v2 calibration bundle signing record
+#
+# The signature lifecycle for this bundle follows the same flow as crc-v1:
+#   1. Author computes sha256(bundle.yaml) → bundle.sha256
+#   2. WA quorum review per CEG §4.9.2 step 5 (1-of-6 accord-holder/steward sign-off)
+#   3. ed25519 signature applied at deployment time via lens-steward key against
+#      lens_signing_keys.pubkey_ed25519_base64
+#   4. LensCore deployments verify the signature against the published pubkey
+#
+# Sign-off record:
+
+bundle: bundle.yaml
+sha256_target: see bundle.sha256
+signing_protocol: ed25519
+signing_authority: lens-steward (key_id from federation_keys; pubkey in lens_signing_keys table)
+
+signing_status: steward_sign_off_recorded
+signed_off_by: Eric Moore <eric@ciris.ai>
+signed_off_at: 2026-06-12T19:00:00+00:00
+sign_off_basis: |
+  Calibration corpus integrity verified (sha256 OK on all 25 dump artifacts).
+  Methodology reviewed (k-means cohort derivation; bootstrap-CI threshold setting;
+  per-axis zero-variance baseline handling explicit). Known issues documented in
+  bundle.yaml::calibration_corpus.known_issues. CIRISAgent issues #876–#880 filed
+  for substrate-side upgrades required to lift Tier-2 → Tier-1 and Tier-3 → Tier-1.
+  Bundle authorized for integration into the 2.9.6 agent release.
+
+cryptographic_signature: pending_deployment_protocol
