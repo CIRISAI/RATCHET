@@ -27,7 +27,7 @@ TSV columns:
 
 Cross-repo pointers resolve against these commits:
 
-- **coherence-ratchet:** `2cbb3946568996d549f6aa1789f504229379db27` (2026-07-04)
+- **coherence-ratchet:** `f4b72b06606536984b63fd0bf75676e044a8b3e4` (2026-07-04, includes CollapseTheorem + SignalSourceDiscount)
 - **RATCHET:** current commit at publish time
 
 Update this section whenever the seed rows are refreshed against a new coherence-ratchet HEAD.
@@ -43,8 +43,8 @@ Update this section whenever the seed rows are refreshed against a new coherence
 | 6.2.1 | Natural-substrate ceiling ~11 → bench | ✓ direct-measurement, max k_eff = 9.7 at k=200 across 6 substrates |
 | 6.2.2 | Collapse theorem + preconditions → mechanized | ✓ `Core.Corridor.corridor_bounds_well_formed`, `corridor_keff_range_asymptotic`, `inCorridor` |
 | 6.2.4 | Two-pole dynamics → mechanized | ✓ `Core.Dynamics.dρ_dt`, `rho_drift_at_zero_maintenance`, `corridor_requires_maintenance`, `rho_exit_chaos` |
-| 6.2.1 | `O(r²·k_eff)` vs `O(r²·k)` → open | ✓ marked `open`, pointed at coherence-ratchet#4 |
-| 6.2.3.1 | σ signal-source discount → open | ✓ marked `open`, pointed at coherence-ratchet#5 |
+| 6.2.1 | `O(r²·k_eff)` vs `O(r²·k)` → mechanized | ✓ `Core.CollapseTheorem` — corrected remainder + saturation + uniform bound + machine-checkable-difference-from-withdrawn-form. Closed coherence-ratchet#4. |
+| 6.2.3.1 | σ signal-source discount → mechanized | ✓ `Core.SignalSourceDiscount` — Kish discount on σ, clique neutralization at ρ̄_src=1, monotone continuous tightening, corrected recurrence. Closed coherence-ratchet#5. |
 
 ## How to verify a pointer
 
