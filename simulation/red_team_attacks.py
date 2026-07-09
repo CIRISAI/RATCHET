@@ -555,7 +555,8 @@ def main():
     print("  ✗ Correlation robustness (echo chambers)")
 
     print("\nRECOMMENDATION: Implement mitigations before production deployment.")
-    print("See ADVERSARIAL_ANALYSIS.md for detailed mitigation strategies.\n")
+    print("See fiction/ADVERSARIAL_ANALYSIS.md (synthetic roleplay, not a real")
+    print("audit; claims fabricated — see fiction/README.md and issue #7).\n")
 
 
 if __name__ == "__main__":

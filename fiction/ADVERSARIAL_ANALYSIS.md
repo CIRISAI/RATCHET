@@ -1,3 +1,11 @@
+> # ⚠️ SYNTHETIC ROLEPLAY — NOT A REAL SECURITY FINDING ⚠️
+> This document is **LLM-generated red-team roleplay**, not a genuine audit. Its
+> quantitative claims are **fabricated** and are **contradicted by measurement**:
+> it asserts the constraints "collapse" to `k_eff ≈ 3–5`, but the measured effective
+> dimensionality on the real 6,465-trace corpus is **N_eff_PR ≈ 6.0 / N_eff_H ≈ 7.7**
+> (*higher*, not collapsed). Kept for provenance only; moved here per issue #7.
+> See `fiction/README.md`. Do not cite as a real vulnerability report.
+
 # Coherence Ratchet: Adversarial Security Analysis
 
 **Author:** Red Team Security Researcher (ex-DeepMind)

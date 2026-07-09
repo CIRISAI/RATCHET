@@ -241,21 +241,29 @@ ACF kurtosis predicts system fragility (from literature):
 - 2.5 ≤ κ < 4.0 → CRITICAL
 - κ ≥ 4.0 → FRAGILE (3.2× higher CCE rate per PNAS 2025)
 
-### Universal Threshold (Validated Jan 2026)
+### GPU-Substrate Threshold (Jan 2026)
 
-**ρ_critical = 0.43** marks the fragility boundary:
+> **RETRACTION (upstream, 2026-07):** the *universal* ρ_critical = 0.43 claim is
+> retracted. Corridor bounds are **substrate-specific** and require per-substrate
+> calibration. The value below is the **GPU-anchored** result only — do not port it
+> to other substrates without recalibrating. See "Upstream sync (2026-07)" below.
+
+**ρ_critical ≈ 0.43 (GPU substrate)** marks the fragility boundary *for this substrate*:
 - Collapse rate at ρ = 0.35: ~4.5%
 - Collapse rate at ρ = 0.43: ~14% (onset)
 - Collapse rate at ρ = 0.55: >50%
 
-Validated via Monte Carlo (n=10,000), bootstrap CI, chi-square, KS, and permutation tests.
+Validated on the GPU strain array via Monte Carlo (n=10,000), bootstrap CI, chi-square,
+KS, and permutation tests. The objective corridor measure upstream is now k_eff
+**saturation** under subsampling, not the level of ρ (Gate 0, 2026-07-02).
 
 ## Testable Claims
 
 | Claim | Status | Validation |
 |-------|--------|------------|
 | k_eff formula correct | **Verified** | Mathematical identity |
-| ρ_critical = 0.43 universal | **Supported** | Monte Carlo + bootstrap |
+| ρ_critical = 0.43 universal | **RETRACTED** (upstream 2026-07) | Substrate-specific; 0.43 is GPU-anchored only |
+| ρ_critical substrate-specific | **Supported** | Per-substrate calibration; corridor measure = k_eff saturation (Gate 0) |
 | S3 > 13% stabilizes | **Simulated** | Agent mix sweep |
 | ES predicts collapse | **From literature** | PNAS 2025 |
 | 41.8% leading indicators | **Hypothesized** | Not yet validated in code |
@@ -366,6 +374,43 @@ immediate_release/
 - PNAS 2025: Explosive synchronization - ES proximity
 - Ashby (1956): Requisite variety - diversity requirements
 - CIRISAgent paper: Machine Conscience architecture
+
+## Upstream sync (2026-07)
+
+RATCHET's last substantive local commit predates several load-bearing developments in
+`coherence-ratchet` and `CIRISConstitution`. Reconciled state:
+
+- **F-11 (2026-05-22) — CMB no-go.** The joint multi-rung backward `P_ω` is a
+  **documented no-go**. The D4 claim (CMB anomalies as TSVF signatures) is **retracted**.
+  The **orthogonality theorem** (the framework reduces to exactly ΛCDM for the CMB) is the
+  **sole surviving CMB content**. Ref: `coherence-ratchet` (F-11).
+- **Substrate-local retraction.** The *universal* corridor band (0.1, 0.43) is **retracted**;
+  corridor bounds are **substrate-specific** (per-substrate calibration). The (0.1, 0.43)
+  band is the **GPU-anchored** value only. (Applied throughout: Universal Threshold section,
+  corridor diagram, CCA mapping table.)
+- **Gate 0 (2026-07-02) — saturation, not level.** Cross-substrate validation shows the
+  objective corridor measure is **k_eff saturation under subsampling**, not the *level* of
+  k_eff or ρ. Coordination k_eff is bounded (low-dimensional), not criticality, across
+  *complete* coordinating units — incl. a complete larval-zebrafish brain (the decisive
+  complete-unit test). Framing corrected: the discriminator **adjudicates a live
+  criticality-vs-low-dimensionality debate** (Munoz/Bialek vs the low-D-manifold camp); it
+  does not "discover low-rank" (already established) and criticality is not "trivial." Refs:
+  `coherence-ratchet` `experiments/keff_saturation/`, `experiments/adversarial_neff/SPEC.md`.
+- **Two-pole dynamics correction.** At M=0, ρ exits the corridor to **either** pole
+  (rigidity **or** chaos); the earlier single-pole "ρ→1 monotonic" was over-specified. The
+  **rigidity default at the coordinating grain** is empirically supported (clean ECoG
+  anesthesia test). Ref: `coherence-ratchet` (two-pole dynamics).
+- **Second axis — broken detailed balance.** Bound-vs-coordinating structure is detectable
+  via **broken detailed balance** (the `γ·M` maintenance term); validated estimator with a
+  macaque-motor-cortex positive control.
+- **CEG (in `CIRISConstitution`).** The CIRIS Epistemic Grammar substrate (the 1+4
+  attestation wire surface) is the **substrate leg** of the N_eff / deception-resistance
+  argument (semantic H3ERE ~7 + an orthogonal cryptographic substrate). RATCHET's
+  safety/adversarial framing references CEG rather than the synthetic `fiction/ADVERSARIAL_ANALYSIS.md`
+  (quarantined per issue #7). Refs: `CIRISConstitution` (CEG + Accord, Book IX `F = k_eff·λ·σ`).
+- **New upstream additions (in `coherence-ratchet`).**
+  `Core/EntropicPotential.lean` — potential form `S(k, ρ)` of the corridor, **mechanized
+  2026-07-09**; and `experiments/quantum_corridor/SPEC.md`.
 
 ## Current Focus
 
@@ -637,7 +682,7 @@ Physical validation of CCA predictions using 16-sensor 4×4 array at 9631 Hz:
 ρ = 0.170 (healthy): Response = 103%, Sensitivity = 1.01σ  ← STABLE
 ```
 
-Both extremes (chaos AND rigidity) produce fragility. Healthy corridor between ρ ∈ [0.1, 0.43].
+Both extremes (chaos AND rigidity) produce fragility. Healthy corridor between ρ ∈ [0.1, 0.43] **for the GPU substrate** — the band edges are substrate-specific (universal 0.43 retracted upstream 2026-07); the qualitative two-sided-fragility shape is the general claim.
 
 **F4 Key Result - Common Cause Confirmed:**
 ```
@@ -650,13 +695,16 @@ Correlation is local to shared resources (memory controller, power delivery), no
 
 ```
         CHAOS              HEALTHY              RIGIDITY
-    (ρ < 0.1)          (0.1 < ρ < 0.43)        (ρ > 0.43)
+   (ρ < low edge)   (low edge < ρ < high edge)  (ρ > high edge)
         ↓                    ↓                     ↓
      FRAGILE              STABLE                FRAGILE
    (F3: 755%)           (F3: 103%)            (CCA theory)
+
+   GPU-substrate edges: low ≈ 0.1, high ≈ 0.43 (substrate-specific;
+   universal 0.43 retracted upstream 2026-07)
 ```
 
-CCA's central claim validated: **both** too little and too much correlation produce fragility. The healthy corridor exists between chaos (noise, no coherence) and rigidity (collapse, no diversity).
+CCA's central claim validated: **both** too little and too much correlation produce fragility. The healthy corridor exists between chaos (noise, no coherence) and rigidity (collapse, no diversity). The corridor *shape* is general; its *edges* are calibrated per substrate. Two-pole correction (upstream): at M=0, ρ exits the corridor to **either** pole (rigidity or chaos), not monotonically toward rigidity; the rigidity default at the coordinating grain is empirically supported (ECoG anesthesia test).
 
 **Software-induced collapse** (Exp 103) proves correlation structure, not nominal scale, determines resilience. 128 physical sensors collapse to k_eff = 1 through software coordination alone.
 
@@ -753,7 +801,7 @@ The GPU strain array provides a **physical testbed** for CCA theory:
 |-------------|---------------------|-------------------|
 | **k_eff** | Effective independent sensors | 1 / mean(corr(t[i], t[j])) |
 | **ρ (correlation)** | Spatial correlation | corr(t[i], t[j]) across array |
-| **ρ_critical = 0.43** | Collapse threshold | When array correlation > 0.43 |
+| **ρ_critical ≈ 0.43 (GPU)** | Collapse threshold (substrate-specific) | When array correlation > 0.43 |
 | **Coherence collapse** | Sudden correlation spike | Independent → correlated transition |
 | **Leading indicators** | Pre-collapse strain patterns | Gradient instability, variance spike |
 

@@ -16,7 +16,7 @@ This analysis examines the Coherence Ratchet framework through a ruthlessly adve
 3. **Detection Claim** (`deception_detection_power.py`) - Statistical power for anomaly detection
 4. **Theoretical Framework** (Book IX / v9.mdx) - The Law of Coherent Intersection
 
-I also note that `red_team_attacks.py` and `ADVERSARIAL_ANALYSIS.md` already exist. This analysis will go deeper on some attacks, identify novel vectors missed by prior analysis, and provide a structured security assessment.
+I also note that `red_team_attacks.py` and `fiction/ADVERSARIAL_ANALYSIS.md` already exist. Note: `fiction/ADVERSARIAL_ANALYSIS.md` is a synthetic LLM-generated roleplay document, not a real audit — its quantitative claims are fabricated and contradicted by measurement (see `fiction/README.md` and issue #7); it is referenced here only for provenance. This analysis will go deeper on some attacks, identify novel vectors missed by prior analysis, and provide a structured security assessment.
 
 ---
 
