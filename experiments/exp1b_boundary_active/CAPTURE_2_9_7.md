@@ -112,13 +112,39 @@ was sealed, not about which copy the pipeline measures.
 
 ## Pinned instrument (Stage 0 record)
 
+> ### ⚠️ THE DIGEST BELOW IS CONTAMINATED — DO NOT PIN IT
+>
+> `sha256:2f1cc522de8d…` was built from `b76baebd9`, which **predates the truthfulness
+> fixes**. Traces from it carry **fabricated conscience scalars**. Verified directly in the
+> captures this loader was validated against: `entropy_score` is `0.2` and `coherence_score`
+> is `0.9` — a single constant value in every trace, not a measurement.
+>
+> **What that does downstream, and why it is worse than a wrong number.** Two of the sixteen
+> projection features are constants, so `_build_standardized_matrix` drops them at the
+> `retention_threshold` gate. The cohort then reports a sixteen-feature projection while
+> measuring fewer, and **nothing in the output says so**. On the validation captures the
+> retained dimension is **4 of 16**, giving `N_eff_H = 1.000` — a number that would read as
+> total collapse and is in fact an artifact of fabricated inputs plus silent feature dropping.
+>
+> This also corrects my own earlier validation line: "16/16 features on chains where faculties
+> fired" counted two fabricated constants as present features. The honest figure was 14 real,
+> 2 fabricated.
+>
+> Rebuild required off `3b21eecf1` or later. Digest to be recorded here once CI is green.
+> **No number from the old digest may be staked**, including anything in this document's own
+> validation table above, which was produced on it.
+
+Superseded record, kept because the campaign must be able to tell which artifact produced
+which number:
+
 ```
 image digest : sha256:2f1cc522de8dcea44025d1198386e57a351d06e2c4f3d10bf1732ca9126727df
 git sha      : b76baebd93842ead191edd7f8223fd9629b1bbbe
-branch       : release/2.9.7
+branch       : release/2.9.7   ← CONTAMINATED, pre-truthfulness-fix
 ```
 
-Immutable, and precisely the artifact this loader was validated against. **There is no
+That digest is immutable and is precisely the artifact this loader was validated against ---
+which is exactly why it is recorded rather than deleted. **There is no
 2.9.6-tagged capture image and there should not be**: the harness does not exist at that tag —
 no `capture_traces.sh`, no `Dockerfile.research`, no `_tee_ceg_on_seal`. An image labelled
 2.9.6 would either carry 2.9.7 code under a false version, or carry real 2.9.6 and capture
@@ -127,6 +153,23 @@ nothing. Either way the instrument of a pre-registered campaign would be misiden
 Pull once `release/2.9.7` is pushed:
 `ghcr.io/cirisai/ciris-research-capture:release-2.9.7` or `:sha-b76baebd9` — branch-scoped and
 honestly named, without minting a version tag or moving `:latest`.
+
+## Open item: `condition` is an unverified self-report
+
+The three-arm design turns on a `condition` label — (a) bare prior, (b) declared/pipeline off,
+(c) declared/pipeline running. **Nothing cross-checks that label against runtime state.** A run
+labelled (c) with faculties manually disabled satisfies every rule in the manifest.
+
+The truthfulness fixes make the derivation *possible* — `ethical_faculties_skipped` now
+reflects reality rather than being hardcoded — but the override facility does not yet consult
+it. Until it does, arm assignment rests on operator intention, and the campaign's central
+comparison (c − b, what the pipeline adds) is only as trustworthy as the label on each run.
+
+This should be closed before numbers are staked, and it is cheap to close: derive `condition`
+from `ethical_faculties_skipped` observed in the trace, and refuse any manifest whose declared
+label contradicts what the run actually did. That converts arm assignment from intention into
+measurement — the same move the empty-cohort guard and the `full_traces` selector already
+make elsewhere in this pipeline.
 
 ## Open item: `attempt_index` / `is_recursive` unverified
 

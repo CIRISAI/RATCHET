@@ -444,6 +444,33 @@ def neff_pr_from_lambdas(lambdas: np.ndarray) -> float:
     return float((s * s) / s2)
 
 
+def constant_features(
+    chains: list[Chain],
+    retention_threshold: float = DEFAULT_RETENTION_THRESHOLD,
+) -> list[str]:
+    """Projection features that are constant across the cohort, by name.
+
+    A constant feature is dropped at the `retention_threshold` gate, so the
+    eigenspectrum silently narrows while the cohort still reports a sixteen-
+    feature projection. Worth surfacing rather than inferring from a
+    `retained_dim` count, because the usual cause is not a real invariance but
+    **an upstream field that was never measured** — a capture built before the
+    truthfulness fixes emits a fixed `entropy_score` and `coherence_score`, and
+    those arrive here as perfectly well-formed constants.
+
+    Call this before quoting any N_eff_H. A cohort whose constants include a
+    conscience scalar is measuring a capture defect, not a system property.
+    """
+    if not chains:
+        return []
+    out: list[str] = []
+    for f in PROJECTION_16:
+        present = [c.features.get(f) for c in chains if c.features.get(f) is not None]
+        if len(present) >= 2 and float(np.std(present)) <= retention_threshold:
+            out.append(f)
+    return out
+
+
 def compute_neff_h(
     chains: list[Chain],
     retention_threshold: float = DEFAULT_RETENTION_THRESHOLD,
