@@ -4,6 +4,12 @@
 > it asserts the constraints "collapse" to `k_eff ≈ 3–5`, but the measured effective
 > dimensionality on the real 6,465-trace corpus is **N_eff_PR ≈ 6.0 / N_eff_H ≈ 7.7**
 > (*higher*, not collapsed). Kept for provenance only; moved here per issue #7.
+>
+> **Additionally (CCA v5, 2026-08-01):** every CCA figure and formula quoted below predates
+> the v5 corrections and several are drawn from forms now withdrawn — the `α/k_eff` stability
+> criterion, the ~40%/60% undetectability figures, and the hardware "validation" of `k_eff`.
+> Nothing in this file should be cited for any CCA quantity. See `CCA_PAPER/CORRECTIONS_v3.md`
+> and issue #15.
 > See `fiction/README.md`. Do not cite as a real vulnerability report.
 
 # Coherence Ratchet: Adversarial Security Analysis

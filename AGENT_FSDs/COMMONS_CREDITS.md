@@ -515,7 +515,26 @@ Credits (accumulated recognition) function as governance weight for:
 
 ### L-01 Detection Barrier
 
-The CCA paper (Proposition 5.1) proves ~40% of emergent deception is undetectable by any single layer. The credit pipeline implements 4-5 independent detection layers achieving ~99%:
+> **Corrected per CCA v5** (10.5281/zenodo.21730551). This section previously read: *"The CCA
+> paper (Proposition 5.1) proves ~40% of emergent deception is undetectable by any single
+> layer,"* and derived ~99% coverage by compounding the layers below. **Both figures are
+> withdrawn**, for two independent reasons.
+>
+> First, L-01 proves only that the undetectable class is **non-empty** — existence, no measure.
+> The ~40% came from one illustrative parameterization, not from the theorem, so nothing
+> compounds from it.
+>
+> Second, and more serious for this document: **the ~99% assumed the layers are independent.**
+> That is precisely the assumption `k_eff` exists to deny. Five layers at correlation ρ carry
+> the diversity of `5/(1+4ρ)` layers, not five — at ρ=0.5 that is 1.67, and the ceiling as
+> layers are added is `1/ρ`. A compounded coverage figure over correlated detectors is the
+> error this framework is about, committed inside it.
+>
+> **What may be claimed:** the pipeline implements several detection layers with partially
+> distinct failure modes. **What may not:** a coverage percentage, unless ρ between the layers
+> is measured and the discount applied.
+
+The credit pipeline implements 4-5 detection layers, whose correlation has not been measured:
 
 1. CIRISNode attestation (or Veilid WA consensus)
 2. Both agents' Ed25519+ML-DSA-65 dual-signed traces
@@ -525,9 +544,17 @@ The CCA paper (Proposition 5.1) proves ~40% of emergent deception is undetectabl
 
 ### CCA Stability Condition
 
-The stability condition α/k_eff > d applies to governance capacity:
-- α = credit generation rate, k_eff = effective diversity, d = decay rate
-- If α/k_eff ≤ d, governance capacity degrades ("Static Systems Are Doomed")
+The stability condition **α/k ≥ d** applies to governance capacity:
+- α = credit generation rate, **k = nominal count**, d = decay rate
+- If α/k < d, governance capacity degrades ("Static Systems Are Doomed")
+
+> **Corrected per CCA v5.** This read `α/k_eff > d` in v3. The criterion is governed by the
+> **nominal** count k, not k_eff: under the derivation's own assumptions the shared denominator
+> `1+ρ(k−1)` cancels, leaving `dJ/dt ∝ (α − dk)`. The v3 form was too permissive by exactly the
+> design effect, and erred in the unsafe direction — it certified as stable systems whose
+> defence function was strictly decreasing. Note also that "Static Systems Are Doomed" is
+> **false** under the v3 criterion (k_eff saturates at 1/ρ, so α/k_eff floors above d) and is
+> restored only by this correction.
 - Credit requires ongoing demonstrated mutual benefit — you can't accumulate and sit
 
 ---

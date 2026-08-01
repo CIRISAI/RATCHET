@@ -24,7 +24,19 @@ Understanding these limitations is essential for honest assessment of the framew
 
 ### L-01: Emergent Deception from Honest Components (CRITICAL)
 
-**Classification:** Information-Theoretic Impossibility
+> **Scope corrected per CCA v5** (10.5281/zenodo.21730551, 2026-08-01). L-01 is an
+> **existence result with no measure**: it establishes that the class of marginal-preserving
+> undetectable patterns is *non-empty*. It does **not** quantify that class. The "~40%
+> undetectable / ~60% coverage" figures carried in v3 and in the register below followed from
+> one illustrative parameterization ($\beta = 10$, $\varepsilon \approx 0.092$) which the v3
+> text itself called illustrative, and are **withdrawn**. Do not quote a percentage for L-01.
+>
+> A falsification handle now governs any future percentage: $\beta$ must be estimated on one
+> substrate and predict detection rates on a second. If it must be refit per substrate, the
+> detection model is curve-fitting and no figure derived from a chosen $\beta$ carries content.
+> That condition is currently **unmet**.
+
+**Classification:** Information-Theoretic Impossibility (existence; no measure)
 
 **Statement:**
 A system composed entirely of individually honest agents can exhibit emergent deception that is undetectable by analyzing individual agent traces.
@@ -353,7 +365,7 @@ Any detector that responds to queries can be learned by an adaptive adversary. T
 
 | Limitation | Mitigable? | Mitigation Quality | Residual Risk |
 |------------|------------|-------------------|---------------|
-| L-01 Emergent Deception | Partial | 60% coverage | 40% undetectable |
+| L-01 Emergent Deception | Partial | ~~60% coverage~~ **unquantified** | ~~40% undetectable~~ **unquantified** (v5: existence, no measure) |
 | L-02 Non-Adaptive Assumption | Partial | Degrades gracefully | Full adaptation defeats |
 | L-03 ETH Dependency | No | N/A | Theoretical only |
 | L-04 Convexity Requirement | Partial | Detect/decompose | Optimized evasion |
@@ -361,6 +373,9 @@ Any detector that responds to queries can be learned by an adaptive adversary. T
 | L-06 Correlation Impact | Yes | Measure k_eff | Hidden correlation |
 | L-07 Distribution Mismatch | Yes | Match or adjust | Implementation drift |
 | L-08 Slow Capture | Partial | Early warning | Patient adversary |
+| **L-09 Volume-decay law is wrong** | No | None available | $V = V_0 e^{-\lambda k_{\text{eff}}}$ over-predicts effective count by 1.9×–4.1× at ρ=0.5, growing in *k*. Everything downstream ($T_{\text{truth}}$, singularity boundary, phase corridor) inherits it |
+| **L-10 Equicorrelated precondition fails at low ρ** | Partial | Restrict to the measured band | Kish assumes exchangeability; departure reaches 70.8% below ρ≈0.04 on the GPU substrate, so $k_{\text{eff}}$ from that band is unlicensed |
+| **L-11 No deceptive/honest asymmetry from the geometry** | No | Requires truth-tracking constraints | Under i.i.d. constraints both regions shrink equally (measured gap −0.005). The asymmetry safety needs is *assumed*, not derived — it is the alignment problem |
 
 ---
 

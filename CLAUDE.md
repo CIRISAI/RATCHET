@@ -435,6 +435,18 @@ RATCHET's last substantive local commit predates several load-bearing developmen
 3. **Fat-Tail Statistics** - Use Student-t, not Gaussian, for inference
 4. **Lean 4 Proofs** - EnvironmentalCoherence.lean (1790 lines, builds successfully)
 
+> **CCA v5 is the current published version** (10.5281/zenodo.21730551, 2026-08-01;
+> corrections version, issue #11 discharged). It **withdrew**: the `α/k_eff` stability
+> criterion (corrected to **α/k ≥ d**); both hardware "validations" of `k_eff` (identity
+> checks); the institutional application (re-scored below chance — now a negative result);
+> the cross-domain generality claim; the ~40%/60% undetectability figures (L-01 is
+> **existence with no measure**); "software-induced coherence collapse" (measurement
+> artifact); and the collapse-geometry safety asymmetry (**assumed, not derived — it is the
+> alignment problem**). Two falsification conditions fired: the volume-decay law is wrong by
+> 1.9×–4.1×, and the equicorrelated precondition fails below ρ≈0.04. **Do not restate any
+> withdrawn form.** Note `k_eff` remains sound as *diversity bookkeeping* — a correlation
+> discount — just not as a decay-rate exponent.
+>
 > **Standing instruction for work in this repo.** Label every claim
 > **proved / measured / open / wager** per `CIRISOntology/epistemology.md` §1, and never
 > round up. "Validated" is not a label — say which of the four, and for *measured*, state
