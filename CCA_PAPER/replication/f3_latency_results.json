@@ -1,0 +1,134 @@
+[
+  {
+    "trial": 0,
+    "shared": false,
+    "rho": 0.7917402629349951,
+    "thr": 28969.615625,
+    "fp": 0.05,
+    "latency_mean": 1.0,
+    "latency_median": 1.0,
+    "censored": 0,
+    "temp": 65.0
+  },
+  {
+    "trial": 0,
+    "shared": true,
+    "rho": 0.7710803922151525,
+    "thr": 29203.515625,
+    "fp": 0.05,
+    "latency_mean": 1.0,
+    "latency_median": 1.0,
+    "censored": 0,
+    "temp": 66.0
+  },
+  {
+    "trial": 1,
+    "shared": false,
+    "rho": 0.7102201323282311,
+    "thr": 28111.7375,
+    "fp": 0.05,
+    "latency_mean": 1.0,
+    "latency_median": 1.0,
+    "censored": 0,
+    "temp": 66.0
+  },
+  {
+    "trial": 1,
+    "shared": true,
+    "rho": 0.7423723406894095,
+    "thr": 30352.031249999993,
+    "fp": 0.05,
+    "latency_mean": 1.0,
+    "latency_median": 1.0,
+    "censored": 0,
+    "temp": 66.0
+  },
+  {
+    "trial": 2,
+    "shared": false,
+    "rho": 0.611938005373887,
+    "thr": 31446.712499999998,
+    "fp": 0.05,
+    "latency_mean": 1.0,
+    "latency_median": 1.0,
+    "censored": 0,
+    "temp": 67.0
+  },
+  {
+    "trial": 2,
+    "shared": true,
+    "rho": 0.7223975364073977,
+    "thr": 30132.771874999995,
+    "fp": 0.05,
+    "latency_mean": 1.0,
+    "latency_median": 1.0,
+    "censored": 0,
+    "temp": 67.0
+  },
+  {
+    "trial": 3,
+    "shared": false,
+    "rho": 0.6185176972101,
+    "thr": 30750.56875,
+    "fp": 0.05,
+    "latency_mean": 1.0,
+    "latency_median": 1.0,
+    "censored": 0,
+    "temp": 67.0
+  },
+  {
+    "trial": 3,
+    "shared": true,
+    "rho": 0.6105042068855264,
+    "thr": 20244.175,
+    "fp": 0.05,
+    "latency_mean": 1.0,
+    "latency_median": 1.0,
+    "censored": 0,
+    "temp": 67.0
+  },
+  {
+    "trial": 4,
+    "shared": false,
+    "rho": 0.7491814791225313,
+    "thr": 30049.437499999993,
+    "fp": 0.05,
+    "latency_mean": 1.0,
+    "latency_median": 1.0,
+    "censored": 0,
+    "temp": 67.0
+  },
+  {
+    "trial": 4,
+    "shared": true,
+    "rho": 0.9041775168968317,
+    "thr": 27981.14375,
+    "fp": 0.05,
+    "latency_mean": 1.0,
+    "latency_median": 1.0,
+    "censored": 0,
+    "temp": 67.0
+  },
+  {
+    "trial": 5,
+    "shared": false,
+    "rho": 0.8426321252839124,
+    "thr": 29276.85,
+    "fp": 0.05,
+    "latency_mean": 1.0,
+    "latency_median": 1.0,
+    "censored": 0,
+    "temp": 67.0
+  },
+  {
+    "trial": 5,
+    "shared": true,
+    "rho": 0.5679445509469168,
+    "thr": 18356.5375,
+    "fp": 0.05,
+    "latency_mean": 1.0,
+    "latency_median": 1.0,
+    "censored": 0,
+    "temp": 67.0
+  }
+]
