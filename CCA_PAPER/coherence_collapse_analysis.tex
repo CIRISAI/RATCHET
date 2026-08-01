@@ -1657,27 +1657,84 @@ is the same idea in a more elaborate form; $k/\lambda_{\max}$ is the version a r
 expect to see first. Until that comparison is run, the identity remains \emph{proved} and
 \emph{unmeasured}, and this paper should not be read as claiming otherwise.
 
-\paragraph{Theorem~\ref{thm:volume-decay} substitutes $\keff$ into the exponent without deriving the step.}
+\paragraph{Theorem~\ref{thm:volume-decay} substitutes $\keff$ into the exponent without deriving the step, and the substitution is measurably wrong.}
 The proof appeals to the effective-sample-size formula in one sentence. That formula governs the
 \emph{variance of a mean} of equicorrelated variables; the volume argument requires the
 \emph{expectation of a sum of log-reduction factors}. These are different moments of different
 objects, and the substitution is not established by the citation. Relatedly, the product is
 written over $i = 1$ to $\keff$, a non-integer index --- the tables in this paper carry $\keff$
-values of 5.20 and 7.5. Everything downstream inherits the step: $\Ttruth$, the singularity
-boundary $\Kreq \cdot \rho \geq 1$, and the phase corridor. This is flagged, not repaired, and
-carries the same status as every other unproven item corrected in this version: it is an
-\textbf{open} step, not a proved one.
+values of 5.20 and 7.5.
 
-\paragraph{The deceptive/honest asymmetry is assumed, not derived.}
-The volume-decay theorem cuts a bounded convex region with independent halfspaces. Nothing in
-that construction distinguishes the deceptive region from the honest one: \emph{both} shrink as
-constraints accumulate. What safety requires is that the \emph{ratio} fall --- that the
-deceptive region shrink faster than the honest one --- and that holds only if the constraints
-are chosen so that honest behaviour satisfies them while deceptive behaviour does not. That
-choice is the alignment problem itself, assumed here rather than solved. The limitation
-previously stated in this paper (``assumes convex deceptive regions'') is a weaker and different
-caveat, and does not cover this. Stated plainly: \textbf{the geometry shows that constraints
-shrink feasible volume; it does not show that they shrink deception preferentially.}
+The step can be checked directly, and it fails. Cutting a bounded convex region (the unit ball
+in $\mathbb{R}^8$) with $k$ halfspaces whose normals are equicorrelated at $\rho$, and reading
+off the effective count the measured volume decay actually implies, gives:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{rrrrr}
+\toprule
+$k$ & $\rho$ & Kish $\keff$ & implied $\keff$ & ratio \\
+\midrule
+ 4 & 0.00 &  4.00 &  4.10 & 1.02 \\
+ 8 & 0.00 &  8.00 &  8.12 & 1.02 \\
+ 8 & 0.50 &  1.78 &  3.36 & 1.89 \\
+16 & 0.50 &  1.88 &  6.21 & 3.30 \\
+32 & 0.20 &  4.44 & 13.61 & 3.06 \\
+32 & 0.50 &  1.94 &  7.91 & 4.08 \\
+\bottomrule
+\end{tabular}
+\caption{Volume decay does not follow the Kish $\keff$. The substitution is exact at $\rho = 0$ (where it is trivial) and degrades monotonically with $k$, reaching a factor of 4 at $k=32$, $\rho=0.5$. Full sweep in \texttt{replication/geometry/}.}
+\end{table}
+
+The substitution holds only at $\rho = 0$, where $\keff = k$ and it asserts nothing. Elsewhere
+the geometry decays \emph{faster} than the formula predicts --- correlated halfspaces still cut
+substantially more volume than the design effect allows --- and the discrepancy grows with $k$,
+which is the regime the framework's asymptotic claims live in. Note also that at $\rho = 0$ and
+$k = 32$ the implied count is $25.7$ rather than $32$: the pure exponential form itself degrades
+at large $k$, independently of any correlation question. Everything downstream inherits the
+step: $\Ttruth$, the singularity boundary $\Kreq \cdot \rho \geq 1$, and the phase corridor.
+This is \textbf{open}, not proved, and the correct effective-count law for volume decay under
+correlated constraints is not supplied by this paper.
+
+\paragraph{The deceptive/honest asymmetry is assumed, not derived --- and the assumption carries the entire safety claim.}
+The volume-decay theorem cuts a bounded convex region with i.i.d.\ halfspaces. Nothing in that
+construction refers to which points are honest. Safety requires the \emph{ratio}
+$|D|/|H|$ to fall; the theorem gives only that both regions shrink.
+
+Simulation isolates what the assumption is doing. With honest and deceptive regions
+\textbf{congruent} --- equal radius, equal distance from the origin, differing only in
+direction, so that no geometric advantage is smuggled in --- and constraints drawn i.i.d.\ as
+assumption (a) specifies:
+
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+Constraint distribution & $\lambda_H$ & $\lambda_D$ & gap \\
+\midrule
+i.i.d.\ (assumption (a) alone) & 0.0262 & 0.0214 & $-0.005$ \\
+truth-tracking (not assumed) & 0.0000 & 0.0181 & $+0.018$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Under the theorem's own assumptions the gap is indistinguishable from zero and marginally
+negative: over 40 constraints the ratio $|D|/|H|$ does not fall but drifts from $1.01$ to
+$1.22$. \textbf{Adding i.i.d.\ constraints buys no safety whatsoever.} The asymmetry appears
+only in the second row, where constraints are drawn subject to being satisfied by the honest
+region --- and that selection is the alignment problem, assumed here rather than solved.
+
+One caution for anyone re-running this: an earlier version of the test appeared to show
+asymmetry under i.i.d.\ constraints, because the honest region had been made small and central
+while the deceptive region was large and peripheral. Compact central regions survive random
+halfspace cuts better than diffuse peripheral ones, and that effect is easily mistaken for a
+safety result. It is a claim about where honest behaviour \emph{lives}, not about what
+constraints \emph{do}, and it needs its own justification if relied upon.
+
+Stated plainly: \textbf{the geometry shows that constraints shrink feasible volume; it does not
+show that they shrink deception preferentially. The framework's central safety intuition rests
+on the constraint-generating process being truth-tracking, which is exactly what an alignment
+method would have to supply.} The limitation previously stated here (``assumes convex deceptive
+regions'') is a weaker and different caveat and does not cover this.
 
 \subsection{Ethical Considerations}
 
