@@ -174,43 +174,61 @@ CCA provides:
 \midrule
 Structural analysis of failure conditions & Prediction of historical outcomes \\
 Identification of phase boundaries & Fortune-telling or prophecy \\
-Cross-domain validated mathematics & Universal law (yet) \\
+An identity applied across domains & Cross-domain validated mathematics \\
 Engineering-style failure analysis & Social physics or psychohistory \\
-Falsifiable framework & Unfalsifiable speculation \\
+A measurement substrate & A safety guarantee \\
 \bottomrule
 \end{tabular}
 \caption{Scope boundaries for Coherence Collapse Analysis}
 \end{table}
 
-The framework is falsified if:
-\begin{itemize}[noitemsep]
-    \item The $\keff$ formula fails in additional domains
-    \item Systems with high $\rho$ demonstrate sustained resilience
-    \item Correlation accumulation reverses spontaneously without intervention
-\end{itemize}
+\paragraph{Falsification conditions.}
+Version 3 stated three conditions, none of which could fire: that ``the $\keff$ formula fails
+in additional domains'' (it is an identity, and cannot fail), that ``systems with high $\rho$
+demonstrate sustained resilience'' (absorbed by this paper's own block-structure caveat, which
+converts any such observation into confirmation), and that ``correlation accumulation reverses
+spontaneously'' (no timescale, magnitude, or measurement procedure given). They are replaced
+with conditions carrying an observable, a threshold, and a procedure.
+
+\begin{enumerate}[noitemsep]
+    \item \textbf{Effective-count disagreement.} Compute $N_{\text{eff}} = k/\lambda_{\max}$ from the largest eigenvalue of a measured correlation matrix and $\keff = k/(1+\bar\rho(k-1))$ from the same data. These are distinct functionals over distinct inputs. If they diverge by more than $25\%$ across the operating range of $\rho$ on a substrate where the equicorrelated precondition holds (condition 2), the identity is not the right effective-count law for that substrate.
+    \item \textbf{Precondition failure in the operating band.} The Kish form assumes exchangeability. If the spectral entropy deficit departs from its closed form by more than $10\%$ anywhere in the band where a deployment actually operates, $\keff$ figures from that band are not licensed. \emph{This condition has already fired on the GPU substrate below $\rho \approx 0.04$}, and bounds the domain of every $\keff$ value reported here.
+    \item \textbf{No two-sided corridor.} Measure fragility across a $\rho$ range spanning both corridor edges on any substrate. If fragility is monotone in $\rho$ rather than U-shaped --- in particular if it does not rise again above the upper edge --- the corridor claim fails for that substrate. \emph{This is currently untested}: the F-series measured a maximum $\rho$ of $0.171$ against a stated rigidity edge of $0.43$.
+    \item \textbf{Volume decay under correlation.} The decay law $V(k) = V_0 e^{-\lambda \keff}$ predicts a specific effective count from measured volume reduction. If simulated or measured decay implies an effective count differing from $\keff$ by more than a factor of $1.5$, the law is wrong. \emph{This condition has already fired}: the implied count exceeds $\keff$ by $1.9\times$ to $4.1\times$ at $\rho = 0.5$, growing with $k$ (\S\ref{sec:outstanding-validation}).
+\end{enumerate}
+
+Two of the four have fired against the framework and are reported as such. A condition that
+cannot fire is not a falsification condition, and the three carried in version 3 are withdrawn
+rather than reworded.
 
 \subsection{Contributions}
 
-This paper makes the following contributions:
+\paragraph{Analytic results.}
 \begin{enumerate}
-    \item \textbf{Cross-domain validation} of the $\keff$ framework against NASA battery data, QoG/Polity institutional data, and American Gut Project microbiome data (consistent structural mappings; reliable phase classification).
+    \item The \textbf{M\"obius structure} of the effective-count map: $\keff$ is strictly monotone decreasing in $\rho$ and saturates at $1/\rho$ as $k \to \infty$ (\S\ref{sec:mobius}). Scale cannot restore diversity that correlation has already collapsed --- at $\rho = 0.1$ the ceiling is 10 effective constraints, at $\rho = 0.5$ it is 2, however many are added. This is substrate-independent and requires no calibration.
 
-    \item A formal definition of the \textbf{defense function} $J$ that unifies scale, diversity, integrity, and sustainability into a single quantity. (Note: $J$ is a \textit{modeling choice}, not a derived result---its value lies in whether it produces useful analysis, not in theoretical necessity.)
+    \item A \textbf{stability condition} $\alpha/k \geq d$ separating growing from decaying systems, with the corollary that constant-generation systems are eventually unstable for any decay rate.
 
-    \item Derivation of \textbf{three collapse timelines} ($\Ttruth$, $\Tentropy$, $\Tcapture$) with closed-form expressions and identified singularities.
+    \item Derivation of \textbf{three collapse timescales} ($\Ttruth$, $\Tentropy$, $\Tcapture$) in closed form, and a singularity boundary $\Kreq \cdot \rho \geq 1$ beyond which added constraints cannot reduce incoherence.
 
-    \item Characterization of the \textbf{chaos-rigidity phase space} and the narrow corridor of sustainable coherence.
+    \item A \textbf{chaos--rigidity phase decomposition} and the corridor between them. The chaos arm is measured on the GPU substrate; the rigidity arm is not (Remark~\ref{rem:corridor-arm}).
 
-    \item Information-theoretic proof that \textbf{a non-trivial class of emergent incoherence is fundamentally undetectable} (the L-01 barrier).
+    \item An information-theoretic \textbf{existence result} (L-01): the class of marginal-preserving incoherence patterns undetectable from marginals alone is non-empty. Existence only --- the theorem gives no measure over that class.
 
-    \item A \textbf{stability condition} ($\alpha/k \geq d$) that distinguishes growing from decaying systems.
-
-    \item Formal verification of key theorems in \textbf{Lean 4} with Mathlib dependencies.
-
-    \item \textbf{Hardware instrument} (C-series): a 128-sensor GPU-timing strain gauge, characterized; first measurement of correlation propagation velocity ($0.5$ m/s). \emph{The v3 claim of ``empirical validation of the $\keff$ formula ($R^2 = 0.798$)'' is withdrawn} --- that comparison is an identity check (Remark~\ref{rem:c1-identity}).
-
-    \item An \textbf{open-source implementation} with Python modules, Lean proofs, and simulation scripts (\texttt{github.com/CIRISAI/RATCHET}).
+    \item Formal verification of the algebraic results in \textbf{Lean 4}, establishing internal consistency and, as \S\ref{sec:formal-verification} states, nothing about external validity.
 \end{enumerate}
+
+\paragraph{Instrument and measurements.}
+\begin{enumerate}[resume]
+    \item A \textbf{128-sensor GPU-timing strain gauge}, characterized: fat-tailed (Student-$t$) timing statistics, workload-responsive correlation structure, first measurement of correlation propagation velocity ($0.5$ m/s), and a bounded domain over which the equicorrelated precondition the identity assumes actually holds (Exp 117: within $0.8\%$ at $\rho = 0.394$, diverging to $70.8\%$ at $\rho \approx 0.03$).
+
+    \item A \textbf{measurement protocol} for correlation on this class of instrument, derived from a pre-registered replication: a shuffle null (at $n = 30$ samples the null's 95th percentile is $\rho \approx 0.15$), repeated trials with intervals rather than single draws, and rejection of the first measurement after idle. Applying it withdrew one of this paper's own headline results.
+
+    \item An \textbf{open-source implementation} --- Python modules, Lean proofs, simulation scripts, pre-registrations, and the machine witness for every algebraic correction in this version (\texttt{github.com/CIRISAI/RATCHET}).
+\end{enumerate}
+
+\paragraph{What this version does not contribute.}
+Version 3 of this paper claimed cross-domain empirical validation of the $\keff$ formula and hardware confirmation of its central mathematical claim. \textbf{Both are withdrawn.} $\keff$ is an identity: it admits no empirical confirmation, and the two results previously offered as confirming it computed the identity and compared it against itself. The institutional application does not test $\keff$ at all and is reported here as a negative result (\S\ref{sec:institutional-negative}). Eighteen defects are enumerated with evidence and dispositions in the accompanying corrections note; the two that resist repair --- the $\keff$ substitution in Theorem~\ref{thm:volume-decay}, and the deceptive/honest asymmetry --- are stated as open in \S\ref{sec:outstanding-validation} with measurements of how far each fails.
 
 \subsection{Interpretation Guardrails}
 
@@ -218,7 +236,7 @@ To prevent misreading, we state explicitly what CCA does \textbf{not} claim:
 
 \begin{itemize}[noitemsep]
     \item \textbf{No inevitability}: Correlation accumulation is a tendency, not a fate. Systems can and do maintain diversity through active intervention.
-    \item \textbf{No timeline predictions}: CCA identifies \textit{structural fragility}, not when collapse will occur. The 7.6-year timing error in institutional data illustrates this limitation.
+    \item \textbf{No timeline predictions}: CCA identifies \textit{structural fragility}, not when collapse will occur. Version 3 cited a ``7.6-year timing error'' here as illustrating the limitation; that figure is itself withdrawn as an initialisation artifact (\S\ref{sec:institutional-negative}), and the limitation stands without it --- no lead-time claim in this paper survives comparison against a null that fires at $t_0$.
     \item \textbf{No macro-outcome claims}: We do not predict civilizational collapse, AI doom scenarios, or specific historical events. CCA is engineering risk analysis, not prophecy.
     \item \textbf{No causal claim}: CCA does not claim correlation \textit{causes} collapse---only that high correlation is a sufficient structural bottleneck for fragility, regardless of underlying mechanism (see F4: common cause confirmation in Section~\ref{sec:gpu-validation}).
     \item \textbf{``Great Filter'' is metaphorical}: The term is used as an illustrative analogy for correlation-driven failure, not as a probabilistic claim about the Fermi paradox.
