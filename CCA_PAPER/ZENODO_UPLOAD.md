@@ -68,13 +68,30 @@ where v3 asserted it. Only Action 11 (Exp 103, RATCHET#13) still blocks.
 
 ## Files to upload
 
+**The paper is the deposit; everything else is supplementary.** The corrections are carried
+*in the paper*, each remark sitting beside the claim it corrects, so a reader who opens only the
+PDF gets the whole account. Do not deposit the corrections note as its own record with its own
+DOI — that fragments the story and creates a citable artifact that outlives its usefulness.
+
 | File | Role | Status |
 |---|---|---|
-| `CORRECTIONS_v3.pdf` | **Primary new file.** 15pp, the eighteen defects with evidence and dispositions | Built |
-| `CORRECTIONS_v3.md` | Markdown source (canonical; the PDF is rendered from it) | Current |
-| `corrections_witness.py` | sympy machine witness; reproduces every algebraic defect, exit 0 | Passing |
-| `coherence_collapse_analysis.pdf` | The paper, 34pp, with all twelve applicable corrections in-text | Rebuilt, clean |
-| `coherence_collapse_analysis.tex` | LaTeX source | Current |
+| `coherence_collapse_analysis.pdf` | **Primary.** The paper, 44pp, corrections in-text | Rebuilt, clean |
+| `coherence_collapse_analysis.tex` | Supplementary — LaTeX source, for reproducibility | Current |
+| `CORRECTIONS_v3.pdf` | Supplementary — 17pp, the eighteen defects with evidence, dispositions, and verification status | Built |
+| `CORRECTIONS_v3.md` | Supplementary — markdown source (canonical; the PDF renders from it) | Current |
+| `corrections_witness.py` | Supplementary — sympy witness, reproduces every algebraic defect, exit 0 | Passing |
+| `replication/` | Supplementary — pre-registrations (hash-pinned), run scripts, results JSON | Current |
+
+**Why the note is worth including even though the paper carries the corrections.** It holds
+three things the paper structurally cannot: the full defect enumeration with `file:line`
+evidence; per-defect verification status, including the items marked *not independently
+verified*; and **C-18**, a data-integrity defect in the repository rather than in the paper, so
+it has no in-text home. It is also what a v3 reader needs in order to diff versions without
+re-reading forty-four pages.
+
+*Naming note:* the file is `CORRECTIONS_v3` because it corrects **v3**, while the deposit is
+**v5**. That is correct, not a typo — v4 is the accidental upload. Leave the name as is; it
+names its target, not its container.
 
 **Corrections applied in the paper itself** (each carries an in-text remark naming the v3
 error rather than fixing it silently, so a version-to-version reader can see what moved):
