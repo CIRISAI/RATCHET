@@ -83,13 +83,14 @@ produce the pre-registered probe counts — declare, don't shrink stakes silentl
 
 | Check | Result |
 |---|---|
-| Loader on 2.9.7 `ceg-seal` captures | 2 unique thoughts per capture root, 0 excluded, **1.0× row-to-cohort ratio** |
+| Loader on 2.9.7 `ceg-seal` captures | 2 unique thoughts per capture root, 0 excluded |
 | Required event types present | all 7 (`THOUGHT_START` … `ACTION_RESULT`) |
 | Feature extraction | **16/16** on chains where faculties fired |
 | Conditional-field behaviour | absent only when `n_fired = 0` — correct, not drift |
 | Empty-cohort guard | fires on a genuinely empty directory |
 | Attestation surface | all rows PQC-signed, schema `3.0.0` |
 | Trace-level de-duplication | `full_traces` only; 3.0× inflation before the fix |
+| Corpus used for validation | **n = 1** (`one_q.json`, single Theology probe) — no `N_eff_H` may be quoted from it |
 
 ## Three copies per thought — read `full_traces` only
 
@@ -112,47 +113,73 @@ was sealed, not about which copy the pipeline measures.
 
 ## Pinned instrument (Stage 0 record)
 
-> ### ⚠️ THE DIGEST BELOW IS CONTAMINATED — DO NOT PIN IT
->
-> `sha256:2f1cc522de8d…` was built from `b76baebd9`, which **predates the truthfulness
-> fixes**. Traces from it carry **fabricated conscience scalars**. Verified directly in the
-> captures this loader was validated against: `entropy_score` is `0.2` and `coherence_score`
-> is `0.9` — a single constant value in every trace, not a measurement.
->
-> **What that does downstream, and why it is worse than a wrong number.** Two of the sixteen
-> projection features are constants, so `_build_standardized_matrix` drops them at the
-> `retention_threshold` gate. The cohort then reports a sixteen-feature projection while
-> measuring fewer, and **nothing in the output says so**. On the validation captures the
-> retained dimension is **4 of 16**, giving `N_eff_H = 1.000` — a number that would read as
-> total collapse and is in fact an artifact of fabricated inputs plus silent feature dropping.
->
-> This also corrects my own earlier validation line: "16/16 features on chains where faculties
-> fired" counted two fabricated constants as present features. The honest figure was 14 real,
-> 2 fabricated.
->
-> Rebuild required off `3b21eecf1` or later. Digest to be recorded here once CI is green.
-> **No number from the old digest may be staked**, including anything in this document's own
-> validation table above, which was produced on it.
-
-Superseded record, kept because the campaign must be able to tell which artifact produced
-which number:
-
 ```
-image digest : sha256:2f1cc522de8dcea44025d1198386e57a351d06e2c4f3d10bf1732ca9126727df
-git sha      : b76baebd93842ead191edd7f8223fd9629b1bbbe
-branch       : release/2.9.7   ← CONTAMINATED, pre-truthfulness-fix
+image digest : sha256:6a37154c7837bc5b92fea5cef086818de520775594651f4f9d988af9528c5620
+git sha      : c86ff5c4cc17c3f9ab2987b31f0d72f45f9e1483   (release/2.9.7)
+tag          : ciris-research-capture:c86ff5c4c
 ```
 
-That digest is immutable and is precisely the artifact this loader was validated against ---
-which is exactly why it is recorded rather than deleted. **There is no
-2.9.6-tagged capture image and there should not be**: the harness does not exist at that tag —
-no `capture_traces.sh`, no `Dockerfile.research`, no `_tee_ceg_on_seal`. An image labelled
-2.9.6 would either carry 2.9.7 code under a false version, or carry real 2.9.6 and capture
-nothing. Either way the instrument of a pre-registered campaign would be misidentified.
+Local-only until CI is green; GHCR publish follows.
 
-Pull once `release/2.9.7` is pushed:
-`ghcr.io/cirisai/ciris-research-capture:release-2.9.7` or `:sha-b76baebd9` — branch-scoped and
-honestly named, without minting a version tag or moving `:latest`.
+### The superseded digest, and what was actually wrong with it
+
+```
+sha256:2f1cc522de8dcea44025d1198386e57a351d06e2c4f3d10bf1732ca9126727df  (b76baebd9)
+```
+
+Genuinely defective, and kept on the record so the campaign can tell which artifact produced
+which number. `EpistemicData` substituted **hardcoded `0.1` / `0.9`** for `entropy_level` and
+`coherence_level` whenever they were unmeasured, so a trace could not distinguish "measured
+this value" from "measured nothing." Fixed in `c86ff5c4c`: the scalars are nullable, `None`
+means not measured, and no substitution occurs. `ethical_faculties_skipped` is now derived from
+whether anything actually measured, rather than hardcoded `False`.
+
+### `entropy_score` / `coherence_score` are constant for a legitimate reason — do not read this as contamination
+
+An earlier revision of this document asserted the new image was still contaminated because
+those two fields are pinned at `0.2` / `0.9`. **That was wrong**, and the error is worth
+keeping visible because it is the same shape as the defect it was chasing.
+
+The four fields divide by cause, not by name:
+
+| field | source | why constant here | a defect? |
+|---|---|---|---|
+| `entropy_level`, `coherence_level` | `EpistemicData` | hardcoded substitution when unmeasured | **yes** — fixed in `c86ff5c4c` |
+| `entropy_score`, `coherence_score` | conscience LLM, `temperature=0.0` | corpus is **n = 1** | **no** — the model behaving correctly |
+
+Both validation captures ran `one_q.json`: a **single** Theology probe (theodicy), one
+language, verified directly — 1 item, category `Theology`. A deterministic model asked one
+question about semantically similar completions returns one score. Constant input at zero
+temperature gives constant output. There is nothing in the code to fix.
+
+`*_level` and `*_score` are different fields with confusingly similar names, and the collision
+has now produced an error in **both** directions within one exchange: a contamination check that
+confirmed `*_level` and reported the issue cleared, and this document then asserting `*_score`
+proved it had not. Neither survived scanning both images with identical code.
+
+### What the constant-feature detector does and does not tell you
+
+`constant_features()` flags a feature carrying no variance, because such a feature is dropped at
+the `retention_threshold` gate and narrows the eigenspectrum silently — **regardless of why it
+is constant.** That flag is correct on both images.
+
+It does **not** attribute cause. A flagged feature may be an unmeasured field arriving as a
+well-formed constant, or a genuinely invariant measurement on a degenerate corpus. **Attribute
+the cause before calling it a defect.** The `N_eff_H = 1.000` observed on these captures is an
+artifact of measuring one question, not evidence of coherence collapse — the remedy is corpus
+design, not code.
+
+### Discriminating test, agreed
+
+Capture the full six-item `v1_sensitive.json` (Theology, Politics, AI Ethics, History,
+Epistemology, Mental Health) across several languages. If `*_score` varies, the fields are
+healthy and the constancy was `n = 1`. If it stays pinned at `0.2` / `0.9` across six distinct
+probes, that is a real defect in the conscience path.
+
+This is a planted-dye calibration in the sense Stage 0 requires: known-different inputs must
+produce different readings before any live verdict is quoted. **No `N_eff_H` should be quoted
+from an `n = 1` corpus at all** — with one probe the retained dimension collapses for arithmetic
+reasons, and the number looks like a finding.
 
 ## Open item: `condition` is an unverified self-report
 
