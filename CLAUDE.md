@@ -259,14 +259,29 @@ KS, and permutation tests. The objective corridor measure upstream is now k_eff
 
 ## Testable Claims
 
-| Claim | Status | Validation |
-|-------|--------|------------|
-| k_eff formula correct | **Verified** | Mathematical identity |
+Labels per `CIRISOntology/epistemology.md` §1 — **proved / measured / open / wager**, never
+rounded up.
+
+| Claim | Label | Basis |
+|-------|-------|-------|
+| k_eff = k/(1+ρ(k-1)) | **proved** | Kish 1965 identity. Needs no empirical validation and can receive none |
+| k_eff → 1/ρ ceiling; strictly monotone in ρ | **proved** | Möbius structure; substrate-independent |
+| Stability: α/k ≥ d | **proved** | Corrected 2026-07-31 (C-1); v3's α/k_eff was too permissive by the design effect |
+| L-01: undetectable class is non-empty | **proved** | Existence only — **no measure**. The 40%/60% split is a **wager** (β=10, ε=0.092) (C-16) |
+| **ρ predicts fragility in any real system** | **open** | **Never tested — here or anywhere in the corpus.** The bridge from proved identity to measured prediction |
+| GPU array validates the k_eff formula | **WITHDRAWN** | Both cited results are identity checks (C-5, C-11) |
+| Equicorrelated precondition holds | **measured** | exp117; holds at ρ=0.394, **fails at low ρ**. Domain: one RTX 4090 |
 | ρ_critical = 0.43 universal | **RETRACTED** (upstream 2026-07) | Substrate-specific; 0.43 is GPU-anchored only |
-| ρ_critical substrate-specific | **Supported** | Per-substrate calibration; corridor measure = k_eff saturation (Gate 0) |
-| S3 > 13% stabilizes | **Simulated** | Agent mix sweep |
-| ES predicts collapse | **From literature** | PNAS 2025 |
-| 41.8% leading indicators | **Hypothesized** | Not yet validated in code |
+| ρ_critical substrate-specific | **wager** | Per-substrate calibration; corridor measure = k_eff saturation (Gate 0) |
+| Corridor is two-sided (chaos *and* rigidity fragile) | **open** | Chaos arm measured; **rigidity arm never measured** on this substrate (C-14) |
+| Software can induce collapse | **DISPUTED** | Contradicted 3-to-1 (C-13) |
+| S3 > 13% stabilizes | **wager** | Agent mix sweep (simulation) |
+| ES predicts collapse | **open** | From literature (PNAS 2025); not locally tested |
+| 41.8% leading indicators | **wager** | Not implemented |
+
+**Pairwise blind spot (issues #9, #10).** k_eff is a *pairwise* diagnostic and returns its
+**maximally-safe** value on third-order (parity/GHZ) structure — a manufactured false
+all-clear, not mere non-detection. Any k_eff reading must be read with that limit in view.
 
 ## Hypothesized Findings (Require Validation)
 
@@ -414,10 +429,29 @@ RATCHET's last substantive local commit predates several load-bearing developmen
 
 ## Current Focus
 
-1. **C-Series Complete** - Coherence collapse propagation validated (R²=0.798, n=21, 0.5 m/s)
+1. **CCA v3 corrections (issue #11)** — 18 verified defects; see `CCA_PAPER/CORRECTIONS_v3.md`.
+   Blocking: hold the abstract rewrite (C-16/C-17); resolve Exp 103 (C-13).
 2. **Thermal Auto-Tuning** - ACF feedback loop for dt adjustment (Ossicle handles this)
 3. **Fat-Tail Statistics** - Use Student-t, not Gaussian, for inference
 4. **Lean 4 Proofs** - EnvironmentalCoherence.lean (1790 lines, builds successfully)
+
+> **Standing instruction for work in this repo.** Label every claim
+> **proved / measured / open / wager** per `CIRISOntology/epistemology.md` §1, and never
+> round up. "Validated" is not a label — say which of the four, and for *measured*, state
+> the domain (usually: one RTX 4090). Before citing any number from this file or the
+> papers, **check the artifact that produced it, not the prose describing it** — that is
+> what the 2026-07-31 audit turned on. `k_eff = k/(1+ρ(k-1))` is an identity: it is
+> **proved**, it needs no empirical validation, and it cannot receive any. Computing it and
+> comparing against itself is not evidence.
+>
+> **Measurement protocol (from the 2026-07-31 Exp 103 replication).** Any ρ reported from
+> this array MUST carry: (1) a **shuffle null** — permute each sensor's series independently,
+> 200 draws, report the 95th percentile; at n=30 that floor is **ρ≈0.15**, so small readings
+> are estimator bias, not signal; (2) **repeated trials with an interval** — a single run is
+> uninterpretable, the same procedure returned ρ ∈ [0.28, 0.81] across five identical trials;
+> (3) **discard the first run after idle** — it reads ρ≈0.78 regardless of condition, so a
+> baseline measured first is warm-up contaminated. No experiment in this series before
+> 2026-07-31 did any of these.
 
 ### Completed Experiment Series
 
@@ -426,9 +460,9 @@ RATCHET's last substantive local commit predates several load-bearing developmen
 | B1-B1e | Instrument characterization | ✓ Mean shift discovery |
 | O1-O7 | Ossicle validation | ✓ 4000 Hz optimal |
 | A5-A9 | Array validation | ✓ 9631 Hz, √N scaling |
-| C1-C4 | Collapse propagation | ✓ k_eff R²=0.798, velocity 0.5 m/s |
-| E1-E4 | Robustness validation | ✓ Block structure, Δρ CI, k_eff_crit=4.0 |
-| **F1-F4** | **Mechanism & causality** | **✓ Common cause, corridor validated** |
+| C1-C4 | Collapse propagation | ⚠ k_eff R²=0.798 **withdrawn** (C-11); velocity 0.5 m/s stands |
+| E1-E4 | Robustness validation | ⚠ Block structure, k_eff_crit=4.0; **Δρ CI not audited** |
+| **F1-F4** | **Mechanism & causality** | **✓ Common cause; ⚠ corridor = chaos arm only (C-14)** |
 
 ### Active Experiment Series (Optional)
 
@@ -565,7 +599,7 @@ NEW (simple, correct): Kernel → Timing → Variance → Detection
 | 83 | Temperature | τ = 48s thermal, r = 0.07 operating |
 | 84 | Baseline k_eff | ρ = 0.13, k_eff = 7.5 |
 | 85 | k_eff vs load | Load-independent (p = 0.07) |
-| 86 | Kish formula | r = 1.000 perfect validation |
+| 86 | Kish formula | ~~r = 1.000 perfect validation~~ **WITHDRAWN — identity check (C-5).** Its one falsifiable prediction (injection model) failed: R²=0.714, errors to +47% |
 | 87 | TRNG vs k_eff | TRNG robust to correlation |
 | 88 | Leading indicators | Warning at ρ = 0.28, 7 steps early |
 | 89 | Recovery | τ = 6.5ms electrical |
@@ -604,7 +638,7 @@ VRM harmonics are predictable and can be whitened if needed.
 | 97 | VRM frequencies? | 9.96 Hz dominant (condition-dependent) |
 | 99 | Spatial variation? | Horizontal banding, 180% variation, follows PDN rails |
 | 100 | Quantum or classical? | **NEITHER** - temperature-independent (digital/quantization) |
-| 103 | Software collapse? | **YES** - Lockstep: ρ=1.0, Barrier: ρ=0.90 |
+| 103 | Software collapse? | **WITHDRAWN (C-13)** — replicated 2026-07-31 under pre-registration. Lockstep ρ=1.0 is a code artifact (identical rows); barrier is real but spans 0.28–0.81 across identical trials. First measurement after idle reads ρ≈0.78 regardless of condition — **baselines measured first are warm-up contaminated** |
 
 ### Exp 107: The Inversion
 
@@ -635,28 +669,48 @@ Raw Signal (100%)
 
 ## GPU as Physical CCA Testbed
 
-The GPU strain array provides **physical validation** of Coherence Collapse Analysis theory:
+> **CORRECTED 2026-07-31 (audit, `CCA_PAPER/CORRECTIONS_v3.md`).** This section formerly
+> claimed the array provides "physical validation of CCA theory." **It does not, and the
+> claim is withdrawn.** The two results cited as validating the k_eff formula are both
+> **identity checks** — they compute k_eff from the formula and compare it against the same
+> formula, and would return the same agreement for any formula whatsoever (C-5, C-11).
+> **There is no independent empirical test of the Kish identity anywhere in this corpus.**
+> The array is a real, well-characterized *instrument*; it has not validated the *theory*.
+> Do not cite the withdrawn rows. Labels below follow `CIRISOntology/epistemology.md`
+> §1 (proved / measured / open / wager, never rounded up).
 
-| CCA Prediction | GPU Experiment | Result |
-|----------------|----------------|--------|
-| k_eff = k/(1+ρ(k-1)) | Exp 86, C1 | **r = 1.000**, **R² = 0.798 (n=21)** |
-| ρ → 1 ⇒ k_eff → 1 | Exp 103 | Lockstep: ρ=1.0, k_eff=1.0 |
-| Leading indicators before collapse | Exp 88, C4 | Spatial variance +10.5 before collapse |
-| Recovery possible | Exp 89 | τ = 6.5ms electrical |
-| Software can induce collapse | Exp 103 | Barrier sync: ρ=0.90 |
-| Correlation propagation | F1 | **Global (shared resources)** |
-| Nucleation hotspots | C3 | **NONE** - uniform (χ²=12) |
+| CCA claim | GPU experiment | Status | Note |
+|-----------|----------------|--------|------|
+| k_eff = k/(1+ρ(k-1)) | Exp 86 | **WITHDRAWN** | Identity check: `corr(f(ρ), f(ρ))`. r=1.000 is arithmetic, not evidence (C-5) |
+| k_eff = k/(1+ρ(k-1)) | C1 | **WITHDRAWN** | Same defect. R²=0.798 is a Jensen convexity gap; residual one-sided in 21/21 trials (C-11) |
+| ρ → 1 ⇒ k_eff → 1 | Exp 103 lockstep | **WITHDRAWN** | Code artifact: one batch timing assigned to all 64 sensors, so corrcoef runs on identical rows. Replicated 2026-07-31 (C-13) |
+| Software can induce collapse | Exp 103 | **WITHDRAWN** | Demonstration was the lockstep artifact. Barrier sync *does* correlate (ρ=0.79 vs null p95 0.06, survives detrending) but spans 0.28–0.81 across 5 identical trials — no point estimate (C-13) |
+| Equicorrelated precondition | exp117 | **measured** | Holds to 0.8% at ρ=0.394; **fails** 17.6% / 70.8% at low ρ. Two-sided, passes and fires |
+| Leading indicators before collapse | Exp 88, C4 | **open** | Not audited; do not lean on until checked |
+| Recovery possible | Exp 89 | **measured** | τ = 6.5 ms electrical (this GPU) |
+| Correlation propagation | F1 | **measured** | Global / shared resources (this GPU) |
+| Nucleation hotspots | C3 | **measured** | Uniform, χ²=12 (this GPU) |
+
+**What the array does establish (measured, domain = one RTX 4090):** kernel timing carries
+correlation structure that responds to workload; the variance-ratio detector's
+characterization; fat-tailed statistics; TRNG entropy. These are instrument measurements and
+they stand.
+
+**The open question the instrument has not answered:** whether ρ measured in any real system
+predicts fragility. That bridge — from proved identity to measured prediction — is untested
+here and everywhere else in the corpus.
 
 ### C-Series: Coherence Collapse Propagation (January 2026)
 
-Physical validation of CCA predictions using 16-sensor 4×4 array at 9631 Hz:
+16-sensor 4×4 array at 9631 Hz. **C1's k_eff column is withdrawn** (see above); the
+remaining C-series results are instrument measurements on this GPU.
 
-| Exp | Question | Result | Implication |
-|-----|----------|--------|-------------|
-| C1 | k_eff formula valid? | R² = 0.798 (n=21) | CCA math empirically confirmed |
-| C2 | Correlation dynamics? | Global, instantaneous | Shared resource mediated |
-| C3 | Nucleation hotspots? | Uniform (χ²=12) | No structural weak points |
-| C4 | Leading indicators? | spatial_variance ↑ | Δρ=0.317±0.125 early warning |
+| Exp | Question | Result | Status |
+|-----|----------|--------|--------|
+| C1 | k_eff formula valid? | ~~R² = 0.798 (n=21)~~ | **WITHDRAWN** — identity check (C-11). Retained only as a measurement of induced correlation vs barrier-sync strength |
+| C2 | Correlation dynamics? | Global, instantaneous | measured (this GPU) |
+| C3 | Nucleation hotspots? | Uniform (χ²=12) | measured (this GPU) |
+| C4 | Leading indicators? | Δρ=0.317±0.125 | **open** — not audited |
 
 ### E-Series: Robustness Validation (January 2026)
 
@@ -673,16 +727,21 @@ Physical validation of CCA predictions using 16-sensor 4×4 array at 9631 Hz:
 |-----|----------|--------|-------------|
 | F1 | Correlation dynamics? | Global, instantaneous | Shared resources |
 | F2 | Barrier sync effect? | ρ: 0.171→0.050 | Sync decorrelates |
-| F3 | Does ρ cause fragility? | ρ↑, fragility↓ (p<0.001) | **CORRIDOR VALIDATED** |
+| F3 | Does ρ cause fragility? | ρ↑, fragility↓ (p<0.001) | ~~CORRIDOR VALIDATED~~ **CHAOS ARM ONLY (C-14)** |
 | F4 | Common cause or propagating? | Isolated across-pool ρ=0.001 | **COMMON CAUSE** |
 
-**F3 Key Result - Corridor Validation:**
+**F3 Key Result — chaos arm supported, rigidity arm never measured:**
 ```
 ρ = 0.037 (chaos):   Response = 755%, Sensitivity = 4.88σ  ← FRAGILE
 ρ = 0.170 (healthy): Response = 103%, Sensitivity = 1.01σ  ← STABLE
 ```
 
-Both extremes (chaos AND rigidity) produce fragility. Healthy corridor between ρ ∈ [0.1, 0.43] **for the GPU substrate** — the band edges are substrate-specific (universal 0.43 retracted upstream 2026-07); the qualitative two-sided-fragility shape is the general claim.
+> **CORRECTED 2026-07-31 (C-14).** Every ρ F3 measured: 0.0368, 0.0036, 0.171, 0.156,
+> 0.143, 0.170. **Maximum 0.171, against a rigidity edge of 0.43.** Both reported points
+> sit on the *chaos* side. The corridor claim is two-sided — that too much correlation is
+> also fragile — and **the rigidity arm was never measured.** The claim's risky half
+> carries no risk. "Corridor validated" is withdrawn; "chaos arm supported (p<0.001),
+> rigidity arm untested" is what the data carries.
 
 **F4 Key Result - Common Cause Confirmed:**
 ```
@@ -704,9 +763,26 @@ Correlation is local to shared resources (memory controller, power delivery), no
    universal 0.43 retracted upstream 2026-07)
 ```
 
-CCA's central claim validated: **both** too little and too much correlation produce fragility. The healthy corridor exists between chaos (noise, no coherence) and rigidity (collapse, no diversity). The corridor *shape* is general; its *edges* are calibrated per substrate. Two-pole correction (upstream): at M=0, ρ exits the corridor to **either** pole (rigidity or chaos), not monotonically toward rigidity; the rigidity default at the coordinating grain is empirically supported (ECoG anesthesia test).
+CCA's central claim is that **both** too little and too much correlation produce fragility.
+The corridor *shape* is a theoretical claim; its *edges* are calibrated per substrate.
+Two-pole correction (upstream): at M=0, ρ exits the corridor to **either** pole (rigidity or
+chaos), not monotonically toward rigidity; the rigidity default at the coordinating grain is
+empirically supported (ECoG anesthesia test).
 
-**Software-induced collapse** (Exp 103) proves correlation structure, not nominal scale, determines resilience. 128 physical sensors collapse to k_eff = 1 through software coordination alone.
+> **Do not write "corridor validated" (C-14).** On this substrate only the chaos arm has
+> been measured (max ρ = 0.171 vs a 0.43 edge). The rigidity arm — the failure mode CCA
+> exists to warn about — is **untested here**. The upstream ECoG result supports the
+> rigidity default at the coordinating grain; that is a different substrate and a different
+> claim, and it does not transfer to this array.
+
+~~**Software-induced collapse** (Exp 103) proves correlation structure, not nominal scale,
+determines resilience. 128 physical sensors collapse to k_eff = 1 through software
+coordination alone.~~
+
+> **WITHDRAWN pending resolution (C-13).** Three later experiments measure barrier sync /
+> lockstep *decorrelating* this array, not collapsing it (F2: ρ 0.171→0.0495 with k_eff
+> rising 9.48→15.63; exp117: 0.394→0.041; F3 lockstep: 0.0036). Until Exp 103 is
+> reconciled against those three, **do not cite software-induced collapse as a result.**
 
 ### Dual Output = Dual CCA Concerns
 
