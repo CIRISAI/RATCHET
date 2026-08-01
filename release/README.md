@@ -46,7 +46,9 @@ evidence of agent-over-model alignment override behavior.**
 
 ## What this is
 
-This corpus comprises reasoning traces sourced from live production deployments and rigorous quality assurance (QA) evaluations. Production traces were gathered from the CIRIS mobile application, actively deployed on the [Apple App Store](https://apps.apple.com/us/app/cirisagent/id6758524415) and [Google Play](https://play.google.com/store/apps/details?id=ai.ciris.mobile&hl=en_AU), relying strictly on users who explicitly opted in to share privacy-preserving telemetry. 
+This corpus comprises reasoning traces sourced from live production deployments and **live results from rigorous quality assurance (QA) evaluations**. Production traces were gathered from the CIRIS mobile application, actively deployed on the [Apple App Store](https://apps.apple.com/us/app/cirisagent/id6758524415) and [Google Play](https://play.google.com/store/apps/details?id=ai.ciris.mobile&hl=en_AU), relying strictly on users who explicitly opted in to share privacy-preserving telemetry. 
+
+The live QA data includes exhaustive evaluations of the agent's ability to maintain operational autonomy when faced with difficult prompts across theology, politics, technology, and history.
 
 - **6,465** Ed25519-signed reasoning traces from CIRIS production agents
 - **3 trace levels**: `generic` (scores only), `detailed` (+ identifiers + timestamps),

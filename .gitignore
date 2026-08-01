@@ -118,3 +118,8 @@ data/protein/alphafold_sample/
 
 # V-Dem v15 from HF mnshakoor06/Vdem (vendored, gitignored)
 data/institutional/vdem/
+
+# Lens database backups — 174 MB SQL dumps, exceed GitHub's 100 MB file limit
+# and do not belong in source control. Keep locally, back up out-of-band.
+lens-backups/
+*.sql.gz
