@@ -416,6 +416,28 @@ def run_battery_p1() -> Optional[dict]:
     }
 
 
+def _biotime_fit_worker(cid, ds, sd):
+    """Module-level worker for ProcessPoolExecutor — pickle-safe."""
+    try:
+        sys.path.insert(0, str(REPO_ROOT / "tests"))
+        from test_ecological_biotime import compare_single_community
+        comp = compare_single_community(cid, ds, verbose=False, seed=sd)
+        return cid, comp, None
+    except Exception as e:
+        return cid, None, str(e)
+
+
+def _allen_fit_worker(sid, ds, sd):
+    """Module-level worker for ProcessPoolExecutor — pickle-safe."""
+    try:
+        sys.path.insert(0, str(REPO_ROOT / "tests"))
+        from test_neural_allen import compare_single_session
+        comp = compare_single_session(sid, ds, verbose=False, seed=sd)
+        return sid, comp, None
+    except Exception as e:
+        return sid, None, str(e)
+
+
 def run_biotime_p1(
     n_communities: int = 50,
     seed: int = 42,
@@ -453,30 +475,63 @@ def run_biotime_p1(
         return {"status": "no_real_data", "source": getattr(dataset, "source", "?"),
                 "rule": "no-synthetic-data"}
 
-    per_community = []
-    rmse_values = []
-    for i, cid in enumerate(sorted(dataset.communities.keys())):
-        try:
-            comp = compare_single_community(cid, dataset, verbose=False, seed=seed + i)
-        except Exception as e:
-            per_community.append({"community_id": cid, "error": str(e)})
-            continue
-        rmse = float(comp.get("rmse", float("nan")))
-        if np.isnan(rmse):
-            continue
-        rmse_values.append(rmse)
-        per_community.append({
-            "community_id": cid,
-            "k": int(comp.get("k", 0)),
-            "num_years": int(comp.get("num_years", 0)),
-            "rmse": rmse,
-            "biomass_rmse": float(comp.get("biomass_rmse", float("nan"))),
-            "final_sigma_error": float(comp.get("final_sigma_error", float("nan"))),
-            "empirical_rho": float(comp.get("empirical_rho", float("nan"))),
-            "simulated_rho": float(comp.get("simulated_rho", float("nan"))),
-            "empirical_sigma": float(comp.get("empirical_sigma", float("nan"))),
-            "simulated_sigma": float(comp.get("simulated_sigma", float("nan"))),
-        })
+    # Subsample cap: BioTIME has ~2,400 real communities; cap fit count at
+    # n_communities (default 50, raise via param). Random seed makes it
+    # reproducible. Build a smaller dataset containing only the subsample so
+    # the multiprocessing pickle/fork cost is bounded.
+    import random as _rand
+    all_cids = sorted(dataset.communities.keys())
+    rng = _rand.Random(seed)
+    selected_cids = rng.sample(all_cids, min(n_communities, len(all_cids)))
+    print(f"  biotime: real-data {len(all_cids)} communities; "
+          f"fitting subsample of {len(selected_cids)}",
+          flush=True)
+
+    # Trim dataset to subsample (avoids passing 2,396 communities to each worker).
+    sub_communities = {cid: dataset.communities[cid] for cid in selected_cids}
+    sub_dataset = type(dataset)(communities=sub_communities, source=dataset.source)
+
+    # Parallel per-community fit; uses module-level _biotime_fit_worker so it
+    # is pickle-able for ProcessPoolExecutor.
+    from concurrent.futures import ProcessPoolExecutor, as_completed
+    import os as _os
+    n_workers = min(24, _os.cpu_count() or 8)
+
+    per_community: list = []
+    rmse_values: list = []
+    completed = 0
+
+    with ProcessPoolExecutor(max_workers=n_workers) as ex:
+        futures = {
+            ex.submit(_biotime_fit_worker, cid, sub_dataset, seed + i): cid
+            for i, cid in enumerate(selected_cids)
+        }
+        for fut in as_completed(futures):
+            cid, comp, err = fut.result()
+            completed += 1
+            if completed % 10 == 0:
+                print(f"    biotime progress: {completed}/{len(selected_cids)} fits", flush=True)
+            if err:
+                per_community.append({"community_id": cid, "error": err})
+                continue
+            if comp is None:
+                continue
+            rmse = float(comp.get("rmse", float("nan")))
+            if np.isnan(rmse):
+                continue
+            rmse_values.append(rmse)
+            per_community.append({
+                "community_id": cid,
+                "k": int(comp.get("k", 0)),
+                "num_years": int(comp.get("num_years", 0)),
+                "rmse": rmse,
+                "biomass_rmse": float(comp.get("biomass_rmse", float("nan"))),
+                "final_sigma_error": float(comp.get("final_sigma_error", float("nan"))),
+                "empirical_rho": float(comp.get("empirical_rho", float("nan"))),
+                "simulated_rho": float(comp.get("simulated_rho", float("nan"))),
+                "empirical_sigma": float(comp.get("empirical_sigma", float("nan"))),
+                "simulated_sigma": float(comp.get("simulated_sigma", float("nan"))),
+            })
 
     if not rmse_values:
         return {"status": "no_data", "n_communities": 0}
@@ -917,39 +972,68 @@ def run_allen_p1(
     except ImportError as e:
         return {"status": "import_error", "error": str(e)}
 
-    dataset = load_allen_neuropixels_sessions(
-        n_synthetic_sessions=n_sessions,
-        seed=seed,
-    )
+    # NO SYNTHETIC: require real Allen Neuropixels parquet; if unavailable, drop.
+    try:
+        dataset = load_allen_neuropixels_sessions(fallback_to_synthetic=False)
+    except Exception as e:
+        return {"status": "no_real_data", "error": str(e), "rule": "no-synthetic-data"}
 
-    if dataset.n_sessions == 0:
-        return {"status": "no_data", "n_sessions": 0}
+    if dataset.n_sessions == 0 or getattr(dataset, "source", "") == "synthetic":
+        return {"status": "no_real_data",
+                "source": getattr(dataset, "source", "?"),
+                "rule": "no-synthetic-data"}
 
-    per_session = []
-    rmse_values = []
-    for i, sid in enumerate(sorted(dataset.sessions.keys())):
-        try:
-            comp = compare_single_session(sid, dataset, verbose=False, seed=seed + i)
-        except Exception as e:
-            per_session.append({"session_id": sid, "error": str(e)})
-            continue
-        rmse = float(comp.get("rmse", float("nan")))
-        if np.isnan(rmse):
-            continue
-        rmse_values.append(rmse)
-        per_session.append({
-            "session_id": sid,
-            "k": int(comp.get("k", 0)),
-            "n_trials": int(comp.get("n_trials", 0)),
-            "num_neurons": int(comp.get("num_neurons", 0)),
-            "rmse": rmse,
-            "final_sigma_error": float(comp.get("final_sigma_error", float("nan"))),
-            "empirical_rho": float(comp.get("empirical_rho", float("nan"))),
-            "simulated_rho": float(comp.get("simulated_rho", float("nan"))),
-            "empirical_sigma": float(comp.get("empirical_sigma", float("nan"))),
-            "simulated_sigma": float(comp.get("simulated_sigma", float("nan"))),
-            "visual_area": comp.get("visual_area"),
-        })
+    # Subsample sessions to n_sessions cap to bound multiprocessing memory.
+    import random as _rand
+    all_sids = sorted(dataset.sessions.keys())
+    rng = _rand.Random(seed)
+    selected_sids = rng.sample(all_sids, min(n_sessions, len(all_sids)))
+    sub_sessions = {sid: dataset.sessions[sid] for sid in selected_sids}
+    sub_dataset = type(dataset)(sessions=sub_sessions, source=dataset.source)
+
+    from concurrent.futures import ProcessPoolExecutor, as_completed
+    import os as _os
+    # 8 workers — Allen parquet is ~48MB; 24-way pickle was OOMing the box.
+    n_workers = min(8, _os.cpu_count() or 4)
+    print(f"  allen: real-data {dataset.n_sessions} sessions; "
+          f"fitting subsample of {len(selected_sids)} across {n_workers} workers", flush=True)
+
+    per_session: list = []
+    rmse_values: list = []
+    completed = 0
+
+    with ProcessPoolExecutor(max_workers=n_workers) as ex:
+        futures = {
+            ex.submit(_allen_fit_worker, sid, sub_dataset, seed + i): sid
+            for i, sid in enumerate(selected_sids)
+        }
+        for fut in as_completed(futures):
+            sid, comp, err = fut.result()
+            completed += 1
+            if completed % 4 == 0:
+                print(f"    allen progress: {completed}/{len(selected_sids)} fits", flush=True)
+            if err:
+                per_session.append({"session_id": sid, "error": err})
+                continue
+            if comp is None:
+                continue
+            rmse = float(comp.get("rmse", float("nan")))
+            if np.isnan(rmse):
+                continue
+            rmse_values.append(rmse)
+            per_session.append({
+                "session_id": sid,
+                "k": int(comp.get("k", 0)),
+                "n_trials": int(comp.get("n_trials", 0)),
+                "num_neurons": int(comp.get("num_neurons", 0)),
+                "rmse": rmse,
+                "final_sigma_error": float(comp.get("final_sigma_error", float("nan"))),
+                "empirical_rho": float(comp.get("empirical_rho", float("nan"))),
+                "simulated_rho": float(comp.get("simulated_rho", float("nan"))),
+                "empirical_sigma": float(comp.get("empirical_sigma", float("nan"))),
+                "simulated_sigma": float(comp.get("simulated_sigma", float("nan"))),
+                "visual_area": comp.get("visual_area"),
+            })
 
     if not rmse_values:
         return {"status": "no_data", "n_sessions": 0}
