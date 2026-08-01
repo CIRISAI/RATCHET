@@ -193,14 +193,14 @@ with conditions carrying an observable, a threshold, and a procedure.
 \begin{enumerate}[noitemsep]
     \item \textbf{Effective-count disagreement.} Compute $N_{\text{eff}} = k/\lambda_{\max}$ from the largest eigenvalue of a measured correlation matrix and $\keff = k/(1+\bar\rho(k-1))$ from the same data. These are distinct functionals over distinct inputs. If they diverge by more than $25\%$ across the operating range of $\rho$ on a substrate where the equicorrelated precondition holds (condition 2), the identity is not the right effective-count law for that substrate. \emph{Run: does not fire}, at $20.4\%$ median disagreement (\S\ref{sec:f1f3-results}).
     \item \textbf{Precondition failure in the operating band.} The Kish form assumes exchangeability. If the spectral entropy deficit departs from its closed form by more than $10\%$ anywhere in the band where a deployment actually operates, $\keff$ figures from that band are not licensed. \emph{This condition has already fired on the GPU substrate below $\rho \approx 0.04$}, and bounds the domain of every $\keff$ value reported here.
-    \item \textbf{No two-sided corridor.} Measure fragility across a $\rho$ range spanning both corridor edges on any substrate. If fragility is monotone in $\rho$ rather than U-shaped --- in particular if it does not rise again above the upper edge --- the corridor claim fails for that substrate. \emph{Run: FIRES.} Fragility falls monotonically; the rigidity arm is not observed (\S\ref{sec:f1f3-results}).
+    \item \textbf{No two-sided corridor.} Measure fragility across a $\rho$ range spanning both corridor edges on any substrate. If fragility is monotone in $\rho$ rather than U-shaped --- in particular if it does not rise again above the upper edge --- the corridor claim fails for that substrate. \emph{Run twice under two fragility measures, which disagree in direction: \textbf{UNRESOLVED}} (\S\ref{sec:f1f3-results}).
     \item \textbf{Volume decay under correlation.} The decay law $V(k) = V_0 e^{-\lambda \keff}$ predicts a specific effective count from measured volume reduction. If simulated or measured decay implies an effective count differing from $\keff$ by more than a factor of $1.5$, the law is wrong. \emph{This condition has already fired}: the implied count exceeds $\keff$ by $1.9\times$ to $4.1\times$ at $\rho = 0.5$, growing with $k$ (\S\ref{sec:outstanding-validation}).
 
     \item \textbf{Threshold transfer.} The collapse rule $\sigma < \sigma_{\min}$ or $f > f_{\max}$ carries two free parameters, fitted per domain. Fix one pair on one domain and apply it unchanged to another. If classification accuracy does not exceed a base-rate-matched null under a pre-specified outcome definition, the rule is a per-domain fitted classifier rather than a structural invariant. \emph{Currently unmet}: no threshold pair in this paper has been shown to transfer, and the one domain scored against a pre-specified outcome (\S\ref{sec:institutional-negative}) performs below chance.
     \item \textbf{Sensitivity calibration.} The detection model $P = 1 - e^{-\beta\varepsilon}$ has a free $\beta$, never independently calibrated. Estimate $\beta$ on one substrate and predict detection rates on a second. If $\beta$ must be refit per substrate, the model has no predictive content beyond curve-fitting, and quantities derived from a chosen $\beta$ --- including the ``$\sim 40\%$'' undetectable fraction of earlier versions --- carry none either. \emph{Currently unmet}: $\beta = 10$ is a stipulation, and \S\ref{sec:mc-selfcheck} shows the only test of it samples from the model being tested.
 \end{enumerate}
 
-\textbf{Three of the six have now fired against the framework; two are unmet; one passes.}
+\textbf{Two of the six have fired; two are unmet; one is unresolved; one passes.}
 That distribution is reported rather than smoothed, because a condition that cannot fire is not
 a falsification condition, and the three carried in version 3 could not. They are withdrawn
 rather than reworded.
@@ -248,20 +248,54 @@ the pre-registered rule the condition fires: \textbf{the corridor is not two-sid
 substrate.} Combined with Remark~\ref{rem:corridor-arm}, the position is that the chaos arm is
 supported and the rigidity arm is now measured and absent.
 
-\textbf{One caveat, which cuts against this result and is stated because it is real.}
-Perturbation response conflates two distinct things: a system that is genuinely robust, and a
-sensor array that has stopped discriminating. At $\rho \to 1$ the array approaches a single
-effective sensor, and a single sensor responds less to spatial perturbation regardless of
-whether it is robust. So a falling response above the upper edge is consistent both with
-``rigidity is not fragile here'' and with ``the fragility measure stops working exactly where
-the corridor claims to need it.'' The F-series used this measure to establish the chaos arm, so
-the objection applies to that result too. Resolving it requires a fragility measure that does
-not degrade with $\keff$ --- recovery time after perturbation, or detection latency at fixed
-false-positive rate --- and that measurement is not supplied here. The condition is reported as
-fired under its pre-registered rule, with the measure's limitation on the record.
+\textbf{That firing does not stand, and the reason is instructive.} Perturbation response
+conflates two distinct things: a genuinely robust system, and a sensor array that has stopped
+discriminating. At $\rho \to 1$ the array approaches a single effective sensor, and a single
+sensor responds less to spatial perturbation whether or not it is robust. So the falling
+response is equally consistent with ``rigidity is not fragile here'' and with ``the fragility
+measure stops working exactly where the corridor needs it.'' The F-series used this same measure
+for the chaos arm, so the objection reaches that result too.
 
-The chaos arm was not re-tested: no run reached $\rho < 0.10$ (minimum achieved $0.122$), so
-condition 3's chaos-side prediction remains untested rather than replicated.
+\paragraph{Condition 3, re-run under recovery time --- unresolved.}
+The objection was addressed by building the measure it calls for. Recovery time $\tau$ is
+estimated from the AR(1) lag-1 autocorrelation of the array mean after a sustained perturbation
+is released --- the standard critical-slowing-down statistic, and a \emph{temporal} property, so
+it does not degrade as the array loses spatial discrimination. Sampling is synchronous in every
+condition (time-resolved array state requires it), and $\rho$ is varied by memory sharing rather
+than by stream asynchrony, so the correlation control is independent of the sampling method.
+
+\begin{center}
+\begin{tabular}{lrrrr}
+\toprule
+Regime & $n$ & $\tau$ (array) & sd & $\tau_{\text{array}}/\tau_{\text{single}}$ \\
+\midrule
+healthy ($0.10 \leq \rho < 0.43$) & 4 & $2.21$ & $1.17$ & $2.15$ \\
+rigidity ($\rho \geq 0.43$) & 12 & $3.67$ & $2.82$ & $1.32$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{The two measures disagree in direction.} Recovery time is \emph{longer} at rigidity
+($+1.46$), the sign critical slowing down predicts and the opposite of what response amplitude
+showed --- which is what one expects if the first result was carrying the confound. But the
+difference is smaller than the pooled standard deviation ($2.29$), so it is not significant; the
+healthy bin holds only 4 of 16 runs because achieved $\rho$ landed high; and the pre-registered
+control failed: the array-to-single-sensor $\tau$ ratio reached $2.15$ in the healthy bin
+against an admissibility bound of $2.0$, so this measure cannot be certified free of its own
+$\keff$ dependence either.
+
+Under the pre-registered decision rule a failed control makes the condition
+\textbf{UNRESOLVED}, and neither the earlier firing nor a survival may be claimed.
+\textbf{The version-3 corridor claim therefore remains unsupported on this substrate, and the
+first run's apparent refutation of it is withdrawn as well.} What is established is narrower and
+worth stating on its own: the rigidity regime is reachable here ($\rho$ to $0.868$), two
+defensible fragility measures give opposite signs across the upper edge, and neither is clean.
+Settling the corridor needs a fragility measure validated to be $\keff$-independent before it is
+used --- detection latency at fixed false-positive rate is the remaining candidate --- and that
+is the specific outstanding instrument problem.
+
+The chaos arm was not re-tested under either measure: no run reached $\rho < 0.10$, so
+condition 3's chaos-side prediction is untested rather than replicated.
 
 Two claims that appeared in version 3's ``structural invariants'' receive no falsification
 handle here, because none can exist for them. $\keff = k/(1+\rho(k-1))$ is an \textbf{identity};
