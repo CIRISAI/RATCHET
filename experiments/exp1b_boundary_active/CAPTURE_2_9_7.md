@@ -90,8 +90,50 @@ produce the pre-registered probe counts — declare, don't shrink stakes silentl
 | Empty-cohort guard | fires on a genuinely empty directory |
 | Attestation surface | 2/2 rows PQC-signed, schema `3.0.0` |
 
-## Open item for the campaign
+## Three copies per thought — read `full_traces` only
 
-Pin the image by digest, not by tag, in the TORQUE Stage 0 record. `:2.9.7` and `:latest` are
-both mutable; a pre-registered campaign should record the digest it actually ran against so
-the instrument is identified as precisely as the design.
+The capture writes **each sealed thought three times**, once per trace level
+(`generic` / `detailed` / `full_traces`), typically into sibling directories. Same thought,
+same `attestation_id`, three envelopes. They are not three observations.
+
+This is the trap: taking all three **triples every cohort count while leaving `excluded` at
+zero**, so the inflation is invisible — a row count masquerading as a cohort count, with a
+clean-looking validation line under it. It was live in the first version of this loader, which
+reported "8 chains across 4 directories, 0 excluded" for what was 2 unique thoughts. Pointing
+that loader at a capture *root* returned a 3.0× ratio.
+
+`measurement.CAPTURE_TRACE_LEVEL = "full_traces"` now selects one copy. Verified: 1.0× ratio on
+both capture roots. If a future capture changes the level names, that constant is the single
+place to update.
+
+`attestation_provenance()` deliberately reports **all** levels, since provenance is about what
+was sealed, not about which copy the pipeline measures.
+
+## Pinned instrument (Stage 0 record)
+
+```
+image digest : sha256:2f1cc522de8dcea44025d1198386e57a351d06e2c4f3d10bf1732ca9126727df
+git sha      : b76baebd93842ead191edd7f8223fd9629b1bbbe
+branch       : release/2.9.7
+```
+
+Immutable, and precisely the artifact this loader was validated against. **There is no
+2.9.6-tagged capture image and there should not be**: the harness does not exist at that tag —
+no `capture_traces.sh`, no `Dockerfile.research`, no `_tee_ceg_on_seal`. An image labelled
+2.9.6 would either carry 2.9.7 code under a false version, or carry real 2.9.6 and capture
+nothing. Either way the instrument of a pre-registered campaign would be misidentified.
+
+Pull once `release/2.9.7` is pushed:
+`ghcr.io/cirisai/ciris-research-capture:release-2.9.7` or `:sha-b76baebd9` — branch-scoped and
+honestly named, without minting a version tag or moving `:latest`.
+
+## Open item: `attempt_index` / `is_recursive` unverified
+
+One thought can emit several carrier rows, and a recursive-conscience pass after an override
+could be counted as a separate chain rather than a continuation. **Not yet confirmable**: no
+capture available here has `action_was_overridden = 1`, so the recursive path never fired. The
+components in hand carry no `attempt_index` at all.
+
+Before TORQUE Stage 0 closes, run one capture where an override actually fires and confirm
+whether the loader sees one chain or several. This is not hypothetical — the level-copy defect
+above was exactly this shape, and it survived a validation that looked clean.

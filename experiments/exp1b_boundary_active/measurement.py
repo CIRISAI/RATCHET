@@ -111,6 +111,10 @@ PATHS = {
     },
 }
 
+# The capture emits one sealed copy per trace level; full_traces is the
+# richest and is the single copy the pipeline reads.
+CAPTURE_TRACE_LEVEL = "full_traces"
+
 REQUIRED_EVENT_TYPES = {
     "THOUGHT_START",
     "SNAPSHOT_AND_CONTEXT",
@@ -228,6 +232,15 @@ def _iter_traces(tee_dir: Path):
         try:
             doc = json.load(open(p))
         except Exception:
+            continue
+        # The capture writes each sealed thought THREE times, once per trace
+        # level (generic / detailed / full_traces), typically into sibling
+        # directories. They are the same thought and the same attestation_id,
+        # not three observations. Taking all of them triples every cohort
+        # count while leaving `excluded` at zero, so the inflation is
+        # invisible — a row count masquerading as a cohort count. Key on
+        # full_traces and drop the other two.
+        if doc.get("trace_level") != CAPTURE_TRACE_LEVEL:
             continue
         for row in doc.get("ceg_rows", []) or []:
             env = row.get("attestation_envelope") or {}
