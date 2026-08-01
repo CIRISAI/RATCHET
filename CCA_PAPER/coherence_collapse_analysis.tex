@@ -264,6 +264,7 @@ This captures the intuition that correlated constraints provide redundant inform
 \end{itemize}
 
 \begin{remark}[M\"obius Structure and Asymptotic Ceiling]
+\label{sec:mobius}
 For fixed $k$, the map $\rho \mapsto \keff(k, \rho)$ is the M\"obius transformation with coefficients $(a, b, c, d) = (0, k, k-1, 1)$. The partial derivative $\partial \keff / \partial \rho = -k(k-1)/(1 + \rho(k-1))^2 < 0$ for $k > 1$, so $\keff$ is strictly monotone decreasing in $\rho$ on $[0, 1]$. Taking $k \to \infty$ at fixed $\rho > 0$:
 \begin{equation*}
 \lim_{k \to \infty} \keff(k, \rho) = \lim_{k \to \infty} \frac{k}{1 + \rho(k-1)} = \frac{1}{\rho}.
@@ -955,7 +956,7 @@ Battery (NASA, 19 cells) & 19 & 0.000 & 19.00 & Cells in the pack (integer count
 Microbiome (AGP average) & 365.7 & 0.190 & 5.20 & Observed species per sample, averaged \\
 \bottomrule
 \end{tabular}
-\caption{$\keff$ applied in the two domains supplying a constraint count. \textbf{Two caveats.} (i) $\keff$ is \textit{computed} from $k$ and $\rho$ and is not independently observable, so this table exhibits the formula's behaviour rather than testing it. (ii) Neither $\rho$ is an independently estimated intraclass correlation: the battery figure is a dispersion transform of final-SOH spread across cells, and the microbiome figure is a deterministic function of the same Shannon diversity reported as $\sigma$, confined by construction to $[0.14, 0.30]$. Both are stated here as proxies. Read this as a provenance record, not as cross-domain validation.}
+\caption{$\keff$ applied in the two domains supplying a constraint count. \textbf{Two caveats.} (i) $\keff$ is \textit{computed} from $k$ and $\rho$ and is not independently observable, so this table exhibits the formula's behaviour rather than testing it. (ii) Neither $\rho$ is an independently estimated intraclass correlation: the battery figure is a dispersion transform of final-SOH spread across cells, and the microbiome figure is a deterministic function of the same Shannon diversity reported as $\sigma$, confined by construction to $[0.14, 0.30]$. Both are stated here as proxies. \textbf{(iii) The microbiome row nests one effective-count transform inside another.} Its $\sigma$ is Shannon diversity, whose own standard effective-number conversion is $\exp(H)$ \cite{jost2006}; feeding it to $\keff$ as a raw input therefore composes two effective-count constructions without saying so, and the resulting $\keff = 5.20$ should not be read as an independent effective species count. Read this table as a provenance record, not as cross-domain validation.}
 \label{tab:keff-application}
 \end{table}
 
@@ -1023,8 +1024,17 @@ Version 3 reported that ``three CCA invariants were validated across all domains
 The subsection is withdrawn in full. Nothing in it constitutes evidence, and the cross-domain generality it asserted is not established by this paper. See \texttt{CORRECTIONS\_v3.md} (C-12).
 \end{remark}
 
-\begin{remark}[Implications]
-The cross-domain validation suggests CCA captures \textit{structural properties common to constraint-based systems} rather than domain-specific phenomena. The same mathematical structure that describes battery cell degradation also describes institutional collapse and microbiome dysbiosis. This generality is consistent with---but does not prove---the hypothesis that CCA identifies fundamental failure modes. Three domains demonstrate cross-domain applicability; universality would require broader validation.
+\begin{remark}[Correction to v3: the cross-domain generality claim is withdrawn]
+Version 3 closed this chapter by reading the three domain applications as evidence that CCA
+captures structural properties common to constraint-based systems rather than domain-specific
+phenomena, concluding that ``three domains demonstrate cross-domain applicability.'' That
+conclusion is withdrawn on three independent grounds. The institutional application is
+withdrawn from this chapter entirely and reported as a negative result
+(\S\ref{sec:institutional-negative}). The structural-invariant subsection that supported it
+computed nothing. And applying one formula to three datasets demonstrates that the formula
+\emph{can be applied}, not that it \emph{holds} --- a distinction the remainder of this chapter
+now states directly. What survives is two domain applications, both carrying proxy $\rho$
+values rather than measured intraclass correlations.
 \end{remark}
 
 %==============================================================================
@@ -1056,18 +1066,55 @@ The $\Tcapture$ timeline builds on Byzantine fault tolerance (BFT) foundations, 
 
 \subsection{Information-Theoretic Detection Limits}
 
-Federated learning security research reports detection accuracies of 85--89\% under normal conditions and 66--73\% under adversarial attack. However, this literature focuses on empirical detection performance rather than \textit{fundamental limits}. CCA's L-01 bound---which establishes that marginal-preserving incoherence is \textit{provably undetectable}---represents a novel information-theoretic contribution. The detection probability model $P(\text{detect}) = 1 - e^{-\beta\varepsilon}$ provides explicit quantification with calibratable sensitivity parameter $\beta$.
+Federated learning security research reports detection accuracies of 85--89\% under normal conditions and 66--73\% under adversarial attack, focusing on empirical detection performance rather than fundamental limits. L-01 sits in the latter category, but its scope must be stated precisely: it establishes that the class of marginal-preserving incoherence patterns undetectable from marginals alone is \textbf{non-empty} --- an existence result, with \textbf{no measure}. The ``$\sim$40\%'' figure in earlier versions of this paper followed from one illustrative parameterization ($\beta = 10$, $\varepsilon \approx 0.092$) and is a stated wager, not a derived bound; the detection model $P(\text{detect}) = 1 - e^{-\beta\varepsilon}$ is a modelling choice with a free sensitivity parameter, not a measurement.
 
-\subsection{Gap Summary}
+Adjacent formal work is stronger on this point and should be read alongside it: Dorner et al. \cite{dorner2025} establish a ceiling on LLM-judge evaluation --- when the judge is no more capable than the model being evaluated, no debiasing procedure halves the required ground-truth data. That is a quantified limit; L-01 is an existence claim. The two should not be cited as comparable.
 
-Based on systematic search of 2024--2025 literature, no prior work combines:
-\begin{enumerate}[noitemsep]
-    \item Three explicit collapse timelines with closed-form expressions
-    \item A singularity boundary driven by correlation/constraint geometry
-    \item A defined chaos--healthy--rigidity phase corridor
-    \item Formal information-theoretic undetectability bounds
-\end{enumerate}
-CCA's contribution is this specific synthesis, validated through Monte Carlo simulation and formal verification.
+\subsection{Lineage and Contribution}
+
+Earlier versions of this section claimed, on the basis of a search of 2024--2025 literature,
+that no prior work combined this paper's elements. A two-year window is not a prior-art search,
+and the claim is withdrawn. The central insight here is old, well established, and belongs to
+several literatures at once.
+
+\textbf{That correlated voters degrade collective accuracy is settled, and has been since 1992.}
+Ladha \cite{ladha1992} extended the Condorcet Jury Theorem to correlated votes;
+Ladha \cite{ladha1995} generalized it across normal, hypergeometric and P\'olya correlated-voting
+models and proved that the effectiveness of majority-rule voting \emph{decreases} as
+correlation increases, further arguing that diversity among decision-makers improves decisions
+by lowering average correlation. Austen-Smith and Banks \cite{austensmith1996} sharpen this: independence is
+\emph{necessary}, not merely sufficient, and correlated voters can perform \emph{worse} than
+individuals --- a stronger statement than the singularity condition derived in this paper, and
+one that should be read as bounding it.
+
+\textbf{That nominally independent implementations fail together is settled empirically, and
+has been since 1985.} Eckhardt and Lee \cite{eckhardt1985} gave the theoretical basis;
+Knight and Leveson \cite{knight1986} wrote 27 versions independently from one specification, ran a million tests,
+and found coincident failures substantially exceeding the independence prediction, defending
+the result against criticism in a later reply \cite{knight1990}. The finding has recently been replicated on
+LLM coding agents \cite{nversion2026}, where 429 coincident-failure cases arose against an
+independence prediction of 115.36.
+
+\textbf{The effective-count-under-correlation object itself is standard across fields.}
+Kish Kish \cite{kish1965} in survey sampling; Laakso and Taagepera Laakso and Taagepera \cite{laakso1979} as the effective number of parties
+(equivalent to the inverse Simpson and inverse Herfindahl--Hirschman indices);
+Hill Hill \cite{hill1973} and Jost \cite{jost2006} as Hill numbers in ecology; Meucci Meucci \cite{meucci2010} as the
+effective number of bets in portfolio theory. These are the same construction reached
+independently in four disciplines.
+
+In the AI setting the ground is likewise occupied. Lefort et al. \cite{lefort2024} applied the Condorcet
+Jury Theorem to LLM ensembles and found marginal gains implying a lack of independence;
+Kim et al. Kim et al. \cite{kim2025} measured error correlation across 350+ models; Jiang et al. Jiang et al. \cite{jiang2025} documented
+output homogeneity within and across model families. Concurrently and independently,
+Kohli \cite{kohli2026} applies the Kish identity to a 9-judge, 7-family LLM panel, reporting
+$n_{\text{eff}} = 2.18$ at mean pairwise $\phi = 0.391$ with a hard asymptote at
+$1/\bar{\phi} \approx 2.6$ --- the M\"obius ceiling of \S\ref{sec:mobius}, independently
+obtained. That work does not cite this one, and is not derivative of it.
+
+\textbf{What remains this paper's own} is narrower than earlier versions claimed, and is stated
+here at its true size: the three closed-form collapse timescales, the singularity boundary and
+the phase corridor built on that base, and a production measurement substrate. The underlying
+correlation result is inherited, not introduced, and is cited above as such.
 
 %==============================================================================
 \section{Physical Validation: GPU Timing Strain Gauge}
@@ -1118,7 +1165,7 @@ What Exp 86 does establish, and no more: the implementation computes the identit
 \begin{remark}[What a genuine validation of the Kish relation would require]
 The identity becomes empirically testable only against an \emph{independently observed} measure of effective diversity --- one not computed from $\rho$. Candidates: the variance of the array mean ($\sigma^2_{\bar{x}} = \sigma^2/\keff$), the SNR gain from averaging $N$ sensors, the participation ratio of the correlation spectrum, or a task-level measure such as detection latency. \textbf{This paper reports no such comparison}, and neither Exp 86 nor C1 supplies one.
 
-One of those candidates does exist on other data, and is cited here because it is the nearest thing to the missing measurement. Moore (2026a) computes effective dimensionality on $n = 6{,}465$ production reasoning traces from a deployed CIRIS agent using the \textbf{participation ratio} of the eigenvalue spectrum of a standardized feature covariance, $N_{\text{eff}}^{\text{PR}} = (\sum_i \lambda_i)^2 / \sum_i \lambda_i^2$, alongside an entropy-perplexity variant. This is computed from the covariance structure directly and \textbf{not from a scalar $\rho$}, so --- unlike Exp 86 and C1 --- it is free to disagree with a Kish value. It reports a 99\% variance horizon of 11 dimensions, a 90\% horizon of 7, a mean participation ratio of 6.61, and an outcome link: traces at $N_{\text{eff}} \geq 9.2$ overrode restrictive foundation-model priors at 83\% reliability, benchmarked against response-entropy and latency baselines.
+One of those candidates does exist on other data, and is cited here because it is the nearest thing to the missing measurement. Moore \cite{crc2026} computes effective dimensionality on $n = 6{,}465$ production reasoning traces from a deployed CIRIS agent using the \textbf{participation ratio} of the eigenvalue spectrum of a standardized feature covariance, $N_{\text{eff}}^{\text{PR}} = (\sum_i \lambda_i)^2 / \sum_i \lambda_i^2$, alongside an entropy-perplexity variant. This is computed from the covariance structure directly and \textbf{not from a scalar $\rho$}, so --- unlike Exp 86 and C1 --- it is free to disagree with a Kish value. It reports a 99\% variance horizon of 11 dimensions, a 90\% horizon of 7, a mean participation ratio of 6.61, and an outcome link: traces at $N_{\text{eff}} \geq 9.2$ overrode restrictive foundation-model priors at 83\% reliability, benchmarked against response-entropy and latency baselines.
 
 \textbf{Cited with its limits, which are material.} The reported stability threshold ($N_{\text{eff}} \approx 7.1$) did not come from a held-out cohort; that paper states it ``emerged naturally'' through continuous iterative tuning of the decision-making algorithms and conscience module, so 7.1, 9.2 and the 83\% are in-sample. The threshold is also stated across two estimators: the mean participation ratio is 6.61, \emph{below} 7.1, while the ``$\geq 8.5$ consistently maintained'' figure is the entropy-perplexity estimator rather than the participation ratio, and which of the two the threshold is defined over needs resolving. Finally, the 90\% variance horizon (7 dimensions) sits within rounding of the threshold (7.1), so it is not yet ruled out that the threshold recovers the intrinsic rank of the reasoning manifold rather than marking a dynamical boundary --- which would make the claim a restatement of the manifold's dimensionality rather than a finding about deception.
 
@@ -1722,6 +1769,70 @@ P(\text{detect}) &= 1 - e^{-10\varepsilon} \tag{Detection Probability}
 \bibitem{kish1965}
 L. Kish, \textit{Survey Sampling}, John Wiley \& Sons, 1965.
 \textit{Origin of the effective sample size formula $k_{\text{eff}} = k/(1+\rho(k-1))$, here applied to constraint-based systems.}
+
+\bibitem{ladha1992}
+K.K. Ladha, ``The Condorcet Jury Theorem, Free Speech, and Correlated Votes,'' \textit{American Journal of Political Science} 36:617--634, 1992.
+\textit{Extends the Condorcet Jury Theorem to correlated votes. The central claim of this paper, in the voting setting, thirty-four years earlier.}
+
+\bibitem{ladha1993}
+K.K. Ladha, ``Condorcet's Jury Theorem in Light of de Finetti's Theorem,'' \textit{Social Choice and Welfare} 10(1):69--85, 1993.
+
+\bibitem{ladha1995}
+K.K. Ladha, ``Information Pooling Through Majority-Rule Voting: Condorcet's Jury Theorem with Correlated Votes,'' \textit{Journal of Economic Behavior and Organization} 26:353--372, 1995.
+\textit{Generalizes across normal, hypergeometric and P\'olya correlated-voting models; proves majority-rule effectiveness decreases as correlation increases, and that diversity improves decisions by lowering average correlation.}
+
+\bibitem{austensmith1996}
+D. Austen-Smith and J. Banks, ``Information Aggregation, Rationality, and the Condorcet Jury Theorem,'' \textit{American Political Science Review} 90(1):34--45, 1996.
+\textit{Independence is necessary, not merely sufficient; correlated voters can perform worse than individuals. A sharper statement than this paper's singularity condition.}
+
+\bibitem{eckhardt1985}
+D.E. Eckhardt and L.D. Lee, ``A Theoretical Basis for the Analysis of Multiversion Software Subject to Coincident Errors,'' \textit{IEEE Transactions on Software Engineering} SE-11(12):1511--1517, 1985.
+
+\bibitem{knight1986}
+J.C. Knight and N.G. Leveson, ``An Experimental Evaluation of the Assumption of Independence in Multiversion Programming,'' \textit{IEEE Transactions on Software Engineering} SE-12(1):96--109, 1986.
+\textit{27 versions written independently from one specification, one million tests; coincident failures substantially exceeded the independence prediction. The empirical thesis of this paper, in software, forty years earlier.}
+
+\bibitem{knight1990}
+J.C. Knight and N.G. Leveson, ``A Reply to the Criticisms of the Knight \& Leveson Experiment,'' \textit{ACM SIGSOFT Software Engineering Notes} 15(1):24--35, 1990.
+
+\bibitem{nversion2026}
+``N-Version Programming with Coding Agents,'' arXiv:2606.20158, June 2026.
+\textit{429 coincident-failure cases against an independence prediction of 115.36 --- Knight--Leveson replicated on LLM agents.}
+
+\bibitem{laakso1979}
+M. Laakso and R. Taagepera, ```Effective' Number of Parties: A Measure with Application to West Europe,'' \textit{Comparative Political Studies} 12:3--27, 1979.
+\textit{Equivalent to the inverse Simpson and inverse Herfindahl--Hirschman indices. The same effective-count construction, reached independently in political science.}
+
+\bibitem{hill1973}
+M.O. Hill, ``Diversity and Evenness: A Unifying Notation and Its Consequences,'' \textit{Ecology} 54(2):427--432, 1973.
+
+\bibitem{jost2006}
+L. Jost, ``Entropy and Diversity,'' \textit{Oikos} 113:363--375, 2006.
+\textit{Hill numbers / effective number of species. Note the conversion $\exp(H)$ --- relevant to the microbiome row of Table~\ref{tab:keff-application}.}
+
+\bibitem{meucci2010}
+A. Meucci, ``Managing Diversification,'' SSRN 1358533, 2010.
+\textit{Effective number of bets via the entropy of the diversification distribution.}
+
+\bibitem{lefort2024}
+V. Lefort et al., ``Can We Trust the Wisdom of LLM Crowds?'' arXiv:2409.00094, August 2024.
+\textit{Condorcet Jury Theorem applied to LLM ensembles; marginal gains imply lack of independence. Predates any application of effective-count-under-correlation to AI oversight by this project.}
+
+\bibitem{kim2025}
+Kim et al., ``Error Correlation Across Large Language Models,'' ICML, 2025.
+\textit{350+ models; agreement on wrong answers approaching 60\% on some benchmarks.}
+
+\bibitem{dorner2025}
+F.E. Dorner et al., ``Limits to Scalable Evaluation at the Frontier,'' ICLR (oral), 2025.
+\textit{Formal ceiling: when the judge is no more capable than the evaluated model, no debiasing halves the required ground-truth data. A quantified limit, where L-01 is an existence result.}
+
+\bibitem{jiang2025}
+Jiang et al., ``The Artificial Hivemind,'' NeurIPS (best paper), 2025.
+\textit{Output homogeneity within and across model families.}
+
+\bibitem{kohli2026}
+S. Kohli, ``Effective Sample Size in LLM Judge Panels,'' arXiv:2605.29800, 28 May 2026.
+\textit{Independent, concurrent application of the Kish identity to a 9-judge, 7-family panel: $n_{\text{eff}} = 2.18$ [2.07, 2.31] at mean pairwise $\phi = 0.391$, asymptote at $1/\bar{\phi} \approx 2.6$. Cross-checks with $n_{\text{eff}} = k/\lambda_{\max}$ (2.16), which does not assume exchangeability --- the independent measure this paper lacks. Uses $\phi$ because it reduces to Pearson for binary error vectors, rejecting Cohen's $\kappa$ for conflating prevalence with dependence.}
 
 \bibitem{ashby1956}
 W.R. Ashby, \textit{An Introduction to Cybernetics}, Chapman \& Hall, 1956.
