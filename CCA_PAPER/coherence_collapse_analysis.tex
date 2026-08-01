@@ -195,11 +195,22 @@ with conditions carrying an observable, a threshold, and a procedure.
     \item \textbf{Precondition failure in the operating band.} The Kish form assumes exchangeability. If the spectral entropy deficit departs from its closed form by more than $10\%$ anywhere in the band where a deployment actually operates, $\keff$ figures from that band are not licensed. \emph{This condition has already fired on the GPU substrate below $\rho \approx 0.04$}, and bounds the domain of every $\keff$ value reported here.
     \item \textbf{No two-sided corridor.} Measure fragility across a $\rho$ range spanning both corridor edges on any substrate. If fragility is monotone in $\rho$ rather than U-shaped --- in particular if it does not rise again above the upper edge --- the corridor claim fails for that substrate. \emph{This is currently untested}: the F-series measured a maximum $\rho$ of $0.171$ against a stated rigidity edge of $0.43$.
     \item \textbf{Volume decay under correlation.} The decay law $V(k) = V_0 e^{-\lambda \keff}$ predicts a specific effective count from measured volume reduction. If simulated or measured decay implies an effective count differing from $\keff$ by more than a factor of $1.5$, the law is wrong. \emph{This condition has already fired}: the implied count exceeds $\keff$ by $1.9\times$ to $4.1\times$ at $\rho = 0.5$, growing with $k$ (\S\ref{sec:outstanding-validation}).
+
+    \item \textbf{Threshold transfer.} The collapse rule $\sigma < \sigma_{\min}$ or $f > f_{\max}$ carries two free parameters, fitted per domain. Fix one pair on one domain and apply it unchanged to another. If classification accuracy does not exceed a base-rate-matched null under a pre-specified outcome definition, the rule is a per-domain fitted classifier rather than a structural invariant. \emph{Currently unmet}: no threshold pair in this paper has been shown to transfer, and the one domain scored against a pre-specified outcome (\S\ref{sec:institutional-negative}) performs below chance.
+    \item \textbf{Sensitivity calibration.} The detection model $P = 1 - e^{-\beta\varepsilon}$ has a free $\beta$, never independently calibrated. Estimate $\beta$ on one substrate and predict detection rates on a second. If $\beta$ must be refit per substrate, the model has no predictive content beyond curve-fitting, and quantities derived from a chosen $\beta$ --- including the ``$\sim 40\%$'' undetectable fraction of earlier versions --- carry none either. \emph{Currently unmet}: $\beta = 10$ is a stipulation, and \S\ref{sec:mc-selfcheck} shows the only test of it samples from the model being tested.
 \end{enumerate}
 
-Two of the four have fired against the framework and are reported as such. A condition that
-cannot fire is not a falsification condition, and the three carried in version 3 are withdrawn
+\textbf{Two of the six have fired against the framework; two more are unmet; one is untested.}
+That distribution is reported rather than smoothed, because a condition that cannot fire is not
+a falsification condition, and the three carried in version 3 could not. They are withdrawn
 rather than reworded.
+
+Two claims that appeared in version 3's ``structural invariants'' receive no falsification
+handle here, because none can exist for them. $\keff = k/(1+\rho(k-1))$ is an \textbf{identity};
+$f = 1 - \sigma$ is a \textbf{definition} in the engines that report it as validated. Neither
+can be contradicted by any measurement, and the appropriate response is to stop describing them
+as invariants that were checked --- which this version does --- rather than to invent a
+falsifier they cannot have.
 
 \subsection{Contributions}
 
@@ -872,9 +883,24 @@ The CCA framework identifies AI systems as significant not because they are uniq
 \section{Validation}
 %==============================================================================
 
-\subsection{Monte Carlo Simulation}
+\subsection{Monte Carlo Self-Consistency Check}
+\label{sec:mc-selfcheck}
 
-The detection probability model (\cref{eq:detection}) with $\beta = 10$ was validated through Monte Carlo simulation with 5,000 trials per $\varepsilon$ value. Note that the simulation includes measurement noise ($\sigma = 0.02$) in the $\varepsilon$ estimate, which slightly reduces empirical detection rates.
+Version 3 reported this table as Monte Carlo \emph{validation} of the detection probability
+model. It is not a validation, and the label is corrected here. The simulation draws detection
+events with probability $1 - e^{-\beta\hat\varepsilon}$ from a noisy estimate $\hat\varepsilon$
+and compares the resulting rate against $1 - e^{-\beta\varepsilon}$ --- the same expression at
+the noiseless value. The two cannot disagree except through the concavity of $1-e^{-\beta\cdot}$
+in its argument, so the residual column measures a Jensen bias, not model adequacy. The
+closed-form prediction for that bias, $-\tfrac{1}{2}\beta^2 e^{-\beta\varepsilon}\sigma^2$,
+reproduces the observed differences: $-1.21\%$, $-0.80\%$, $-0.45\%$, $-0.27\%$ against the
+tabulated $-0.4\%$, $-0.9\%$, $-0.5\%$, $-0.4\%$. \textbf{No independent detection process is
+involved, and the reported RMSE of 0.006 measures how faithfully the sampler reproduces its own
+sampling distribution.} This is the third instance in this paper of a residual that is a Jensen
+gap rather than a measurement error (cf.\ Remark~\ref{rem:c1-identity}).
+
+What the table legitimately shows is that the implementation samples from the model it claims
+to sample from, with $\beta = 10$ and measurement noise $\sigma = 0.02$.
 
 \begin{table}[H]
 \centering
@@ -888,7 +914,7 @@ $\varepsilon$ & \textbf{Theoretical $1-e^{-10\varepsilon}$} & \textbf{Empirical}
 0.200 & 86.5\% & 86.1\% & $-0.4\%$ \\
 \bottomrule
 \end{tabular}
-\caption{Monte Carlo validation of detection probability with $\beta=10$ (RMSE = 0.006). Empirical rates are slightly lower due to measurement noise in $\varepsilon$ estimation.}
+\caption{Monte Carlo self-consistency check, $\beta=10$. \textbf{Not a validation:} the ``empirical'' column is sampled from the same expression the ``theoretical'' column evaluates. The difference column is the concavity bias of the noise in $\hat\varepsilon$, matching the closed-form Jensen prediction, and the RMSE of 0.006 measures sampler fidelity rather than model adequacy.}
 \end{table}
 
 \subsection{Formal Verification}
@@ -1001,7 +1027,7 @@ CCA excels at \textbf{structural diagnosis} (identifying phase and trajectory) a
 \begin{itemize}[noitemsep]
     \item \textbf{SOH RMSE}: 8.1\% average across 19 cells
     \item \textbf{$\sigma$ validation}: Computed $\sigma = 79.31\%$, matches manual calculation exactly
-    \item \textbf{$f$ validation}: Computed $f = 20.69\% = 1 - \sigma$ (exact match)
+    \item \textbf{WITHDRAWN.} v3 reported ``$f$ validation: computed $f = 20.69\% = 1-\sigma$ (exact match).'' In the engine $f$ is \emph{defined} as $1-\sigma$ (\texttt{battery.py:427} returns \texttt{1 - self.get\_sigma()}; the neural engine assigns \texttt{f = max(0, 1.0 - sigma)}), so the ``exact match'' reports that $1-\sigma = 1-\sigma$. This is a definition, not a validation, and no measurement could have contradicted it
     \item \textbf{Limitation}: Model overestimates final SOH by $\sim$8\% due to simplified SEI kinetics
 \end{itemize}
 
