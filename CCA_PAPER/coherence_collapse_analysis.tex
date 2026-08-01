@@ -276,6 +276,7 @@ The average pairwise correlation $\rho$ is a scalar summary that can obscure imp
 \end{remark}
 
 \begin{theorem}[Volume Decay]
+\label{thm:volume-decay}
 Under the following assumptions:
 \begin{enumerate}[noitemsep,label=(\alph*)]
     \item Constraints are drawn i.i.d.\ from a distribution over halfspaces with bounded support
@@ -1117,6 +1118,12 @@ What Exp 86 does establish, and no more: the implementation computes the identit
 \begin{remark}[What a genuine validation of the Kish relation would require]
 The identity becomes empirically testable only against an \emph{independently observed} measure of effective diversity --- one not computed from $\rho$. Candidates: the variance of the array mean ($\sigma^2_{\bar{x}} = \sigma^2/\keff$), the SNR gain from averaging $N$ sensors, the participation ratio of the correlation spectrum, or a task-level measure such as detection latency. \textbf{This paper reports no such comparison}, and neither Exp 86 nor C1 supplies one.
 
+One of those candidates does exist on other data, and is cited here because it is the nearest thing to the missing measurement. Moore (2026a) computes effective dimensionality on $n = 6{,}465$ production reasoning traces from a deployed CIRIS agent using the \textbf{participation ratio} of the eigenvalue spectrum of a standardized feature covariance, $N_{\text{eff}}^{\text{PR}} = (\sum_i \lambda_i)^2 / \sum_i \lambda_i^2$, alongside an entropy-perplexity variant. This is computed from the covariance structure directly and \textbf{not from a scalar $\rho$}, so --- unlike Exp 86 and C1 --- it is free to disagree with a Kish value. It reports a 99\% variance horizon of 11 dimensions, a 90\% horizon of 7, a mean participation ratio of 6.61, and an outcome link: traces at $N_{\text{eff}} \geq 9.2$ overrode restrictive foundation-model priors at 83\% reliability, benchmarked against response-entropy and latency baselines.
+
+\textbf{Cited with its limits, which are material.} The reported stability threshold ($N_{\text{eff}} \approx 7.1$) did not come from a held-out cohort; that paper states it ``emerged naturally'' through continuous iterative tuning of the decision-making algorithms and conscience module, so 7.1, 9.2 and the 83\% are in-sample. The threshold is also stated across two estimators: the mean participation ratio is 6.61, \emph{below} 7.1, while the ``$\geq 8.5$ consistently maintained'' figure is the entropy-perplexity estimator rather than the participation ratio, and which of the two the threshold is defined over needs resolving. Finally, the 90\% variance horizon (7 dimensions) sits within rounding of the threshold (7.1), so it is not yet ruled out that the threshold recovers the intrinsic rank of the reasoning manifold rather than marking a dynamical boundary --- which would make the claim a restatement of the manifold's dimensionality rather than a finding about deception.
+
+\textbf{What this closes and what it does not.} It supplies a spectral effective-dimensionality measurement, with an outcome link, on production data --- materially more than this paper has. It does \textbf{not} validate the Kish identity: it is a different functional on a different substrate, and no paired comparison of $N_{\text{eff}}^{\text{PR}}$ against $\keff$ on the same data has been run. The GPU array is where that comparison is cheapest, since both quantities can be computed from correlation matrices already stored, and it remains the outstanding work (\S\ref{sec:outstanding-validation}).
+
 The nearest available evidence bears on the identity's \textbf{precondition} rather than the identity. The Kish form assumes an equicorrelated correlation matrix. Exp 117 tests that assumption by comparing the spectral entropy deficit computed from all 16 eigenvalues of the measured matrix against the closed form predicted from the scalar $\rho$ alone --- distinct functionals over distinct inputs, free to disagree. They agree to $0.8\%$ at $\rho = 0.394$, and diverge by $17.6\%$ and $70.8\%$ at $\rho \approx 0.04$. The equicorrelated assumption is therefore \textbf{supported at high correlation and falsified at low correlation}, in the regime where the estimator floor above dominates. The failure is reported alongside the success: it bounds the domain over which any $\keff$ figure in this paper should be believed.
 \end{remark}
 
@@ -1583,6 +1590,48 @@ methodological point worth carrying forward.
 \paragraph{On the measurement of $\rho$.}
 A common objection is that pairwise correlation $\rho$ is difficult to measure precisely. This concern, while valid for absolute quantification, overstates the requirement. The classification algorithm (Algorithm~1) depends primarily on \textit{trend direction} and \textit{threshold crossings}, not on precise point estimates. A system need not know that $\rho = 0.47$; it suffices to know that $\rho$ is increasing and has crossed 0.4. Comparative estimation (``higher than last month'') is tractable even when absolute estimation is not. This aligns with standard practice in control systems, where derivative terms matter more than instantaneous values for stability analysis.
 
+\subsection{Outstanding: the validation this paper still lacks}
+\label{sec:outstanding-validation}
+
+Two items are named here rather than deferred silently, because both are load-bearing and
+neither is closed by any correction in this version.
+
+\paragraph{The missing measurement, and the cheapest way to obtain it.}
+Section~\ref{sec:kish-implementation} establishes that no independent test of the Kish identity
+appears in this paper, and cites \cite{crc2026} as the nearest existing instance of the kind of
+measurement required --- on a different substrate, with no paired comparison against $\keff$.
+The comparison is nonetheless inexpensive on the GPU array, because both quantities can be
+computed from correlation matrices already stored. The concrete form: compute
+$N_{\text{eff}} = k/\lambda_{\max}$ from the largest eigenvalue of the measured correlation
+matrix, and compare it against $\keff = k/(1+\bar{\rho}(k-1))$ from the same data. These are
+distinct functionals over distinct inputs --- one uses the full spectrum, the other a scalar
+summary --- so they are free to disagree, which is exactly what Exp 86 and C1 were not. Exp 117
+is the same idea in a more elaborate form; $k/\lambda_{\max}$ is the version a reviewer will
+expect to see first. Until that comparison is run, the identity remains \emph{proved} and
+\emph{unmeasured}, and this paper should not be read as claiming otherwise.
+
+\paragraph{Theorem~\ref{thm:volume-decay} substitutes $\keff$ into the exponent without deriving the step.}
+The proof appeals to the effective-sample-size formula in one sentence. That formula governs the
+\emph{variance of a mean} of equicorrelated variables; the volume argument requires the
+\emph{expectation of a sum of log-reduction factors}. These are different moments of different
+objects, and the substitution is not established by the citation. Relatedly, the product is
+written over $i = 1$ to $\keff$, a non-integer index --- the tables in this paper carry $\keff$
+values of 5.20 and 7.5. Everything downstream inherits the step: $\Ttruth$, the singularity
+boundary $\Kreq \cdot \rho \geq 1$, and the phase corridor. This is flagged, not repaired, and
+carries the same status as every other unproven item corrected in this version: it is an
+\textbf{open} step, not a proved one.
+
+\paragraph{The deceptive/honest asymmetry is assumed, not derived.}
+The volume-decay theorem cuts a bounded convex region with independent halfspaces. Nothing in
+that construction distinguishes the deceptive region from the honest one: \emph{both} shrink as
+constraints accumulate. What safety requires is that the \emph{ratio} fall --- that the
+deceptive region shrink faster than the honest one --- and that holds only if the constraints
+are chosen so that honest behaviour satisfies them while deceptive behaviour does not. That
+choice is the alignment problem itself, assumed here rather than solved. The limitation
+previously stated in this paper (``assumes convex deceptive regions'') is a weaker and different
+caveat, and does not cover this. Stated plainly: \textbf{the geometry shows that constraints
+shrink feasible volume; it does not show that they shrink deception preferentially.}
+
 \subsection{Ethical Considerations}
 
 CCA is an \textit{engineering risk tool}. Several design choices reinforce this:
@@ -1685,6 +1734,10 @@ Explosive Synchronization Study, \textit{Proceedings of the National Academy of 
 \bibitem{cirisagent2026}
 E. Moore, ``CIRISAgent: An Open-Source Framework for Ethical AI Through Transparent Architecture,'' CIRIS Research, 2026.
 \textit{Machine Conscience architecture; companion paper describing the 22-service microarchitecture.}
+
+\bibitem{crc2026}
+E. Moore, ``Constrained Reasoning Chains: An Empirical Telemetry Study of LLM Alignment,'' Zenodo, 2026-04-28. DOI: 10.5281/zenodo.19839280.
+\textit{Effective dimensionality on $n=6{,}465$ production traces via the participation ratio of the covariance eigenvalue spectrum --- a spectral measure not computed from $\rho$, and the nearest existing instance of the independent measurement this paper's \S\ref{sec:kish-implementation} identifies as missing. Cited with its stated limits: in-sample thresholds from continuous tuning rather than a held-out cohort, and a threshold quoted across two distinct estimators.}
 
 \bibitem{nasa_battery}
 NASA Prognostics Center of Excellence, ``Li-ion Battery Aging Datasets,'' NASA Ames Research Center.
