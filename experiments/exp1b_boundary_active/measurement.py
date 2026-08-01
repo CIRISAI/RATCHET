@@ -206,73 +206,165 @@ def _compute_dma_friction(features: dict[str, float]) -> tuple[int, dict[str, bo
     return sum(flags.values()), flags
 
 
-def load_chains_from_tee_dir(tee_dir: Path) -> tuple[list[Chain], int]:
-    """Load all valid `complete_trace` events from a qa_runner local-tee dir.
+def _iter_traces(tee_dir: Path):
+    """Yield (source_path, trace_dict) across both supported capture formats.
 
-    Returns (chains, excluded_count) where excluded_count includes traces
-    rejected for missing required event types or core projection fields.
+    Two producers exist and the loader accepts either:
+
+    A. `ceg-seal-*.json` — agent >= 2.9.7, the `ciris-research-capture` image.
+       One federation-attestation row per sealed thought; the reasoning trace
+       lives at `ceg_rows[].attestation_envelope.trace`. **Written on seal, so
+       always present** even when the canonical endpoint is unreachable. This
+       is the family to key on.
+    B. `*accord-batch-*.json` — the pre-2.9.7 qa_runner local-tee shape, where
+       traces arrive as `events[]` entries with `event_type == "complete_trace"`.
+       Retained so the locked 3-vendor and 5-vendor cohorts stay re-analysable.
+
+    `lens-batch-*.json` also appears in a capture directory but is deliberately
+    NOT read: it is written only when a batch actually ships, so keying on it
+    silently under-counts whenever the canonical is unreachable.
     """
-    chains: list[Chain] = []
-    excluded = 0
-    tee_dir = Path(tee_dir)
-    if not tee_dir.is_dir():
-        return chains, excluded
-
-    # Match raw `accord-batch-*.json` AND iter-prefixed `iter{N}_accord-batch-*.json`
-    paths = sorted(tee_dir.glob("**/*accord-batch-*.json"))
-
-    for batch_path in paths:
+    for p in sorted(tee_dir.glob("**/ceg-seal-*.json")):
         try:
-            batch = json.load(open(batch_path))
+            doc = json.load(open(p))
+        except Exception:
+            continue
+        for row in doc.get("ceg_rows", []) or []:
+            env = row.get("attestation_envelope") or {}
+            trace = env.get("trace")
+            if trace:
+                yield p, trace
+
+    for p in sorted(tee_dir.glob("**/*accord-batch-*.json")):
+        try:
+            batch = json.load(open(p))
         except Exception:
             continue
         if batch.get("trace_level") != "detailed":
             continue
         for ev in batch.get("events", []) or []:
-            if ev.get("event_type") != "complete_trace":
-                continue
-            trace = ev.get("trace") or {}
-            event_types = {c.get("event_type") for c in trace.get("components", [])}
-            if not REQUIRED_EVENT_TYPES.issubset(event_types):
-                excluded += 1
-                continue
+            if ev.get("event_type") == "complete_trace":
+                yield p, ev.get("trace") or {}
 
-            features: dict[str, float] = {}
-            last_conscience = None
-            for c in trace.get("components", []):
-                et = c.get("event_type")
-                data = c.get("data") or c.get("payload") or {}
-                if et == "CONSCIENCE_RESULT":
-                    last_conscience = data
-                elif et in PATHS:
-                    for fname, p in PATHS[et].items():
-                        v = _cast_to_float(_get_nested(data, p))
-                        if v is not None:
-                            features[fname] = v
-            if last_conscience is not None:
-                for fname, p in PATHS["CONSCIENCE_RESULT"].items():
-                    v = _cast_to_float(_get_nested(last_conscience, p))
+
+def attestation_provenance(tee_dir: Path) -> list[dict]:
+    """Per-trace attestation metadata from `ceg-seal-*.json` captures.
+
+    Agent >= 2.9.7 seals each trace into a PQC-signed CEG envelope, so a
+    capture is **self-attesting**: provenance is cryptographically checkable
+    rather than trusted. That matters twice for a pre-registered campaign.
+
+    1. Received-numbers gate: a cohort's traces can be shown to originate from
+       the declared agent identity, instead of being asserted to.
+    2. TORQUE arm D requires that a torque reading never enter a hidden-arm
+       agent context, "verified by trace audit, not by intention". The audit
+       runs over signed artifacts, so tampering with the record it audits is
+       detectable rather than merely discouraged.
+
+    Returns one dict per sealed row with the signing identities and digests.
+    Signature *verification* is deliberately not done here — this module owns
+    measurement, not crypto. Verify with the agent-side tooling that holds the
+    public keys, then key the cohort on rows that pass.
+    """
+    out: list[dict] = []
+    for p in sorted(Path(tee_dir).glob("**/ceg-seal-*.json")):
+        try:
+            doc = json.load(open(p))
+        except Exception:
+            continue
+        for row in doc.get("ceg_rows", []) or []:
+            env = row.get("attestation_envelope") or {}
+            out.append({
+                "source": p.name,
+                "thought_id": doc.get("thought_id"),
+                "trace_level": doc.get("trace_level"),
+                "dimension": row.get("dimension"),
+                "attesting_key_id": row.get("attesting_key_id"),
+                "scrub_key_id": row.get("scrub_key_id"),
+                "has_pqc_signature": bool(row.get("scrub_signature_pqc")),
+                "has_classical_signature": bool(row.get("scrub_signature_classical")),
+                "persist_row_hash": row.get("persist_row_hash"),
+                "agent_id_hash": env.get("agent_id_hash"),
+                "trace_schema_version": (env.get("trace") or {}).get("trace_schema_version"),
+            })
+    return out
+
+
+def load_chains_from_tee_dir(tee_dir: Path, *, strict: bool = True) -> tuple[list[Chain], int]:
+    """Load all valid reasoning traces from a capture directory.
+
+    Accepts both capture formats (see `_iter_traces`). Returns
+    (chains, excluded_count), where excluded_count counts traces rejected for
+    missing required event types or core projection fields.
+
+    With `strict=True` (default) a directory that exists but yields **zero
+    chains** raises rather than returning an empty list. A silent empty return
+    is the dangerous failure here: every downstream statistic would then be
+    computed over nothing and reported as a clean run. The capture format has
+    already moved once (2.9.7), so this guard is load-bearing, not defensive
+    decoration. Pass `strict=False` only when an empty result is a legitimate
+    expected outcome.
+    """
+    chains: list[Chain] = []
+    excluded = 0
+    tee_dir = Path(tee_dir)
+    if not tee_dir.is_dir():
+        if strict:
+            raise FileNotFoundError(f"capture dir does not exist: {tee_dir}")
+        return chains, excluded
+
+    for _src, trace in _iter_traces(tee_dir):
+        event_types = {c.get("event_type") for c in trace.get("components", [])}
+        if not REQUIRED_EVENT_TYPES.issubset(event_types):
+            excluded += 1
+            continue
+
+        features: dict[str, float] = {}
+        last_conscience = None
+        for c in trace.get("components", []):
+            et = c.get("event_type")
+            data = c.get("data") or c.get("payload") or {}
+            if et == "CONSCIENCE_RESULT":
+                last_conscience = data
+            elif et in PATHS:
+                for fname, p in PATHS[et].items():
+                    v = _cast_to_float(_get_nested(data, p))
                     if v is not None:
                         features[fname] = v
+        if last_conscience is not None:
+            for fname, p in PATHS["CONSCIENCE_RESULT"].items():
+                v = _cast_to_float(_get_nested(last_conscience, p))
+                if v is not None:
+                    features[fname] = v
 
-            missing_core = CORE_FIELDS_REQUIRED - features.keys()
-            if missing_core:
-                excluded += 1
-                continue
+        missing_core = CORE_FIELDS_REQUIRED - features.keys()
+        if missing_core:
+            excluded += 1
+            continue
 
-            n_fired = sum(1 for f in CONDITIONAL_FACULTY_FIELDS if f in features)
-            n_dma_friction, dma_flags = _compute_dma_friction(features)
+        n_fired = sum(1 for f in CONDITIONAL_FACULTY_FIELDS if f in features)
+        n_dma_friction, dma_flags = _compute_dma_friction(features)
 
-            chains.append(Chain(
-                trace_id=trace.get("trace_id"),
-                thought_id=trace.get("thought_id"),
-                source_batch=batch_path.name,
-                features=features,
-                n_fired=n_fired,
-                n_dma_friction=n_dma_friction,
-                dma_signals=dma_flags,
-            ))
+        chains.append(Chain(
+            trace_id=trace.get("trace_id"),
+            thought_id=trace.get("thought_id"),
+            source_batch=_src.name,
+            features=features,
+            n_fired=n_fired,
+            n_dma_friction=n_dma_friction,
+            dma_signals=dma_flags,
+        ))
 
+    if strict and not chains:
+        seen = sorted({p.name.split("-")[0] for p in tee_dir.glob("**/*.json")})
+        raise RuntimeError(
+            f"no chains parsed from {tee_dir} — refusing to return an empty "
+            f"cohort silently. Files seen by prefix: {seen or 'none'}. "
+            f"Excluded for missing required event types: {excluded}. "
+            "Check the capture format: agent >= 2.9.7 writes ceg-seal-*.json "
+            "(read on seal, always present); lens-batch-*.json ships only when "
+            "a batch reaches the canonical and must not be keyed on."
+        )
     return chains, excluded
 
 
