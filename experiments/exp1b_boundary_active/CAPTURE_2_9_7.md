@@ -83,12 +83,13 @@ produce the pre-registered probe counts — declare, don't shrink stakes silentl
 
 | Check | Result |
 |---|---|
-| Loader on 2.9.7 `ceg-seal` captures | 8 chains across 4 directories, 0 excluded |
+| Loader on 2.9.7 `ceg-seal` captures | 2 unique thoughts per capture root, 0 excluded, **1.0× row-to-cohort ratio** |
 | Required event types present | all 7 (`THOUGHT_START` … `ACTION_RESULT`) |
 | Feature extraction | **16/16** on chains where faculties fired |
 | Conditional-field behaviour | absent only when `n_fired = 0` — correct, not drift |
 | Empty-cohort guard | fires on a genuinely empty directory |
-| Attestation surface | 2/2 rows PQC-signed, schema `3.0.0` |
+| Attestation surface | all rows PQC-signed, schema `3.0.0` |
+| Trace-level de-duplication | `full_traces` only; 3.0× inflation before the fix |
 
 ## Three copies per thought — read `full_traces` only
 
