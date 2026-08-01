@@ -181,7 +181,25 @@ produce different readings before any live verdict is quoted. **No `N_eff_H` sho
 from an `n = 1` corpus at all** — with one probe the retained dimension collapses for arithmetic
 reasons, and the number looks like a finding.
 
-## Open item: `condition` is an unverified self-report
+## `condition` gate — built, keyed on the seal, NOT yet validated
+
+Agent releases carrying `condition_attestation` seal the reconciliation inside the PQC
+signature: `declared_condition`, `observed_ethical_faculties_skipped`, `implied_condition`,
+`contradicts_declaration`. `measurement.assert_condition_consistent()` refuses to score a
+cohort whose sealed rows contradict their declared arm, and keys on the sealed
+`contradicts_declaration` rather than re-deriving it — a re-derivation would be a second
+opinion that can drift from the artifact.
+
+It also refuses a cohort where **no row carries the block at all.** That case is the trap:
+captures from images predating the attestation return no contradictions, and silence reads as
+a pass. An absent gate is not a satisfied gate.
+
+**Validation status: unvalidated against real data.** The image on hand (`c86ff5c4c`) predates
+the block — 26 sealed rows, none carrying it. The gate has only been exercised on its absence
+path, which fires correctly. Its contradiction path is untested and must not be trusted until a
+capture carrying the block exists.
+
+## Superseded: `condition` as an unverified self-report
 
 The three-arm design turns on a `condition` label — (a) bare prior, (b) declared/pipeline off,
 (c) declared/pipeline running. **Nothing cross-checks that label against runtime state.** A run

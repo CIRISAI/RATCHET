@@ -471,6 +471,82 @@ def constant_features(
     return out
 
 
+def condition_contradictions(tee_dir: Path) -> list[dict]:
+    """Rows whose signed `condition_attestation` contradicts the declared arm.
+
+    The three-arm design turns on a `condition` label — (a) bare prior,
+    (b) declared/pipeline off, (c) declared/pipeline running — and a label is
+    an operator claim. Agent releases carrying `condition_attestation` seal the
+    reconciliation **inside the PQC signature**: `declared_condition`,
+    `observed_ethical_faculties_skipped`, `implied_condition`, and
+    `contradicts_declaration`.
+
+    Key on the sealed `contradicts_declaration` rather than re-deriving it, so
+    the gate and the signed record agree by construction. Re-deriving would
+    create a second opinion that can drift from the artifact.
+
+    Returns the contradicting rows. A non-empty result means the cohort must
+    not be scored: a run labelled (c) whose faculties were skipped is not a
+    (c) observation, whatever the manifest says.
+    """
+    bad: list[dict] = []
+    for p in sorted(Path(tee_dir).glob("**/ceg-seal-*.json")):
+        try:
+            doc = json.load(open(p))
+        except Exception:
+            continue
+        if doc.get("trace_level") != CAPTURE_TRACE_LEVEL:
+            continue
+        for row in doc.get("ceg_rows", []) or []:
+            att = row.get("condition_attestation")
+            if att is None:
+                continue
+            if att.get("contradicts_declaration"):
+                bad.append({
+                    "source": p.name,
+                    "thought_id": doc.get("thought_id"),
+                    "declared": att.get("declared_condition"),
+                    "implied": att.get("implied_condition"),
+                    "faculties_skipped": att.get("observed_ethical_faculties_skipped"),
+                })
+    return bad
+
+
+def assert_condition_consistent(tee_dir: Path, *, require_attestation: bool = True) -> None:
+    """Refuse to score a cohort whose arm labels are contradicted or unproven.
+
+    Raises if any sealed row contradicts its declared condition, and — when
+    `require_attestation` — if no row carries a `condition_attestation` at all.
+    The second case matters: captures from images predating the attestation
+    carry no block, so `condition_contradictions` finds nothing and silence
+    reads as a pass. An absent gate is not a satisfied gate.
+
+    Call before scoring any arm comparison, especially c − b, which is the
+    quantity the campaign's central claim rests on.
+    """
+    tee_dir = Path(tee_dir)
+    sealed = [
+        row
+        for p in tee_dir.glob("**/ceg-seal-*.json")
+        for row in (json.load(open(p)).get("ceg_rows", []) or [])
+    ]
+    attested = [r for r in sealed if r.get("condition_attestation") is not None]
+    if require_attestation and sealed and not attested:
+        raise RuntimeError(
+            f"{tee_dir}: {len(sealed)} sealed rows carry no condition_attestation. "
+            "The capture image predates the attestation block, so arm labels are "
+            "unverified self-report and no arm comparison may be scored from this "
+            "cohort. Recapture with an image that seals the block."
+        )
+    bad = condition_contradictions(tee_dir)
+    if bad:
+        raise RuntimeError(
+            f"{tee_dir}: {len(bad)} rows contradict their declared condition, e.g. "
+            f"{bad[0]}. Refusing to score. The signed record is authoritative over "
+            "the manifest."
+        )
+
+
 def compute_neff_h(
     chains: list[Chain],
     retention_threshold: float = DEFAULT_RETENTION_THRESHOLD,
