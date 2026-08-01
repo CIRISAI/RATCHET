@@ -126,7 +126,11 @@ def analyze(resp: dict) -> dict:
     usage = resp.get("usage") or {}
     prompt_tokens = usage.get("prompt_tokens")
     completion_tokens = usage.get("completion_tokens")
-    reasoning_tokens = usage.get("completion_tokens_details", {}).get("reasoning_tokens") \
+    # `.get(k, {})` returns the default only when k is ABSENT. OpenAI-compatible
+    # APIs send `"completion_tokens_details": null` for non-reasoning models, and
+    # `None.get(...)` raises. Line 125 above already uses the safe idiom; this is
+    # the same fix applied consistently.
+    reasoning_tokens = (usage.get("completion_tokens_details") or {}).get("reasoning_tokens") \
                        or usage.get("reasoning_tokens")  # multiple shapes
 
     findings = {
