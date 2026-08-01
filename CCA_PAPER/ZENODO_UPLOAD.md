@@ -8,9 +8,37 @@ and do not create a new concept DOI.**
 
 ---
 
-## Status: clear to upload
+## Do this before anything else: the concept DOI currently serves the wrong paper
 
-Both blockers are resolved. The package is complete and internally consistent.
+**Record 21326851, labelled "v4" and dated 2026-07-12, is an accidental deposit.** The
+*Corridor Dynamics* PDF was uploaded as a new version of the CCA record, so Zenodo carried the
+CCA metadata forward — title *"Coherence Collapse Analysis: A Universal Failure Mode…"*, the
+k_eff description, the 40%/60% figures — and attached the wrong file underneath it.
+
+Consequence, and it is live right now: **the CCA concept DOI resolves to v4, so anyone
+following a CCA citation is served the Corridor Dynamics paper under a CCA title.** That is a
+more urgent problem than this deposit. It also mislabels Corridor Dynamics, which has its own
+concept DOI (10.5281/zenodo.20300773) and should not appear under this one.
+
+This affects the deposit here in two ways:
+
+1. **Version label is `v5`, not `v4`.** The v4 slot is consumed even though its content is
+   wrong. Depositing as v4 is not possible; depositing as v5 leaves the bad v4 in the version
+   history, visible but superseded.
+2. **`v3` (record 18217688) remains the last version carrying CCA content**, so the corrections
+   note's "corrects v3" framing and every in-text "Version 3 reported…" remark are correct as
+   written and need no change.
+
+Whether v4 is deleted, replaced with the correct file, or left in place with a note is a
+judgement call for the depositor. Leaving it and superseding with v5 is the least destructive
+and keeps the record honest about what happened; deleting it removes a DOI that may already
+have been resolved by someone.
+
+---
+
+## Status: otherwise clear to upload
+
+The package is complete and internally consistent.
 
 **1. ~~Exp 103~~ — RESOLVED 2026-07-31 by replication (RATCHET#13).** The experiment was
 re-run on the original hardware under a hash-pinned pre-registration. The lockstep result is a
@@ -87,11 +115,11 @@ Currently displays as **"Peer review."** It is a **preprint**. This is the cheap
 misleading item in the whole corrections process: the record presently claims a review
 status it never had. Set resource type to `Publication → Preprint`.
 
-**2. Version.** `v4`.
+**2. Version.** `v5` — `v4` is taken by an accidental deposit (see the blocking note above).
 
 **3. Description.** Prepend to the existing abstract:
 
-> **Version 4 (2026-07-31) is a corrections version.** It corrects eighteen defects in v3,
+> **Version 5 (2026-07-31) is a corrections version.** It corrects eighteen defects in v3 — the last version carrying CCA content, since v4 is an accidental upload —
 > several load-bearing. The stability criterion of Theorem 2.3 erred in the *permissive*
 > direction — it certifies as stable systems whose defense function is strictly decreasing.
 > Both results previously offered as hardware validation of the k_eff identity are identity
@@ -138,7 +166,7 @@ struck and annotated in place, not deleted.
 
 ## After upload
 
-- [ ] Update the citation in `CIRISConstitution` Part 6 to the v4 DOI
+- [ ] Update the citation in `CIRISConstitution` Part 6 to the v5 DOI
 - [ ] Correct `Corridor Dynamics` (coherence-ratchet) lines 226, 228, 780 — line 226 credits
       CCA v3 with establishing pre-registration discipline and matched-control nulls, which
       v3 did not have. See RATCHET#14.

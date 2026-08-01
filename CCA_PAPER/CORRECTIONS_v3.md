@@ -1,6 +1,9 @@
 # Corrections to *Coherence Collapse Analysis* v3
 
-**Corrects:** Zenodo record 18217688 (*Coherence Collapse Analysis*, v3)
+**Corrects:** Zenodo record 18217688 (*Coherence Collapse Analysis*, v3) — the last deposit
+carrying this paper's content. Record 21326851, labelled v4, is an accidental upload of a
+different paper under inherited CCA metadata; this note therefore corrects v3, and the next
+deposit is **v5**.
 **Status:** Prepared for deposit — awaiting two blocking decisions (see Actions 10–11)
 **Date:** 2026-07-31
 **Machine witness:** [`corrections_witness.py`](corrections_witness.py) (sympy; reproduces every defect below, exit 0)
