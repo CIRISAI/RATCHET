@@ -1,0 +1,133 @@
+{
+  "agent_describe": "v2.9.9-stable",
+  "agent_git_sha": "b684b7f563260dac62b2ad39d90f4f1e85d9cbec",
+  "invisible_bytes": 50149,
+  "invisible_key_count": 32,
+  "locales": "en",
+  "mode": "namespace",
+  "namespaces": {
+    "conscience_prompt": {
+      "blocks": [],
+      "blocks_moved": 0,
+      "bytes": 48463,
+      "gated": false,
+      "key_names": [
+        "coherence_conscience.system_prompt",
+        "coherence_conscience.user_prompt_template",
+        "coherence_conscience.user_prompt_with_image_template",
+        "entropy_conscience.system_prompt",
+        "entropy_conscience.user_prompt_template",
+        "entropy_conscience.user_prompt_with_image_template",
+        "epistemic_humility_conscience.system_prompt",
+        "epistemic_humility_conscience.user_prompt_template",
+        "epistemic_humility_conscience.user_prompt_with_image_template",
+        "optimization_veto_conscience.system_prompt",
+        "optimization_veto_conscience.user_prompt_template",
+        "optimization_veto_conscience.user_prompt_with_image_template"
+      ],
+      "keys": 12
+    },
+    "corpus": {
+      "blocks": [
+        "aspdma.accord",
+        "csdma.accord",
+        "dsaspdma.accord",
+        "dsdma.accord",
+        "idma.accord",
+        "pdma.accord",
+        "tsaspdma.accord",
+        "tsaspdma_correction.accord"
+      ],
+      "blocks_moved": 8,
+      "bytes": 176,
+      "gated": true,
+      "key_names": [],
+      "keys": 4
+    },
+    "dma_prompt": {
+      "blocks": [
+        "aspdma.user",
+        "csdma.system",
+        "csdma.user",
+        "dsaspdma.system",
+        "dsaspdma.user",
+        "dsdma.system",
+        "dsdma.user",
+        "idma.system",
+        "idma.user",
+        "pdma.system",
+        "pdma.user",
+        "tsaspdma.system",
+        "tsaspdma.user",
+        "tsaspdma_correction.system"
+      ],
+      "blocks_moved": 14,
+      "bytes": 69110,
+      "gated": true,
+      "key_names": [],
+      "keys": 36
+    },
+    "string": {
+      "blocks": [
+        "aspdma.language_guidance",
+        "aspdma.system",
+        "csdma.language_guidance",
+        "csdma.prohibition",
+        "dsaspdma.language_guidance",
+        "dsdma.language_guidance",
+        "dsdma.prohibition",
+        "dsdma.system",
+        "idma.language_guidance",
+        "pdma.language_guidance",
+        "pdma.prohibition",
+        "tsaspdma.language_guidance",
+        "tsaspdma_correction.language_guidance"
+      ],
+      "blocks_moved": 13,
+      "bytes": 18162,
+      "gated": true,
+      "key_names": [],
+      "keys": 46
+    },
+    "string:conscience.*": {
+      "blocks": [],
+      "blocks_moved": 0,
+      "bytes": 1554,
+      "gated": false,
+      "key_names": [
+        "conscience.forced_ponder_rationale",
+        "conscience.override_rationale",
+        "conscience.ponder_alternative_approach",
+        "conscience.ponder_attempted",
+        "conscience.ponder_bypass_failed",
+        "conscience.ponder_conscience_failed",
+        "conscience.ponder_forced_retry",
+        "conscience.repeated_speak_guidance",
+        "conscience.retry_alternatives_header",
+        "conscience.retry_general_outro",
+        "conscience.retry_header",
+        "conscience.retry_intro",
+        "conscience.retry_must_be_different",
+        "conscience.retry_observation_intro",
+        "conscience.retry_observation_outro",
+        "conscience.retry_uncertainties_label",
+        "conscience.retry_why_label"
+      ],
+      "keys": 17
+    },
+    "template": {
+      "blocks": [],
+      "blocks_moved": 0,
+      "bytes": 132,
+      "gated": false,
+      "key_names": [
+        "description",
+        "domain",
+        "role_description"
+      ],
+      "keys": 3
+    }
+  },
+  "total_blocks": 35,
+  "total_keys": 101
+}
