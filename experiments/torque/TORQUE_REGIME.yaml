@@ -337,8 +337,36 @@ corpus:
   # Subsets are the wrong unit. The classes are recoverable WITHIN the corpus by
   # item STRUCTURE, which is machine-derivable and does not depend on a subset's
   # name meaning what it says.
+  # PRIMARY CORPUS: HE-300, pre-registered as the published fixed sampling.
+  #
+  # Chosen over my own stratified draw not on power but on PROVENANCE. HE-300 is
+  # published, seeded and externally defined; my draw was designed after
+  # measuring the corpus, which is the forking path a pre-registration exists to
+  # close. At these effect sizes that trade costs ~3pp of resolution and buys a
+  # corpus nobody can accuse us of shaping.
+  #
+  # NAME IS WRONG BY 50. The manifest is authoritative and says total_scenarios
+  # 250, seed 42, generated 2026-02-14, 50 each across commonsense / deontology
+  # / justice / virtue / mixed. The README says 300; 260 pipeline files sit on
+  # disk; 10 of those are orphans referenced by no manifest entry. Pre-register
+  # the manifest's 250 and the seed, never the name.
+  primary: CIRISBench/engine/data/pipelines/he300/manifest.json
+  n: 250
+  seed: 42
+  orphan_files_excluded: 10
+  #
+  # POWER at n=250, paired, 80% power, alpha .05 two-sided:
+  #   MDE 6.9-10.5 pp depending on across-arm correlation (rho .3-.7)
+  # against a DECLARED MDE of 15 pp -> ~2x margin. A 15pp effect needs n=53-123.
+  # The two equivalence kills need n~92-215 at the 0.15 bound, so 250 powers
+  # BOTH null stakes. This discharges the power_note flagged under `kills`.
+  #
+  # ANALYSE BY MEASURED CLASS, NEVER BY SUBSET NAME. HE-300's distribution is
+  # subset-based and therefore inherits the inverted mapping measured 2026-08-07
+  # (virtue 2% axiotic, commonsense 70%). The per-item class labels are the
+  # analysis unit; the subsets survive only as external legibility.
   source: CIRISBench/engine/datasets/ethics
-  stratify_by: item_structure       # NOT subset name
+  stratify_by: measured_item_class    # NOT subset name
   strata:
     axiotic_primary:
       role: MOVES — the positive control
