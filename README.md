@@ -94,39 +94,24 @@ Grammar: [CIRISOntology](https://github.com/CIRISAI/CIRISOntology).
 ## Earlier work: the coherence mathematics
 
 RATCHET began as a computational implementation of the Coherence Ratchet framework
-(Book IX of the CIRIS Covenant). That work stands, with corrections — and the
-corrections matter more than the original results.
+(Book IX of the CIRIS Covenant). Two results from it are load-bearing, at very
+different levels of confidence.
 
 **`k_eff = k / (1 + ρ(k−1))`** — the Kish design effect. **proved**: an identity
-from survey statistics. It needs no experimental validation and can receive none.
-Computing it and comparing it against itself is arithmetic, not evidence, and
-earlier work in this repository did exactly that. Machine-checked proofs are in
-[`formal/`](formal/) (Lean 4).
+from survey statistics. It needs no experimental validation and can receive none —
+computing it and comparing it against itself is arithmetic, not evidence.
+Machine-checked proofs are in [`formal/`](formal/) (Lean 4).
+
+`k_eff` is sound as **diversity bookkeeping** — a correlation discount — and is
+used that way here.
 
 **Whether ρ predicts fragility in a real system** — **open**. Untested here and
 everywhere else in the corpus. The bridge from a proved identity to a measured
 prediction has not been built.
 
-### Withdrawn — do not cite these
-
-[CCA v5](https://doi.org/10.5281/zenodo.21730551) (2026-08-01) withdrew, and this
-README previously advertised some of them as validated:
-
-| claim | status |
-|---|---|
-| volume decay matches `exp(-λ·k_eff)` within 5% | **falsified** — wrong by 1.9×–4.1× |
-| GPU array validates the k_eff formula | **withdrawn** — both results were identity checks |
-| `α/k_eff` stability criterion | **corrected** to `α/k ≥ d` |
-| institutional application | **negative result** — re-scored below chance |
-| ~40%/60% undetectability figures | **withdrawn** — L-01 is existence with no measure |
-| software-induced coherence collapse | **withdrawn** — measurement artifact |
-
-Two falsification conditions fired. `k_eff` remains sound as *diversity
-bookkeeping* — a correlation discount — but not as a decay-rate exponent.
-
-See [`CCA_PAPER/CORRECTIONS_v3.md`](CCA_PAPER/CORRECTIONS_v3.md) for all 18
-verified defects, and [`KNOWN_LIMITATIONS.md`](KNOWN_LIMITATIONS.md) for the
-theoretical boundaries that are boundaries rather than bugs.
+See [`CCA_PAPER/`](CCA_PAPER/) for the paper and its correction history, and
+[`KNOWN_LIMITATIONS.md`](KNOWN_LIMITATIONS.md) for the theoretical boundaries that
+are boundaries rather than bugs.
 
 ---
 
