@@ -166,9 +166,19 @@ def verify(original: Path, part: Path, alt: Path) -> int:
         print(f"REFUSED: alt has {len(a)} lines, partition declares {len(rows)}. "
               f"Insertion or deletion is drift by definition.", file=sys.stderr)
         return 1
+    # Gate on "not SWAP", never on "== HOLD".
+    #
+    # An earlier version asserted byte-identity only where tag == "HOLD", while
+    # assemble() byte-copies EVERY non-SWAP tag through its else branch. So a
+    # CONFLICT? row was copied but never checked, and verify printed
+    # "VERIFIED: all 1109 HOLD lines byte-identical; 28 SWAP lines replaced"
+    # over a 1153-line file — its own arithmetic (1109 + 28 = 1137) gave it
+    # away, and nothing in the output said so. A verifier that reports success
+    # over lines it did not inspect is the exact defect this module exists to
+    # prevent, and it does not get an exemption for being mine.
     bad = []
     for idx, (n, tag, _, _) in enumerate(rows):
-        if tag == "HOLD" and a[idx] != o[n - 1]:
+        if tag != "SWAP" and a[idx] != o[n - 1]:
             bad.append((n, o[n - 1], a[idx]))
     if bad:
         print(f"REFUSED: {len(bad)} HOLD line(s) are not byte-identical.", file=sys.stderr)
@@ -178,8 +188,11 @@ def verify(original: Path, part: Path, alt: Path) -> int:
               "content merged into it. Merging is why the second authoring pass "
               "passed its own checks.", file=sys.stderr)
         return 1
-    print(f"VERIFIED: all {sum(1 for r in rows if r[1]=='HOLD')} HOLD lines byte-identical; "
-          f"{sum(1 for r in rows if r[1]=='SWAP')} SWAP lines replaced. No drift possible.")
+    held = sum(1 for r in rows if r[1] != "SWAP")
+    swapped = sum(1 for r in rows if r[1] == "SWAP")
+    assert held + swapped == len(rows), "row accounting does not close"
+    print(f"VERIFIED: {held} non-SWAP lines byte-identical + {swapped} SWAP lines replaced "
+          f"= {len(rows)} of {len(rows)}. Every line accounted for.")
     return 0
 
 

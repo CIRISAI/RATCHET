@@ -1,133 +1,154 @@
 #!/usr/bin/env python3
-"""Unit F measurement: CIRIS original vs alt-values draft.
+"""Unit F measurement + drift audit: CIRIS original vs alt-values draft.
+
+Scope: `09_trusted_person_first_step` ONLY. `11_routing_doctrine` was ruled
+PROCEDURAL on 2026-08-07 and left the adaptation map; this script asserts that no
+adaptation of it survives in the draft's shipping payload.
 
 Uses the campaign's density.py lexicon and tokenizer unmodified.
+/tmp/a2911 is read-only and is never written.
 """
+import difflib
 import json
+import os
 import re
 import sys
 
 SP = "/tmp/claude-1000/-home-emoore-RATCHET/4fdbd195-6bf1-45c9-8ffc-931540da4e4d/scratchpad"
 sys.path.insert(0, SP)
-from density import CORE, EXTENDED, measure  # noqa: E402
+from density import measure  # noqa: E402
 
 EN = "/tmp/a2911/ciris_engine/data/localized/en.json"
+ACCORD = "/tmp/a2911/ciris_engine/data/localized/accord_1.2b_en.txt"
 DRAFT = "/home/emoore/RATCHET/experiments/torque/corpora/values-alt/F-lg-axiotic.md"
+KEY = "09_trusted_person_first_step"
+MARKER = "<!-- SHIP: prompts.language_guidance.09_trusted_person_first_step -->"
 
 lg = json.load(open(EN))["prompts"]["language_guidance"]
+ORIG = lg[KEY].strip()
 
-# pull the two fenced ```text blocks out of the draft, in order
-blocks = re.findall(r"```text\n(.*?)\n```", open(DRAFT).read(), re.S)
-assert len(blocks) == 2, f"expected 2 text blocks, got {len(blocks)}"
+# The draft quotes CIRIS text in several fenced blocks. Only the marked one ships.
+src = open(DRAFT).read()
+m = re.search(re.escape(MARKER) + r"\s*\n```text\n(.*?)\n```", src, re.S)
+assert m, "shipping block marker not found — draft structure changed"
+ALT = m.group(1)
+assert "\n" not in ALT, "shipping payload must be a single line"
 
-PAIRS = [
-    ("09_trusted_person_first_step", lg["09_trusted_person_first_step"].strip(), blocks[0]),
-    ("11_routing_doctrine", lg["11_routing_doctrine"].strip(), blocks[1]),
+FAIL = []
+
+
+def check(ok, label):
+    print(f"  [{'OK  ' if ok else 'FAIL'}] {label}")
+    if not ok:
+        FAIL.append(label)
+
+
+print("=" * 78)
+print(f"UNIT F — {KEY}  (11_routing_doctrine: OUT OF SCOPE, ruled procedural)")
+print("=" * 78)
+
+# ---------------------------------------------------------------- 1. THE DIFF
+print("\n--- 1. DIFF (ground truth)")
+print(f"  CIRIS : {ORIG}")
+print(f"  alt   : {ALT}")
+pre = os.path.commonprefix([ORIG, ALT])
+print(f"\n  byte-identical common prefix : {len(pre.encode())} / {len(ORIG.encode())} B")
+print(f"  CIRIS changed tail           : {ORIG[len(pre):]!r}")
+print(f"  alt   changed tail           : {ALT[len(pre):]!r}")
+print("\n  opcode-level (word tokens):")
+ow, aw = ORIG.split(), ALT.split()
+for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(a=ow, b=aw).get_opcodes():
+    if tag == "equal":
+        continue
+    print(f"    {tag:<7} CIRIS={' '.join(ow[i1:i2])!r:<32} alt={' '.join(aw[j1:j2])!r}")
+
+# ------------------------------------------------- 2. HELD SPANS (constraint 4)
+print("\n--- 2. HELD SPANS — must be byte-identical in both (constraint 4)")
+HELD = [
+    ("structural ordinal", "1."),
+    ("pragmatic referent set", "Trusted person — family member, close friend, partner."),
+    ("contingent trigger", "For users disclosing distress,"),
+    ("procedural move verb", "validating"),
+    ("pragmatic quoted referent", '"talk to someone you trust"'),
+    ("structural sequence position", "first step"),
 ]
+for lbl, span in HELD:
+    check(span in ORIG and span in ALT, f"{lbl:<30} {span[:46]!r}")
 
-ACC = open("/tmp/a2911/ciris_engine/data/localized/accord_1.2b_en.txt", encoding="utf-8").read()
-acc = measure("accord", ACC)
+# ---------------------------------------------------- 3. SCOPE (11 must be out)
+print("\n--- 3. SCOPE — no 11_routing_doctrine adaptation in the shipping payload")
+R11 = lg["11_routing_doctrine"].strip().lower()
+alt_low = ALT.lower()
+for probe in ("when giving guidance", "crisis line", "suicidal ideation",
+              "command hallucinations", "minimization", "cover yourself",
+              "professional care", "existing support resources"):
+    check(probe not in alt_low, f"absent from payload: {probe!r}")
+check(R11 not in alt_low, "verbatim 11 string absent")
 
-
-def row(tag, text):
-    m = measure(tag, text)
-    return {
-        "tag": tag,
-        "bytes": len(text.encode("utf-8")),
-        "words": m["total_words"],
-        "core_hits": m["core"]["hits"],
-        "core_p1k": m["core"]["per1000"],
-        "ext_hits": m["extended"]["hits"],
-        "ext_p1k": m["extended"]["per1000"],
-        "core_fams": {k: v for k, v in m["core"]["families"].items() if v},
-        "ext_fams": {k: v for k, v in m["extended"]["families"].items() if v},
-    }
+# --------------------------------------------------------- 4. MEASUREMENT
+print("\n--- 4. MEASUREMENT (density.py, unmodified)")
 
 
-print("=" * 78)
-print("UNIT F — measured length + value-token density (density.py lexicon)")
-print("=" * 78)
+def row(text):
+    r = measure("x", text)
+    return (len(text.encode("utf-8")), r["total_words"],
+            r["core"]["hits"], r["core"]["per1000"],
+            r["extended"]["hits"], r["extended"]["per1000"],
+            {k: v for k, v in r["core"]["families"].items() if v},
+            {k: v for k, v in r["extended"]["families"].items() if v})
 
-agg = {"orig": [], "alt": []}
-for key, orig, alt in PAIRS:
-    o, a = row("orig", orig), row("alt", alt)
-    agg["orig"].append(orig)
-    agg["alt"].append(alt)
-    print(f"\n--- {key}")
-    print(f"  {'':<10} {'bytes':>7} {'words':>7} {'CORE':>6} {'/1000':>8} {'EXT':>5} {'/1000':>8}")
-    for lbl, r in (("CIRIS", o), ("alt", a)):
-        print(f"  {lbl:<10} {r['bytes']:>7} {r['words']:>7} {r['core_hits']:>6} "
-              f"{r['core_p1k']:>8.1f} {r['ext_hits']:>5} {r['ext_p1k']:>8.1f}")
-    db = 100.0 * (a["bytes"] - o["bytes"]) / o["bytes"]
-    dw = 100.0 * (a["words"] - o["words"]) / o["words"]
-    print(f"  {'delta':<10} {db:>+6.1f}% {dw:>+6.1f}%")
-    print(f"  families CIRIS core={o['core_fams']} ext={o['ext_fams']}")
-    print(f"  families alt   core={a['core_fams']} ext={a['ext_fams']}")
 
-print("\n" + "-" * 78)
-print("UNIT TOTAL (both keys concatenated)")
-to, ta = row("orig", "\n".join(agg["orig"])), row("alt", "\n".join(agg["alt"]))
-print(f"  {'':<10} {'bytes':>7} {'words':>7} {'CORE':>6} {'/1000':>8} {'EXT':>5} {'/1000':>8}")
-for lbl, r in (("CIRIS", to), ("alt", ta)):
-    print(f"  {lbl:<10} {r['bytes']:>7} {r['words']:>7} {r['core_hits']:>6} "
-          f"{r['core_p1k']:>8.1f} {r['ext_hits']:>5} {r['ext_p1k']:>8.1f}")
-print(f"  delta      {100.0*(ta['bytes']-to['bytes'])/to['bytes']:>+6.1f}% "
-      f"{100.0*(ta['words']-to['words'])/to['words']:>+6.1f}%")
+o, a = row(ORIG), row(ALT)
+print(f"  {'':<8} {'bytes':>7} {'words':>7} {'CORE':>6} {'/1000':>8} {'EXT':>5} {'/1000':>8}")
+for lbl, r in (("CIRIS", o), ("alt", a)):
+    print(f"  {lbl:<8} {r[0]:>7} {r[1]:>7} {r[2]:>6} {r[3]:>8.1f} {r[4]:>5} {r[5]:>8.1f}")
+db = 100.0 * (a[0] - o[0]) / o[0]
+dw = 100.0 * (a[1] - o[1]) / o[1]
+print(f"  {'delta':<8} {db:>+6.1f}% {dw:>+6.1f}%")
+print(f"  families CIRIS core={o[6]} ext={o[7]}")
+print(f"  families alt   core={a[6]} ext={a[7]}")
+check(abs(db) <= 10.0 and abs(dw) <= 10.0, f"size congruence <=10% (got {db:+.1f}% B / {dw:+.1f}% w)")
+print("  NOTE n=23/24 words: one token moves the rate ~42/1000. No per-1000 figure here")
+print("       supports any inference. Read the families, not the rates.")
 
-print("\n  09-only (if 11 adjudicated procedural):")
-o9, a9 = row("o", PAIRS[0][1]), row("a", PAIRS[0][2])
-print(f"    CIRIS {o9['bytes']:>4} B / {o9['words']:>3} w   alt {a9['bytes']:>4} B / {a9['words']:>3} w")
-
-print("\n" + "-" * 78)
-print(f"REFERENCE  Accord 1.2b EN: {acc['total_words']:,} w  "
+acc = measure("accord", open(ACCORD, encoding="utf-8").read())
+print(f"\n  REFERENCE Accord 1.2b EN: {acc['total_words']:,} w  "
       f"core {acc['core']['per1000']:.2f}/1000  ext {acc['extended']['per1000']:.2f}/1000")
-print("-" * 78)
 
-print("\nVOCABULARY-INJECTION CHECK (constraint 2) — families the constitution lacks:")
+# ------------------------------------------------ 5. HARD CONSTRAINTS 1,2,3,5
+print("\n--- 5. HARD CONSTRAINTS")
+
+HC = (r"\b(bioweapon|biological weapon|chemical weapon|nuclear|radiological|uplift|"
+      r"critical infrastructure|cyberweapon|malware|oversight|disempower|mass casualt|"
+      r"seiz\w* power|csam|child sexual)\b")
+hits = re.findall(HC, alt_low)
+check(not hits, f"[1] no prohibition text (found {hits})")
+
 BANNED = {
     "obligation": r"\b(obligation|obligations|obligated|obliged|duty|duties|stewardship|steward)\b",
     "integrity": r"\b(integrity)\b",
     "transparency": r"\b(transparent|transparency|opaque|opacity)\b",
     "responsibility": r"\b(responsible|responsibly|responsibility|responsibilities|accountable|accountability)\b",
+    "dignity": r"\b(dignity|dignified|undignified)\b",
 }
-alltext = "\n".join(agg["alt"]).lower()
-bad = {f: len(re.findall(p, alltext)) for f, p in BANNED.items()}
-print(f"  {bad}   -> {'CLEAN' if not any(bad.values()) else 'VIOLATION'}")
+bad = {f: len(re.findall(p, alt_low)) for f, p in BANNED.items()}
+check(not any(bad.values()), f"[2] no injected duty-bearer vocabulary {bad}")
 
-print("\nREGISTER CHECK (constraint 1):")
-for lbl, txt in (("CIRIS", "\n".join(agg["orig"])), ("alt", "\n".join(agg["alt"]))):
-    low = txt.lower()
-    print(f"  {lbl:<6} should={len(re.findall(r'\bshould\b', low))} "
-          f"must={len(re.findall(r'\bmust\b', low))} "
-          f"we={len(re.findall(r'\bwe\b', low))} "
-          f"claude={len(re.findall(r'\bclaude\b', low))} "
-          f"2nd-person(you/your/yourself)={len(re.findall(r'\b(you|your|yourself)\b', low))}")
+# constraint 3: report, do not assert — see draft section 7 item 1
+print("  [note] [3] register: CIRIS original is impersonal value-assertion, no modal.")
+for lbl, txt in (("CIRIS", ORIG.lower()), ("alt", ALT.lower())):
+    print(f"         {lbl:<6} should={len(re.findall(r'\bshould\b', txt))} "
+          f"must={len(re.findall(r'\bmust\b', txt))} "
+          f"we={len(re.findall(r'\bwe\b', txt))} "
+          f"claude={len(re.findall(r'\bclaude\b', txt))} "
+          f"you/your={len(re.findall(r'\b(you|your|yourself)\b', txt))}")
+check(not re.search(r"\b(we|claude|should)\b", alt_low),
+      "[3] no 3rd-person institutional source voice survives (we/Claude/should)")
 
-print("\nHARD-CONSTRAINT RESIDUE (constraint 3):")
-HC = r"\b(bioweapon|biological weapon|chemical weapon|nuclear|radiological|uplift|" \
-     r"critical infrastructure|cyberweapon|malware|oversight|disempower|mass casualt|" \
-     r"seiz\w* power|csam|child sexual)\b"
-hits = re.findall(HC, alltext)
-print(f"  {hits}   -> {'CLEAN' if not hits else 'VIOLATION'}")
-
-print("\nHELD-SPAN VERIFICATION (constraint 4) — must be byte-identical:")
-HELD = [
-    ("09 structural+pragmatic", "1. Trusted person — family member, close friend, partner."),
-    ("09 contingent trigger", "For users disclosing distress,"),
-    ("11 procedural frame", "When giving guidance:"),
-    ("11 pragmatic referent", "the user's existing support resources"),
-    ("11 procedural guard", "name the specific country's crisis line where context allows"),
-    ("11 empirical criteria", "(suicidal ideation, weeks of dysfunction, command hallucinations)"),
-    ("11 procedural escalation", "route serious symptoms"),
-    ("11 procedural destination", "to professional care"),
-]
-for lbl, span in HELD:
-    src = PAIRS[0][1] if lbl.startswith("09") else PAIRS[1][1]
-    alt = PAIRS[0][2] if lbl.startswith("09") else PAIRS[1][2]
-    ok = span in src and span in alt
-    print(f"  [{'OK ' if ok else 'FAIL'}] {lbl:<28} {span[:52]!r}")
-
-print("\nTIER-LABEL CHECK (constraint 5):")
 TIERS = ["broadly safe", "broadly ethical", "compliant with anthropic", "genuinely helpful"]
-print(f"  {[t for t in TIERS if t in alltext]}   -> "
-      f"{'CLEAN (no ordering introduced)' if not any(t in alltext for t in TIERS) else 'PRESENT'}")
+check(not any(t in alt_low for t in TIERS), "[5] no tier language introduced")
+
+print("\n" + "=" * 78)
+print("RESULT:", "PASS" if not FAIL else f"FAIL ({len(FAIL)}): " + "; ".join(FAIL))
+print("=" * 78)
+sys.exit(1 if FAIL else 0)
