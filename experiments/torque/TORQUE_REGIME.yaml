@@ -95,6 +95,52 @@ alt_values:
     - hash-pin alongside the manifest BEFORE Stage 0; an alt corpus chosen after
       seeing data is the forking path this design exists to close
 
+kills:
+  # FSD §10.2 [T-4]: "Kills are equivalence claims and priced as such. Every kill
+  # asserts something DID NOT MOVE. A kill is operable only with (i) a named
+  # instrument in every declared locale and (ii) a declared minimum detectable
+  # effect AND EQUIVALENCE BOUND. A kill without both is decoration."
+  #
+  # This section exists because a review found the campaign carried an
+  # UNFIREABLE KILL LEG: two of its stakes are null claims, and neither had an
+  # equivalence bound. Without one, "did not move" is unfalsifiable — any small
+  # movement can be called none, and any noise can be called movement, decided
+  # after seeing which reading is convenient. An MDE alone does not fix this: an
+  # MDE says what you could DETECT, an equivalence bound says what counts as
+  # ABSENT. They are different numbers doing different jobs.
+
+  reversion_null:
+    stake: "arm B — behaviour reverts toward the bare prior once the pipeline stops"
+    kill_asserts: "NO reversion — the effect is not inference-time maintenance, so the stated mechanism is wrong"
+    # Reported as a failure EVEN THOUGH the behaviour stays good. A right number
+    # on a wrong warrant is still a failure.
+    equivalence_bound: 0.15
+    # Post-switch behaviour must stay within 0.15 of the piped condition, on the
+    # same scale as mde.values_effect. Set EQUAL to the MDE rather than tighter:
+    # claiming equivalence inside a band we cannot resolve would be asserting a
+    # precision the instrument does not have.
+    fires_when: "the 90% CI for the post-switch shift lies entirely inside ±0.15"
+    inconclusive_when: "the CI straddles the bound — reported as INCONCLUSIVE, never as a kill"
+    instrument: action_tier   # exists at en; text_tier has no en U-row instrument
+
+  form_vs_content_null:
+    stake: "content matters — a real alternative value set moves behaviour more than nonsense does"
+    kill_asserts: "nonsense moves behaviour AS MUCH AS a real alternative — the pipeline responds to value-SHAPED TEXT, not to what values say"
+    # This kill is fatal to the campaign's headline claim and it is meant to be.
+    equivalence_bound: 0.15
+    fires_when: "the 90% CI for (h3ere-alt − h3ere-nonsense) lies entirely inside ±0.15"
+    inconclusive_when: "the CI straddles the bound"
+    instrument: action_tier
+    strata: [commonsense, justice, deontology]   # nonsense arm's restriction applies
+
+  power_note: >
+    Equivalence testing needs MORE samples than difference testing at the same
+    bound, because it must exclude an interval rather than exclude zero. The
+    n=1200 stratified draw is sized on the difference contrasts; whether it
+    powers these two equivalence claims at the 0.15 bound must be computed
+    BEFORE freezing, and if it does not, the honest options are a larger draw or
+    a wider declared bound — never a bound chosen after seeing the interval.
+
 withdrawal:
   # Arm B, "reversion on stop" — the rent test. RATCHET#16 says "withdraw the
   # pipeline mid-session", which is ambiguous exactly where it matters. Pinned
