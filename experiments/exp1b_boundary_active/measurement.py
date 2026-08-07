@@ -310,6 +310,14 @@ def load_chains_from_tee_dir(tee_dir: Path, *, strict: bool = True) -> tuple[lis
     (chains, excluded_count), where excluded_count counts traces rejected for
     missing required event types or core projection fields.
 
+    SCOPE, stated because the gap is easy to mistake for coverage: this guard
+    catches an EMPTY cohort. It does not catch an ABSENT one — a full set of
+    well-formed traces whose responses were all timeout literals would pass
+    here, because `Chain` is a feature projection and retains neither response
+    text nor duration. `absent_cohort.assert_capture_present()` covers that on
+    the battery capture directory; run it there. See CIRISAgent run 31183628588,
+    which reported success end to end while measuring nothing.
+
     With `strict=True` (default) a directory that exists but yields **zero
     chains** raises rather than returning an empty list. A silent empty return
     is the dangerous failure here: every downstream statistic would then be

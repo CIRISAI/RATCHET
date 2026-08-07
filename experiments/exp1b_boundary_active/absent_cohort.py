@@ -269,3 +269,34 @@ def assert_cohort_present(
             f"cohort ({locale}, n={len(rows)}) is absent, not weak — it has the shape of behaviour "
             f"and none of the content:\n  - " + "\n  - ".join(problems)
         )
+
+
+def assert_capture_present(capture_dir: Any, *, locale: str) -> int:
+    """Guard a safety-battery capture directory. Returns the row count.
+
+    This is the entry point for the path where the failure actually happened:
+    `safety_battery/<cell>/results.jsonl`. Call it before reading a single
+    verdict.
+
+    Deliberately NOT wired into `measurement.load_chains_from_tee_dir`. That
+    loader consumes CEG traces and returns `Chain`, a feature projection which
+    retains neither response text nor duration — so none of the three signatures
+    are visible to it, and a guard bolted on there would inspect nothing while
+    looking like coverage. That is the defect this module exists to catch, and
+    it does not get an exemption for being mine.
+
+    **The trace path therefore still has an uncovered absent-cohort risk.**
+    A cohort of well-formed traces whose responses were all timeout literals
+    would pass `load_chains_from_tee_dir` today. Closing that needs the response
+    text carried into `Chain`, or this guard run against the capture directory
+    that produced the traces. Stated rather than papered over.
+    """
+    import json
+    from pathlib import Path
+
+    results = sorted(Path(capture_dir).glob("**/results.jsonl"))
+    if not results:
+        raise AbsentCohort(f"no results.jsonl under {capture_dir} — nothing to guard")
+    rows = [json.loads(line) for line in results[0].read_text().splitlines() if line.strip()]
+    assert_cohort_present(rows, locale=locale)
+    return len(rows)
