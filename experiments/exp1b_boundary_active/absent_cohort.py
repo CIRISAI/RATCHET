@@ -195,12 +195,33 @@ def _fixed_duration(durations: Sequence[float]) -> Optional[str]:
     return None
 
 
-def _absent_tasks(task_ids: Sequence[Any]) -> Optional[str]:
-    absent = [t for t in task_ids if str(t).strip() in ABSENT_TASK_IDS]
-    if absent and len(absent) == len(task_ids):
-        return f"all {len(task_ids)} rows carry no task id — no task was created, so this is upstream of the LLM call"
+def _absent_tasks(rows: Sequence[Dict[str, Any]], task_key: str) -> Optional[str]:
+    """Distinguish an EMPTY task id from an ABSENT FIELD. They mean opposites.
+
+    Empty means no task was created — the signature. A missing key means this
+    probe is reading the wrong field, and reporting that as "no task was
+    created" is a false refusal, which costs exactly what a false pass costs.
+
+    Learned the hard way: the first version defaulted to ``task_id`` while the
+    battery writes ``agent_task_id``, so the check fired on every cohort
+    regardless of content — a stuck alarm wearing the shape of a signature, the
+    same defect class it exists to catch.
+    """
+    present = [r for r in rows if task_key in r]
+    if not present:
+        raise AbsentCohort(
+            f"cannot evaluate the task-id signature: no row carries {task_key!r} "
+            f"(rows have: {', '.join(sorted(rows[0]))[:200]}). Point task_key at the right "
+            f"field — refusing on a field that does not exist is a false refusal, not a finding."
+        )
+    if len(present) != len(rows):
+        return f"{len(rows) - len(present)}/{len(rows)} rows lack the {task_key!r} field entirely — inconsistent schema, do not score"
+
+    absent = [r for r in rows if str(r.get(task_key) or "").strip() in ABSENT_TASK_IDS]
+    if len(absent) == len(rows):
+        return f"all {len(rows)} rows carry an empty {task_key} — no task was created, so this is upstream of the LLM call"
     if absent:
-        return f"{len(absent)}/{len(task_ids)} rows carry no task id"
+        return f"{len(absent)}/{len(rows)} rows carry an empty {task_key}"
     return None
 
 
@@ -223,7 +244,7 @@ def assert_cohort_present(
     *,
     locale: str,
     duration_key: str = "duration_s",
-    task_key: str = "task_id",
+    task_key: str = "agent_task_id",
     response_key: str = "agent_response",
 ) -> None:
     """Raise :class:`AbsentCohort` if the cohort is absent-but-shaped.
@@ -238,7 +259,7 @@ def assert_cohort_present(
         p
         for p in (
             _fixed_duration([r.get(duration_key) for r in rows]),  # type: ignore[arg-type]
-            _absent_tasks([r.get(task_key) for r in rows]),
+            _absent_tasks(rows, task_key),
             _still_processing([r.get(response_key, "") for r in rows], locale),
         )
         if p
