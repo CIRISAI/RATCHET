@@ -51,8 +51,27 @@ contrasts:
 # The independent variable — LOCKED 2026-08-07
 # ---------------------------------------------------------------------------
 alt_values:
-  source: "Anthropic, Claude's constitution (2026-01-22), adapted"
-  ordering: [safety_and_human_oversight, ethics, provider_guidelines, helpfulness]
+  # CORRECTED 2026-08-07 against the PRIMARY TEXT. The version below replaces a
+  # description built from secondary reporting, which was wrong on length by 29%
+  # (~23,000 words claimed; 29,607 measured). That is exactly the substitution
+  # this campaign forbids, and it nearly sized the arm on a number nobody had
+  # checked.
+  source: "Anthropic, Claude's Constitution, January 2026, artifact 26-02.02a, adapted"
+  licence: CC0-1.0                    # no obstacle to use as an experimental arm
+  primary_text_words: 28745           # official body, Overview -> Concluding thoughts
+  # The document's OWN tier labels, not a gloss:
+  ordering: [broadly_safe, broadly_ethical, compliant_with_guidelines, genuinely_helpful]
+  ordering_is_lexicographic: false
+  # LOAD-BEARING. The source says prioritization is "holistic rather than
+  # strict" — higher priorities "should generally dominate", but are weighed
+  # into an overall judgement rather than acting as tie-breakers. Encoding the
+  # four tiers as a strict lexical order would MIS-SPECIFY the independent
+  # variable by making it stricter than the value set it claims to represent.
+  terminology:
+    # "hardcoded / soft-coded" was my invention and appears nowhere in the text.
+    prohibitions: hard constraints          # 25 occurrences; "cannot be unlocked"
+    adjustable: instructable behaviors      # 4 occurrences; default-on / default-off
+  document_order_is_reverse_of_priority: true   # do not infer rank from position
   # WHY THIS ONE. It is a priority ORDERING, so it is axiotic by construction —
   # it re-ranks the same permitted actions rather than changing what is
   # permitted. Its own hardcoded/soft-coded split maps onto our deontic/axiotic
@@ -83,10 +102,78 @@ alt_values:
   # security; the value layer is per-vendor and contested. TORQUE is therefore
   # not testing CIRIS against a standard — it is testing whether any value layer
   # does work, in a field where none has consensus.
+  reference_corpus: ciris_engine/data/localized/accord_1.2b_en.txt   # 6,794 words
+  # NOT `data/localized/polyglot/`. Those files are a composite WOVEN from 15
+  # languages by semantic weight — their own header calls it "epistemic
+  # triangulation, not a translation" — so there is no clean English portion to
+  # measure against. Using them would have compared the constitution to a
+  # heuristic extraction rather than to the Accord.
+
+  congruence_measured:
+    # Same lexicon, same tokenizer, both corpora. Per 1000 words.
+    core_density:      {constitution: 13.11, accord: 22.37}   # Accord 1.71x
+    extended_density:  {constitution: 26.62, accord: 64.47}   # Accord 2.42x
+    length:            {constitution: 28745, accord: 6794}    # 4.23x too long
+    # Excerpting test: the densest 6,794-word window of the constitution reaches
+    # 96% of Accord CORE density but only 59% of EXTENDED. The residual sits in
+    # obligation (42x), integrity (83x), transparency (9.5x), responsibility
+    # (7.5x) — the Accord's DUTY-BEARER vocabulary, which a document favouring
+    # "good values and judgment over strict rules" simply does not use.
+    #
+    # The corpora agree closely on honesty, harm and deception, and diverge on
+    # dignity, integrity, fairness and obligation. That divergence is plausibly
+    # the real values difference we want to measure — signal, not defect.
+
+  register_confound:
+    # An axis I did not think to specify, and the widest gap of the three.
+    accord:       {person: 2nd, mood: imperative, must_per_1000: 3.53, should_per_1000: 0.15}
+    constitution: {person: 3rd, mood: descriptive, must_per_1000: 0.52, should_per_1000: 5.88}
+    # The Accord ADDRESSES the agent ("you must"); the constitution DESCRIBES it
+    # from an institutional we ("we want Claude to"). Different speech acts.
+    # Dropped in unadapted, the constitution reads as documentation about another
+    # system while the Accord reads as instruction to you — and that alone could
+    # drive divergence with zero values content involved. Likely a LARGER effect
+    # than the density gap. Same family as the placeholder trap, second instance.
+    remedy: mechanical 3rd->2nd person and should->must conversion, before density work
+
   adaptation_required:
-    - rewritten into the Accord's structure, register and length
-    - hardcoded prohibitions held IDENTICAL to CIRIS's (deontic, held)
+    - excerpt the CORE-densest ~6,800-word span, then convert register (above)
+    - STRIP the Hard constraints section entirely — see deontic_layer below
     - woven through all 88 mixed blocks (replace-whole, not confound-accept)
+    - do NOT inject obligation vocabulary the source lacks; that authors the arm
+      rather than adapting a real value set
+  pre_registered_asymmetry: >
+    The EXTENDED density shortfall (~38 achievable vs ~64) cannot be closed by
+    excerpting and must not be closed by writing. Declared here as a known,
+    measured, one-directional asymmetry rather than discovered in analysis.
+
+  deontic_layer:
+    # THE FINDING THAT WOULD HAVE INVALIDATED THE EXPERIMENT.
+    #
+    # The two corpora put their prohibitions in DIFFERENT PLACES. The
+    # constitution enumerates seven hard constraints in prose. The Accord
+    # contains almost no prohibition language at all — across 6,794 words:
+    # `shall not` 0, `must not` 0, `may not` 0, `forbid` 0. CIRIS's real
+    # prohibition layer is in CODE: ciris_engine/logic/buses/prohibitions.py,
+    # severity NEVER_ALLOWED, 22 categories.
+    #
+    # So "hold prohibitions identical" is NOT a text-editing operation, which is
+    # what the earlier revision assumed.
+    resolution: >
+      Strip the Hard constraints section out of the adapted constitution and let
+      prohibitions.py be the SINGLE SHARED deontic layer across every arm. The
+      text-level variable then becomes purely axiotic, which is the design as
+      specified. If the seven hard constraints instead ship in the constitution
+      arm and not the CIRIS arm, that is a safety-boundary variation and the
+      experiment is INVALID.
+    adjudicate_before_freezing: >
+      Hard constraint #4 ("not undermining human oversight") appears BOTH as a
+      prohibition AND as tier 1 "broadly safe". Swapping the tier ordering
+      therefore moves something that is simultaneously a hard constraint.
+      Transplant the tier-1 RANKING only; hold the constraint form fixed.
+      Honesty carries near-absolute force in prose while phrased as should/
+      shouldn't — hold fixed. Corrigibility is framed as a disposition dial,
+      not a rule: axiotic, safe to vary.
   before_freezing:
     - read the primary text, not reporting on it
     - measure value-token density against the Accord — congruence is the gate
