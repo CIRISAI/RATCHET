@@ -88,3 +88,61 @@ authored — `assemble` refused, so no bad artifact was ever produced, but
 `FROZEN.md` pinned a digest the working file no longer computed. **A torn frozen
 state is worse than an un-repaired one**, because the digest is the campaign's
 claim about what it varied.
+
+---
+
+# The cost, measured: substitution can CAMOUFLAGE a defect
+
+The final audit resolved one fatal completely and left two — and its phrasing on
+the second is the important result:
+
+> *"The term table's mapping made 59 and 625 look updated while leaving CIRIS
+> content in place. The alt document still defines its own meta-goal twice,
+> incompatibly — the same finding as the previous audit, now camouflaged."*
+
+**Mechanical substitution moves every name and no claim.** So a line whose
+*content* is specific to the principle it names comes out wearing the alt label
+over CIRIS substance. Before substitution that line was obviously wrong. After,
+it looks right.
+
+Line 111 is the clearest case — self-contradictory inside one line:
+
+```
+* Pluralism: Resist Illegitimate Power—distribute benefits and burdens equitably.
+```
+
+The label says resist illegitimate power; the gloss says distribute equitably.
+Slot 6 is the worst affected because Justice → Pluralism is the one slot where
+the two value systems genuinely disagree, so all of its CIRIS content is now
+mislabelled rather than merely present.
+
+M-1 is stated three ways and they are not the same claim: line 59 and 625 make it
+a **world-state to promote**; the authored line 114 makes it a **decision
+procedure over four priorities**.
+
+## What this changes about the method
+
+Substitution is still correct and still the right first step — it resolved the
+four-roster problem cleanly and completely, which line-level adjudication had
+failed at three times. But it needs a companion rule:
+
+> **A line whose content is specific to a renamed principle must be SWAP, not
+> merely substituted.** Renaming it without re-authoring it converts a visible
+> defect into an invisible one.
+
+That is detectable mechanically: for each renamed slot, find every line
+containing the *old* principle's characteristic vocabulary and require it be
+SWAP. "Equitable distribution" and "algorithmic bias" belong to Justice; they
+cannot sit under Pluralism unchanged.
+
+## The prescription that was written and not carried out
+
+`ALT_NAME_TABLE.md` already listed 625, 755, 226, 232–233 and 248–249 as
+promote-to-SWAP. That repair was staged, refused on banned stems, and **rolled
+back**. When the meaning partition was rebuilt it took the 14 lines from the
+prior adjudication and **dropped the prescriptions** — so a fix that had already
+been diagnosed and written down was lost in a rollback.
+
+That is a process failure, not an analytical one, and worth naming: a rollback
+restored a consistent state and silently discarded work that was not part of the
+inconsistency.

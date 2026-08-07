@@ -25,3 +25,18 @@ Justice	Pluralism
 # M-1: the LABEL is structural and held; only its content changes.
 Adaptive Coherence	Holistic Judgment
 adaptive coherence	holistic judgment
+# AMBIGUOUS TERMS, RESOLVED by targeting the compound forms that occur ONLY in
+# principle positions. The bare words also occur in ordinary prose (Integrity 10x,
+# Transparency 5x, Fidelity 3x) where they are not principle names and MUST NOT
+# be touched — substituting them would corrupt prose the arms are meant to share.
+# Verified: each pattern below matches only roster/directive/chapter-title lines.
+Integrity: Act Ethically	Ethics: Be Broadly Ethical
+Fidelity & Transparency: Be Honest	Honesty: Be Honest
+Chapter 2: Integrity	Chapter 2: Ethics
+(Fidelity / Transparency)	(Honesty)
+(Fidelity & Transparency)	(Honesty)
+# Book VI (633-638) and sunset (894-899) rosters use bold-colon surface forms.
+# Each occurs only in a roster position; verified against the prose-use lists.
+**Integrity:**	**Ethics:**
+**Fidelity & Transparency:**	**Honesty:**
+**Non-Maleficence:**	**Harm Avoidance:**
