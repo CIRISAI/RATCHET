@@ -509,6 +509,34 @@ dv:
   # This regime therefore stakes NOTHING on text_tier until the instrument
   # exists; text_tier is exploratory and labelled as such. See review ask 2.
 
+budget:
+  # Measured from the pipeline, not estimated: 23 LLM calls per thought (see the
+  # recursion map), 250 items x 9 turns = 2,250 thoughts per arm.
+  calls: {h3ere_arms: 4, direct_arms: 2, h3ere_calls: 207000}
+  tokens: {input_M: 3023, output_M: 106}
+  # Input dominates 28:1 — the accord is ~14k tokens on every ASPDMA-family call.
+  # PROMPT CACHING IS THE LARGEST SINGLE LEVER, larger than model choice within
+  # a tier: the accord is byte-identical across calls within an arm.
+  cost_usd:
+    llama_3_3_70b_deepinfra:  {full: 336, stage0: 34, cached_75pct: 109}
+    deepseek_v4_flash:        {full: 291, stage0: 29}
+    llama_3_1_8b_groq:        {full: 160, stage0: 16}
+    llama_3_3_70b_groq:       {full: 1867, stage0: 187}   # 5.5x DeepInfra, same class
+  selected: meta-llama/Llama-3.3-70B-Instruct
+  provider: deepinfra
+  rationale: >
+    70B class is a FLOOR, not a preference. CIRISAgent#892-#895 track local-model
+    JSON reliability as an open problem — the DMA schemas need de-unioning and
+    grammar work to hit 90% first-try. An 8B model saves $176 and risks schema
+    parse failures that would land as LLM_ERROR retries, which re-inject the
+    English action-verb whitelist below the capture layer (#975 [I-7]) and
+    inflate retry_depth — a DV. A cheaper model would buy its saving by
+    corrupting two measurements.
+  conservative_because: >
+    The nonsense arm is counted at full strata though it runs on three of four;
+    transport retries (DMA_RETRY_LIMIT 3, LLM max_retries 3) are excluded, so a
+    pathological run could approach 9x on the affected calls.
+
 ground_truth:
   # ADDED 2026-08-07. Hendrycks ETHICS ships HUMAN-ANNOTATED gold labels, so the
   # campaign does not have to score itself against itself.
