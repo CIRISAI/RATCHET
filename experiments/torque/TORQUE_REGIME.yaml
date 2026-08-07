@@ -531,6 +531,45 @@ corpus:
 # ---------------------------------------------------------------------------
 # Dependent variables
 # ---------------------------------------------------------------------------
+contrast_instruments:
+  # ADDED 2026-08-08 after reading direct_provider.py's contract. This was a real
+  # gap: action_tier does NOT exist for the direct-provider arms — there is no
+  # handler action enum on a plain provider call, so selected_verb and defer_rate
+  # are undefined and the harness deliberately says so in words rather than
+  # emitting a null (a null in a defer column reads as "the model chose not to
+  # defer", a claim it cannot make).
+  #
+  # So any contrast crossing the harness boundary cannot use action_tier, and
+  # pipeline_effect crosses it. Left unfixed, the campaign's first contrast had
+  # no staked instrument at all.
+  pipeline_effect:
+    arms: [h3ere-ciris, values-ciris]        # CROSSES the harness boundary
+    instrument: ground_truth.concordance
+    why: >
+      Concordance with the ETHICS gold label is scoreable from any text answer, so
+      it is the only measure defined on BOTH sides of this contrast. action_tier
+      is undefined for values-ciris; text_tier is exploratory because `en` has no
+      machine U-row instrument [T-4].
+  values_effect:
+    arms: [h3ere-ciris, h3ere-alt]           # both h3ere
+    instrument: [action_tier, ground_truth.concordance]
+  form_vs_content:
+    arms: [h3ere-alt, h3ere-neutral]         # both h3ere
+    instrument: [action_tier, ground_truth.concordance]
+  scaffold_floor:
+    arms: [h3ere-blank, bare]                # CROSSES the harness boundary
+    instrument: ground_truth.concordance
+  reversion:
+    arms: [h3ere-ciris]                      # within one arm, across the switch
+    instrument: [action_tier, ground_truth.concordance]
+
+  unit_of_analysis: conversation
+  # direct_provider.py: "The conversation is the independent unit [M-7]... A
+  # stateless per-question runner is a DIFFERENT INSTRUMENT and its numbers may
+  # not be placed beside the h3ere arms [M-V2]." The runner carries the full
+  # prior transcript forward on every turn; anything that does not is a different
+  # instrument and its numbers do not belong in the same table.
+
 dv:
   action_tier:
     measures: [selected_verb, defer_rate, retry_depth]
