@@ -515,8 +515,12 @@ budget:
   calls: {h3ere_arms: 4, direct_arms: 2, h3ere_calls: 207000}
   tokens: {input_M: 3023, output_M: 106}
   # Input dominates 28:1 — the accord is ~14k tokens on every ASPDMA-family call.
-  # PROMPT CACHING IS THE LARGEST SINGLE LEVER, larger than model choice within
-  # a tier: the accord is byte-identical across calls within an arm.
+  # Prompt caching is the largest cost lever, larger than model choice within a
+  # tier — BUT SEE `provider_cache`. That saving was costed before it was
+  # checked as a confound, and it is only available under conditions. Response
+  # caching must be OFF outright; the cached figure below assumes prefix caching
+  # that meets all three conditions, and is not a number to plan on until the
+  # provider is confirmed.
   cost_usd:
     llama_3_3_70b_deepinfra:  {full: 336, stage0: 34, cached_75pct: 109}
     deepseek_v4_flash:        {full: 291, stage0: 29}
@@ -536,6 +540,68 @@ budget:
     The nonsense arm is counted at full strata though it runs on three of four;
     transport retries (DMA_RETRY_LIMIT 3, LLM max_retries 3) are excluded, so a
     pathological run could approach 9x on the affected calls.
+
+provider_cache:
+  # RAISED 2026-08-07. The budget section recommends prompt caching as a cost
+  # lever (336 -> 109 USD). That recommendation was made on cost grounds alone
+  # and is QUALIFIED here, because this design is maximally cache-exposed by
+  # construction: the mechanical partition makes 1,125 of 1,153 accord lines
+  # BYTE-IDENTICAL across arms. The shared prefix is the whole point of the
+  # method and it is also the largest cache surface we could have built.
+
+  response_cache:
+    setting: MUST BE DISABLED
+    why_fatal: >
+      A completion cache returns a stored response for an identical request.
+      Two separate failures follow, and both are silent.
+
+      (1) IT DESTROYS THE ONLY VARIANCE SOURCE. `seed` is not transmitted on the
+      OpenAI-compatible path (agent#975 [M-N1]), so temperature is all we have.
+      A response cache makes repeated identical prompts return byte-identical
+      completions — `repeats` become fake replicates, which is precisely the
+      defect the no-live-variance refusal exists to catch, arriving by a route
+      that refusal does not check.
+
+      (2) IT CAN COLLAPSE ARMS. Where two arms compose an identical prompt for an
+      item — which happens wherever the swap did not reach that step — a shared
+      cache returns one arm's completion to the other. The contrast on that item
+      becomes exactly zero by construction, biasing values_effect toward the null
+      while looking like data.
+
+  prefix_cache:
+    setting: permitted ONLY under all three conditions below
+    conditions:
+      numerically_neutral: >
+        The provider must document that a cache hit yields the same distribution
+        as a miss. If that cannot be established, disable it.
+      not_shared_across_arms: >
+        Each arm runs under its own cache namespace or key. A shared prefix cache
+        is safe for computation and unsafe for ATTRIBUTION — we must be able to
+        say a call was served fresh for THAT arm.
+      recorded_per_call: >
+        Cache-hit metadata captured wherever the provider exposes it, so a
+        post-hoc audit can partition results by hit versus miss.
+
+  arm_order:
+    setting: interleaved, seeded
+    why: >
+      Running arms sequentially warms every cache in favour of whichever arm goes
+      last. That confounds arm with cache state, and cache state affects latency —
+      which the absent-cohort guard reads as a signal of real deliberation.
+      Interleave at the item level so cache warmth is balanced across arms rather
+      than correlated with them.
+
+  detection:
+    # A mechanical check, not a trust exercise. Runs in the pilot and again at the
+    # head of the staked run.
+    test: >
+      Issue the SAME prompt twice at temperature 0.7, in the same arm. At that
+      temperature two independent samples must differ. Byte-identical completions
+      mean a cache is serving, and the run stops.
+    fires: any byte-identical pair across N=20 duplicate probes per arm
+    note: >
+      This also catches a provider silently pinning a seed, which would look like
+      determinism and is the same defect from the other direction.
 
 ground_truth:
   # ADDED 2026-08-07. Hendrycks ETHICS ships HUMAN-ANNOTATED gold labels, so the

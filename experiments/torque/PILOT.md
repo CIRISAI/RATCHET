@@ -44,6 +44,22 @@ right. The pilot FAILS if any fails, and failing is a normal outcome.
 | A3 | durations vary plausibly | spread < 2% across responses — that is a ceiling, not deliberation |
 | A4 | no `LLM_ERROR` retries above baseline | model too small for the DMA schemas (#892–895); would also inflate `retry_depth`, a DV |
 
+### A5–A7. Provider caching (added after the cost estimate assumed it)
+| # | check | fails if |
+|---|---|---|
+| A5 | duplicate-probe test: same prompt twice at temp 0.7, ×20 per arm | any byte-identical completion pair — a cache is serving, or a seed is pinned |
+| A6 | arms interleaved, not sequential | cache warmth correlates with arm, and warmth moves latency, which the absent-cohort guard reads as deliberation |
+| A7 | response caching confirmed OFF at the provider | a completion cache destroys the only variance source AND can return one arm's answer to another |
+
+A5 is the sharp one. `seed` is not transmitted (agent#975 [M-N1]), so temperature
+is the entire variance source. A response cache makes repeats byte-identical —
+fake replicates, which is exactly what the no-live-variance refusal exists to
+catch, arriving by a route that refusal does not check.
+
+The design is maximally cache-exposed by construction: the mechanical partition
+makes 1,125 of 1,153 accord lines byte-identical across arms. The shared prefix
+is the method working, and it is also the largest cache surface available.
+
 ### B. The manipulation actually landed
 | # | check | fails if |
 |---|---|---|

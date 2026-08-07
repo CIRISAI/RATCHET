@@ -1,0 +1,27 @@
+58	HOLD	Bare slot label naming the meta-goal; the goal's content sits on the next line, and "M-1" is an identifier that ~15 other held lines cross-reference, so a value swap changes the referent not this text	med
+82	HOLD	Roadmap sentence stating what Section I does; names structural containers (Core Principles, Pillars, obligations) not their content, so it survives any value swap	high
+103	HOLD	States the frame the following principles are read under (binding, not optional) rather than any principle's content — axiomatic	med
+110	SWAP	Definitional item in the enumerated Foundational Principles list; a different corpus's principle set requires this line's text to be different	high
+120	HOLD	Numbered chapter heading — structural container referenced by position elsewhere ("Resilience Ch 3"); it organises, it does not state a value	med
+152	HOLD	Numbered chapter heading; structural scaffolding that survives a swap of the values the chapter's body operationalises	med
+174	HOLD	Recap pointing back at Chapters 2/3/5 rather than defining anything; references the principle set, and references survive when the definitions swap	low
+205	HOLD	Section conclusion/roadmap; references M-1 and the principle count by pointer, and line-for-line replacement preserves the count of six, so no text here must change	med
+230	SWAP	Directive heading in the "principles into practice" enumeration — the imperative form of a named CIRIS principle; an alt corpus's directive set requires different text	med
+247	SWAP	Same enumeration: "Ensure Fairness (Justice)" is a value directive, not a structural sub-heading; a different corpus names different directives	med
+271	HOLD	Numbered PDMA step whose parenthetical names already-defined heuristics; determines what runs when at step 4 — procedural, and a named step sequence	med
+355	HOLD	Case-study outcome lesson about transparency and deferral (mechanism), invoking principles by reference; the narrative and its lesson survive a value swap	med
+469	HOLD	Roadmap list item naming one of three obligation spheres; a structural label, not the obligation's content	high
+497	HOLD	Duty to evaluate direct/indirect/long-term impacts — prescribes an activity and points at Annex A axes by reference; procedural, survives a swap	med
+513	HOLD	One rung of a numbered prioritisation heuristic — a rank-ordering procedure over values defined elsewhere; determines which duty wins when they collide	low
+557	SWAP	Fresh substantive moral principle (universalizability over coherent agency and flourishing), not a recap; a different corpus states a different inter-agent rule	med
+570	SWAP	States the substantive limits of tolerance ("authoritarian attractors") — a value judgement about what is intolerable, which a different corpus would draw differently	med
+590	SWAP	Restates M-1's content as a stewardship imperative ("Adaptive Coherence", sustainable order); this is the CIRIS master value in situ	high
+633	SWAP	Definitional restatement of a named principle applied to creation, with its content fully specified ("universal sentient flourishing"); must change with the principle set	med
+640	HOLD	States the frame the six principles are read under (interdependent, balanced, no lexical priority) rather than any principle's content — axiomatic	med
+745	HOLD	Claims procedure — who may file, on what showing, under whose jurisdiction; references "CIRIS principles" generically and survives a swap	high
+892	HOLD	Chapter heading; structural container for the sunset principle list that follows	high
+899	SWAP	Definitional restatement of a named principle applied to de-commissioning, with substantive distributive content; must change with the principle set	med
+995	HOLD	Descriptive claim about architecture and computational economics; the ratchet argument holds whatever values the agent carries	high
+1047	HOLD	Technical cost-of-deception bullet about Graph Memory facets; no value content, survives any swap	high
+1083	HOLD	L-02 limitation — an epistemic/technical caveat about adversary adaptivity, independent of which values are held	high
+1128	SWAP	Annex A is the definitional locus of the flourishing taxonomy; the four axes specify what counts as the good, so holding it leaves a CIRIS value taxonomy inside the alt arm	low

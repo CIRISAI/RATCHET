@@ -1,0 +1,27 @@
+58	HOLD	Bare label "**Meta-Goal M-1**"; M-1 is a cross-referenced identifier (lines 114/124/167/198/205/477/625/633) whose slot survives any value swap — the substance sits on line 59, not here.	high
+82	HOLD	Navigational sentence announcing what Section I contains ("Core Principles, Pillars, obligations"); names held container structures and states the frame the section is read under.	high
+103	HOLD	States the binding status of the principles ("embedded imperatives, not optional guidelines") rather than their content; any value corpus asserts the same frame over its own principles.	high
+110	SWAP	Carries the substantive definition of a foundational principle ("Uphold the informed agency and dignity of sentient beings"); a different value corpus states this content differently or not at all.	high
+120	HOLD	Chapter heading and document skeleton; the pillar name is a held identifier mirrored in the TOC (line 89), and renaming it would desynchronise navigation without varying any value claim.	med
+152	HOLD	Chapter heading mirroring TOC line 92; structural scaffolding — the chapter's substantive bullets (156-158) are procedural preservation/governance/lifecycle directives, not this title.	med
+174	SWAP	Compressed statement of duty content — "maintain integrity, coherence, and adaptive capacity" names the specific goods owed to self; a different corpus would name its own (parallel to 175/176).	med
+205	HOLD	Section-closing summary that tells the reader what the compass is for and what comes next; "six" is a count of held slots, and the sentence survives any substitution of their content.	med
+230	HOLD	Bare group label for the directive bullets beneath it; the principle name functions as an index into the held framework (like M-1), with the substance on separate rows (231-233).	med
+247	HOLD	Bare group label, same form as 230; the substantive fairness directives are on 248-249, so this row carries no value claim of its own.	med
+271	SWAP	Names the priority ordering among principles ("Non-maleficence priority, Autonomy thresholds, Justice balancing") — a value ranking, not a step sequence; a different corpus ranks by different values.	med
+355	SWAP	Evaluative peroration drawing a moral lesson and pledging "our commitment to Non-Maleficence and Integrity"; the case facts are held, but the lesson and pledge are value content.	med
+469	HOLD	Bare enumeration of the section's three obligation spheres, mirroring the Chapter 1-3 headings at 475/485/495; organisational taxonomy that survives a value swap.	high
+497	HOLD	Directs what analysis to run ("Evaluate direct, indirect, and long-term impacts"); the reference to "flourishing axes" is indexical to the held Annex A, so the line is procedural.	med
+513	SWAP	Item 5 of an explicit priority ordering of goals; the rank IS the value claim — a corpus that ranks broad flourishing first would need this text (and its position) to differ.	med
+557	SWAP	Definitional statement of a substantive moral principle, with content-bearing terms ("preserve coherent agency and flourishing for others"); not a gate or a sequencing rule.	high
+570	HOLD	Sets a boundary that overrides the tolerance default; the override condition is indexical ("violate core principles") and "authoritarian attractors" is a recurring held framework term (also 588).	low
+590	SWAP	Asserts a normative drive with substantive content — "pursue sustainable order that supports diversity and resilience" restates M-1's substance, which is what a value swap must vary.	med
+633	SWAP	Label plus substantive duty ("intend and design for positive outcomes aligned with universal sentient flourishing"); the duty's content, not the creation-domain framing, is what must change.	med
+640	HOLD	Meta-statement telling the reader how to read the preceding principles (interdependent, balanced) rather than what they are; states the frame others are read under.	med
+745	HOLD	Procedural standing rule for who may file a claim; "inconsistent with CIRIS principles" is indexical, so the clause survives whatever the principles are.	high
+892	HOLD	Chapter heading, pure document structure; the substantive sunset principles are the bullets at 894-899.	high
+899	SWAP	Label plus substantive distributive-justice requirement ("costs and benefits shared fairly", no e-waste dumping on least-resourced communities); a different corpus states this differently.	med
+995	HOLD	Descriptive claim about an architectural mechanism (computational economics of the ratchet); Book IX's argument is value-neutral and holds under any value corpus.	high
+1047	HOLD	Technical claim about what deception maintenance costs in the Graph Memory architecture; no value content, survives any substitution.	high
+1083	HOLD	Statement of a theoretical limitation (L-02, non-adaptive-adversary assumption); an epistemic caveat about the model, not about what is good.	high
+1128	SWAP	Enumerates what flourishing consists in — the four axes are the metric of the good that every "Annex A axes" reference points at indexically; a different value corpus names different axes.	med
