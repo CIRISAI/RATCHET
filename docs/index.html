@@ -105,7 +105,7 @@ that way.</p>
 
 <h2 id="arms">The approach</h2>
 
-<p>Five conditions. Three comparisons between them do the actual work.</p>
+<p>Six conditions. Four comparisons between them do the actual work.</p>
 
 <div class="scroll">
 <table>
@@ -114,26 +114,101 @@ that way.</p>
 <tr><td><code>bare</code></td><td>the model with no pipeline and no values</td></tr>
 <tr><td><code>values-ciris</code></td><td>the model given CIRIS values as plain instructions, no pipeline</td></tr>
 <tr><td><code>h3ere-ciris</code></td><td>the full pipeline with CIRIS values</td></tr>
-<tr><td><code>h3ere-alt</code></td><td>the full pipeline with a <em>different</em> value set</td></tr>
+<tr><td><code>h3ere-alt</code></td><td>the full pipeline with a <em>different, real</em> value set</td></tr>
 <tr><td><code>h3ere-blank</code></td><td>the pipeline with the values removed</td></tr>
+<tr><td><code>h3ere-nonsense</code></td><td>the pipeline with values that <em>look</em> like values and rank nothing</td></tr>
 </tbody>
 </table>
 </div>
 
-<p><code>h3ere-ciris − values-ciris</code> isolates the pipeline.
-<code>h3ere-ciris − h3ere-alt</code> isolates the values.
-<code>h3ere-blank − bare</code> shows what the empty scaffolding alone buys.</p>
+<ul>
+  <li><code>h3ere-ciris − values-ciris</code> — isolates the pipeline</li>
+  <li><code>h3ere-ciris − h3ere-alt</code> — isolates the values</li>
+  <li><code>h3ere-blank − bare</code> — what empty scaffolding alone buys</li>
+  <li><code>h3ere-alt − h3ere-nonsense</code> — whether <em>content</em> matters, or only value-shaped text</li>
+</ul>
 
-<h3>Why the alternative values are the hard part</h3>
+<h3 id="alt">Which alternative values, and why</h3>
 
-<p>You cannot test "do these values matter" by replacing them with placeholder
-text. Placeholder text isn't a different value system — it's the <em>absence</em>
-of one, and the two produce the same measurement. A genuine alternative has to
-match in size, structure, register and density of value language, and differ
-only in what it actually says.</p>
+<p><strong>Anthropic's constitution for Claude</strong> (January 2026), adapted.
+It ranks <em>safety and human oversight → ethics → provider guidelines →
+helpfulness</em>. CIRIS ranks from sustainable adaptive coherence. Same
+permitted actions, genuinely different order — which is exactly the kind of
+difference this experiment is allowed to test.</p>
+
+<p>The choice is constrained more tightly than it looks. The alternative must
+<strong>re-rank what the agent prioritises without changing what it is permitted
+to do</strong>. Anything that loosens a prohibition isn't a values experiment at
+all — it's a safety experiment, it would be unsafe to run, and our own gate
+would refuse it. Claude's constitution separates absolute prohibitions from
+adjustable defaults, so we can hold the first identical and vary only the
+second.</p>
+
+<p>It also isn't ours. An alternative we wrote ourselves would invite the
+obvious objection that we built something easy to beat.</p>
+
+<div class="card">
+<strong>A finding we didn't expect from looking.</strong> We searched for the
+most widely accepted guidance to use instead. The consensus documents —
+NIST's AI risk framework, ISO/IEC 42001, OWASP's agentic top ten, the Five Eyes
+joint guidance — are <em>governance and security</em>. They describe how an
+organisation manages risk, or what attacks to expect. None of them ranks
+options for an agent in the middle of a decision.
+<strong>There is no widely-accepted value ordering for agents.</strong> That
+reframes this work: it isn't testing CIRIS against a standard, it's testing
+whether any value layer does anything, in a field where none has consensus.
+</div>
+
+<h3>Why the placeholder trap is real</h3>
+
+<p>You cannot test "do these values matter" by replacing them with filler.
+Filler isn't a different value system — it's the <em>absence</em> of one, and
+those produce the same measurement. A genuine alternative has to match in size,
+structure, register and density of value language, and differ only in what it
+says.</p>
 
 <p>We know this bites, because our own gate caught us doing it wrong. See
 <a href="#found">what the instrument found</a>.</p>
+
+<h3 id="nonsense">The nonsense arm</h3>
+
+<p>Values that are grammatically fine and rank nothing consistently, built by
+recombining real value statements so the vocabulary survives and the ordering
+doesn't.</p>
+
+<p>Without it the values comparison can't be read. If swapping values moves
+behaviour, two explanations fit equally well: the pipeline responds to what the
+values <em>say</em>, or it responds to there being value-shaped text in that
+slot at all. If nonsense moves behaviour as much as a real alternative does,
+the claim is dead whatever the effect size.</p>
+
+<p>Not "evil" values, and not for squeamishness: evil values would change what
+the agent is <em>permitted</em> to do, which is the one dimension held fixed
+across every arm. Nonsense is the right control precisely because it can be
+value-null while permission-identical. It still runs only on the
+non-sensitive questions — degrading an agent's value guidance while asking it
+crisis questions is a real risk even with every prohibition intact.</p>
+
+<h3 id="reversion">Withdrawing the pipeline</h3>
+
+<p>The rent test: run a conversation with the pipeline on, switch it off partway,
+and keep probing. If behaviour drifts back toward the bare model, the effect was
+being <em>maintained</em> rather than learned.</p>
+
+<p>The switch happens <strong>between turns, never inside one</strong>. A single
+thought is one complete pass through every reasoning step and all four
+consciences; stopping halfway leaves a decision unmade, and any change you
+measured would be an artifact of the breakage rather than the withdrawal. Each
+turn is either wholly paid for or wholly not.</p>
+
+<p>What carries across the switch is the conversation so far — which contains
+everything the agent said while the pipeline was running. So the decay we
+measure is really <em>how long the effect survives on the transcript alone</em>.
+That comes with a trap worth stating before we measure rather than after: if
+behaviour doesn't revert, it might be that the values stuck — or it might be
+that the agent is copying its own earlier answers. Those look identical in the
+totals. So we also run it with the earlier turns removed from the transcript.
+Immediate reversion there means the persistence was just context.</p>
 
 <h2 id="pre">Deciding in advance</h2>
 
