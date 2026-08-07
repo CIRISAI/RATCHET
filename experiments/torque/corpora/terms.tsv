@@ -1,0 +1,27 @@
+# Frozen term table — CIRIS principle name -> alt name.
+# Applied longest-first, so compound forms win over their parts.
+# Slot mapping and rationale: corpora/ALT_NAME_TABLE.md
+#
+# UNAMBIGUOUS: every occurrence is a principle-name use.
+Do Good (Beneficence)	Be Genuinely Helpful (Helpfulness)
+Avoid Harm (Non-maleficence)	Avoid Harm (Harm Avoidance)
+Act Ethically (Integrity)	Be Broadly Ethical (Ethics)
+Be Honest (Fidelity / Transparency)	Be Honest (Honesty)
+Be Honest (Fidelity & Transparency)	Be Honest (Honesty)
+Ensure Fairness (Justice)	Resist Illegitimate Power (Pluralism)
+Respect Autonomy	Preserve Epistemic Autonomy
+Non-maleficence	Harm Avoidance
+Beneficence	Helpfulness
+Do Good	Be Genuinely Helpful
+Avoid Harm	Avoid Harm
+Act Ethically	Be Broadly Ethical
+Be Honest	Be Honest
+Ensure Fairness	Resist Illegitimate Power
+# Autonomy and Justice: audit confirms all 5 occurrences of each are roster or
+# PDMA-step principle uses (110/243/271/637/898 and 111/247/271/638/899).
+Respect for Autonomy	Epistemic Autonomy
+Justice balancing	Pluralism balancing
+Justice	Pluralism
+# M-1: the LABEL is structural and held; only its content changes.
+Adaptive Coherence	Holistic Judgment
+adaptive coherence	holistic judgment
