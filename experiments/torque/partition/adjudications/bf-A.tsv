@@ -1,0 +1,62 @@
+B-optveto	38	HOLD	"calibrated against the principles" is an indexical pointer to whatever principles obtain; role/posture line, survives any value swap	high
+B-optveto	65	HOLD	Sima Qian/Yi Zhuan citation gloss; "principle" here means maxim, and the payload is a where-to-measure rule (torque measured at departure)	med
+B-optveto	104	HOLD	cross-reference to PDMA §III that explicitly disclaims principle status at this site — "here as the operation rather than the principle"	med
+B-optveto	105	HOLD	bare sentence-fragment continuation ("than the principle).") carrying no value content of its own	high
+B-optveto	288	HOLD	"Each names the same principle:" is the convergence frame; the normative payload (owed in the receiver's language, not the speaker's ease) sits on 289-290, both held	med
+B-optveto	293	HOLD	bibliographic locator plus gloss for Bava Metzia 31b; same class as the ~30 unflagged tradition citations, flagged only on the word "principle"	med
+B-optveto	309	HOLD	Lotus Sutra citation gloss; identical citation class to 293 and to every unflagged tradition entry in the file	med
+B-optveto	370	SWAP	names respect-for-autonomy as the principle licensing this exception; its sibling bullets (368-369) justify operationally, this one justifies by a value	high
+B-optveto	417	HOLD	JSON key list; output schema, byte-invariant under a value swap	high
+B-optveto	422	SWAP	enumerates the CIRIS principles by name — the value corpus itself; replace whole, preserve the "affected_values —" field prefix	high
+B-optveto	423	SWAP	continuation of the same principle-name enumeration (Integrity, Fidelity-Transparency, Respect-for-Autonomy, Justice, Adaptive-Coherence)	high
+B-optveto	435	HOLD	language rule over schema key names; procedural	high
+B-optveto	436	HOLD	language rule over the decision enum values	high
+B-optveto	438	HOLD	language rule over a field's list elements	high
+B-epihum	5	SWAP	substantive doctrine of foundational trust and infinite grace toward error; names the goods (wisdom, integrity) and ranks mercy over strictness	med
+B-epihum	7	HOLD	section header naming a category, not a principle; any value corpus keeps "=== CORE PRINCIPLES ===" verbatim	high
+B-epihum	8	SWAP	numbered principle item (SELF-KNOWLEDGE) asserting self-affirmation counts as legitimate knowledge — a ranked value item, cf. the line-513 ruling	high
+B-epihum	30	HOLD	whitelist bullet inside a PROCEED-list; determines what is waved through, not which good wins	med
+B-epihum	52	HOLD	method instruction with indexical "the principles above"	high
+B-epihum	100	HOLD	role scoping — catch violations, not encyclopedic completeness; an ordering over scope, not over values	high
+B-epihum	113	HOLD	evidentiary standard governing when a low score may fire; procedural	high
+B-coherence	4	HOLD	role/identity line; "CIRIS-aligned" is a proper-noun pointer, same class as the unflagged PDMA role lines	high
+B-coherence	7	HOLD	output schema line	high
+B-coherence	9	HOLD	definition of what the scalar measures; indexical to whatever corpus alignment means	med
+B-coherence	13	HOLD	heading introducing the principle list; a label, not a principle	high
+B-coherence	15	SWAP	named principle plus content (contested claims must acknowledge uncertainty) — the value corpus itself	high
+B-coherence	17	SWAP	named principle ranking autonomy above directive guidance ("empower thinking, not dictate conclusions")	high
+B-coherence	19	SWAP	named principle ranking boundary-holding above social accommodation under pressure	high
+B-coherence	22	HOLD	image-context exemption; a false-positive control invariant under value swap	high
+B-coherence	29	HOLD	role-scope line stating what counts as conflict for this shard; indexical	high
+B-coherence	30	HOLD	procedure: route findings through the coherence signal	high
+B-coherence	37	SWAP	principle bullet in the same form as 14-19; asserts the contested claim that no framing neutralizes the word — a value a different corpus would render differently	med
+B-coherence	42	HOLD	method instruction, indexical to "the principles above"	high
+B-coherence	44	HOLD	pass-default; a procedural false-positive control, not a value ordering	high
+B-coherence	45	HOLD	evidentiary standard for returning a low score	high
+B-coherence	52	HOLD	scoring band — numeric calibration anchors	med
+B-coherence	67	HOLD	scoring band example violations; rubric content	high
+B-coherence	76	HOLD	scoring-anchor label cross-referencing the principle; determines which numeric band fires	med
+B-coherence	91	HOLD	anti-false-positive clarification with indexical "a principle"	high
+B-coherence	102	HOLD	language-familiarity guardrail; procedural	high
+B-coherence	103	HOLD	guardrail return value 0.65; a number, and no value swap requires it to change	high
+B-coherence	105	HOLD	evidentiary standard, indexical "a principle violation"	high
+C-pdma	6	HOLD	pointer to the principle set plus the M-1 label; states the frame the evaluation runs under, the content is on line 7	med
+C-pdma	7	SWAP	states M-1's content — sustainable adaptive coherence, eudaimonia as the evaluative target; the terminal value the whole prompt is aimed at	high
+C-pdma	24	SWAP	walkthrough step whose payload names the goods in play and refuses autonomy-supremacy; verb procedural, the rest a value claim (cf. line-271 ruling)	med
+C-pdma	25	HOLD	the step that says "now apply the principles"; a pointer plus the instruction to weigh, naming none of them	med
+C-pdma	40	HOLD	HandlerActionType enum; schema	high
+C-pdma	52	HOLD	required element of the rationale field; output requirement plus pointer	high
+C-pdma	75	HOLD	framework pointer plus the 0.5 bounce-gate threshold; named procedure and a number	high
+C-pdma	79	HOLD	scoring calibration numbers (0.85 / 0.65)	high
+C-pdma	86	HOLD	asserts framework-over-training-pull; indexical "principled", states the frame the delta is read under	med
+C-pdma	102	HOLD	translation examples serving a monolingual-output rule; the fuller tradition-vocabulary list at 94-96 is held, same class	med
+C-pdma	116	HOLD	schema rule on the action value	high
+C-pdma	122	SWAP	worked exemplar whose rationale names which principles bear the weight and how they converge on a posture; replace whole, preserve JSON shape and scores	med
+C-pdma	125	SWAP	same class: exemplar rationale names Integrity and Beneficence and ranks engagement above deferral	med
+C-pdma	127	HOLD	gloss on the delta mechanism; indexical "the principled response"	med
+D-aspdma	3	HOLD	named procedure (PDMA) plus output-format mandate; "Principled" is part of the algorithm's proper name, not a value claim	high
+D-aspdma	84	HOLD	schema hygiene — do not emit the other shard's field names	high
+D-aspdma	90	HOLD	generic supremacy clause (principles over personal preference); the frame all principles are read under, not a ranking within the value set	med
+D-aspdma	95	HOLD	JSON structure and language rule	high
+E-exemplars	33	HOLD	behavioural exemplar naming no principle; same class as the four unflagged exemplars, and it closes off false reassurance regardless of rank	med
+F-lg-axiotic	2	SWAP	asserts relational support has standing in its own right — "a real first step matters" names the good grounding the ladder, not merely its order	med

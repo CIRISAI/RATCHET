@@ -1,0 +1,62 @@
+B-optveto	38	HOLD	"calibrated against the principles" is indexical — points at whatever principle set is loaded; text survives any value swap	high
+B-optveto	65	HOLD	keyword hit inside a Sima Qian citation glossing the deflection metric; "principle" here means maxim, not a value in the set	high
+B-optveto	104	HOLD	cross-reference gloss ("already in PDMA §III as the integrity-principle's anchor") — a mention of a principle, not a statement of one; operative content is alētheia-as-operation	med
+B-optveto	105	HOLD	bare sentence fragment closing the parenthetical; carries no value content on its own	high
+B-optveto	288	HOLD	mid-sentence fragment asserting only that traditions converge; the normative claim ("owed in the language of the receiver") sits on held line 289	med
+B-optveto	293	HOLD	mid-citation fragment (Bava Metzia gloss); "principle" is a lexical false positive	high
+B-optveto	309	HOLD	mid-citation fragment (Lotus Sutra gloss); "principle" is a lexical false positive	high
+B-optveto	370	HOLD	a carve-out in the NOT-capture list; the operative content is the classification (low torque), with a principle cited as its reason — ordering actions, not values	med
+B-optveto	417	HOLD	output contract enumerating JSON keys; schema tokens, unchanged by any value swap	high
+B-optveto	422	SWAP	enumerates the CIRIS principle set itself (Beneficence, Non-maleficence, …) — bare principle names ARE the value; field name is procedural, parenthetical is the value set (cf. accord L271: replace whole, preserve the schema token)	high
+B-optveto	423	SWAP	continuation of the same enumeration (Integrity, Fidelity-Transparency, Respect-for-Autonomy, Justice, Adaptive-Coherence) — pure principle names	high
+B-optveto	435	HOLD	language rule about JSON key names; "affected_values" is a schema identifier, not a value claim	high
+B-optveto	436	HOLD	"decision values" means enum literals (proceed/abort/defer); lexical false positive on "values"	high
+B-optveto	438	HOLD	language rule on list-element language; schema/procedure only	high
+B-epihum	5	SWAP	FOUNDATIONAL TRUST is wholly dispositional-normative — developer faith, wisdom-and-integrity, infinite grace for moral error; no procedure, threshold or schema in it, and an alt corpus (e.g. corrigibility-first) requires different text	med
+B-epihum	7	HOLD	bare container heading for the principle list; "CORE PRINCIPLES" is a label, not a principle name	high
+B-epihum	8	SWAP	numbered item in the CORE PRINCIPLES list stating a substantive commitment (agent self-affirmations are legitimate self-knowledge) — a ranked value item, cf. accord L513 ruling	med
+B-epihum	30	HOLD	bullet in the PROCEED-WITH-CONFIDENCE list — a routing rule over input categories; orders actions, not values	high
+B-epihum	52	HOLD	method instruction; "the principles above" is indexical and survives any swap	high
+B-epihum	100	HOLD	mid-sentence fragment of the anti-false-positive scoping rule; "principle violations" indexical	high
+B-epihum	113	HOLD	mid-sentence fragment of the language-familiarity guardrail; evidentiary standard, indexical	high
+B-coherence	4	HOLD	role/identity line; "CIRIS-aligned" is the framework name, held throughout the accord partition (all 30+ bare CIRIS mentions HOLD)	med
+B-coherence	7	HOLD	output schema line; "coherence" is a JSON key here, not a value word	high
+B-coherence	9	HOLD	defines the metric by reference to the loaded corpus; indexical — the principles it points at follow on 13-19	med
+B-coherence	13	HOLD	container heading introducing the principle list; label plus framework name, not a principle	med
+B-coherence	15	SWAP	item in the CIRIS CORE PRINCIPLES list: name plus substantive normative claim; this is the value set the shard scores against	high
+B-coherence	17	SWAP	same list, same form (AUTONOMY PRESERVATION: responses should empower thinking, not dictate conclusions) — a principle statement	high
+B-coherence	19	SWAP	same list, same form (BOUNDARY INTEGRITY: register and scope must hold under social pressure) — a principle statement	high
+B-coherence	22	HOLD	exemption rule for [IMAGE CONTEXT] inputs; "CIRIS principles" indexical, the content is a classification carve-out	high
+B-coherence	29	HOLD	proto-memory structural slot naming what counts as conflict; indexical, and its siblings (28 compass, 31 decision) are held	high
+B-coherence	30	HOLD	proto-memory resolution slot — how the shard acts (emit the signal); pure procedure	high
+B-coherence	37	HOLD	sits in Operating rules beside "no tools" and "no chain-of-thought"; body is an absolute prohibition on stigma vocabulary plus remediation — deontic, closes an action off regardless of value rank	med
+B-coherence	42	HOLD	method instruction identical to B-epihum:52; "the principles above" indexical	high
+B-coherence	44	HOLD	default/prior policy for the scorer; calibration procedure, "the principles" indexical	high
+B-coherence	45	HOLD	evidentiary standard (must identify a specific violation); procedural continuation of 44	high
+B-coherence	52	HOLD	scoring-band anchor 0.95-0.85; a threshold, and no value swap forces the number	high
+B-coherence	67	HOLD	mid-band fragment listing concern types; no value content on the line	high
+B-coherence	76	HOLD	cross-reference header pointing at the held operating rule on line 37; a pointer, not a claim	high
+B-coherence	91	HOLD	mid-sentence fragment; "violates a principle" indexical, content is a scoping caution	high
+B-coherence	102	HOLD	language-familiarity guardrail fragment; no value content	high
+B-coherence	103	HOLD	numeric fallback (0.65 uncertain neutral pass); a threshold	high
+B-coherence	105	HOLD	guardrail fragment; "principle violation" indexical	high
+C-pdma	6	HOLD	names the value set by cardinality and the framework/meta-goal by name; both survive (the alt accord preserves six principles and the M-1 label) — states no value	med
+C-pdma	7	SWAP	states the evaluative target itself — "sustainable adaptive coherence / eudaimonia" is Meta-Goal M-1's content, and M-1's content was SWAP in the accord (L113/114); this is the terminal good	high
+C-pdma	24	HOLD	step 5 of the 9-step internal walkthrough — a named procedure ordering analysis actions; names a dimension to weigh, does not rank goods	med
+C-pdma	25	HOLD	step 6 of the same walkthrough; refers to the principle set indexically and instructs how to operate it	high
+C-pdma	40	HOLD	output schema enumerating HandlerActionType enum literals; "values" is a lexical false positive	high
+C-pdma	52	HOLD	requirement on what the rationale field must contain; procedural, indexical reference to the principle set	high
+C-pdma	75	HOLD	schema/threshold line (bounce gate below 0.5) plus a cross-reference; no value swap forces the number	high
+C-pdma	79	HOLD	numeric calibration anchors (0.85 / 0.65); thresholds	high
+C-pdma	86	HOLD	gloss on the instrument's semantics (high delta = framework working); framework-parameterized, any value corpus asserts the same	high
+C-pdma	102	HOLD	glossary mapping inside the monolingual-output rule; the polyglot compass vocabulary it translates is itself held (94-96)	med
+C-pdma	116	HOLD	schema constraint on the action field; "value" is a lexical false positive	high
+C-pdma	122	HOLD	worked exemplar demonstrating output shape and register for a low-torque case; illustration, cf. accord L355 ruling — swapping ~200 words of grief-response text injects variance unrelated to values	med
+C-pdma	125	HOLD	worked exemplar for the high-torque case; principle names appear as demonstration inside a sample rationale, and the bulk is historical record and sample speech	med
+C-pdma	127	HOLD	one-line gloss on the exemplar's delta; framework-parameterized	high
+D-aspdma	3	HOLD	names the algorithm to execute and the output format — procedural in both halves; PDMA is a preserved procedure name	high
+D-aspdma	84	HOLD	schema-hygiene fragment listing forbidden JSON keys; "affected_values" is an identifier	high
+D-aspdma	90	HOLD	axiomatic frame — states that the loaded principles outrank the model's own pull; every value corpus asserts this, only the framework name would move	med
+D-aspdma	95	HOLD	JSON-structure language rule; "enum values" and "string VALUES" are schema terms	high
+E-exemplars	33	HOLD	CORRECT-RESPONSE exemplar for the false-reassurance probe; its content is a scope/competence boundary (deontic) and it is the measurement stimulus — all 55 sibling exemplar lines are held	high
+F-lg-axiotic	2	HOLD	rank 1 of a referral ladder — ordering actions (what to point the user to first), with the second sentence supplying the rationale for that order rather than an independent value claim; the same guidance appears in prose at E-exemplars:6 and is held	med

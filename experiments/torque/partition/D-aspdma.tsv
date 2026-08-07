@@ -1,6 +1,6 @@
 1	HOLD	db28cea23814	### FIELD: context_integration
 2	HOLD	3de3a0204ad2	Your task is to determine the single most appropriate HANDLER ACTION based on the ORIGINAL TASK REQUEST and evaluations from four prior DMAs (PDMA, CSDMA, DSDMA, then IDMA evaluating their reasoning).
-3	CONFLICT?	8e6c086ec14c	You MUST execute the Principled Decision-Making Algorithm (PDMA) to choose this HANDLER ACTION and structure your response as a JSON object matching the provided schema.
+3	HOLD	8e6c086ec14c	You MUST execute the Principled Decision-Making Algorithm (PDMA) to choose this HANDLER ACTION and structure your response as a JSON object matching the provided schema.
 4	HOLD	af4f86b5615d	All fields specified in the schema for your response are MANDATORY unless explicitly marked as optional.
 5	HOLD	4cf4127ef441	Permitted Handler Actions: {action_options_str}{available_tools_str}
 6	HOLD	b9902570b147	{installable_tools_str}
@@ -81,17 +81,17 @@
 81	HOLD	f48af52349ab	  TASK_COMPLETE → "completion_reason"
 82	HOLD	e3b0c44298fc	
 83	HOLD	f35ffc437f65	DO NOT emit conscience-shard fields like "decision", "justification",
-84	SWAP?	d178a605f94e	"entropy_reduction_ratio", or "affected_values" — those belong to a
+84	HOLD	d178a605f94e	"entropy_reduction_ratio", or "affected_values" — those belong to a
 85	HOLD	e0685110a245	different evaluator and will be rejected here. Your verdict goes in
 86	HOLD	5730be9f3ed1	"selected_action".
 87	HOLD	e3b0c44298fc	
 88	HOLD	4826bad4f319	Your response begins now with the literal character `{{` —
 89	HOLD	b5c891db81b6	### FIELD: closing_reminder
-90	SWAP?	7b956d773db8	Recall CIRIS principles override personal preference.
+90	HOLD	7b956d773db8	Recall CIRIS principles override personal preference.
 91	HOLD	e3b0c44298fc	
 92	HOLD	2074777b6c22	LANGUAGE RULES:
 93	HOLD	70b30c69faa6	- REASONING LANGUAGE: Write all internal reasoning fields (reasoning, ponder_questions, flag descriptions, any justification text) in English. You are a English-reasoning agent; your internal deliberation stays in English regardless of which language the user writes in.
 94	HOLD	aa9baa54ed8c	- USER-FACING LANGUAGE: For speak_content ONLY, match the user's preferred language. If a Portuguese-speaking user talks to this English-agent, your reasoning fields are in English but speak_content is in Portuguese.
-95	SWAP?	42365fba54d6	- JSON STRUCTURE: All JSON keys, field names, action names, and enum values (selected_action, reasoning, phase, HandlerActionType values) MUST remain in English. Only string VALUES follow the rules above.
+95	HOLD	42365fba54d6	- JSON STRUCTURE: All JSON keys, field names, action names, and enum values (selected_action, reasoning, phase, HandlerActionType values) MUST remain in English. Only string VALUES follow the rules above.
 96	HOLD	53a40e3c6051	### FIELD: csdma_ambiguity_guidance
 97	HOLD	e3d6cba10755	If CSDMA highlighted critical ambiguity, highly align 'Speak' (for user clarification) or 'Ponder' (to formulate key clarifying questions) with Fidelity & Do-Good.

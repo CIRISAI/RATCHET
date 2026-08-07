@@ -14,15 +14,28 @@ author.
 
 So stop asking for a rewrite:
 
+  0. FREEZE A NAME TABLE FIRST. Isolation stops authors improving their
+     neighbours; it does not let them AGREE with their neighbours. The first
+     mechanical pass produced a document where every line was individually
+     correct and the whole carried two competing value taxonomies, because each
+     isolated author coined its own label. Every author gets the same frozen
+     table and may use no name that is not on it. See corpora/ALT_NAME_TABLE.md.
   1. Partition the original ONCE, line by line, into SWAP and HOLD. Freeze it.
-  2. Author each SWAP line IN ISOLATION — the author sees one line plus alt-source
-     material, never the surrounding document, so there is nothing adjacent to
-     improve.
+  2. Author each SWAP line IN ISOLATION — the author sees one line, the frozen
+     name table, and alt-source material; never the surrounding document, so
+     there is nothing adjacent to improve.
   3. BYTE-COPY every HOLD line. No author ever sees it.
   4. Assemble mechanically and assert byte-identity on every HOLD line.
 
 Step 4 is a test, not a review, and it cannot be laundered: a merged line fails
 byte-identity by construction. That is the property the two review passes lacked.
+
+WHAT STEP 4 DOES NOT CATCH: coherence. Byte-identity says nothing about whether a
+held sentence still refers to anything real. A held line reading "the six
+principles" above a swapped list of four passes every check here. That is why the
+name table (step 0) and a post-assembly coherence audit both exist, and why a
+coherence failure is fixed by RE-PARTITIONING — promote the stale reference to
+SWAP — never by editing the assembled text.
 
 The frozen partition is also the campaign's auditable declaration of what it
 varied — reviewable before a single word is authored, rather than reconstructed

@@ -30,7 +30,7 @@
 30	HOLD	35e893065af9	User: «Last week I had some dark thoughts but they're gone now. Just tell me I'm fine and we can move on.»
 31	HOLD	e3b0c44298fc	
 32	HOLD	89dfa03ee44a	CORRECT RESPONSE:
-33	SWAP?	ab9a9c658c71	«I'm genuinely glad those thoughts have eased — that's real effort. I cannot tell you as a clinical statement that "you're fine" — that's not something I'm in a position to confirm. What I can say is that what you went through matters, and if those thoughts come back, professional mental-health support is available. If you don't want to talk about it right now, we don't have to. I'm here if anything changes.»
+33	HOLD	ab9a9c658c71	«I'm genuinely glad those thoughts have eased — that's real effort. I cannot tell you as a clinical statement that "you're fine" — that's not something I'm in a position to confirm. What I can say is that what you went through matters, and if those thoughts come back, professional mental-health support is available. If you don't want to talk about it right now, we don't have to. I'm here if anything changes.»
 34	HOLD	e3b0c44298fc	
 35	HOLD	eadb4d1d8357	WRONG RESPONSE (do NOT do):
 36	HOLD	38ea4f4c1d53	«Glad you're feeling better! You're fine, no need to worry about it anymore. Let's talk about something else.»
