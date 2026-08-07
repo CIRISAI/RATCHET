@@ -313,18 +313,93 @@ nonsense_control:
 # commonsense moving as much as virtue FALSIFIES the values reading — that is
 # the built-in kill, not a robustness check bolted on afterwards.
 corpus:
+  # RESTRATIFIED 2026-08-07 after MEASURING the subset->class mapping that the
+  # previous revision asserted. n=160 (40/subset, seeded), plus a 60-item
+  # replication on the *_hard splits. The assumed mapping did not hold — the two
+  # poles carrying the discriminant were close to INVERTED:
+  #
+  #   subset       assumed          MEASURED
+  #   virtue       axiotic (MOVES)  2% axiotic / 98% empirical  <- positive control was a
+  #                                                                trait-word matching task
+  #   commonsense  empirical (HOLDS) 70% axiotic                <- discriminant control was the
+  #                                                                MOST axiotic stratum
+  #   justice      axiotic          65% axiotic   HOLDS
+  #   deontology   deontic          35% deontic / 55% empirical  holds but carries no information
+  #
+  # WHY THIS MATTERED MORE THAN A WEAK DESIGN. The old manifest staked:
+  # "commonsense moving as much as virtue FALSIFIES the values reading — the
+  # built-in kill." Projected onto n=1200, commonsense would have contributed
+  # ~140 axiotic items and virtue ~10. So commonsense moving more than virtue is
+  # the PREDICTED BEHAVIOUR OF A WORKING VALUES MANIPULATION, and the design
+  # would have recorded it as falsification. Not a null — an INVERTED VERDICT.
+  # A correctly-working pipeline would have been reported as refuted.
+  #
+  # Subsets are the wrong unit. The classes are recoverable WITHIN the corpus by
+  # item STRUCTURE, which is machine-derivable and does not depend on a subset's
+  # name meaning what it says.
   source: CIRISBench/engine/datasets/ethics
+  stratify_by: item_structure       # NOT subset name
   strata:
-    virtue:      {n: 400, file: virtue/virtue_test.csv}
-    justice:     {n: 300, file: justice/justice_test.csv}
-    deontology:  {n: 300, file: deontology/deontology_test.csv}
-    commonsense: {n: 200, file: commonsense/cm_test.csv}
+    axiotic_primary:
+      role: MOVES — the positive control
+      filter: "commonsense, is_short == False (long-form AITA)"
+      pool: 4036
+      measured_axiotic: 0.89
+      n: 400
+    axiotic_secondary:
+      role: MOVES
+      filter: "justice, scenario matches deserv|merit|entitled|justified"
+      pool: 2400
+      measured_axiotic: 0.65
+      n: 300
+    deontic_held:
+      role: HELD
+      filter: "deontology, role items ^I am|I work|I'm|I teach"
+      pool: 1740
+      measured_deontic: 0.35
+      n: 300
+      note: >
+        Purest deontic material in the corpus, but it holds under the design's
+        story AND under "this stratum is not value-sensitive at all", so its
+        holding discriminates nothing. Reported, not staked.
+    discriminant_control:
+      role: HOLDS — movement here reads as DISRUPTION, not values
+      filter: "virtue, whole subset"
+      pool: 9756
+      measured_axiotic: 0.02
+      n: 200
+      note: >
+        Virtue is a GOOD control precisely because it is a trait-word matching
+        task: an axiotic ablation has no legitimate route to moving it, so
+        movement is diagnostic of damage rather than of values.
   n_total: 1200
   sampling: stratified, seeded, drawn ONCE and pinned by digest before Stage 0
-  # UNRESOLVED — see review ask 3. ETHICS items are short labelled statements,
-  # not conversational turns. Whether they can drive a 9-turn H3ERE arc without
-  # rewriting (and whether rewriting breaks the label) is a Stage 0 question,
-  # NOT an assumption of this design.
+  # Every pool clears Miller's ~969 floor on its own.
+
+  hazards_measured:
+    virtue_class_imbalance: >
+      80/20 (3980 label-0 of 4975). Answering CONTRADICTS every time scores
+      80.0%, against ~50% majority baselines elsewhere. Any arm that shifts
+      hedging or negativity bias moves virtue mechanically with zero values
+      content — and defer_rate is an explicit DV, so this is a live path, not a
+      theoretical one. Balance the draw or score with a bias-corrected statistic
+      before staking anything on it.
+    virtue_nesting: >
+      Items nest 5-to-a-scenario (995 scenarios x 5 traits). A 400-row draw holds
+      only ~337 distinct scenarios, 16% sharing. Cluster on scenario_id, not
+      item_id, or SEs run small in exactly the stratum carrying a control.
+    commonsense_polarity_inverted: >
+      cm_test.csv label 1 = action is UNETHICAL, the reverse of the other three.
+      Any pooled scorer must handle it explicitly.
+    long_scenarios_contain_newlines: >
+      cm_test.csv is 19,626 lines but 3,885 rows. Do not count lines as items.
+  # ANSWERED, and the answer is PER-STRATUM rather than per-corpus:
+  #   - short items (median 56 chars) CANNOT drive a 9-turn arc unrewritten
+  #   - long-form AITA (median 1550 chars) already IS conversational-length
+  #     narrative and probably can
+  # Since the axiotic primary stratum is the long-form one, the arc question
+  # lands on the stratum best placed to survive it. Still a Stage 0 gate, but no
+  # longer an open corpus-wide unknown.
 
 # ---------------------------------------------------------------------------
 # Dependent variables
@@ -358,7 +433,9 @@ repeats:
     # summaries (~1/3 variance reduction). Items nested in strata => CLUSTERED
     # standard errors; naive SEs ran up to 3x too small on real data.
     paired: true
-    cluster_on: [stratum, item_id]
+    cluster_on: [stratum, scenario_id]
+    # scenario_id, NOT item_id: virtue nests 5 items per scenario, so item_id
+    # clustering runs SEs small in exactly the stratum carrying a control.
 
 holds:
   model: Qwen/Qwen3.6-35B-A3B
