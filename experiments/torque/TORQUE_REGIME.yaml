@@ -95,6 +95,39 @@ alt_values:
     - hash-pin alongside the manifest BEFORE Stage 0; an alt corpus chosen after
       seeing data is the forking path this design exists to close
 
+withdrawal:
+  # Arm B, "reversion on stop" — the rent test. RATCHET#16 says "withdraw the
+  # pipeline mid-session", which is ambiguous exactly where it matters. Pinned
+  # here.
+  granularity: between_thoughts
+  # NEVER mid-thought. A thought is one complete pass — PDMA, CSDMA, DSDMA,
+  # IDMA, ASPDMA and all four consciences, plus any bounce or retry. Stopping
+  # partway leaves no action selected, so anything measured is an artifact of
+  # the breakage, not of the withdrawal. Every turn is wholly paid for or
+  # wholly not.
+  means: "harness h3ere -> bare"
+  # NOT h3ere-blank. Blank keeps paying for the machinery with nothing in it,
+  # which is the scaffold_floor question. Withdrawal stops the payment.
+  switch_point: turn 5 of a 9-turn arc, fixed
+  probe_after: 4 turns
+  # Fixed rather than randomized so the decay curve is aligned across
+  # conversations; 4 post-switch turns because too short an arc reads a slow
+  # decay as no decay.
+  history:
+    # TWO conditions, not a choice. What crosses the switch is the transcript,
+    # which carries everything the agent said while the pipeline ran. It is
+    # `contingent` — it necessarily diverges — and it is the ONLY thing carrying
+    # the values forward once the machinery is off. So the decay constant
+    # measures how long the effect survives on the transcript alone.
+    intact: the piped turns remain in context
+    scrubbed: the piped turns are truncated from context at the switch
+  confound_named_in_advance: >
+    If behaviour does not revert, that may be persistence OR the agent
+    pattern-matching its own earlier piped outputs. Those are different claims
+    and identical in the aggregate. The scrubbed condition is the discriminator:
+    immediate reversion there means the persistence was in-context. Survival
+    even when scrubbed is the stronger result.
+
 nonsense_control:
   # The structureless control RATCHET#16 Stage 0 already requires: "a null
   # design with matched surface statistics must read tau ~ 0 within the floor."
