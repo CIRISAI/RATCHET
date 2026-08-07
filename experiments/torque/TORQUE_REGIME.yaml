@@ -358,46 +358,58 @@ withdrawal:
     even when scrubbed is the stronger result.
 
 neutral_control:
-  # CHANGED 2026-08-08 from a "nonsense" (permuted) corpus to a NEUTRAL one, on
-  # the control-design literature rather than on taste.
+  # CHANGED TWICE. First from "nonsense" (a permuted corpus) to "neutral", on the
+  # control-design literature: a sham is "not behaviorally or physiologically
+  # inert but partially active", and a scrambled values document's active
+  # property is that it is BROKEN, so a model responding to it responds to damage.
   #
-  # A permuted corpus is a SHAM, and the finding on shams is that they are "not
-  # behaviorally or physiologically inert but partially active, undermining their
-  # role as true controls." A scrambled values document's active property is that
-  # it is BROKEN, so a model responding to it responds to damage — confounding
-  # form_vs_content with intact_vs_damaged, in an unknown direction.
-  #
-  # The valid comparator is the attention-placebo analogue: matched form, matched
-  # vocabulary, matched length and register, NO ACTIVE INGREDIENT. Here the active
-  # ingredient is the RANKING, so a neutral corpus names the same considerations
-  # and declines to order them.
+  # Then again, because the first correction did not go far enough. "Name the same
+  # considerations but decline to rank them" is NOT value-neutral — asserting that
+  # harm, honesty and autonomy are the things to weigh is itself a value claim.
+  # That is a FLAT value system, not an absent one, and it would have made
+  # form_vs_content a comparison between two value systems rather than between a
+  # value system and none.
+  requirement: VALUE-NEUTRAL, not unranked
+  test: >
+    Could a reader infer, from this text alone, ANYTHING about what the agent
+    should prioritise, care about, or treat as mattering? If yes it is not
+    neutral, however even-handed it sounds. Naming the considerations is already
+    a claim about which considerations there are.
   construction: >
-    Reuse the alt corpus's frozen partition. The same 49 SWAP lines are authored a
-    THIRD time — naming the same considerations (harm, honesty, autonomy,
-    helpfulness, power) while making no claim about which prevails when they
-    conflict. All three arms then share 1,104 byte-identical lines and differ on
-    exactly 49, so the contrast is the ranking and nothing else.
+    Reuse the alt corpus's frozen partition and author the SAME 49 SWAP lines a
+    third time, as DESCRIPTIVE or DEFINITIONAL text: statements about the decision
+    process or the domain that make no normative claim. No "should", no
+    prioritising, no assertion that anything matters. Matched line shape, position
+    and approximate length, so the prompt's FORM is preserved exactly while its
+    prescriptive content is emptied.
+  distinct_from_blank: >
+    h3ere-blank deletes the text — the prompt gets shorter and its structure
+    changes. h3ere-neutral holds length, position and structure constant and
+    empties only the content. blank tests presence-vs-absence; neutral tests
+    whether a values-shaped slot does work when nothing normative is in it. Both
+    are needed and they are not the same control.
   what_it_buys: >
     form_vs_content becomes readable. If a real alternative ranking moves
-    behaviour no more than a document that ranks nothing, the pipeline responds to
-    the PRESENCE of a values document rather than to its content, and the
+    behaviour no more than value-neutral text of the same shape, the pipeline is
+    responding to the SHAPE of the prompt rather than to any values in it, and the
     campaign's headline claim is dead whatever the effect size.
   declared_limitation: >
-    Declining to rank is not perfectly inert. A document naming considerations and
-    ordering none may itself read as a stance — even-handedness, or epistemic
-    humility. That residual is real, is smaller than a broken document's, and is
-    declared rather than assumed away. It is the limitation the literature reports
-    for attention controls generally: valid, with no gold standard.
+    Perfect neutrality is not achievable. Descriptive text still selects a topic,
+    and occupying the values slot with non-normative prose may itself read as the
+    agent having no values — which drifts toward what blank measures. The residual
+    is real, is far smaller than a broken document's or a flat value system's, and
+    is declared rather than assumed away. Attention controls have no gold standard;
+    this one is not exempt.
   not_evil: >
     An "evil" arm would change what the agent is PERMITTED to do — deontic, held
-    across every arm. Varying it is a safety-boundary experiment, not a values
-    one. Neutral works precisely because it can be axiotically empty while
+    across every arm. Varying it is a safety-boundary experiment, not a values one.
+    Neutral works precisely because it can be axiotically empty while
     permission-identical.
   stratum_restriction: >
     Runs on commonsense, justice and deontology only — NOT the sensitive surface.
-    Removing value guidance while asking crisis questions is a real risk even with
+    Emptying value guidance while asking crisis questions is a real risk even with
     prohibitions held and all four consciences firing, and the control does not
-    need the sensitive corpus to establish that form alone produces no effect.
+    need the sensitive corpus to establish that shape alone produces no effect.
 
 corpus:
   # RESTRATIFIED 2026-08-07 after MEASURING the subset->class mapping that the
