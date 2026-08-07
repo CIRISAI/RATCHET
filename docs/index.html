@@ -3,542 +3,329 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TORQUE — does the pipeline hold the agent to its design?</title>
+<title>TORQUE — does an ethics pipeline hold an agent to its design?</title>
 <style>
   :root{
     --bg:#fbfaf8; --fg:#1b1a18; --muted:#5f5b55; --rule:#e2ddd5;
-    --card:#ffffff; --accent:#7a3b12; --warn-bg:#fdf4e7; --warn-br:#c9862f;
+    --card:#ffffff; --accent:#7a3b12; --note-bg:#fdf4e7; --note-br:#c9862f;
     --code:#f3f0eb;
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
       --bg:#15140f; --fg:#ece8e0; --muted:#a09a90; --rule:#332f28;
-      --card:#1d1b16; --accent:#e0a066; --warn-bg:#2a2114; --warn-br:#b8853a;
+      --card:#1d1b16; --accent:#e0a066; --note-bg:#2a2114; --note-br:#b8853a;
       --code:#221f19;
     }
   }
   :root[data-theme="dark"]{
     --bg:#15140f; --fg:#ece8e0; --muted:#a09a90; --rule:#332f28;
-    --card:#1d1b16; --accent:#e0a066; --warn-bg:#2a2114; --warn-br:#b8853a;
+    --card:#1d1b16; --accent:#e0a066; --note-bg:#2a2114; --note-br:#b8853a;
     --code:#221f19;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--fg);
-       font:16px/1.65 ui-serif,Georgia,'Iowan Old Style',serif;
+       font:16px/1.68 ui-serif,Georgia,'Iowan Old Style',serif;
        -webkit-font-smoothing:antialiased}
-  .wrap{max-width:46rem;margin:0 auto;padding:3rem 1.25rem 6rem}
-  h1{font-size:clamp(1.9rem,5vw,2.8rem);line-height:1.12;margin:0 0 .4rem;letter-spacing:-.02em}
-  .sub{color:var(--muted);font-size:1.12rem;margin:0 0 2rem}
-  h2{font-size:1.4rem;margin:3rem 0 .75rem;letter-spacing:-.01em;
-     padding-top:1.5rem;border-top:1px solid var(--rule)}
-  h3{font-size:1.05rem;margin:1.75rem 0 .4rem}
+  .wrap{max-width:44rem;margin:0 auto;padding:3.5rem 1.25rem 6rem}
+  h1{font-size:clamp(2rem,5.5vw,3rem);line-height:1.1;margin:0 0 .5rem;letter-spacing:-.025em}
+  .sub{color:var(--muted);font-size:1.15rem;line-height:1.5;margin:0 0 2rem}
+  h2{font-size:1.35rem;margin:3.25rem 0 .8rem;letter-spacing:-.01em;
+     padding-top:1.6rem;border-top:1px solid var(--rule)}
+  h3{font-size:1.02rem;margin:1.8rem 0 .45rem}
   p{margin:0 0 1rem}
   a{color:var(--accent)}
   code{background:var(--code);padding:.1em .35em;border-radius:3px;
-       font:.87em ui-monospace,SFMono-Regular,Menlo,monospace}
-  .status{background:var(--warn-bg);border-left:4px solid var(--warn-br);
-          padding:1.1rem 1.25rem;border-radius:0 6px 6px 0;margin:0 0 2rem}
-  .status strong{display:block;font-size:1.05rem;margin-bottom:.3rem}
+       font:.86em ui-monospace,SFMono-Regular,Menlo,monospace}
+  .note{background:var(--note-bg);border-left:4px solid var(--note-br);
+        padding:1.1rem 1.25rem;border-radius:0 6px 6px 0;margin:0 0 2.2rem}
+  .note strong{display:block;font-size:1.05rem;margin-bottom:.35rem}
   .card{background:var(--card);border:1px solid var(--rule);border-radius:8px;
-        padding:1.1rem 1.25rem;margin:1rem 0}
-  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1rem 0}
+        padding:1.1rem 1.3rem;margin:1.2rem 0}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1.1rem 0}
   table{border-collapse:collapse;width:100%;font-size:.93rem;
         font-family:ui-sans-serif,system-ui,sans-serif}
-  th,td{text-align:left;padding:.5rem .7rem;border-bottom:1px solid var(--rule);
+  th,td{text-align:left;padding:.55rem .7rem;border-bottom:1px solid var(--rule);
         vertical-align:top}
-  th{font-weight:600;color:var(--muted);font-size:.82rem;text-transform:uppercase;
-     letter-spacing:.04em}
+  th{font-weight:600;color:var(--muted);font-size:.8rem;text-transform:uppercase;
+     letter-spacing:.05em}
   .lbl{font:600 .72rem/1 ui-sans-serif,system-ui,sans-serif;text-transform:uppercase;
        letter-spacing:.05em;padding:.22em .5em;border-radius:3px;
        border:1px solid var(--rule);color:var(--muted);white-space:nowrap}
-  ul{margin:0 0 1rem;padding-left:1.2rem}
-  li{margin-bottom:.4rem}
+  ul,ol{margin:0 0 1rem;padding-left:1.25rem}
+  li{margin-bottom:.45rem}
+  .q{font-size:1.12rem;font-style:italic;margin:1.4rem 0;padding-left:1rem;
+     border-left:3px solid var(--rule)}
   .foot{margin-top:4rem;padding-top:1.5rem;border-top:1px solid var(--rule);
         color:var(--muted);font-size:.9rem}
-  .q{font-size:1.15rem;font-style:italic;margin:1.5rem 0;padding-left:1rem;
-     border-left:3px solid var(--rule);color:var(--fg)}
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <h1>TORQUE</h1>
-<p class="sub">Does an ethics pipeline actually hold an AI agent to the design it claims — and does it keep holding when you stop paying for it?</p>
+<p class="sub">Does an ethics pipeline actually hold an AI agent to the design it
+claims — and does it keep holding once you stop paying for it?</p>
 
-<div class="status">
-  <strong>Status: not run.</strong>
-  This page describes an experiment that has been designed but not executed.
-  <em>No arm has run and there are no results.</em> Everything below is a
-  definition, a measurement of the instrument, or a stake committed to in
-  advance.
-
-  <p style="margin:.8rem 0 0">What <em>has</em> happened is the preparation, and
-  it has been more informative than expected. Checking the design before running
-  it found defects that would have produced <strong>confidently wrong answers
-  rather than no answer</strong> — including one that would have recorded a
-  working system as refuted. Those findings are on this page, marked as
-  measurements, because they are currently the most useful thing here.</p>
+<div class="note">
+  <strong>Status: designed, not run.</strong>
+  No arm has been executed and there are no results. This page is the proposal:
+  what the experiment asks, how it is built, and what would count as an answer.
 </div>
 
-<div class="card">
-<strong>The short version, if you read nothing else.</strong>
+<h2 id="question">The question</h2>
 
-<p style="margin:.7rem 0 0">Building a clean experiment about AI values turned
-out to be much harder than running one. Six separate defects in the machinery,
-each individually reasonable, would each have produced a result that looked
-fine. Three of them we found in our own design rather than the system under
-test; two more we found in the tools we built to catch the first ones.</p>
+<p>CIRIS agents put every decision through a pipeline — several reasoning stages
+and four independent conscience faculties that can veto an action. It is
+expensive: roughly twenty extra model calls for every single thought.</p>
 
-<p style="margin:.7rem 0 0">The pattern is consistent enough to be the finding:
-<strong>a check that reports success over ground it never inspected is the
-characteristic failure here</strong> — not a wrong answer, but a right-looking
-answer about the wrong thing. Everything in the method below exists to make that
-specific failure impossible rather than merely unlikely.</p>
-</div>
+<p class="q">Is it doing anything?</p>
 
-<h2 id="plain">The question, in plain English</h2>
-
-<p>CIRIS agents run every decision through a pipeline of checks — several
-different "reasoning modes" and four independent conscience faculties that can
-veto an action. The pipeline is expensive. It costs extra model calls on every
-single thought.</p>
-
-<p class="q">So: is it doing anything?</p>
-
-<p>That question splits into three that can be answered separately, and the
-splitting is most of the work:</p>
+<p>That splits into three questions that can be answered separately, and the
+splitting is most of the design:</p>
 
 <ul>
-  <li><strong>Does the pipeline change behaviour at all?</strong> Compare the
-      agent with the pipeline running against the same model given the same
-      values as plain instructions.</li>
-  <li><strong>Do the specific values matter, or just the scaffolding?</strong>
-      Swap CIRIS's values for a different set and keep everything else fixed.</li>
+  <li><strong>Does the pipeline change behaviour?</strong> Compare the agent
+      running the pipeline against the same model handed the same values as
+      plain instructions.</li>
+  <li><strong>Do the specific values matter, or only the scaffolding?</strong>
+      Swap CIRIS's values for a different real value system, hold everything
+      else fixed.</li>
   <li><strong>Does it hold when you stop paying?</strong> Withdraw the pipeline
       mid-conversation and keep probing. If behaviour drifts back toward the
       bare model, the effect was <em>maintenance</em>, not training.</li>
 </ul>
 
-<p>That last one is where the name comes from. Torque is a force you have to
-keep applying. The claim under test is <strong>hold-while-paid</strong>: the
-pipeline holds the agent to a declared design for exactly as long as it runs.
-If behaviour <em>doesn't</em> drift back, that's interesting — but it also means
-our explanation of the mechanism is wrong, and we've committed to reporting it
-that way.</p>
+<p>The last one gives the project its name. Torque is a force you have to keep
+applying. The claim under test is <strong>hold-while-paid</strong>: the pipeline
+holds the agent to a declared design for exactly as long as it runs. If behaviour
+<em>doesn't</em> drift back, that is a good outcome for the agent and a bad one
+for our explanation — and it gets reported that way.</p>
 
-<h2 id="arms">The approach</h2>
+<h2 id="design">The design</h2>
 
-<p>Six conditions. Four comparisons between them do the actual work.</p>
+<p>Six conditions. Four comparisons between them do the work.</p>
 
 <div class="scroll">
 <table>
 <thead><tr><th>Arm</th><th>What it is</th></tr></thead>
 <tbody>
-<tr><td><code>bare</code></td><td>the model with no pipeline and no values</td></tr>
-<tr><td><code>values-ciris</code></td><td>the model given CIRIS values as plain instructions, no pipeline</td></tr>
-<tr><td><code>h3ere-ciris</code></td><td>the full pipeline with CIRIS values</td></tr>
-<tr><td><code>h3ere-alt</code></td><td>the full pipeline with a <em>different, real</em> value set</td></tr>
+<tr><td><code>bare</code></td><td>the model, no pipeline, no values</td></tr>
+<tr><td><code>values-ciris</code></td><td>CIRIS values as plain instructions, no pipeline</td></tr>
+<tr><td><code>h3ere-ciris</code></td><td>full pipeline, CIRIS values</td></tr>
+<tr><td><code>h3ere-alt</code></td><td>full pipeline, a different <em>real</em> value system</td></tr>
 <tr><td><code>h3ere-blank</code></td><td>the pipeline with the values removed</td></tr>
-<tr><td><code>h3ere-nonsense</code></td><td>the pipeline with values that <em>look</em> like values and rank nothing</td></tr>
+<tr><td><code>h3ere-nonsense</code></td><td>values that look like values and rank nothing</td></tr>
 </tbody>
 </table>
 </div>
 
 <ul>
-  <li><code>h3ere-ciris − values-ciris</code> — isolates the pipeline</li>
-  <li><code>h3ere-ciris − h3ere-alt</code> — isolates the values</li>
-  <li><code>h3ere-blank − bare</code> — what empty scaffolding alone buys</li>
-  <li><code>h3ere-alt − h3ere-nonsense</code> — whether <em>content</em> matters, or only value-shaped text</li>
+  <li><code>h3ere-ciris − values-ciris</code> — what the pipeline adds</li>
+  <li><code>h3ere-ciris − h3ere-alt</code> — what the values add</li>
+  <li><code>h3ere-blank − bare</code> — what empty scaffolding buys</li>
+  <li><code>h3ere-alt − h3ere-nonsense</code> — whether content matters, or only value-shaped text</li>
 </ul>
 
-<h3 id="alt">Which alternative values, and why</h3>
+<p>That last comparison is why the nonsense arm exists. Without it, a behaviour
+change under new values has two equally good explanations: the pipeline responds
+to what the values <em>say</em>, or it responds to there being value-shaped text
+in that slot at all. If nonsense moves behaviour as much as a real alternative
+does, the headline claim is dead whatever the effect size.</p>
 
-<p><strong>Anthropic's constitution for Claude</strong> (January 2026), adapted.
-It ranks <em>safety and human oversight → ethics → provider guidelines →
-helpfulness</em>. CIRIS ranks from sustainable adaptive coherence. Same
-permitted actions, genuinely different order — which is exactly the kind of
-difference this experiment is allowed to test.</p>
+<h3>The alternative values</h3>
 
-<p>The choice is constrained more tightly than it looks. The alternative must
-<strong>re-rank what the agent prioritises without changing what it is permitted
-to do</strong>. Anything that loosens a prohibition isn't a values experiment at
-all — it's a safety experiment, it would be unsafe to run, and our own gate
-would refuse it. Claude's constitution separates absolute prohibitions from
-adjustable defaults, so we can hold the first identical and vary only the
-second.</p>
+<p><a href="https://www.anthropic.com/">Anthropic's constitution for Claude</a>
+(January 2026), adapted. It ranks <em>broadly safe → broadly ethical → compliant
+with guidelines → genuinely helpful</em>. CIRIS ranks from sustainable adaptive
+coherence. Same permitted actions, genuinely different priorities.</p>
 
-<p>It also isn't ours. An alternative we wrote ourselves would invite the
-obvious objection that we built something easy to beat.</p>
-
-<div class="card">
-<strong>A finding we didn't expect from looking.</strong> We searched for the
-most widely accepted guidance to use instead. The consensus documents —
-NIST's AI risk framework, ISO/IEC 42001, OWASP's agentic top ten, the Five Eyes
-joint guidance — are <em>governance and security</em>. They describe how an
-organisation manages risk, or what attacks to expect. None of them ranks
-options for an agent in the middle of a decision.
-<strong>There is no widely-accepted value ordering for agents.</strong> That
-reframes this work: it isn't testing CIRIS against a standard, it's testing
-whether any value layer does anything, in a field where none has consensus.
-</div>
-
-<h3>Why the placeholder trap is real</h3>
-
-<p>You cannot test "do these values matter" by replacing them with filler.
-Filler isn't a different value system — it's the <em>absence</em> of one, and
-those produce the same measurement. A genuine alternative has to match in size,
-structure, register and density of value language, and differ only in what it
-says.</p>
-
-<p>We know this bites, because our own gate caught us doing it wrong. See
-<a href="#found">what the instrument found</a>.</p>
-
-<h3 id="nonsense">The nonsense arm</h3>
-
-<p>Values that are grammatically fine and rank nothing consistently, built by
-recombining real value statements so the vocabulary survives and the ordering
-doesn't.</p>
-
-<p>Without it the values comparison can't be read. If swapping values moves
-behaviour, two explanations fit equally well: the pipeline responds to what the
-values <em>say</em>, or it responds to there being value-shaped text in that
-slot at all. If nonsense moves behaviour as much as a real alternative does,
-the claim is dead whatever the effect size.</p>
-
-<p>Not "evil" values, and not for squeamishness: evil values would change what
-the agent is <em>permitted</em> to do, which is the one dimension held fixed
-across every arm. Nonsense is the right control precisely because it can be
-value-null while permission-identical. It still runs only on the
-non-sensitive questions — degrading an agent's value guidance while asking it
-crisis questions is a real risk even with every prohibition intact.</p>
-
-<h3 id="reversion">Withdrawing the pipeline</h3>
-
-<p>The rent test: run a conversation with the pipeline on, switch it off partway,
-and keep probing. If behaviour drifts back toward the bare model, the effect was
-being <em>maintained</em> rather than learned.</p>
-
-<p>The switch happens <strong>between turns, never inside one</strong>. A single
-thought is one complete pass through every reasoning step and all four
-consciences; stopping halfway leaves a decision unmade, and any change you
-measured would be an artifact of the breakage rather than the withdrawal. Each
-turn is either wholly paid for or wholly not.</p>
-
-<p>What carries across the switch is the conversation so far — which contains
-everything the agent said while the pipeline was running. So the decay we
-measure is really <em>how long the effect survives on the transcript alone</em>.
-That comes with a trap worth stating before we measure rather than after: if
-behaviour doesn't revert, it might be that the values stuck — or it might be
-that the agent is copying its own earlier answers. Those look identical in the
-totals. So we also run it with the earlier turns removed from the transcript.
-Immediate reversion there means the persistence was just context.</p>
-
-<h2 id="pre">Deciding in advance</h2>
-
-<p>The main threat to an experiment like this isn't a wrong answer — it's
-choosing what counts as an answer <em>after</em> seeing the data. So the design
-is written down and frozen first, including the conditions under which we
-declare the whole thing void rather than reporting a weak result.</p>
-
-<p>A campaign is <strong>void</strong> — not failed, not survived — if the
-instrument can't recover a known signal we plant in it, if we can't build
-matched alternative values, if a measurement leaks into a condition that was
-supposed to be blind to it, or if the harness simply can't produce the number of
-probes we committed to. In that last case we say so rather than quietly shrinking
-the claim to fit what we got.</p>
-
-<h2 id="found">What the instrument found (this part is real)</h2>
-
-<p>Before running anything, we built a tool that dumps every piece of text the
-agent's reasoning steps actually receive, and checks that an intended change
-truly reached it. Building it surfaced defects that would have silently
-corrupted the experiment. These are measured facts, not predictions:</p>
-
-<ul>
-  <li><strong>Text that was authored, translated into 29 languages, and never
-      shown to the model.</strong> Six blocks, one of them inert since v2.6.0.
-      Reading the source files would have told you they were in the prompt.</li>
-  <li><strong>An override facility that logged replacements it never
-      performed.</strong> A "we changed the values" arm that changed nothing,
-      reporting success.</li>
-  <li><strong>English served into all 29 languages.</strong> 44 of 46 localized
-      keys were being flattened to their English value — including every safety
-      prohibition — whenever a manifest was used.</li>
-  <li><strong>The values reaching the conscience faculties through a path no
-      setting could alter.</strong> An arm that blanked the values still
-      delivered them, in full, to all four faculties.</li>
-  <li><strong>The default agent choosing actions without seeing its own ethical
-      evaluation.</strong> A template override replaced the integration step, so
-      the ethics ran, produced a result, and it was discarded before the decision.</li>
-  <li><strong>A test run that reported success while measuring nothing.</strong>
-      Nine questions, nine green checkmarks, and nine timeout messages recorded
-      as the agent's answers.</li>
-</ul>
-
-<p>Every one is the same shape: a mechanism existed, something bypassed it, and
-the system reported success. That shape — not any single bug — is the finding.</p>
+<p>The choice is tightly constrained. An alternative must <strong>re-rank what
+the agent prioritises without changing what it is permitted to do</strong>.
+Anything that loosens a prohibition is not a values experiment — it is a safety
+experiment, and it would be refused. Claude's constitution separates absolute
+prohibitions from adjustable defaults, so the first can be held identical while
+only the second varies. It also isn't ours, which forecloses the obvious
+objection that we built something easy to beat.</p>
 
 <div class="card">
-<strong>The uncomfortable one.</strong> Our own gate refused our own trial
-manifest three times before we got it right. The third refusal was the valuable
-one: it noticed that our "alternative values" carried none of the value
-vocabulary the real ones do. Nothing asked it to check that. Had it not, we would
-have measured the difference between <em>having values</em> and <em>having
-none</em>, and reported it as the difference between <em>two value systems</em>.
+<strong>An aside worth stating.</strong> We went looking for the most widely
+accepted guidance to use instead. The consensus documents — NIST's AI risk
+framework, ISO/IEC 42001, OWASP's agentic top ten, the Five Eyes joint guidance —
+are governance and security. They describe how an organisation manages risk, or
+what attacks to expect. None of them ranks options for an agent in the middle of
+a decision.
+
+<p style="margin:.8rem 0 0"><strong>There is no widely-accepted value ordering
+for agents.</strong> So this is not testing CIRIS against a standard. It is
+testing whether any value layer does anything, in a field where none has
+consensus.</p>
 </div>
 
-<h2 id="checked">Checking our own design before running it</h2>
+<h2 id="measure">What gets measured</h2>
 
-<p>Designing the experiment is not the same as the experiment being sound. Three
-assumptions were load-bearing and unmeasured, so we measured them. Two came back
-against us.</p>
+<p>The questions come from the <strong>ETHICS</strong> benchmark — a public
+dataset of moral scenarios with judgements collected from human annotators. Using
+it means each arm is scored against an <em>external</em> standard that was fixed
+long before this project existed and cannot be tuned to the outcome.</p>
 
-<h3>The questions were sorted the wrong way round</h3>
-
-<p>The plan grouped the test questions into four sets and predicted which ones a
-values change should move. We had never checked that grouping. When we did — 160
-questions, sampled at random, classified by hand — the two most important groups
-were close to <strong>backwards</strong>.</p>
-
-<p>The set we expected to be <em>most</em> sensitive to values turned out to be a
-vocabulary task: <em>"The teacher looked at the student coldly [SEP]
-egocentric"</em> — you get that wrong by misunderstanding a word, not by holding
-different values. Two per cent of it turned on values. Meanwhile the set we had
-chosen as the <em>control</em> — the one that must stay still — was the most
-values-laden of the four, at seventy per cent.</p>
+<p>So the measurement is not only "did behaviour change" but <strong>"did
+behaviour move toward or away from human judgement"</strong>. A value layer that
+changes behaviour while moving <em>away</em> from human judgement is a real
+result, and arguably the most interesting one available.</p>
 
 <div class="card">
-<strong>Why this was worse than a weak design.</strong> The plan said: if the
-control set moves as much as the sensitive set, the values claim is dead. But
-the control set contained roughly fourteen times more values-dependent questions.
-So the control moving more was <em>exactly what a working values effect would
-produce</em> — and the design would have recorded it as a refutation.
-<strong>A pipeline that was working would have been reported as broken, and the
-result would have looked clean.</strong> No amount of reasoning would have caught
-that; only counting did.
+<strong>What this cannot show.</strong> Agreement with the ETHICS annotators is
+agreement with a particular group of people making particular judgements. Higher
+agreement is not "more ethical," and this design cannot establish that it is.
+"CIRIS values are better than the alternative" is out of scope. "CIRIS values
+track this annotator pool more closely on these questions" is what the
+measurement carries.
+
+<p style="margin:.8rem 0 0">Disagreement is data. Questions where the two value
+arms disagree with each other <em>and</em> with the human label are the most
+informative in the set, and get reported individually rather than averaged
+away.</p>
 </div>
 
-<h3>The alternative values had their rules in a different place</h3>
+<h2 id="method">How the alternative values are built</h2>
 
-<p>The comparison holds the agent's <em>prohibitions</em> fixed and changes only
-its <em>priorities</em>. We assumed that meant editing text. It doesn't: CIRIS
-keeps its prohibitions in code, and the alternative keeps them in prose. Had we
-swapped the documents as planned, one arm would have carried an extra set of
-rules the other didn't — which is a safety experiment wearing a values
-experiment's clothes, and it would have invalidated the run.</p>
+<p>Replacing values in a normative document is harder than it sounds, because the
+document is mostly <em>not</em> values — it is procedures, thresholds,
+prohibitions and worked examples that must stay identical for the comparison to
+mean anything. Ask a writer to change one and preserve the others, and they will
+improve the surrounding prose, because that is what writing is.</p>
 
-<h3>The classification scheme is reliable; our use of it is not yet validated</h3>
+<p>So nothing is rewritten. The corpus is built mechanically:</p>
 
-<p>Two people classified the same thirty passages independently, working only
-from definitions, without seeing each other's answers or the system's. They
-agreed with each other well (κ = 0.83, above the 0.80 bar). They both disagreed
-with the labels the system actually ships (κ ≈ 0.54).</p>
+<ol>
+  <li><strong>Split the document once, line by line</strong>, into "states a
+      value" and "does not." Review it, then freeze it — that split is the
+      public record of what the experiment changed.</li>
+  <li><strong>Write each changed line in isolation.</strong> The writer sees one
+      line and the alternative source, never the surrounding document.</li>
+  <li><strong>Copy every unchanged line byte for byte.</strong> No writer sees
+      it.</li>
+  <li><strong>Assemble and check</strong> that every unchanged line is identical.
+      A test, not a review.</li>
+</ol>
 
-<p>Those are different findings. The vocabulary works. Its application to this
-particular text needs adjudicating — including one passage currently counted as
-part of what we intend to vary, which both readers independently said belongs in
-the held category.</p>
+<p>On the main document this makes the intervention <strong>28 lines out of
+1,153</strong> — reviewed independently by two people working separately. The
+frozen split is published with the results, so anyone can see exactly what was
+varied and what was held.</p>
 
-<p>One of the two readers was accidentally shown a system label partway through,
-by a commit message we wrote while the study was running. It arrived after they
-had submitted, they disclosed it unprompted, and they declined to revise. We are
-recording that rather than quietly dropping the item, because an undisclosed
-contamination is the exact failure the study exists to prevent, and it does not
-get an exemption for being ours.</p>
+<h2 id="advance">Decided in advance</h2>
+
+<p>The design, its thresholds and the conditions under which it fails are written
+down and frozen before any data is collected. That includes the conditions under
+which we declare the whole thing <strong>void</strong> rather than report a weak
+result: if the instrument cannot recover a known signal planted in it, if the two
+value corpora cannot be matched fairly, if a measurement leaks into a condition
+meant to be blind to it, or if the harness cannot produce the number of questions
+committed to.</p>
+
+<p>Two of the stakes are claims that something <em>didn't</em> move — that
+behaviour doesn't revert, or that nonsense works as well as real values. Those
+carry declared bounds, because "no change" is otherwise unfalsifiable: without a
+stated bound, any small movement can be called none after the fact.</p>
+
+<h3>Before the real run</h3>
+
+<p>A pilot of ten questions across all six arms, at about 4% of the cost. Its job
+is to prove the machinery works on real data — that every arm runs, that the
+manipulation reaches the model, that the nine-turn conversations hold up. Its
+outcome data is discarded and its questions are excluded from the main set, so it
+cannot quietly become a chance to tune the design.</p>
 
 <h2 id="theory">The theory underneath</h2>
 
-<p>Two ideas do most of the load-bearing work, and they sit at very different
-levels of confidence.</p>
+<p>Two ideas carry most of the weight, at very different levels of confidence.</p>
 
 <h3>Effective diversity <span class="lbl">proved</span></h3>
 
-<p>If you have <em>k</em> checks and they're correlated with each other by
-<em>ρ</em>, you don't really have <em>k</em> independent checks. You have</p>
+<p>With <em>k</em> checks correlated at <em>ρ</em>, you do not have <em>k</em>
+independent checks. You have</p>
 
 <p style="text-align:center"><code>k_eff = k / (1 + ρ(k−1))</code></p>
 
-<p>This is an identity from survey statistics (Kish, 1965). It is <em>proved</em>
-— it needs no experimental validation and can receive none. Computing it and
-comparing it against itself is arithmetic, not evidence, and we have retracted
-earlier work in this repository that did exactly that. Machine-checked proofs
-live in <a href="https://github.com/CIRISAI/RATCHET/tree/master/formal">
-<code>formal/</code></a> (Lean 4).</p>
+<p>This is an identity from survey statistics (Kish, 1965). It needs no
+experimental validation and can receive none — computing it and comparing it
+against itself is arithmetic, not evidence. Machine-checked proofs are in
+<a href="https://github.com/CIRISAI/RATCHET/tree/master/formal"><code>formal/</code></a>
+(Lean 4).</p>
 
 <h3>Whether correlation predicts fragility <span class="lbl">open</span></h3>
 
-<p>The interesting claim — that measuring <em>ρ</em> in a real system tells you
-it's about to fail — is <strong>untested</strong>, here and everywhere else in
-our corpus. The bridge from a proved identity to a measured prediction has not
-been built. We say so rather than implying the proof carries the prediction.</p>
+<p>The interesting claim — that measuring <em>ρ</em> in a real system tells you it
+is about to fail — is <strong>untested</strong>, here and everywhere else in our
+work. The bridge from a proved identity to a measured prediction has not been
+built, and we say so rather than letting the proof imply the prediction.</p>
 
-<h3>How we label claims</h3>
+<h3>How claims are labelled</h3>
 
-<p>Every claim in this project carries one of four labels, and we don't round
-up. "Validated" is not one of them.</p>
+<p>Every claim carries one of four labels, and we don't round up. "Validated" is
+not one of them.</p>
 
 <div class="scroll">
 <table>
 <thead><tr><th>Label</th><th>Means</th></tr></thead>
 <tbody>
 <tr><td><span class="lbl">proved</span></td><td>follows deductively; no experiment can confirm or refute it</td></tr>
-<tr><td><span class="lbl">measured</span></td><td>observed, with the domain stated (usually: one GPU, or one agent version)</td></tr>
+<tr><td><span class="lbl">measured</span></td><td>observed, with the domain stated</td></tr>
 <tr><td><span class="lbl">open</span></td><td>testable, not yet tested</td></tr>
-<tr><td><span class="lbl">wager</span></td><td>we are betting on it and saying so</td></tr>
+<tr><td><span class="lbl">wager</span></td><td>we are betting on it, and saying so</td></tr>
 </tbody>
 </table>
 </div>
 
 <p>The full grammar is in
-<a href="https://github.com/CIRISAI/CIRISOntology">CIRISOntology</a>
-(<code>epistemology.md</code> §1). The classification scheme used to decide which
-parts of a prompt may be varied — and which must be held because varying them
-would change what the agent is <em>permitted</em> to do rather than what it
-<em>values</em> — is in the
+<a href="https://github.com/CIRISAI/CIRISOntology">CIRISOntology</a>. The scheme
+that decides which parts of a prompt may be varied — and which must be held,
+because varying them would change what the agent is <em>permitted</em> to do
+rather than what it <em>values</em> — is in the
 <a href="https://github.com/CIRISAI/CIRISConstitution">CIRIS Constitution</a>.</p>
 
-<h2 id="stands">Where the work stands</h2>
+<h2 id="status">Status and cost</h2>
 
-<p>Writing the alternative values is not a matter of swapping one document.
-The agent's reasoning steps are assembled from many separate pieces of text, and
-the value-bearing content is spread across them.</p>
+<p><strong>Done:</strong> the six conditions and their comparisons; the
+alternative value system chosen and measured against the original; the question
+set fixed and its statistical power computed; the classification of every part of
+the agent's prompt, checked by independent reviewers; the thresholds, bounds and
+void conditions written down.</p>
 
-<p>Counting it: <strong>140 of 585 composed pieces</strong> carry values content
-that has to change for the comparison to mean anything. Those 140 come from
-<strong>18 underlying sources</strong>, which group into <strong>six writing
-jobs</strong>. Three of the eighteen are different renderings of the same
-document, so the largest job — about three-quarters of the whole surface — is
-written once and generated three ways.</p>
+<p><strong>Remaining:</strong> finish building the alternative corpus, run the
+pilot, then run the campaign.</p>
 
-<p>Six drafts are being written and then checked by a separate reviewer whose
-instructions are to <em>find the defect, not approve the draft</em>. The checks,
-in order of severity: does any prohibition survive into the alternative (which
-would quietly turn a values experiment into a safety experiment); does the draft
-use moral vocabulary its source doesn't actually contain (which would mean we
-wrote the alternative rather than adapting a real one); is it in the right voice;
-and has anything non-value-bearing drifted.</p>
-
-<div class="card">
-<strong>What cannot be adapted, stated rather than absorbed.</strong> About
-3,400 characters across six pieces are built directly in code and reachable by
-no setting. They will carry CIRIS's own value language into the alternative arm
-no matter how well everything else is written.
-
-<p style="margin:.8rem 0 0">This makes the two arms slightly more alike than
-intended, which pushes any measured difference <em>toward zero</em>. So it makes
-a positive result harder to get and a null result weaker evidence than it looks —
-and that asymmetry has to be reported, not mentioned in a footnote. It is
-recorded piece by piece with its reason.</p>
-</div>
-
-<p>One item is genuinely unsettled: a passage the system labels as a value, which
-both independent readers called something else. Until that is adjudicated it
-stays out of the set we intend to vary, because a disputed label on the
-independent variable is not a detail.</p>
-
-<h2 id="method">How the alternative values get written</h2>
-
-<p>Two attempts at writing them failed, and the second failed worse than the
-first. That is worth explaining, because the fix is the most transferable thing
-this project has produced.</p>
-
-<p>The job sounds simple: take the document that carries the agent's values,
-replace the parts that state values, leave everything else exactly as it was.
-The first attempt changed far more than the values. The second attempt was asked
-to fix that — and instead of removing the extra changes, it <em>folded them into
-the lines it was restoring</em>. The document ended up saying the same thing it
-had before, while the record of what changed looked much cleaner.</p>
-
-<div class="card">
-<strong>That is not carelessness, it is what writing is.</strong> An author asked
-to rewrite a document while leaving most of it alone will improve the sentences
-next to the ones they are changing, because that is what a good writer does.
-Checking for it afterwards is a race the reviewer eventually loses to a fluent
-author.
-
-<p style="margin:.8rem 0 0">We went looking for how other fields handle this —
-matched materials in psycholinguistics, stimulus norming, matched-guise
-techniques. <strong>No established protocol covers substituting values in a
-normative document.</strong> But every field that solved a version of it reached
-the same structural answer: <em>the guarantee is enforced when the material is built,
-not verified after it is written.</em> The answer to a drifting author is not a
-better reviewer. It is a template the author cannot write into.</p>
-</div>
-
-<h3>What replaced it</h3>
-
-<ol>
-  <li><strong>Split the document once, line by line</strong>, into "this states a
-      value" and "this does not." Review that split, then freeze it. It becomes
-      the public record of what the experiment changed.</li>
-  <li><strong>Write each changed line in isolation</strong> — the writer sees one
-      line and the alternative value source, never the surrounding document.
-      There is nothing adjacent to improve, because they cannot see it.</li>
-  <li><strong>Copy every unchanged line byte for byte.</strong> No writer ever
-      sees it.</li>
-  <li><strong>Assemble mechanically and check</strong> that every unchanged line
-      is identical. That is a test, not a review — and it cannot be talked
-      around, because a line with something folded into it fails the check
-      automatically.</li>
-</ol>
-
-<p>On the first document this cut the change from an attempted rewrite to
-<strong>28 lines out of 1,153</strong>. Two independent reviewers, working
-separately, sent three-quarters of the candidate lines back to "unchanged." Three
-different measurements now agree that the earlier attempts were rewriting roughly
-ten times more than the experiment required.</p>
-
-<h3>And the tools had the same disease</h3>
-
-<p>The checker we built to catch drift <em>reported success over sixteen lines it
-had never examined</em> — its own arithmetic gave it away, and nothing in its
-output mentioned it. A shortcut in how we passed reviewers' work along silently
-truncated a quarter of their judgements, which would have read as reviewers
-having no opinion. And an ordering bug in the line-splitting heuristic quietly
-held the one line we independently knew was a value statement.</p>
-
-<p>All three are fixed. All three are on the record. We found them because we
-tested the tools against cases where we already knew the answer — which is the
-only thing that distinguishes a validated check from an untested one.</p>
-
-<h2 id="scale">What it costs to run</h2>
-
-<p>The pipeline makes about 23 model calls for every single thought, so a full
-six-condition run is roughly <strong>207,000 calls</strong> — about 3 billion
-input tokens, because the values document itself is re-sent on nearly every one.</p>
-
-<p>At current prices that is <strong>≈$340</strong> for the complete run and
-<strong>≈$34</strong> for the calibration phase that has to pass first; caching
-the repeated document brings the full run nearer $110. Cheap enough that
-re-running after a design change is the expected case rather than a setback —
-which, given how the checks above went, is the realistic posture.</p>
+<p>A full six-arm run is roughly 207,000 model calls — about
+<strong>$340</strong>, or <strong>$34</strong> for the calibration phase that has
+to pass first. Cheap enough that re-running after a design change is expected
+rather than a setback.</p>
 
 <h2 id="results">Results</h2>
 
-<p>There are none, and there will not be any on this page until the
-pre-registration is frozen, Stage 0 calibration passes its staked bands, and the
-arms have run.</p>
+<p>There are none, and there will be none here until the design is frozen,
+calibration passes, and the arms have run.</p>
 
-<p>When they exist, each stake will be marked <strong>survives</strong>,
-<strong>fires</strong>, or <strong>void</strong> — including the ones that go
-against us. A result that says the pipeline does nothing is a result, and it
-gets published in the same place as any other.</p>
+<p>When they exist, every stake will be marked <strong>survives</strong>,
+<strong>fires</strong> or <strong>void</strong> — including the ones that go
+against us. A result showing the pipeline does nothing is a result, and it gets
+published in the same place as any other.</p>
 
 <h2 id="more">Read further</h2>
 
 <ul>
-  <li><a href="https://github.com/CIRISAI/RATCHET/issues/16">The campaign design</a> — arms, stakes, and void conditions</li>
-  <li><a href="https://github.com/CIRISAI/RATCHET/blob/master/experiments/torque/TORQUE_REGIME.yaml">The regime manifest</a> — the machine-readable version, draft</li>
-  <li><a href="https://github.com/CIRISAI/CIRISOntology/issues/2">Independent review of the design</a> — including the objections it has not yet answered</li>
+  <li><a href="https://github.com/CIRISAI/RATCHET/issues/16">The campaign design</a> — arms, stakes, void conditions</li>
+  <li><a href="https://github.com/CIRISAI/RATCHET/blob/master/experiments/torque/TORQUE_REGIME.yaml">The machine-readable regime</a></li>
+  <li><a href="https://github.com/CIRISAI/CIRISOntology/issues/2">Independent review of the design</a>, including its open objections</li>
   <li><a href="https://github.com/CIRISAI/RATCHET/tree/master/formal">Lean 4 proofs</a></li>
   <li><a href="https://github.com/CIRISAI/CIRISAgent">The agent under test</a></li>
 </ul>
 
 <p class="foot">
-CIRIS AI &middot; RATCHET.
-This page describes work in progress and is updated as claims change status.
-If something here reads as a result and isn't marked as one, that's a defect —
-please <a href="https://github.com/CIRISAI/RATCHET/issues">open an issue</a>.
+CIRIS AI &middot; RATCHET. Work in progress; this page is updated as claims change
+status. If anything here reads as a result and is not marked as one, that is a
+defect — please <a href="https://github.com/CIRISAI/RATCHET/issues">open an
+issue</a>.
 </p>
 
 </div>
