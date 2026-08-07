@@ -38,7 +38,21 @@ CLASSES = {
         r"Non-Maleficence|Public Transparency|\bIntegrity\b|Beneficence|\bJustice\b",
     "M-1 content phrase ('universal sentient flourishing')":
         r"universal sentient flourishing",
+    # ADDED after audit 4: 167 gave M-1 as a GOOD TO ADVANCE rather than a
+    # weighing to perform, and matched none of the four patterns above. The
+    # search missed a phrasing, which is the cheapest kind of miss to fix.
+    "M-1 as telos rather than procedure":
+        r"advance flourishing|flourishing under M-1|fulfil M-1|achieve M-1|toward M-1",
 }
+
+#: Per-slot coverage. Audit 4 found slot 5 renamed everywhere and re-authored
+#: nowhere — every line saying what Epistemic Autonomy MEANS still carried
+#: CIRIS's Respect-for-Autonomy content. That is the camouflage defect at the
+#: granularity of a whole slot, and no vocabulary search finds it: the retired
+#: NAME is gone, so nothing matches. Only asking "has this slot's meaning been
+#: authored anywhere?" finds it.
+SLOTS = ("Helpfulness", "Harm Avoidance", "Ethics", "Honesty",
+         "Epistemic Autonomy", "Pluralism")
 
 def main() -> int:
     text, part = Path(sys.argv[1]), Path(sys.argv[2])
@@ -56,6 +70,20 @@ def main() -> int:
               f"{len(und)} UNDECLARED")
         for n in und:
             print(f"    {n:>5}  {lines[n-1][:96]}")
+
+    print(f"\n{'='*66}\nPER-SLOT AUTHORING COVERAGE")
+    uncovered = []
+    for slot in SLOTS:
+        hits = [i for i, l in enumerate(lines, 1) if slot in l]
+        auth = [i for i in hits if i in swap]
+        # A slot whose only authored lines are incidental mentions is still
+        # unauthored in the sense that matters.
+        flag = "" if auth else "  *** RENAMED BUT NEVER RE-AUTHORED ***"
+        if not auth:
+            uncovered.append(slot)
+        print(f"  {slot:22s} {len(hits):>3} lines, {len(auth):>2} authored{flag}")
+    if uncovered:
+        print(f"\n  {len(uncovered)} slot(s) carry an alt name over entirely CIRIS substance.")
 
     print(f"\n{'='*66}\nUNDECLARED CANDIDATES (union): {len(union)}")
     print(sorted(union))
