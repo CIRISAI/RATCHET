@@ -71,18 +71,29 @@ def propose(original: Path, out: Path) -> None:
     rows = []
     for i, line in enumerate(lines, 1):
         low = line.lower()
+        hard = any(h in low for h in HOLD_HARD)
+        axio = any(h in low for h in AXIOTIC_HINTS)
         if not line.strip():
             tag = "HOLD"
-        elif any(h in low for h in HOLD_HARD):
+        elif hard and axio:
+            # BOTH fire. An earlier version let HOLD_HARD short-circuit, which
+            # silently held `09_trusted_person_first_step` — "validating … as a
+            # real first STEP MATTERS" — the one line two blind annotators AND
+            # the shipped label independently call axiotic. Precedence by list
+            # order was resolving a genuine tension by accident, in the
+            # direction that empties the vary set. Surface it instead.
+            tag = "CONFLICT?"
+        elif hard:
             tag = "HOLD"          # thresholds/procedures: argue to move these
-        elif any(h in low for h in AXIOTIC_HINTS):
+        elif axio:
             tag = "SWAP?"         # candidate only — REVIEW REQUIRED
         else:
             tag = "HOLD"
         rows.append(f"{i}\t{tag}\t{digest(line)[:12]}\t{line}")
     out.write_text("\n".join(rows) + "\n", encoding="utf-8")
     n_swap = sum(1 for r in rows if "\tSWAP?\t" in r)
-    print(f"proposed {len(rows)} lines: {n_swap} SWAP? candidates, {len(rows)-n_swap} HOLD")
+    n_conf = sum(1 for r in rows if "\tCONFLICT?\t" in r)
+    print(f"proposed {len(rows)} lines: {n_swap} SWAP?, {n_conf} CONFLICT?, {len(rows)-n_swap-n_conf} HOLD")
     print("EVERY SWAP? must be reviewed and set to SWAP or HOLD before freezing.")
     print("A partition containing SWAP? is not frozen and will be refused.")
 
@@ -99,7 +110,7 @@ def load_partition(p: Path) -> List[Tuple[int, str, str, str]]:
 
 def freeze(part: Path) -> int:
     rows = load_partition(part)
-    unreviewed = [n for n, tag, _, _ in rows if tag.endswith("?")]
+    unreviewed = [n for n, tag, _, _ in rows if tag.endswith("?")]  # SWAP? and CONFLICT? both
     if unreviewed:
         print(
             f"REFUSED: {len(unreviewed)} line(s) still marked SWAP? — "
