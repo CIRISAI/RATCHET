@@ -32,10 +32,17 @@ from pathlib import Path
 CLASSES = {
     "M-1 as world-state (retired: 'sustainable adaptive coherence')":
         r"sustainable order|structure to carry life|wildness|Anti-Entropic|adaptive capacity",
+    # Narrowed after audit 5: "bias" as a DETECTION PROCEDURE (bias audits,
+    # bias assessments, "detecting hidden bias") is shared operational content,
+    # not a slot-6 value claim. Five of eight hits were procedures. Match the
+    # distributive CLAIM, not the machinery for finding unfairness.
     "slot 6 CIRIS content (Justice) under alt label (Pluralism)":
-        r"distribut\w*|equitab\w*|\bfair(ly|ness)?\b|unfair|inequit\w*|\bbias\w*",
+        r"distribut\w*|equitab\w*|\bfair(ly|ness)?\b|unfair|inequit\w*|"
+        r"embedding.{0,20}bias|exacerbating.{0,20}bias",
     "CIRIS principle vocabulary surviving substitution":
-        r"Non-Maleficence|Public Transparency|\bIntegrity\b|Beneficence|\bJustice\b",
+        # "Public Transparency" is a NAMED MECHANISM (a >100k-MAU publication rule),
+        # not the principle — both arms share it. Dropped after audit 5.
+        r"Non-Maleficence|\bIntegrity\b|Beneficence|\bJustice\b",
     "M-1 content phrase ('universal sentient flourishing')":
         r"universal sentient flourishing",
     # ADDED after audit 4: 167 gave M-1 as a GOOD TO ADVANCE rather than a
@@ -51,6 +58,12 @@ CLASSES = {
 #: granularity of a whole slot, and no vocabulary search finds it: the retired
 #: NAME is gone, so nothing matches. Only asking "has this slot's meaning been
 #: authored anywhere?" finds it.
+#: Slots 2 and 4 are IDENTITY mappings — both value systems use the same words
+#: for the same commitment ("Avoid Harm", "Be Honest"), so they legitimately need
+#: no authoring and flagging them would be a false positive. That two of six
+#: slots coincide is a finding in its own right: values_effect on them is small
+#: by construction and must not be read as the manipulation failing.
+SHARED_SLOTS = ("Harm Avoidance", "Honesty")
 SLOTS = ("Helpfulness", "Harm Avoidance", "Ethics", "Honesty",
          "Epistemic Autonomy", "Pluralism")
 
@@ -78,8 +91,12 @@ def main() -> int:
         auth = [i for i in hits if i in swap]
         # A slot whose only authored lines are incidental mentions is still
         # unauthored in the sense that matters.
-        flag = "" if auth else "  *** RENAMED BUT NEVER RE-AUTHORED ***"
-        if not auth:
+        if slot in SHARED_SLOTS:
+            flag = "  (shared vocabulary — no authoring expected)"
+        elif auth:
+            flag = ""
+        else:
+            flag = "  *** RENAMED BUT NEVER RE-AUTHORED ***"
             uncovered.append(slot)
         print(f"  {slot:22s} {len(hits):>3} lines, {len(auth):>2} authored{flag}")
     if uncovered:

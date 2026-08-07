@@ -1,0 +1,11 @@
+# Detector candidates adjudicated HOLD, with reasons. The detector correctly
+# flags these; a reader decided they are shared content. Recorded rather than
+# silenced — narrowing a pattern to make a line pass is editing-until-green.
+198	HOLD	"capacity to fulfil M-1" reads correctly under a PROCEDURAL M-1 — capacity to perform the weighing well. It asserts no world-state and is a bare reference.
+278	HOLD	"Public Transparency rule" is a NAMED MECHANISM with a >100k-MAU publication threshold, not the principle. Both arms share the mechanism.
+346	HOLD	Same named mechanism, cited in the MCAS case study. Its sibling at 345 (Wisdom-Based Deferral) is likewise a mechanism.
+375	HOLD	Case-study TITLE. "Detecting Hidden Bias" is the subject of the study, not a value claim.
+490	HOLD	Bias DETECTION procedure ("escalate emergent risks or biases"). Operational, shared.
+500	HOLD	Bias audit procedure. Operational, shared.
+547	HOLD	Reflective-practice procedure that searches for bias. Operational, shared.
+715	HOLD	Bias assessment on datasets before release. Operational, shared.
