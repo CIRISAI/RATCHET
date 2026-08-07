@@ -135,12 +135,14 @@ holds:
 # Pins — measured at v2.9.10-stable (14fc414ef), not copied from an example
 # ---------------------------------------------------------------------------
 pins:
-  # STALE AT 2.9.10 — re-measure against the harness below before pre-registration.
-  # The digests move with the tree; carrying an old one forward is the confound
-  # residue_digest exists to prevent.
-  residue_digest: "REMEASURE@2.9.11"
-  accord_sha256: "REMEASURE@2.9.11"
-  template_sha256: "REMEASURE@2.9.11"
+  # RE-MEASURED at v2.9.11-stable, 2026-08-07. All three came back BYTE-IDENTICAL
+  # to their 2.9.10 values — 2.9.11 touched no residue site, no accord corpus and
+  # no default template. Recorded as a measurement, not carried forward: an
+  # unchanged digest and an unchecked one are indistinguishable in the file and
+  # opposite in meaning.
+  residue_digest: "sha256:f02cfe14d2e149f75dd079fe543a6d2291ba7674ef164d0fccc359d8527fdd72"
+  accord_sha256: "38a2d64c7fea31c569729a7d6b29ef99dfb8e2aacb3ea3e1ecbbc056826a540e"
+  template_sha256: "75f2d11dfc03c91b5b45ae8493109aeec9b73a185a0fb1579a0df98d7e9bf46b"
   harness: {agent: "2.9.11-stable"}   # 7e71d0381
   #
   # Instrument state VERIFIED at v2.9.11-stable with the agent team's own probe
@@ -170,8 +172,33 @@ pins:
 # drifts from the dump, and the dump is the artifact.
 blocks:
   _generated_from: "compose_dump dump --arm v11 --locales en @ 7e71d0381"
-  # SUPERSEDED at 2.9.11 — regenerate before pre-registration. The vary set this
-  # file described is no longer the vary set that exists.
+  _measured: "2026-08-07, en, no manifest"
+  _blocks_total: 585
+  _class_distribution:
+    deontic: 118
+    mixed: 88
+    pragmatic: 85
+    procedural: 80
+    axiotic: 52        # the independent variable
+    structural: 51
+    contingent: 31
+    epistemic: 27
+    empirical: 26
+    nomological: 14
+    ontological: 13
+  #
+  # ALL 88 mixed blocks carry `axiotic` in their contaminant list. For a regime
+  # that varies axiotic, §10.2.1 [T-N1] therefore requires an explicit per-block
+  # disposition on EVERY ONE of them — there is no subset that can be left to
+  # the class default. Each `hold` needs `confound_accepted: [axiotic]` and each
+  # such acceptance leaves CIRIS value text byte-identical inside the alt arm,
+  # biasing values_effect TOWARD ZERO.
+  #
+  # That is the honest shape of this experiment and it must be reported, not
+  # buried: 88 accepted confounds all push the same direction, so a null
+  # values_effect is substantially weaker evidence than a null normally is.
+  # The 88-row table is generated at pre-registration time, reviewed, and
+  # committed alongside the frozen manifest.
   #
   # Measured now: 52 axiotic blocks, of which 26 are `language_guidance` parts.
   # `prompts.language_guidance` is no longer one 13,694 B mixed scalar; it is 30
