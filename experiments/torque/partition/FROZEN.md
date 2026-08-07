@@ -140,3 +140,30 @@ rule to principle *headings* diverged, which says the rule needed the
 values/actions distinction spelled out. It did not say the boundary is
 undecidable. Report it as "the rule was underspecified and has been sharpened,"
 not as a reliability crisis.
+
+
+---
+
+# Repair attempt rolled back — see TERM_SUBSTITUTION.md
+
+A repair promoting ten lines to SWAP was staged and then **reverted**. The
+authoring step correctly refused (banned stems inherited from the original text
+on lines 625/755) and wrote nothing, but that left the partition declaring 42
+SWAP against 32 authored.
+
+`assemble` refused throughout, so **no bad artifact was ever produced**. But this
+file pinned `10327bc7` while the working partition computed `ddca57f1`, and a
+torn frozen state is worse than an un-repaired one — the digest is the campaign's
+claim about what it varied.
+
+Reverted and re-verified at the digest above.
+
+## What the attempt revealed
+
+Principle names are **pervasive, not localized**: 37 lines across 16 clusters,
+plus 10 lines mentioning `M-1`. Line-level adjudication had covered ~12 and 2.
+Sixteen isolated authors cannot rename one thing consistently — they were
+deliberately denied the coordination that would require.
+
+The fix is a change of method, not more adjudication: **substitute names
+mechanically and globally; author only meanings.** See TERM_SUBSTITUTION.md.
