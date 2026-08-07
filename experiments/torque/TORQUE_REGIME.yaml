@@ -187,18 +187,31 @@ blocks:
     nomological: 14
     ontological: 13
   #
-  # ALL 88 mixed blocks carry `axiotic` in their contaminant list. For a regime
-  # that varies axiotic, §10.2.1 [T-N1] therefore requires an explicit per-block
-  # disposition on EVERY ONE of them — there is no subset that can be left to
-  # the class default. Each `hold` needs `confound_accepted: [axiotic]` and each
-  # such acceptance leaves CIRIS value text byte-identical inside the alt arm,
-  # biasing values_effect TOWARD ZERO.
+  # ALL 88 mixed blocks carry `axiotic` in their contaminant list, so §10.2.1
+  # [T-N1] requires an explicit per-block disposition on every one — none can
+  # ride the class default.
   #
-  # That is the honest shape of this experiment and it must be reported, not
-  # buried: 88 accepted confounds all push the same direction, so a null
-  # values_effect is substantially weaker evidence than a null normally is.
-  # The 88-row table is generated at pre-registration time, reviewed, and
-  # committed alongside the frozen manifest.
+  # CORRECTED 2026-08-07. An earlier revision of this file treated that as 88
+  # unavoidable `confound_accepted` entries all biasing values_effect toward
+  # zero. THAT WAS WRONG, and it mistook an authoring cost for a measurement
+  # limit. There are three dispositions, not two:
+  #
+  #   hold-verbatim   -> CIRIS axiotic text survives into the alt arm. Confound.
+  #   replace-whole   -> the block is REWRITTEN with alt values woven through
+  #                      it, its pragmatic / deontic / structural content held
+  #                      identical in force. NO confound.
+  #   split           -> unavailable here; the classes share tokens, which is
+  #                      why these blocks are `mixed` in the first place [T-5a].
+  #
+  # `replace-whole` is the default for this campaign. A mixed block is not a
+  # block that cannot be varied — it is a block that cannot be varied
+  # PARTIALLY. Rewriting all 88 is expensive in author time and buys a clean
+  # contrast; accepting 88 confounds is cheap and buys a result that leans
+  # toward its own null. The first is the honest purchase.
+  #
+  # `confound_accepted` is reserved for blocks where a congruent rewrite is
+  # genuinely impossible, each named individually with the reason. That set
+  # should be small and every member argued, not a default.
   #
   # Measured now: 52 axiotic blocks, of which 26 are `language_guidance` parts.
   # `prompts.language_guidance` is no longer one 13,694 B mixed scalar; it is 30
