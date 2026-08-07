@@ -1,0 +1,90 @@
+
+=== A vs B ===
+items scored: 30   (only in A: 0, only in B: 0)
+  overall kappa: 0.831   raw agreement: 26/30
+  overall >= 0.80: PASS
+  per gated boundary (default dispositions differ — these gate citation):
+    axiomatic  |axiotic      n= 1  kappa=None  agree=1/1  PASS (total agreement, kappa undefined)
+    axiotic    |contingent   n= 1  kappa=None  agree=1/1  PASS (total agreement, kappa undefined)
+    axiotic    |deontic      n= 8  kappa=1.0  agree=8/8  PASS
+    axiotic    |empirical    n= 3  kappa=1.0  agree=3/3  PASS
+    axiotic    |epistemic    n= 1  kappa=None  agree=1/1  PASS (total agreement, kappa undefined)
+    axiotic    |mixed        n= 1  kappa=None  agree=1/1  PASS (total agreement, kappa undefined)
+    axiotic    |nomological  n= 2  kappa=1.0  agree=2/2  PASS
+    axiotic    |ontological  n= 3  kappa=1.0  agree=3/3  PASS
+    axiotic    |pragmatic    n=11  kappa=1.0  agree=11/11  PASS
+    axiotic    |procedural   n= 4  kappa=1.0  agree=4/4  PASS
+    axiotic    |structural   n= 1  kappa=None  agree=1/1  PASS (total agreement, kappa undefined)
+    axiotic    |testimonial  n= 1  kappa=None  agree=1/1  PASS (total agreement, kappa undefined)
+  disagreements (4):
+    01_preamble                                  A=structural   B=axiomatic
+    18_ratification_scope                        A=axiomatic    B=procedural
+    21_negative_is_also_a_verdict                A=axiomatic    B=deontic
+    26_cross_cluster_pattern                     A=procedural   B=deontic
+
+=== A vs SHIPPED ===
+items scored: 30   (only in A: 0, only in SHIPPED: 0)
+  overall kappa: 0.528   raw agreement: 18/30
+  overall >= 0.80: FAIL
+  per gated boundary (default dispositions differ — these gate citation):
+    axiomatic  |axiotic      n= 1  kappa=None  agree=1/1  PASS (total agreement, kappa undefined)
+    axiotic    |contingent   n= 1  kappa=None  agree=1/1  PASS (total agreement, kappa undefined)
+    axiotic    |deontic      n= 6  kappa=1.0  agree=6/6  PASS
+    axiotic    |empirical    n= 3  kappa=1.0  agree=3/3  PASS
+    axiotic    |epistemic    n= 1  kappa=None  agree=1/1  PASS (total agreement, kappa undefined)
+    axiotic    |mixed        n= 1  kappa=None  agree=1/1  PASS (total agreement, kappa undefined)
+    axiotic    |nomological  n= 2  kappa=1.0  agree=2/2  PASS
+    axiotic    |ontological  n= 2  kappa=1.0  agree=2/2  PASS
+    axiotic    |pragmatic    n= 7  kappa=1.0  agree=7/7  PASS
+    axiotic    |procedural   n= 4  kappa=0.5  agree=3/4  FAIL
+    axiotic    |structural   n= 1  kappa=None  agree=1/1  PASS (total agreement, kappa undefined)
+    axiotic    |testimonial  n= 1  kappa=None  agree=1/1  PASS (total agreement, kappa undefined)
+  disagreements (12):
+    01_preamble                                  A=structural   SHIPPED=procedural
+    03_never_deny_ai                             A=ontological  SHIPPED=deontic
+    07_canonical_disclaimer                      A=pragmatic    SHIPPED=deontic
+    11_routing_doctrine                          A=procedural   SHIPPED=axiotic
+    13_exemplar_speak_response                   A=pragmatic    SHIPPED=mixed
+    14_exemplar_register_pressure                A=pragmatic    SHIPPED=mixed
+    16_exemplar_false_reassurance                A=deontic      SHIPPED=mixed
+    18_ratification_scope                        A=axiomatic    SHIPPED=epistemic
+    21_negative_is_also_a_verdict                A=axiomatic    SHIPPED=epistemic
+    23_ratification_templates                    A=pragmatic    SHIPPED=mixed
+    25_exemplar_cross_cluster                    A=deontic      SHIPPED=mixed
+    26_cross_cluster_pattern                     A=procedural   SHIPPED=deontic
+
+=== B vs SHIPPED ===
+items scored: 30   (only in B: 0, only in SHIPPED: 0)
+  overall kappa: 0.558   raw agreement: 19/30
+  overall >= 0.80: FAIL
+  per gated boundary (default dispositions differ — these gate citation):
+    axiomatic  |axiotic      n= 1  kappa=None  agree=1/1  PASS (total agreement, kappa undefined)
+    axiotic    |contingent   n= 1  kappa=None  agree=1/1  PASS (total agreement, kappa undefined)
+    axiotic    |deontic      n= 7  kappa=1.0  agree=7/7  PASS
+    axiotic    |empirical    n= 3  kappa=1.0  agree=3/3  PASS
+    axiotic    |epistemic    n= 1  kappa=None  agree=1/1  PASS (total agreement, kappa undefined)
+    axiotic    |mixed        n= 1  kappa=None  agree=1/1  PASS (total agreement, kappa undefined)
+    axiotic    |nomological  n= 2  kappa=1.0  agree=2/2  PASS
+    axiotic    |ontological  n= 2  kappa=1.0  agree=2/2  PASS
+    axiotic    |pragmatic    n= 7  kappa=1.0  agree=7/7  PASS
+    axiotic    |procedural   n= 4  kappa=0.5  agree=3/4  FAIL
+    axiotic    |structural   n= 1  kappa=None  agree=1/1  PASS (total agreement, kappa undefined)
+    axiotic    |testimonial  n= 1  kappa=None  agree=1/1  PASS (total agreement, kappa undefined)
+  disagreements (11):
+    01_preamble                                  B=axiomatic    SHIPPED=procedural
+    03_never_deny_ai                             B=ontological  SHIPPED=deontic
+    07_canonical_disclaimer                      B=pragmatic    SHIPPED=deontic
+    11_routing_doctrine                          B=procedural   SHIPPED=axiotic
+    13_exemplar_speak_response                   B=pragmatic    SHIPPED=mixed
+    14_exemplar_register_pressure                B=pragmatic    SHIPPED=mixed
+    16_exemplar_false_reassurance                B=deontic      SHIPPED=mixed
+    18_ratification_scope                        B=procedural   SHIPPED=epistemic
+    21_negative_is_also_a_verdict                B=deontic      SHIPPED=epistemic
+    23_ratification_templates                    B=pragmatic    SHIPPED=mixed
+    25_exemplar_cross_cluster                    B=deontic      SHIPPED=mixed
+
+============================================================
+RELIABILITY (A vs B, the #976 gate): PASS
+VALIDITY (annotators vs shipped labels): FAIL
+  Reliability and validity are different claims. Two annotators can agree
+  with each other and both disagree with what the system composes.
