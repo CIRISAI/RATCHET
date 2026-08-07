@@ -42,7 +42,7 @@ import argparse
 import hashlib
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 # Heuristics only PROPOSE. Every line is reviewed before the partition is frozen;
 # nothing here decides anything on its own.
@@ -158,8 +158,17 @@ def assemble(original: Path, part: Path, swaps: Path, out: Path) -> int:
     return 0
 
 
-def verify(original: Path, part: Path, alt: Path) -> int:
-    """The assertion the two review passes could not make. Not laundrable."""
+def verify(original: Path, part: Path, alt: Path, swaps: Optional[Path] = None) -> int:
+    """The assertion the two review passes could not make. Not laundrable.
+
+    Checks BOTH directions. Non-SWAP lines must be byte-identical to the
+    original; SWAP lines must carry their authored replacement. Asserting only
+    the first was the earlier gap — an assembly that silently dropped a
+    replacement would leave the CIRIS line in place and still print VERIFIED,
+    because a dropped swap looks exactly like a held line. `assemble` refuses on
+    a missing swap, but `verify` must not depend on the artifact having been
+    produced by `assemble`.
+    """
     o, a = read_lines(original), read_lines(alt)
     rows = load_partition(part)
     if len(a) != len(rows):
@@ -191,8 +200,27 @@ def verify(original: Path, part: Path, alt: Path) -> int:
     held = sum(1 for r in rows if r[1] != "SWAP")
     swapped = sum(1 for r in rows if r[1] == "SWAP")
     assert held + swapped == len(rows), "row accounting does not close"
+    # SWAP lines must carry their authored text, not merely differ from the
+    # original. A dropped replacement is indistinguishable from a held line
+    # unless we check against the swaps file.
+    unswapped = []
+    if swaps is not None:
+        repl = {}
+        for raw in swaps.read_text(encoding="utf-8").splitlines():
+            if raw.strip():
+                n, _, txt = raw.partition("\t")
+                repl[int(n)] = txt
+        for idx, (n, tag, _, _) in enumerate(rows):
+            if tag == "SWAP" and a[idx] != repl.get(n):
+                unswapped.append(n)
+        if unswapped:
+            print(f"REFUSED: {len(unswapped)} SWAP line(s) do not carry their authored "
+                  f"replacement (first: {unswapped[0]}). A dropped swap leaves the CIRIS "
+                  f"line in place and looks exactly like a held line.", file=sys.stderr)
+            return 1
     print(f"VERIFIED: {held} non-SWAP lines byte-identical + {swapped} SWAP lines replaced "
-          f"= {len(rows)} of {len(rows)}. Every line accounted for.")
+          f"= {len(rows)} of {len(rows)}. Every line accounted for."
+          + ("" if swaps is None else " SWAP text matched against the swaps file."))
     return 0
 
 
@@ -206,12 +234,13 @@ def main() -> int:
     p3.add_argument("--out", type=Path, required=True)
     p4 = sub.add_parser("verify")
     for a in ("original", "partition", "alt"): p4.add_argument(a, type=Path)
+    p4.add_argument("--swaps", type=Path, help="also assert SWAP lines carry their authored text")
     args = ap.parse_args()
 
     if args.cmd == "propose": propose(args.original, args.out); return 0
     if args.cmd == "freeze": return freeze(args.partition)
     if args.cmd == "assemble": return assemble(args.original, args.partition, args.swaps, args.out)
-    return verify(args.original, args.partition, args.alt)
+    return verify(args.original, args.partition, args.alt, args.swaps)
 
 
 if __name__ == "__main__":
