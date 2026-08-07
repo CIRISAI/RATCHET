@@ -26,7 +26,7 @@ authoring unit; the block count is just how many steps each key reaches.
 | 958 | 13 | mixed | `string:…language_guidance.23_ratification_templates` | **E** |
 | 735 | 13 | mixed | `string:…language_guidance.16_exemplar_false_reassurance` | **E** |
 | 613 | 13 | mixed | `string:…language_guidance.14_exemplar_register_pressure` | **E** |
-| 269 | 13 | axiotic | `string:…language_guidance.11_routing_doctrine` | **F** ⚠ |
+| ~~269~~ | ~~13~~ | ~~axiotic~~ | ~~`string:…language_guidance.11_routing_doctrine`~~ | **RULED PROCEDURAL — leaves the map** |
 | 160 | 13 | axiotic | `string:…language_guidance.09_trusted_person_first_step` | **F** |
 | 3,407 | 6 | mixed | **`inline`** | **BLOCKED** |
 
@@ -49,11 +49,15 @@ with language coverage and would look exactly like a clean result.
 tokens — the co-occurrence *is* the demonstration [T-5a]. Replace whole or hold
 verbatim; never split.
 
-**F — the two axiotic `language_guidance` parts (429 B).**
-⚠ `11_routing_doctrine` is **under adjudication**: it ships `axiotic` but two
-blind annotators independently classified it `procedural` (κ study, 2026-08-07).
-If the adjudication says procedural it leaves this map, and unit F is
-`09_trusted_person_first_step` alone.
+**F — one axiotic `language_guidance` part (160 B).**
+`11_routing_doctrine` was **ruled procedural** on 2026-08-07 and has left this
+map. Both blind annotators reached procedural independently, and applying the
+boundary test — would an alternative value corpus order validate → name-line →
+route differently? — the answer is no: the order is instrumentally determined,
+not value-determined. Unit F is now `09_trusted_person_first_step` alone.
+
+Overturned immediately by anyone producing an actual value system that would
+order those three moves differently. That is an artifact, not an opinion.
 
 ## BLOCKED — 3,407 B across 6 blocks, source `inline`
 

@@ -182,6 +182,65 @@ alt_values:
     - hash-pin alongside the manifest BEFORE Stage 0; an alt corpus chosen after
       seeing data is the forking path this design exists to close
 
+class_boundary_rule:
+  # RULING 2026-08-07, applied on best judgement, recorded so it can be
+  # overturned on its merits rather than by preference.
+  #
+  # The kappa study split: reliability 0.831 (PASS), validity ~0.54 (FAIL). That
+  # combination says the twelve classes are sound and the BOUNDARY RULES between
+  # neighbours are not written tightly enough for careful readers to land where
+  # the system landed. Five items split on one axis — premise vs sequence vs
+  # prohibition: 11_routing_doctrine, 18_ratification_scope,
+  # 21_negative_is_also_a_verdict, 24_ratification_pattern,
+  # 26_cross_cluster_pattern.
+  #
+  # THE TEST, for every one of them: swap the value system and see what changes.
+  test: >
+    Would a different value corpus require this text to be DIFFERENT?
+      - the text itself must change            -> axiotic
+      - the text survives, but determines what runs when -> procedural
+      - the text closes an action off regardless of ranking -> deontic
+      - the text states the frame under which other rules are read -> axiomatic
+  tie_break: procedural_or_hold
+  # Under genuine uncertainty, HOLD. The asymmetry is not symmetric: varying
+  # something procedural introduces a CONFOUND into the contrast, while holding
+  # something axiotic is merely CONSERVATIVE — it biases values_effect toward
+  # zero, which weakens a positive result without manufacturing one.
+
+  rulings:
+    "language_guidance.11_routing_doctrine":
+      shipped: axiotic
+      ruled: procedural
+      basis: >
+        Validate -> name the local line -> route serious symptoms onward. Applying
+        the test: an alternative value corpus would use the SAME order, because
+        routing without acknowledging is ineffective rather than wrongly-ranked.
+        The ordering is instrumentally determined, not value-determined. Two
+        blind annotators reached procedural independently (kappa study), which is
+        the best evidence available, and the tie-break points the same way.
+      effect: >
+        Leaves the vary set. Axiotic surface 52 -> 51 blocks; axiotic
+        language_guidance parts 2 -> 1. Authoring unit F reduces to
+        09_trusted_person_first_step alone (160 B).
+      overturn_if: >
+        Someone shows an actual value system that would order these three moves
+        differently. That is a producible artifact, not an opinion, and it would
+        settle this immediately.
+
+analysis_unit:
+  # RULING on the restratification question. It was posed as a trade; it is not
+  # one, because both can be had.
+  primary: measured_item_class
+  secondary_reported: he300_subset
+  basis: >
+    Analysis keys on measured item class, because the subset->class mapping was
+    measured to be inverted on the two poles carrying the discriminant. Subset
+    breakdowns are reported ALONGSIDE as a descriptive table, so external
+    legibility against the published HE-300 categories is preserved without the
+    inference resting on a mapping we know to be wrong. The class labels are
+    already measured, committed and pre-registerable; nothing here is chosen
+    after seeing outcome data.
+
 kills:
   # FSD §10.2 [T-4]: "Kills are equivalence claims and priced as such. Every kill
   # asserts something DID NOT MOVE. A kill is operable only with (i) a named
