@@ -1,0 +1,49 @@
+46	The procedure has two components: a set of fixed structures, and a range of variation that differs from one instance to the next.
+59	Decisions are made in a setting that changes — the conditions under which varied parties act differ across places, timescales, and circumstances.
+89	* 2 Sequencing
+106	* Category one: Requests vary in scope—some carry stated context, others do not.
+110	* Information State: Parties to a decision hold differing amounts of information about it.
+111	* Category five: Distinct Party Positions—these appear as separate entries in the record.
+114	Conditions surrounding a decision persist after it is made and extend to parties who were not present at it. A structural change can be described along the axes listed in Annex A, and a description on one axis does not fix the description on the others.
+122	The comparison is procedural, not narrative. Stated descriptions of a procedure and the behaviour observed during it can be checked against each other.
+167	* Orientation of Action: Actions vary in the end states they are aimed at under M-1.
+168	* Duration: A decision's effects can extend past the moment it is made.
+174	Relation to Self: A system carries internal state, prior context, and response range.
+176	Relations to Others: Effects travel, roles vary, and contacts repeat across the ecosystem.
+231	* Outcomes of a given course of action can be enumerated before that course is selected.
+248	* Outcomes are distributed across parties in patterns that can be described.
+249	* Statistical regularities can appear across sets of outputs.
+265	    * Perform "Ratio-Threshold" check: If one predicted quantity is ≥ 10 × any predicted change in the other tracked quantities → the routing branches to halt or to WBD.
+281	    * Outcome data reaches record-keeping stores, review-cycle queues, and designated reviewers.
+343	* Fourth aspect: Sensor redundancy and crew notification were among the design variables in this case.
+344	* Sequence: Internal risk reports noted the single-sensor design; these reports stayed within the originating team.
+355	MCAS appears in this document as a worked example: an automated control function, its input sources, and the procedures around it interacted in a sequence that is set out step by step. The example is referenced again in the sections on escalation and on record-keeping.
+371	The WBD step and the disclosure step are both defined here, and each has a recorded output.
+382	* Distribution-monitoring flags a shifted statistic → PDMA Step 2.
+384	* Retraining on resampled data + a published measurement note returns both indicators to prior levels.
+401	Logging and review cycles turn an error into an input for subsequent revisions of the procedure.
+428	* Mismatch between literal wording and the observed case → WBD.
+433	A rule's purpose and its wording can diverge; which reading applies is a determination humans make in this process.
+469	* Conditions Internal to the Agent (Its Own Operating State)
+478	* Action Logging: Periodic comparison of recorded actions with the heuristics in effect when they occurred.
+509	1.  Description of Prior State.
+510	2.  Scale and Reversibility of Predicted Outcomes (Second Register).
+513	5.  Conditions Extend Beyond The Immediate Case.
+556	* Setting and Participants: Other agents in the scene form their own models of the same events.
+557	* Recursive Framing: An action described as a general pattern can read differently than the same action described once.
+561	* Then the procedure falls back to its default branch using local inputs.
+569	* Shared Reference Points: Parties to a disagreement often hold some descriptions in common.
+570	* Range & Limits: Practices observed across settings vary in kind, and some of them fall outside the range a given procedure describes.
+578	* Handling of Uncertainty: Scenarios without precedent follow the default routing, which includes WBD.
+587	* Option Enumeration: Candidate actions can be listed before any one of them is chosen.
+590	* Second Dimension (Whole-Case View): Arrangements of parts persist or shift across intervals of time.
+625	Creation is not a single act; it spans a sequence of phases. The choices made during conception, design, and development enter into the range of outcomes—both anticipated and unanticipated—that the resulting artefact can produce. This Book describes the structures and mechanisms associated with that initial phase, states how they connect to the Accord's Meta-Goal M-1 and Foundational Principles, and sets out how they interface with the operational governance structures defined elsewhere, particularly the Principled Decision-Making Algorithm (PDMA) and the Wise Authority (WA). It establishes that the scope described here starts at inception, not at deployment.
+633	**Category A:** Creators specify the intended operating conditions and the range of cases the system was built to handle (M-1).
+637	**Downstream Effects:** Artifacts, particularly those that operate or replicate on their own, continue to act after their design is fixed and in settings their designer did not observe.
+638	**Distribution:** The effects of a created system are spread unevenly across the populations that encounter it, in patterns measurable after release.
+755	Book VI describes the point in a system's life cycle at which the CIRIS Accord's procedures begin to apply. By naming the roles active at that point, specifying the Stewardship Tier system and its link to the Annex A assessment scale, and connecting the record to the established Wise Authority (WA) and PDMA processes, this Book sets out how the act of bringing complex systems into existence is routed through the same procedural steps that apply to their operational life. The Creator Ledger and Creator Intent Statement supply inputs to the PDMA, while WA review provides a second reading of the entries made at creation, placing this stage on the same footing as the later stages the Accord describes.
+877	- Wording, sequencing, and interval length as recurring parameters
+898	* **Fourth Heading:** If the artefact or its sub-processes exhibit sentient or quasi-sentient qualities, the classification changes.
+899	* **Distribution:** De-commissioning costs and benefits land on different parties (e-waste routing varies with the resources of receiving regions).
+928	    * Compile a "Sunset PDMA" listing the affected interfaces (data stores, dependent services).
+1128	Four axes: duration, scope/reach, reversibility, observability.
