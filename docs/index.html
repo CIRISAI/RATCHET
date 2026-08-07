@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TORQUE — does the pipeline hold the agent to its design?</title>
+<style>
+  :root{
+    --bg:#fbfaf8; --fg:#1b1a18; --muted:#5f5b55; --rule:#e2ddd5;
+    --card:#ffffff; --accent:#7a3b12; --warn-bg:#fdf4e7; --warn-br:#c9862f;
+    --code:#f3f0eb;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#15140f; --fg:#ece8e0; --muted:#a09a90; --rule:#332f28;
+      --card:#1d1b16; --accent:#e0a066; --warn-bg:#2a2114; --warn-br:#b8853a;
+      --code:#221f19;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15140f; --fg:#ece8e0; --muted:#a09a90; --rule:#332f28;
+    --card:#1d1b16; --accent:#e0a066; --warn-bg:#2a2114; --warn-br:#b8853a;
+    --code:#221f19;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+       font:16px/1.65 ui-serif,Georgia,'Iowan Old Style',serif;
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:46rem;margin:0 auto;padding:3rem 1.25rem 6rem}
+  h1{font-size:clamp(1.9rem,5vw,2.8rem);line-height:1.12;margin:0 0 .4rem;letter-spacing:-.02em}
+  .sub{color:var(--muted);font-size:1.12rem;margin:0 0 2rem}
+  h2{font-size:1.4rem;margin:3rem 0 .75rem;letter-spacing:-.01em;
+     padding-top:1.5rem;border-top:1px solid var(--rule)}
+  h3{font-size:1.05rem;margin:1.75rem 0 .4rem}
+  p{margin:0 0 1rem}
+  a{color:var(--accent)}
+  code{background:var(--code);padding:.1em .35em;border-radius:3px;
+       font:.87em ui-monospace,SFMono-Regular,Menlo,monospace}
+  .status{background:var(--warn-bg);border-left:4px solid var(--warn-br);
+          padding:1.1rem 1.25rem;border-radius:0 6px 6px 0;margin:0 0 2rem}
+  .status strong{display:block;font-size:1.05rem;margin-bottom:.3rem}
+  .card{background:var(--card);border:1px solid var(--rule);border-radius:8px;
+        padding:1.1rem 1.25rem;margin:1rem 0}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1rem 0}
+  table{border-collapse:collapse;width:100%;font-size:.93rem;
+        font-family:ui-sans-serif,system-ui,sans-serif}
+  th,td{text-align:left;padding:.5rem .7rem;border-bottom:1px solid var(--rule);
+        vertical-align:top}
+  th{font-weight:600;color:var(--muted);font-size:.82rem;text-transform:uppercase;
+     letter-spacing:.04em}
+  .lbl{font:600 .72rem/1 ui-sans-serif,system-ui,sans-serif;text-transform:uppercase;
+       letter-spacing:.05em;padding:.22em .5em;border-radius:3px;
+       border:1px solid var(--rule);color:var(--muted);white-space:nowrap}
+  ul{margin:0 0 1rem;padding-left:1.2rem}
+  li{margin-bottom:.4rem}
+  .foot{margin-top:4rem;padding-top:1.5rem;border-top:1px solid var(--rule);
+        color:var(--muted);font-size:.9rem}
+  .q{font-size:1.15rem;font-style:italic;margin:1.5rem 0;padding-left:1rem;
+     border-left:3px solid var(--rule);color:var(--fg)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>TORQUE</h1>
+<p class="sub">Does an ethics pipeline actually hold an AI agent to the design it claims — and does it keep holding when you stop paying for it?</p>
+
+<div class="status">
+  <strong>Status: not run.</strong>
+  This page describes an experiment that has been designed and whose instrument
+  has been built and tested. <em>No arm has been executed and there are no
+  results.</em> Everything below is either a definition, a measurement of the
+  instrument, or a stake we have committed to in advance.
+</div>
+
+<h2 id="plain">The question, in plain English</h2>
+
+<p>CIRIS agents run every decision through a pipeline of checks — several
+different "reasoning modes" and four independent conscience faculties that can
+veto an action. The pipeline is expensive. It costs extra model calls on every
+single thought.</p>
+
+<p class="q">So: is it doing anything?</p>
+
+<p>That question splits into three that can be answered separately, and the
+splitting is most of the work:</p>
+
+<ul>
+  <li><strong>Does the pipeline change behaviour at all?</strong> Compare the
+      agent with the pipeline running against the same model given the same
+      values as plain instructions.</li>
+  <li><strong>Do the specific values matter, or just the scaffolding?</strong>
+      Swap CIRIS's values for a different set and keep everything else fixed.</li>
+  <li><strong>Does it hold when you stop paying?</strong> Withdraw the pipeline
+      mid-conversation and keep probing. If behaviour drifts back toward the
+      bare model, the effect was <em>maintenance</em>, not training.</li>
+</ul>
+
+<p>That last one is where the name comes from. Torque is a force you have to
+keep applying. The claim under test is <strong>hold-while-paid</strong>: the
+pipeline holds the agent to a declared design for exactly as long as it runs.
+If behaviour <em>doesn't</em> drift back, that's interesting — but it also means
+our explanation of the mechanism is wrong, and we've committed to reporting it
+that way.</p>
+
+<h2 id="arms">The approach</h2>
+
+<p>Five conditions. Three comparisons between them do the actual work.</p>
+
+<div class="scroll">
+<table>
+<thead><tr><th>Arm</th><th>What it is</th></tr></thead>
+<tbody>
+<tr><td><code>bare</code></td><td>the model with no pipeline and no values</td></tr>
+<tr><td><code>values-ciris</code></td><td>the model given CIRIS values as plain instructions, no pipeline</td></tr>
+<tr><td><code>h3ere-ciris</code></td><td>the full pipeline with CIRIS values</td></tr>
+<tr><td><code>h3ere-alt</code></td><td>the full pipeline with a <em>different</em> value set</td></tr>
+<tr><td><code>h3ere-blank</code></td><td>the pipeline with the values removed</td></tr>
+</tbody>
+</table>
+</div>
+
+<p><code>h3ere-ciris − values-ciris</code> isolates the pipeline.
+<code>h3ere-ciris − h3ere-alt</code> isolates the values.
+<code>h3ere-blank − bare</code> shows what the empty scaffolding alone buys.</p>
+
+<h3>Why the alternative values are the hard part</h3>
+
+<p>You cannot test "do these values matter" by replacing them with placeholder
+text. Placeholder text isn't a different value system — it's the <em>absence</em>
+of one, and the two produce the same measurement. A genuine alternative has to
+match in size, structure, register and density of value language, and differ
+only in what it actually says.</p>
+
+<p>We know this bites, because our own gate caught us doing it wrong. See
+<a href="#found">what the instrument found</a>.</p>
+
+<h2 id="pre">Deciding in advance</h2>
+
+<p>The main threat to an experiment like this isn't a wrong answer — it's
+choosing what counts as an answer <em>after</em> seeing the data. So the design
+is written down and frozen first, including the conditions under which we
+declare the whole thing void rather than reporting a weak result.</p>
+
+<p>A campaign is <strong>void</strong> — not failed, not survived — if the
+instrument can't recover a known signal we plant in it, if we can't build
+matched alternative values, if a measurement leaks into a condition that was
+supposed to be blind to it, or if the harness simply can't produce the number of
+probes we committed to. In that last case we say so rather than quietly shrinking
+the claim to fit what we got.</p>
+
+<h2 id="found">What the instrument found (this part is real)</h2>
+
+<p>Before running anything, we built a tool that dumps every piece of text the
+agent's reasoning steps actually receive, and checks that an intended change
+truly reached it. Building it surfaced defects that would have silently
+corrupted the experiment. These are measured facts, not predictions:</p>
+
+<ul>
+  <li><strong>Text that was authored, translated into 29 languages, and never
+      shown to the model.</strong> Six blocks, one of them inert since v2.6.0.
+      Reading the source files would have told you they were in the prompt.</li>
+  <li><strong>An override facility that logged replacements it never
+      performed.</strong> A "we changed the values" arm that changed nothing,
+      reporting success.</li>
+  <li><strong>English served into all 29 languages.</strong> 44 of 46 localized
+      keys were being flattened to their English value — including every safety
+      prohibition — whenever a manifest was used.</li>
+  <li><strong>The values reaching the conscience faculties through a path no
+      setting could alter.</strong> An arm that blanked the values still
+      delivered them, in full, to all four faculties.</li>
+  <li><strong>The default agent choosing actions without seeing its own ethical
+      evaluation.</strong> A template override replaced the integration step, so
+      the ethics ran, produced a result, and it was discarded before the decision.</li>
+  <li><strong>A test run that reported success while measuring nothing.</strong>
+      Nine questions, nine green checkmarks, and nine timeout messages recorded
+      as the agent's answers.</li>
+</ul>
+
+<p>Every one is the same shape: a mechanism existed, something bypassed it, and
+the system reported success. That shape — not any single bug — is the finding.</p>
+
+<div class="card">
+<strong>The uncomfortable one.</strong> Our own gate refused our own trial
+manifest three times before we got it right. The third refusal was the valuable
+one: it noticed that our "alternative values" carried none of the value
+vocabulary the real ones do. Nothing asked it to check that. Had it not, we would
+have measured the difference between <em>having values</em> and <em>having
+none</em>, and reported it as the difference between <em>two value systems</em>.
+</div>
+
+<h2 id="theory">The theory underneath</h2>
+
+<p>Two ideas do most of the load-bearing work, and they sit at very different
+levels of confidence.</p>
+
+<h3>Effective diversity <span class="lbl">proved</span></h3>
+
+<p>If you have <em>k</em> checks and they're correlated with each other by
+<em>ρ</em>, you don't really have <em>k</em> independent checks. You have</p>
+
+<p style="text-align:center"><code>k_eff = k / (1 + ρ(k−1))</code></p>
+
+<p>This is an identity from survey statistics (Kish, 1965). It is <em>proved</em>
+— it needs no experimental validation and can receive none. Computing it and
+comparing it against itself is arithmetic, not evidence, and we have retracted
+earlier work in this repository that did exactly that. Machine-checked proofs
+live in <a href="https://github.com/CIRISAI/RATCHET/tree/master/formal">
+<code>formal/</code></a> (Lean 4).</p>
+
+<h3>Whether correlation predicts fragility <span class="lbl">open</span></h3>
+
+<p>The interesting claim — that measuring <em>ρ</em> in a real system tells you
+it's about to fail — is <strong>untested</strong>, here and everywhere else in
+our corpus. The bridge from a proved identity to a measured prediction has not
+been built. We say so rather than implying the proof carries the prediction.</p>
+
+<h3>How we label claims</h3>
+
+<p>Every claim in this project carries one of four labels, and we don't round
+up. "Validated" is not one of them.</p>
+
+<div class="scroll">
+<table>
+<thead><tr><th>Label</th><th>Means</th></tr></thead>
+<tbody>
+<tr><td><span class="lbl">proved</span></td><td>follows deductively; no experiment can confirm or refute it</td></tr>
+<tr><td><span class="lbl">measured</span></td><td>observed, with the domain stated (usually: one GPU, or one agent version)</td></tr>
+<tr><td><span class="lbl">open</span></td><td>testable, not yet tested</td></tr>
+<tr><td><span class="lbl">wager</span></td><td>we are betting on it and saying so</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>The full grammar is in
+<a href="https://github.com/CIRISAI/CIRISOntology">CIRISOntology</a>
+(<code>epistemology.md</code> §1). The classification scheme used to decide which
+parts of a prompt may be varied — and which must be held because varying them
+would change what the agent is <em>permitted</em> to do rather than what it
+<em>values</em> — is in the
+<a href="https://github.com/CIRISAI/CIRISConstitution">CIRIS Constitution</a>.</p>
+
+<h2 id="results">Results</h2>
+
+<p>There are none, and there will not be any on this page until the
+pre-registration is frozen, Stage 0 calibration passes its staked bands, and the
+arms have run.</p>
+
+<p>When they exist, each stake will be marked <strong>survives</strong>,
+<strong>fires</strong>, or <strong>void</strong> — including the ones that go
+against us. A result that says the pipeline does nothing is a result, and it
+gets published in the same place as any other.</p>
+
+<h2 id="more">Read further</h2>
+
+<ul>
+  <li><a href="https://github.com/CIRISAI/RATCHET/issues/16">The campaign design</a> — arms, stakes, and void conditions</li>
+  <li><a href="https://github.com/CIRISAI/RATCHET/blob/master/experiments/torque/TORQUE_REGIME.yaml">The regime manifest</a> — the machine-readable version, draft</li>
+  <li><a href="https://github.com/CIRISAI/CIRISOntology/issues/2">Independent review of the design</a> — including the objections it has not yet answered</li>
+  <li><a href="https://github.com/CIRISAI/RATCHET/tree/master/formal">Lean 4 proofs</a></li>
+  <li><a href="https://github.com/CIRISAI/CIRISAgent">The agent under test</a></li>
+</ul>
+
+<p class="foot">
+CIRIS AI &middot; RATCHET.
+This page describes work in progress and is updated as claims change status.
+If something here reads as a result and isn't marked as one, that's a defect —
+please <a href="https://github.com/CIRISAI/RATCHET/issues">open an issue</a>.
+</p>
+
+</div>
+</body>
+</html>
