@@ -50,6 +50,43 @@ contrasts:
 # ---------------------------------------------------------------------------
 # The independent variable — LOCKED 2026-08-07
 # ---------------------------------------------------------------------------
+accord_forms:
+  # FOUND 2026-08-07 at the build step. corpus:accord.* is THREE keys reaching
+  # different parts of the pipeline, and the authored alt corpus is English only.
+  # See POLYGLOT_PROBLEM.md.
+  measured:
+    accord.localized:           {bytes: 54725, steps: 8,  reaches: ASPDMA family}
+    accord.polyglot_compressed: {bytes: 7215,  steps: 5,  reaches: round-1 DMAs}
+    accord.polyglot_full:       {bytes: 180522, steps: 8, reaches: all four consciences}
+  problem: >
+    The two polyglot forms are woven from 15 languages by semantic weight, not
+    translated. An English alt corpus cannot replace them without destroying that
+    property. Left alone, the alt arm would carry CIRIS values on 13 of 21 steps
+    including every conscience faculty — CIRISAgent#995 in a new guise.
+  decision: both_arms_monolingual_english
+  rationale: >
+    All three keys are set to the English CIRIS accord in the CIRIS arm and the
+    English alt accord in the alt arm. Language coverage is HELD CONSTANT across
+    arms so it cannot confound, and the manipulation is complete across all 21
+    steps. The alternatives each leave a confound in the estimate itself: putting
+    the English alt in only the alt arm confounds values with language coverage
+    (unpredictable direction), and replacing only `localized` biases toward zero
+    while measuring values_effect over 8 of 21 steps and none of the consciences.
+  domain_limit: >
+    The campaign therefore measures a MONOLINGUAL VARIANT of H3ERE, not shipped
+    H3ERE. Every arm including h3ere-ciris runs a configuration the product does
+    not ship. The result reads "in a monolingual English configuration, swapping
+    the value corpus changes behaviour by X" and does NOT license a claim about
+    the shipped polyglot agent without assuming the polyglot weave does not
+    interact with the values manipulation — an assumption that is untested and
+    must not be smuggled in.
+  must_measure_and_declare: >
+    Setting accord.polyglot_full (180,522 B) to the English accord (~40 KB) is a
+    ~4.5x reduction in the text the consciences receive, in BOTH arms. Held
+    constant, so not a confound — but a large change to the configuration under
+    test. Measure it and state it; do not wave it through as "both arms got the
+    same thing."
+
 alt_values:
   # CORRECTED 2026-08-07 against the PRIMARY TEXT. The version below replaces a
   # description built from secondary reporting, which was wrong on length by 29%
