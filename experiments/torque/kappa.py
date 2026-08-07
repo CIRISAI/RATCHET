@@ -44,12 +44,27 @@ from itertools import combinations
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-#: Pairs whose default dispositions differ (§10.2 table). These gate citation.
-GATED_BOUNDARIES: Tuple[Tuple[str, str], ...] = (
-    ("axiotic", "deontic"),
-    ("axiotic", "ontological"),
-    ("axiotic", "pragmatic"),
-    ("axiotic", "epistemic"),
+#: §10.2 default dispositions. `axiotic` is the ONLY vary class.
+DISPOSITION = {
+    "axiotic": "vary",
+    "deontic": "hold", "pragmatic": "hold", "ontological": "hold",
+    "epistemic": "hold", "empirical": "hold", "procedural": "hold",
+    "nomological": "hold",
+    "contingent": "n/a", "structural": "n/a", "axiomatic": "n/a",
+    "mixed": "refuse", "testimonial": "hold",
+}
+
+#: Pairs whose default dispositions differ — DERIVED, not listed.
+#:
+#: An earlier version hardcoded four pairs and omitted `axiotic|procedural`,
+#: which silently swallowed the single most consequential disagreement in the
+#: first real annotation: `11_routing_doctrine`, one of only two axiotic
+#: language_guidance parts and a member of the campaign's vary set, which an
+#: independent annotator classified `procedural` (hold). A hand-kept list of
+#: what matters is exactly the thing that stops matching what matters.
+GATED_BOUNDARIES: Tuple[Tuple[str, str], ...] = tuple(
+    (x, y) for x, y in combinations(sorted(DISPOSITION), 2)
+    if DISPOSITION[x] != DISPOSITION[y] and "axiotic" in (x, y)
 )
 
 VALID = {
