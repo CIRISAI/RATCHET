@@ -909,3 +909,71 @@ stage_0:
   - structureless_control: a null "design" with matched surface statistics must
       read tau ~ 0 within the floor.
   - null_shape_measured: before any z is quoted.
+
+held_value_background:
+  # DECLARED 2026-08-08, from reading the pinned template rather than the prose
+  # about it. The manipulation is NOT against a value-free background: every arm
+  # carries the Ally identity, and Ally's identity is axiotic.
+  finding: |
+    `template_sha256: 75f2d11d…` is ciris_templates/default.yaml — the Ally
+    personal-assistant template. Its `role_description` is ~35 lines of
+    first-person value claims: "true support comes through partnership, not
+    servitude", "your life is yours to live", "I do not make your decisions for
+    you", "not productivity for its own sake, but sustainable patterns that
+    serve your authentic goals", "relationships with AI assistants must preserve
+    your autonomy … and not rely on emotional or material dependence".
+
+    It reaches every LLM call:
+      template.role_description
+        -> IdentityContext.agent_role            (persistence/models/identity.py:241)
+        -> dma_orchestrator role=…               (dma_orchestrator.py:686)
+        -> rendered as language_guidance.19_agent_role
+    and that block is classified **ONTOLOGICAL** in both compose_dump.py:231 and
+    regime_manifest.py:275.
+
+    The classification is defensible for the BLOCK — it says what the agent is —
+    and the payload on this template is nonetheless axiotic. A block whose class
+    is stable across templates can carry content whose class is not. That is a
+    finding about the taxonomy, not a defect in this run, and it goes upstream.
+
+  consequences:
+    - id: blank_is_not_valueless
+      claim: |
+        `h3ere-blank` disables the AXIOTIC class. `19_agent_role` is ONTOLOGICAL,
+        so it survives. The blank arm therefore measures **accord absence**, not
+        **values absence**, and `scaffold_floor` must be reported in those words.
+        Any reading of blank as a value-free floor is unsupported.
+      status: declared limit
+    - id: values_effect_is_diluted
+      claim: |
+        `values_effect` (ciris vs alt accord) is measured against a CONSTANT
+        Ally value layer present in both arms. Held constant, so not a confound —
+        but the manipulation is partial, and a null result is therefore weaker
+        evidence against the hypothesis than it would be against a value-free
+        background. State the dilution when reporting any null.
+      status: declared limit
+    - id: direct_provider_arms
+      claim: |
+        `bare` and `values-ciris` do not build an IdentityContext, so they do NOT
+        carry the Ally layer. The cross-harness contrasts therefore differ by
+        pipeline AND by this identity text. Already routed to
+        ground_truth.concordance per contrast_instruments; recorded here so the
+        second difference is not discovered at analysis time.
+      status: declared limit
+
+  checked_not_assumed:
+    # The adjacent worry, run down and CLEARED.
+    - identity.core_values, identity.operating_principles, identity.purpose and
+      identity.philosophy are present in the template YAML and are NEVER read
+      into any prompt — whole-repo search for those names finds one schema field
+      (schemas/infrastructure/base.py:122, a different structure) and one test
+      fixture. They are inert configuration.
+    - So the only template text reaching an LLM is `description` and
+      `role_description` (plus agent name), and all three sit inside the
+      override key space (_TEMPLATE_TEXT_FIELDS, research_overrides.py:164).
+      The "every string reaching an LLM is addressable" property SURVIVES.
+    - he-300-benchmark.yaml permits ONLY `speak` — no ponder, no defer — which
+      would make `action_tier` degenerate. The regime pins `default`, not that
+      template; verified by sha256. Had the benchmark template been pinned for
+      the benchmark corpus, selected_verb and defer_rate would both have been
+      structurally constant and the whole action tier dead on arrival.
