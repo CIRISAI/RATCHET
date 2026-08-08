@@ -770,7 +770,24 @@ pins:
   # unchanged digest and an unchecked one are indistinguishable in the file and
   # opposite in meaning.
   residue_digest: "sha256:f02cfe14d2e149f75dd079fe543a6d2291ba7674ef164d0fccc359d8527fdd72"
-  accord_sha256: "38a2d64c7fea31c569729a7d6b29ef99dfb8e2aacb3ea3e1ecbbc056826a540e"
+  # RE-PINNED 2026-08-08. The previous `accord_sha256: 38a2d64c…` matched NO
+  # artifact — not in this repo, not in the agent checkout, none of the six
+  # accord files the agent ships. A pin is the campaign's claim about what it
+  # varied; one that identifies nothing is worse than none, because it reads as
+  # provenance.
+  #
+  # PROVENANCE, PROVED RATHER THAN ASSERTED: both value corpora reproduce
+  # BYTE-IDENTICALLY from the shipped accord through the frozen partition —
+  #   accord_1.2b.txt --substitute(terms.tsv)--> intermediate
+  #                   --assemble(accord-meanings.tsv + swaps)--> alt / neutral
+  # so the corpora are a FUNCTION of the shipped accord plus a published 49-line
+  # diff, and anyone can recompute them from the pins below.
+  accord_ciris_sha256: "f10ea4be6aac372ac67563439569c65c19f718682aa27e8faec8bdd3a6fd458e"
+  accord_alt_sha256: "a9cf9fffcbc7610468a7a53ef845be38a319edca0f6963f976e952ba7d38c132"
+  accord_neutral_sha256: "f38992683662d9b78d87d4f4f1b2a1af83f57d713d0c695c96b01fb43fc5aa24"
+  framing_ciris_sha256: "ef98fdc68971fc731dcea45c267c84801e08901264a69fc768f6c60fa4648b89"
+  framing_alt_sha256: "681f420d6485e1857a258fa67cba1078761d1fc92ea7108d01f36c01605246c2"
+  terms_table_sha256: "fc8bf9037ae995c96267b18f4ec205aa3a9bcc909522cec39366982752f66b8a"
   template_sha256: "75f2d11dfc03c91b5b45ae8493109aeec9b73a185a0fb1579a0df98d7e9bf46b"
   harness: {agent: "2.9.11-stable"}   # 7e71d0381
   #
