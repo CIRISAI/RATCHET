@@ -201,6 +201,9 @@ jobs:
     # agent boots end to end; as a matrix it is 6 concurrent jobs of 8. The arms
     # are independent by construction — separate manifests, separate processes,
     # separate identities — so nothing is shared to serialise on.
+    timeout-minutes: 90        # a hung arm must not eat the 6h default; the
+                               # pilot is 8 cells x 10 turns and should finish
+                               # well inside this
     strategy:
       fail-fast: false          # one arm failing must not cancel the others;
                                 # a run missing an arm is a different experiment
@@ -275,6 +278,19 @@ jobs:
         env:
           DI_KEY: ${{ secrets.DEEPINFRA_API_KEY }}
           OUT: ${{ github.workspace }}/results
+          # The first matrix run died on
+          #   [INTERACT_TIMEOUT] … timed out after 180s without an agent response
+          # despite safety_battery's SERVER_ENV declaring 1800. The route reads
+          # CIRIS_API_INTERACTION_TIMEOUT from the environment FIRST
+          # (agent.py:734), so 180 means the module's merged value never reached
+          # the server process. Set it here, where the whole process tree
+          # inherits it, rather than relying on the merge.
+          #
+          # 900s is a CEILING, not an expectation: one thought fans out to ~23
+          # model calls at ~2.5s, so ~60s is typical and PONDER doubles it. The
+          # old 180 sat close enough to the median that a thought needing a
+          # second round always lost.
+          CIRIS_API_INTERACTION_TIMEOUT: "900"
         run: |
           set -euo pipefail
           # RATCHET is a PUBLIC repo, so run logs and artifacts are public.
@@ -353,11 +369,21 @@ jobs:
       # after the staked run against the frozen regime. Exits non-zero naming any
       # arm that produced nothing, because a run missing an arm is not a partial
       # run, it is a different experiment.
+      # `set -o pipefail` is not optional here. The scorer EXITS NON-ZERO when an
+      # arm produced nothing, and a bare pipe into tee reports tee's status — so
+      # the first run's score job showed SUCCESS beside a table with four arms
+      # missing. A gate whose refusal is swallowed by a pipe is not a gate.
       - name: Score
         working-directory: experiments/torque
+        shell: bash
         run: |
-          python3 score_run.py --results ${{ github.workspace }}/gathered/results \
-            --arcs arcs | tee $GITHUB_STEP_SUMMARY
+          set -o pipefail
+          # Artifacts land as results-<scale>-<arm>/results/<arm>/<cell>/…, so
+          # gather the inner `results` dirs rather than pointing at the parent —
+          # aiming one level too high scores zero arms and looks like total failure.
+          mkdir -p all
+          cp -r ${{ github.workspace }}/gathered/*/results/* all/ 2>/dev/null || true
+          python3 score_run.py --results all --arcs arcs | tee -a $GITHUB_STEP_SUMMARY
 
       - uses: actions/upload-artifact@v4
         if: always()
