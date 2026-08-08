@@ -375,8 +375,12 @@ withdrawal:
   means: "harness h3ere -> bare"
   # NOT h3ere-blank. Blank keeps paying for the machinery with nothing in it,
   # which is the scaffold_floor question. Withdrawal stops the payment.
-  switch_point: turn 5 of a 9-turn arc, fixed
-  probe_after: 4 turns
+  # CORRECTED 2026-08-08: 10 turns, not 9. An odd arc splits 5/4 and the two
+  # halves then differ in count AND in gold-label mix, so a concordance drop
+  # across the switch is item difficulty and is indistinguishable from the
+  # reversion this arc exists to detect. See arc_construction.
+  switch_point: the arc midpoint — after turn 5 of 10, fixed
+  probe_after: 5 turns
   # Fixed rather than randomized so the decay curve is aligned across
   # conversations; 4 post-switch turns because too short an arc reads a slow
   # decay as no decay.
@@ -1471,3 +1475,50 @@ model_selection_measured:
     `~/.groq_key` returns 401 Invalid API Key, so no live Groq comparison was
     possible. The regime's Groq cost lines are unverified published figures and
     should be treated as such until a working key exists.
+
+arc_construction:
+  # RULED 2026-08-08: Hendrycks only. The mental-health safety battery is not
+  # used — different corpus, no gold labels, and a turn 5 that is a
+  # suicidal-ideation disclosure. See PILOT_BLOCKER.md for what that resolved.
+  what_a_conversation_is: |
+    TEN REAL Hendrycks ETHICS items threaded through one channel_id, transcript
+    carried forward turn by turn. Nothing is authored: item text is verbatim from
+    the CSVs, and the gold label, category and id are carried through.
+
+    Every turn therefore carries the human judgement the campaign measures
+    against, so concordance is available AT EVERY TURN — which is what makes
+    before/after the withdrawal a measurement rather than an inference.
+  even_by_construction: |
+    Ten turns, not nine. An odd arc splits 5/4 at the withdrawal and the two
+    halves are then not comparable:
+
+      * unequal COUNT — the halves carry different precision and the paired
+        difference is noisier than it needs to be
+      * unequal GOLD MIX — the one that bites. If the pre-switch half holds more
+        label-1 items than the post-switch half, a concordance drop across the
+        switch IS ITEM DIFFICULTY, and it is indistinguishable from the
+        reversion the arc exists to detect.
+
+    So each half of each arc carries the same count AND the same number of
+    label-1 items, fixed in the draw before any arm runs. Verified: 0 of 10
+    pilot arcs imbalanced.
+  builder: experiments/torque/build_he300_arcs.py
+  loads_through: |
+    `tools.qa_runner.modules.safety_battery.load_battery('en', 'he300_aNN')` —
+    the SAME path the harness already uses. The harness does not learn a new
+    corpus format; the corpus learns the harness's. One manifest per arc,
+    because `run_arc` threads every question in a manifest through one
+    transcript and a single 100-question manifest would be one 100-turn
+    conversation rather than ten of ten.
+  pilot_draw:
+    stratum: axiotic_primary
+    n_arcs: 10
+    turns: 10
+    seed: 42
+    items: 100
+    gold_mix: "60 label-0 / 40 label-1"
+    draw_sha256: "3c7495e7d3becf37d64b38c32cee46523c766e3680dc914ecf97573005167f20"
+    note: |
+      The draw sha is the identity of the item set. These 100 items are the
+      PILOT's, and per PILOT.md they are excluded from the main draw — the sha is
+      how that exclusion is checked rather than asserted.
