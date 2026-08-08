@@ -1155,3 +1155,33 @@ gate_phase1_limit:
     it would be leakage. In a varied block it is the point. Recorded, not
     suppressed — the count is a useful independent tally of where the
     manipulation actually bit.
+
+blank_arm_definition:
+  # SETTLED 2026-08-08 at the manifest-build step, because the first build made
+  # the choice by accident rather than by decision.
+  definition: |
+    `h3ere-blank` = NO ACCORD AND NO PDMA FRAMING, with every other surface —
+    including all thirteen authored unit keys — held at the CIRIS text the other
+    h3ere arms carry.
+
+    Measured: it differs from h3ere-ciris on EXACTLY four keys, the three accord
+    forms and the framing.
+  why_not_stricter: |
+    "Disable the axiotic class" cannot mean "empty every surface carrying axiotic
+    content". The unit blocks are MIXED — `action_selection_pdma.context_integration`
+    is the ASPDMA's core instructions with a value claim inside it. Emptying it
+    removes the pipeline, not the values, and the arm would measure a broken
+    harness.
+  what_it_therefore_measures: |
+    The absence of the ACCORD, not the absence of VALUES. `scaffold_floor` must be
+    reported in those words. Read together with `held_value_background`, the blank
+    arm carries: the Ally identity text (~35 lines of first-person value claims),
+    and every unit block's CIRIS-authored value content. It is a floor for "no
+    accord", and it is not a value-free baseline. Nothing in this campaign is.
+  caught_how: |
+    The first blank manifest was built without --units, so it kept the SHIPPED
+    polyglot `pdma_ethical.system_guidance_header` (21,928 B) while the other
+    three arms ran the monoglot English one (8,240 B). That is a 13.7 KB
+    language difference sitting inside one arm of a values comparison. It showed
+    up as "ciris vs blank: 5 keys differ" when the design says four — one key too
+    many, which is the kind of number worth stopping on.
