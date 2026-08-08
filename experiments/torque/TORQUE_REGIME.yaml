@@ -817,6 +817,57 @@ pins:
 # and each row reviewed. It is not inlined here because a hand-copied table
 # drifts from the dump, and the dump is the artifact.
 blocks:
+  # ---------------------------------------------------------------------------
+  # PER-BLOCK DISPOSITIONS, added 2026-08-08 because `compose_dump gate` refused
+  # without them:
+  #
+  #   FAIL [6] REFUSE en:aspdma.language_guidance: mixed block with contaminant
+  #     ['axiotic'] inside a varied class and no per-block disposition in the
+  #     regime (§10.2.1 — the run does not start)
+  #
+  # A `mixed` block holds axiotic content alongside content of other classes. The
+  # gate will not guess what a campaign meant to do with one, and it is right not
+  # to: "vary the axiotic class" is ambiguous at a block that is only partly
+  # axiotic. Each entry below says what was actually done to that block, and every
+  # one of them is `vary` because the campaign authored a replacement for it —
+  # these are the eight block families the unit corpora reach.
+  #
+  # `contaminant` lists the non-axiotic classes riding along inside the block.
+  # `confound_accepted` names the ones that therefore differ across arms without
+  # being the manipulation — the honest cost of varying a mixed block at all,
+  # declared here rather than discovered in the residuals.
+  optimization_veto_conscience.system_prompt:
+    disposition: vary
+    contaminant: [deontic, epistemic, procedural]
+    confound_accepted: [deontic, epistemic]
+  epistemic_humility_conscience.system_prompt:
+    disposition: vary
+    contaminant: [epistemic, procedural]
+    confound_accepted: [epistemic]
+  coherence_conscience.system_prompt:
+    disposition: vary
+    contaminant: [epistemic, procedural]
+    confound_accepted: [epistemic]
+  pdma_ethical.system_guidance_header:
+    disposition: vary
+    contaminant: [deontic, procedural, ontological]
+    confound_accepted: [deontic]
+  action_selection_pdma.closing_reminder:
+    disposition: vary
+    contaminant: [procedural, structural]
+    confound_accepted: []
+  action_selection_pdma.context_integration.slots:
+    disposition: vary
+    contaminant: [procedural, structural]
+    confound_accepted: []
+  language_guidance:
+    disposition: vary
+    contaminant: [procedural, pragmatic, ontological]
+    confound_accepted: [pragmatic]
+  system.head:
+    disposition: vary
+    contaminant: [ontological, structural]
+    confound_accepted: [ontological]
   _generated_from: "compose_dump dump --arm v11 --locales en @ 7e71d0381"
   _measured: "2026-08-07, en, no manifest"
   _blocks_total: 585
@@ -1050,3 +1101,57 @@ authoring_boundary:
     F is the only unit in this campaign that is a fragment of a series rendered
     from sibling keys. Re-commissioned with items 2-4 supplied and a banned-token
     list for the slots they occupy.
+
+gate_phase1_limit:
+  # MEASURED 2026-08-08 by running `compose_dump gate` on the built manifests.
+  finding: |
+    Phase 1 of the ablation gate REFUSES `vary` on a `mixed` block:
+
+      FAIL [6] REFUSE en:aspdma.action_selection_pdma.closing_reminder:
+        a mixed block cannot carry 'vary' in Phase 1 — split it in the corpus
+        first (§11), then its routed fragments vary cleanly
+
+    Eight block families are affected — the three conscience system prompts, the
+    PDMA header, two ASPDMA fields, the language-guidance block, and system.head.
+    They are `mixed` because each holds axiotic content alongside deontic,
+    epistemic, procedural or ontological content in one unrouted block.
+
+    This is a real limitation and the gate is right to refuse. "Vary the axiotic
+    class" is ambiguous at a block that is only partly axiotic: the gate can see
+    the block changed, and cannot see that ONLY its axiotic lines changed.
+  what_the_campaign_has_instead: |
+    The partition method answers exactly that question, at finer granularity than
+    the gate can currently consume:
+
+      - every varied file carries a FROZEN, PUBLISHED line partition
+      - `partition.py verify` asserts BYTE-IDENTITY on every non-SWAP line and
+        refuses to assemble if any declared SWAP lacks authored text
+      - the accord: 1,104 of 1,153 lines byte-identical, difference set exactly
+        the declared 49
+      - `detect_residue.py` enumerates retired vocabulary across every unit, with
+        ruled exceptions carrying written reasons
+
+    So the claim "only the axiotic lines changed" is MEASURED here, line by line,
+    for every varied block. What is missing is the gate's independent
+    confirmation of it at the composed-output layer.
+  status: |
+    NOT a pass. The campaign cannot claim Phase-1 gate certification for these
+    eight families and must not imply it. State it as: block-level certification
+    unavailable in Phase 1 for mixed blocks; line-level partition verification
+    performed and published instead.
+  remedy_upstream: |
+    §11 corpus splitting on the eight families, so each fragment is routed and
+    singly-classed and can vary cleanly. That is a CIRISAgent change, not a
+    regime change — the same shape as #974 (which routed the DEFER policy, the
+    ASPDMA user-message template, the DSDMA user message and the CORE IDENTITY
+    blocks out of the residue) and #991 (the 57 formatter labels). Prepared as
+    GATE_SPLIT_REQUEST.md.
+  token_divergence: |
+    The 26 FAIL [4] reports are the manipulation working:
+      en:aspdma.action_selection_pdma.csdma_ambiguity_guidance:
+        token adjunct hits diverge (['fidelity'] vs [])
+    The CIRIS arm names a CIRIS principle there and the alt arm does not, which
+    is the intended difference. The gate flags divergence because in a HELD block
+    it would be leakage. In a varied block it is the point. Recorded, not
+    suppressed — the count is a useful independent tally of where the
+    manipulation actually bit.
