@@ -129,6 +129,7 @@ def template_identity(agent_root: Path, template: str) -> Dict[str, str]:
 def build(
     agent_root: Path, arm: str, accord: Optional[Path], blank: bool,
     framing: Optional[Path], template: str, locales: str,
+    unit_arm: Optional[str] = None,
 ) -> Dict:
     m = baseline(agent_root, locales)
     m["experiment_id"] = f"TORQUE-1-{arm}"
@@ -161,6 +162,27 @@ def build(
         )
     else:
         m["overrides"]["corpus"][FRAMING_KEY] = framing.read_text(encoding="utf-8")
+
+    # The authored UNIT corpora — four conscience prompts, the PDMA header, three
+    # ASPDMA fields, five exemplars, one language-guidance item.
+    #
+    # These were the gap `compose_dump gate` found: the manifest set four corpus
+    # keys and nothing else, so every conscience prompt stayed CIRIS in every arm.
+    # values_effect would have been an accord-only contrast wearing a
+    # whole-pipeline label.
+    if unit_arm:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import unit_keys
+        env = unit_keys.envelopes(m["overrides"])
+        for fq, text in unit_keys.collect(unit_arm, env).items():
+            ns, _, k = fq.partition("::")
+            if k not in m["overrides"][ns]:
+                raise SystemExit(
+                    f"REFUSED: unit key {ns}.{k!r} is not in the baseline key space. "
+                    f"A unit whose key does not exist sets nothing and leaves CIRIS "
+                    f"text in the arm."
+                )
+            m["overrides"][ns][k] = text
 
     # Identity: same bytes in every arm, from the pinned template.
     ident = template_identity(agent_root, template)
@@ -195,12 +217,13 @@ def main() -> int:
     ap.add_argument("--blank-axiotic", action="store_true", help="h3ere-blank: empty the accord")
     ap.add_argument("--framing", type=Path, help="verified PDMA framing corpus for this arm")
     ap.add_argument("--template", default="default", help="pinned template name (sha-checked)")
+    ap.add_argument("--units", help="arm whose authored unit corpora to wire in (alt|neutral)")
     ap.add_argument("--locales", default="en")
     ap.add_argument("--out", type=Path, required=True)
     args = ap.parse_args()
 
     m = build(args.agent_root, args.arm, args.accord, args.blank_axiotic,
-              args.framing, args.template, args.locales)
+              args.framing, args.template, args.locales, args.units)
 
     # The domain-limit note is ours, not the schema's. Strip before validating,
     # then write the clean manifest — an extra key would be rejected by
