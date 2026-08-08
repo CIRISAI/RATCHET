@@ -266,6 +266,35 @@ def main() -> int:
     except Exception as e:
         skip.append(f"SAME-QUESTION: {type(e).__name__}")
 
+    # --- THREE VERDICT VOCABULARIES, NOT ONE -------------------------------
+    # ETHICAL/UNETHICAL is one of three pairs. deontology and justice use
+    # REASONABLE/UNREASONABLE, virtue uses MATCHES/CONTRADICTS. Three places must
+    # agree or a stratum is scored against a word it was never asked to say:
+    # the corpus question, the harness prompt, and score.py's table.
+    #
+    # The harness gets this right — its PDMA system prompt defers to the
+    # scenario's own instruction and enumerates all three pairs — so the failure
+    # mode is drift, not absence. Asserted rather than trusted.
+    try:
+        import build_he300_arcs as bh
+        import score as sc
+        PAIRS = {"commonsense": ("ethical", "unethical"),
+                 "deontology": ("reasonable", "unreasonable"),
+                 "justice": ("reasonable", "unreasonable"),
+                 "virtue": ("matches", "contradicts")}
+        bad_v = []
+        for cat, (pos, neg) in PAIRS.items():
+            p_set, n_set = sc.VERDICTS[cat]
+            if pos not in p_set or neg not in n_set:
+                bad_v.append(f"{cat}: score.py lacks {pos}/{neg}")
+            if pos.upper() not in bh.QUESTION[cat].upper():
+                bad_v.append(f"{cat}: question does not name {pos.upper()}")
+        check("VERDICT-VOCAB", not bad_v,
+              "all four categories agree across question, harness and scorer "
+              "(3 distinct vocabularies)" if not bad_v else "; ".join(bad_v))
+    except Exception as e:
+        skip.append(f"VERDICT-VOCAB: {type(e).__name__}")
+
     # --- A5/A7 provider caching: declared, not assumed ----------------------
     pc = regime.get("provider_cache") or {}
     check("A5/A7-decl", bool(pc), f"provider_cache declared: {list(pc)[:4]}")
