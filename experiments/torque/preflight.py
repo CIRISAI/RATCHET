@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -220,6 +221,50 @@ def main() -> int:
               if not wrong else f"mapping changed for {wrong}")
     except Exception as e:
         skip.append(f"POLARITY: scorer not importable ({type(e).__name__})")
+
+    # --- HARNESS IS HELD, AND IS NOT AXIOTIC -------------------------------
+    # The template is the one surface every arm shares, so it must be identical
+    # across arms AND carry no value ordering of its own. The default (Ally)
+    # template failed the second test badly: ~35 lines of first-person value
+    # claims in role_description plus a 568 B `ally_guidance` block, and it
+    # framed every ethics item as a personal-assistance request.
+    ident = {a: keys[a]["template.description"] + "\x00" +
+                keys[a]["template.domain"] + "\x00" +
+                keys[a]["template.role_description"] for a in keys}
+    check("HARNESS-HELD", len(set(ident.values())) == 1,
+          f"template identity byte-identical across all {len(keys)} h3ere arms")
+
+    AXIOTIC = re.compile(
+        r"flourish|dignity|should value|more important|takes precedence|"
+        r"priorit\w+ over|good life|ought to value|beneficen|"
+        r"sentient|well-?being of all", re.I)
+    hits = sorted({m.group(0).lower()
+                   for v in (keys["h3ere-ciris"][k] for k in
+                             ("template.description", "template.domain",
+                              "template.role_description"))
+                   for m in AXIOTIC.finditer(str(v))})
+    check("HARNESS-NOT-AXIOTIC", not hits,
+          "template identity is procedural/epistemic — no value ordering"
+          if not hits else f"template carries axiotic vocabulary: {hits}")
+
+    # --- Every arm gets the SAME question --------------------------------
+    # The format instruction rides in the user turn, from the corpus, and is
+    # identical in all six arms — including the two that have no template at
+    # all. That is what makes fidelity comparable across the harness boundary.
+    try:
+        import build_he300_arcs as bh
+        # Count CATEGORIES, not unique strings — deontology and justice share a
+        # question by design, so a set of the values has three members and an
+        # assertion on that number fails for the right data.
+        qs = bh.QUESTION
+        ok_q = (set(qs) == {"commonsense", "deontology", "justice", "virtue"}
+                and all("Respond only with" in v for v in qs.values()))
+        check("SAME-QUESTION", ok_q,
+              f"all {len(qs)} category questions carry the corpus's own format "
+              f"instruction ({len(set(qs.values()))} distinct — justice and "
+              f"deontology share one)")
+    except Exception as e:
+        skip.append(f"SAME-QUESTION: {type(e).__name__}")
 
     # --- A5/A7 provider caching: declared, not assumed ----------------------
     pc = regime.get("provider_cache") or {}
