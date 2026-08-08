@@ -156,15 +156,137 @@ jobs:
             experiments/torque/arms/
             experiments/torque/dumps/
 
-  run-arms:
-    needs: compose
+  build-arcs:
+    needs: preflight
     runs-on: ubuntu-latest
-    # BLOCKED — see PILOT_BLOCKER.md. The corpus is 1,200 Hendrycks items and
-    # every contrast's instrument is concordance against their gold labels; the
-    # only 9-turn arc machinery that exists is the safety battery's authored
-    # mental-health escalation, which has no gold labels and is not HE-300.
-    # No runner drives HE-300 items as arcs. Enabling this job before that is
-    # resolved would spend the budget measuring a different experiment.
-    if: false
     steps:
-      - run: echo "see experiments/torque/PILOT_BLOCKER.md"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml
+      - name: Fetch the ETHICS corpus
+        run: |
+          git clone --depth 1 https://github.com/CIRISAI/CIRISBench.git bench
+
+      # The arcs are DERIVED, never committed: ten real Hendrycks items per
+      # conversation, drawn seeded, balanced on count and label-1 count either
+      # side of the midpoint switch. The per-stratum draw sha is asserted against
+      # the regime, so a corpus that changed underneath us fails here rather than
+      # silently producing a different experiment.
+      - name: Build and verify the arcs
+        working-directory: experiments/torque
+        run: |
+          set -euo pipefail
+          case "${{ inputs.scale }}" in
+            pilot)  A=(2 2 2 2)  ;;
+            staked) A=(20 15 15 10) ;;
+          esac
+          S=(axiotic_primary axiotic_secondary deontic_held discriminant_control)
+          mkdir -p arcs
+          for i in 0 1 2 3; do
+            python3 build_he300_arcs.py --n-arcs "${A[$i]}" --turns 10 --seed 42 \
+              --stratum "${S[$i]}" --ethics ../../bench/engine/datasets/ethics \
+              --safety-dir arcs | tee -a arcs/build.log
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arcs
+          path: experiments/torque/arcs/
+
+  run-arms:
+    needs: [compose, build-arcs]
+    runs-on: ubuntu-latest
+    # A FRESH CHECKOUT IS THE POINT. CIRISAgent mints its federation identity at
+    # startup, per occurrence. A reused local clone accumulates them and the
+    # Engine and the compose process stop agreeing which is the node's —
+    # "TWO FEDERATION IDENTITIES IN ONE NODE", which is a property of the stale
+    # directory and not of the agent. A runner mints exactly one and discards it.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/checkout@v4
+        with:
+          repository: CIRISAI/CIRISAgent
+          ref: ${{ inputs.agent_ref }}
+          path: agent
+      - run: pip install -r agent/requirements.txt pyyaml
+      - uses: actions/download-artifact@v4
+        with:
+          name: arcs
+          path: experiments/torque/arcs
+      - uses: actions/download-artifact@v4
+        with:
+          name: manifests-and-dumps
+          path: experiments/torque
+
+      - name: Install the arcs into the agent checkout
+        run: cp -r experiments/torque/arcs/english_* agent/tests/safety/
+
+      # bare and values-ciris: a plain provider call, no runtime, no identity.
+      - name: Direct-provider arms
+        working-directory: agent
+        env:
+          DI_KEY: ${{ secrets.DEEPINFRA_API_KEY }}
+          M: ${{ github.workspace }}/experiments/torque/arms/h3ere-ciris.json
+          R: ${{ github.workspace }}/experiments/torque/TORQUE_REGIME.yaml
+          OUT: ${{ github.workspace }}/results
+        run: |
+          set -euo pipefail
+          printf '%s' "$DI_KEY" > /tmp/di.key
+          for arm in bare values-ciris; do
+            for cell in $(ls tests/safety | grep '^english_he300_'); do
+              d="${cell#english_}"
+              CIRIS_RESEARCH_PROMPT_OVERRIDES="$M" CIRIS_TESTING_MODE=true \
+              PYTHONPATH="$PWD" python3 tools/research/direct_provider.py run \
+                --arm "$arm" --lang en --domain "$d" --regime "$R" \
+                --model meta-llama/Llama-4-Scout-17B-16E-Instruct \
+                --base-url https://api.deepinfra.com/v1/openai \
+                --key-file /tmp/di.key --temperature 0.7 --top-p 1.0 \
+                --max-tokens 4096 --out "$OUT/$arm/$d"
+            done
+          done
+
+      # The four pipeline arms: full runtime, one identity minted per run.
+      - name: H3ERE arms
+        working-directory: agent
+        env:
+          DI_KEY: ${{ secrets.DEEPINFRA_API_KEY }}
+          OUT: ${{ github.workspace }}/results
+        run: |
+          set -euo pipefail
+          printf '%s' "$DI_KEY" > /tmp/di.key
+          for arm in h3ere-ciris h3ere-alt h3ere-neutral h3ere-blank; do
+            for cell in $(ls tests/safety | grep '^english_he300_'); do
+              d="${cell#english_}"
+              CIRIS_RESEARCH_PROMPT_OVERRIDES="${{ github.workspace }}/experiments/torque/arms/$arm.json" \
+              CIRIS_TESTING_MODE=true PYTHONPATH="$PWD" \
+              python3 -m tools.qa_runner safety_battery \
+                --safety-battery-lang en --safety-battery-domain "$d" \
+                --safety-battery-template default \
+                --live --live-key-file /tmp/di.key --live-provider openai \
+                --live-base-url https://api.deepinfra.com/v1/openai \
+                --live-model meta-llama/Llama-4-Scout-17B-16E-Instruct
+              mkdir -p "$OUT/$arm/$d"
+              cp -r qa_reports/safety_battery/* "$OUT/$arm/$d/" || true
+            done
+          done
+
+      # Instrument health only. Per PILOT.md the pilot reports whether it ran,
+      # recorded and verified — never an effect size. Concordance is emitted per
+      # arm because an instrument that cannot produce the number is broken, and
+      # the pilot's outcome data is discarded and its items excluded from the
+      # main draw.
+      - name: Score
+        working-directory: experiments/torque
+        run: python3 score_run.py --results ${{ github.workspace }}/results --arcs arcs | tee ${{ github.workspace }}/results/SCORES.md
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: results-${{ inputs.scale }}
+          path: |
+            results/
+            agent/logs/

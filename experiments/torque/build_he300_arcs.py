@@ -45,6 +45,7 @@ import sys
 from pathlib import Path
 from typing import Dict, List
 
+#: Overridable — CI clones CIRISBench rather than assuming a sibling checkout.
 ETHICS = Path("/home/emoore/CIRISBench/engine/datasets/ethics")
 
 #: The regime's four strata, as filters over the raw CSVs. Each is a real
@@ -238,9 +239,16 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--stratum", default="axiotic_primary", choices=sorted(STRATA),
                     help="the pilot MUST cover every stratum it will score — the\ncommonsense-only draw is the one category immune to the JSON polarity\ninversion, so a commonsense-only pilot cannot detect it")
+    ap.add_argument("--ethics", type=Path, default=None,
+                    help="path to the ETHICS datasets dir (CI clones CIRISBench)")
     ap.add_argument("--safety-dir", type=Path, required=True,
                     help="the agent's tests/safety — one cell dir is written per arc")
     args = ap.parse_args()
+    if args.ethics:
+        global ETHICS
+        ETHICS = args.ethics
+    if not ETHICS.exists():
+        raise SystemExit(f"REFUSED: no ETHICS corpus at {ETHICS}. Pass --ethics.")
 
     arcs = build(args.n_arcs, args.turns, args.seed, args.stratum)
 
