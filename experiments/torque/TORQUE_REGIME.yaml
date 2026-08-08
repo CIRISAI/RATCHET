@@ -1696,3 +1696,54 @@ baseline_measured:
     ceiling for any predictor is ~1-e. That bounds every concordance claim and
     it is unmeasured. It does not block the positive control at 0.68, and it does
     bound how a null on `deontic_held` may be read.
+
+power_measured:
+  # COMPUTED 2026-08-08 from measured terms, after three reviews said the design
+  # was underpowered. It is not — but the reason is that the terms are far kinder
+  # than the reviews assumed, and none of them had been measured before today.
+  terms:
+    self_discordance: 0.037    # same model, same item, same prompt, temp 0.7, n=80
+    baseline_axiotic_primary: 0.68
+    run_to_run_sd_n300: 0.035  # 72 prior HE-300 runs, 8 models, 5-11 repeats each
+    binomial_only_sd: 0.028    # at p=0.62, n=300
+    implied_icc: 0.05          # excess variance 1.2x on SD, over 10-item conversations
+  why_the_reviews_were_pessimistic: |
+    They assumed a high ICC and a noisy instrument. Measured, the model flips its
+    own verdict on 3.7% of items across two identical runs at temperature — the
+    paired noise floor is tiny, so between-arm discordance is dominated by the
+    manipulation rather than by variance. And the contrasts are PAIRED: every arm
+    sees the same items, so item difficulty cancels entirely.
+  estimator: |
+    McNemar on discordant pairs.
+      N_items = (z_a/2 + z_b)^2 * pi_d / delta^2 * DE
+      pi_d    ~ delta + 2*self_discordance
+      DE      = 1 + (m-1)*ICC,  m = 10 items per conversation
+  detectable:
+    # per contrast, 80% power, alpha 0.05, items / conversations
+    icc_0.05: {d_0.20: "78/8", d_0.15: "114/12", d_0.10: "199/20", d_0.05: "565/57"}
+    icc_0.10: {d_0.20: "103/11", d_0.15: "149/15", d_0.10: "260/26", d_0.05: "740/74"}
+    icc_0.20: {d_0.20: "151/16", d_0.15: "219/22", d_0.10: "383/39", d_0.05: "1091/110"}
+  what_a_budget_buys:
+    # six arms, all four strata, at the measured $0.28/item
+    "400 items / $111": "detects 0.062 - 0.097 depending on ICC"
+    "600 items / $167": "detects 0.048 - 0.074"
+    "800 items / $223": "detects 0.040 - 0.061"
+    "1200 items / $334": "detects 0.032 - 0.047"
+  equivalence_note_corrected: |
+    The regime's `kills.power_note` says equivalence testing needs MORE samples
+    than a difference test at the same bound. At these parameters it needs FEWER:
+    TOST uses z=1.645 per side against 1.96 two-sided, so (1.645+0.84)^2 = 6.2
+    against (1.96+0.84)^2 = 7.8. The 0.15-bound kills need 90-173 items
+    (9-18 conversations), which is less than the difference contrasts they sit
+    beside. The note is withdrawn.
+  recommendation: |
+    600 items / 60 conversations / ~$167 detects 0.05-0.07 on every contrast at
+    any ICC in the measured range — comfortably below the 0.15 the campaign
+    stakes, and half the cost of the 1200-item draw.
+
+    The 1200-item draw buys 0.032-0.047. That is a better number and it is not a
+    better EXPERIMENT: nothing in the design claims an effect that small, and an
+    effect that small would not survive the declared limits (monoglot variant,
+    4 of 438 lines reaching the optimization veto, gold-label error unestimated).
+    Paying twice as much to resolve an effect the design cannot attribute is not
+    caution.
