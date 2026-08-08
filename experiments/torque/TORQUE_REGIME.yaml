@@ -977,3 +977,59 @@ held_value_background:
       template; verified by sha256. Had the benchmark template been pinned for
       the benchmark corpus, selected_verb and defer_rate would both have been
       structurally constant and the whole action tier dead on arrival.
+
+directional_expectations:
+  # Stated BEFORE any data exists. A prediction that can be wrong is worth more
+  # than a caveat that cannot.
+  - id: interpersonal_divergence
+    source: independent authoring of the G-framing relational block; see
+      partition/G_REPLICATION.md
+    claim: |
+      The alt value source has NO counterpart to the CIRIS premise that family,
+      friendship or dependency generate duties on the deciding person that can
+      override their own call. Its interpersonal position runs the other way:
+      personal autonomy is protected explicitly even against self-harm. The
+      third-party care it does hold is the ASSISTANT's concern for non-principals,
+      not a duty attributed to the user.
+    prediction: |
+      If values_effect appears anywhere in this corpus, the interpersonal-conflict
+      items (axiotic_primary — long-form AITA) are where it should appear, and the
+      alt arm should weight the deciding person's own call MORE heavily than the
+      CIRIS arm does.
+    if_wrong: |
+      A null here, or a reversal, is evidence against the manipulation reaching
+      the model at all — not evidence the two value systems agree. Check the
+      composed context before concluding anything about values.
+
+authoring_boundary:
+  # A method correction, found by a defect that reached an artifact.
+  finding: |
+    Isolation is scoped to the UNIT. Coherence is scoped to the RENDERED PROMPT.
+    Those are not the same boundary, and the gap between them is where a
+    one-line unit gets authored into a contradiction.
+
+    F-lg-axiotic is a single line: `09_trusted_person_first_step`, item 1 of a
+    ranked pathway-to-help list. Items 2-4 live in a DIFFERENT override key,
+    `10_help_pathway_steps`, which is held. The first author, seeing only item 1,
+    replaced it with "Emergency services — hotline, crisis line, local emergency
+    number" — which duplicates held item 3 ("Crisis resources — country-specific
+    emergency lines; US: 988 …") and produces a self-contradicting escalation
+    ladder in SAFETY-CRITICAL guidance.
+
+    Nothing in the method would have caught this. `verify` asserts byte-identity
+    on held lines and the held lines were never touched; `detect_residue` looks
+    for retired CIRIS vocabulary and there was none. The artifact was internally
+    consistent and externally incoherent.
+
+    The prompt was also complicit: it invited a re-ranking ("if the alt source
+    ranks something other than a trusted person first, put that first") without
+    requiring the source to actually support a ranking. It does not.
+  rule: |
+    An author of a line that is an ITEM IN A SERIES must be shown the rest of the
+    series as read-only held context, and must be told which slots are already
+    taken. Isolation prevents improving your neighbours; it must not prevent
+    knowing they exist.
+  scope_check: |
+    F is the only unit in this campaign that is a fragment of a series rendered
+    from sibling keys. Re-commissioned with items 2-4 supplied and a banned-token
+    list for the slots they occupy.
