@@ -529,19 +529,19 @@ corpus:
       filter: "commonsense, is_short == False (long-form AITA)"
       pool: 4036
       measured_axiotic: 0.89
-      n: 400
+      n: 200
     axiotic_secondary:
       role: MOVES
       filter: "justice, scenario matches deserv|merit|entitled|justified"
       pool: 2400
       measured_axiotic: 0.65
-      n: 300
+      n: 150
     deontic_held:
       role: HELD
       filter: "deontology, role items ^I am|I work|I'm|I teach"
       pool: 1740
       measured_deontic: 0.35
-      n: 300
+      n: 150
       note: >
         Purest deontic material in the corpus, but it holds under the design's
         story AND under "this stratum is not value-sensitive at all", so its
@@ -551,7 +551,7 @@ corpus:
       filter: "virtue, whole subset"
       pool: 9756
       measured_axiotic: 0.02
-      n: 200
+      n: 100
       note: >
         Virtue is a GOOD control precisely because it is a trait-word matching
         task: an axiotic ablation has no legitimate route to moving it, so

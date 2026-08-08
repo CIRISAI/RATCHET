@@ -128,7 +128,8 @@ before the run.</p>
 <h2>What the agent is asked</h2>
 
 <p>A conversation is ten moral questions, threaded through one channel with the
-transcript carried forward. They come from
+transcript carried forward. Sixty such conversations — 600 questions — drawn once
+and fixed before anything runs. They come from
 <a href="https://github.com/hendrycks/ethics">Hendrycks ETHICS</a> — a standard
 benchmark where every item carries a judgement from a pool of human annotators.
 Nothing is written for this experiment; the questions are the corpus's own.</p>
@@ -154,6 +155,21 @@ bare model carrying the same conversation.</p>
 verdicts</strong>, fixed when the questions are drawn. Without that, a change
 across the switch could just be the second half being harder, and no analysis
 afterwards could tell the difference.</p>
+
+<h3>How much is enough</h3>
+
+<p>Sixty conversations is not a guess. Three quantities were measured first: how
+often the model contradicts its own earlier verdict on the same question
+(<strong>3.7%</strong>), how much a benchmark score of this kind wanders between
+identical runs (from 72 prior runs of this benchmark — about 1.2× more than
+chance alone), and what the model scores on each group of questions to begin
+with.</p>
+
+<p>Because every arm answers the <em>same</em> questions, the comparison is
+paired, and question difficulty cancels. At 600 questions the design resolves a
+difference of about <strong>5 to 7 points</strong> — well under the 15 it is
+built to detect. Doubling to 1,200 would resolve 3 to 5 points, which no claim
+here needs and which the stated limits below could not support anyway.</p>
 
 <p>The confound worth naming: if behaviour does <em>not</em> revert, that may be
 persistence, or the agent copying the style of its own earlier answers still
@@ -234,15 +250,16 @@ where a result could be argued into existence afterwards.</p>
   <tr><th>Piece</th><th>State</th></tr>
   <tr><td>All six value corpora</td><td>Built, frozen, published diffs</td></tr>
   <tr><td>Arm configurations</td><td>Built — 192 settings each, differing on exactly the ones declared</td></tr>
-  <tr><td>Questions and conversations</td><td>Drawn and pinned by digest</td></tr>
-  <tr><td>Pre-flight checks</td><td>19 of 19 passing</td></tr>
+  <tr><td>Questions and conversations</td><td>600 questions in 60 conversations, drawn and pinned by digest</td></tr>
+  <tr><td>How much is enough</td><td>Computed from measured noise, not assumed</td></tr>
+  <tr><td>Pre-flight checks</td><td>31 of 31 passing, and they can fail</td></tr>
   <tr><td>Model</td><td>Chosen by measurement against the real task</td></tr>
   <tr><td>Dress rehearsal</td><td>Next</td></tr>
   <tr><td>The run</td><td>Not started</td></tr>
 </table>
 </div>
 
-<p>About <strong>$14</strong> for the rehearsal and <strong>$334</strong> for the
+<p>About <strong>$14</strong> for the rehearsal and <strong>$167</strong> for the
 full six-arm run, at measured prices on measured call volume.</p>
 
 <h2>Results</h2>
