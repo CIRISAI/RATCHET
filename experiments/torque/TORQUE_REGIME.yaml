@@ -487,8 +487,23 @@ corpus:
   # / justice / virtue / mixed. The README says 300; 260 pipeline files sit on
   # disk; 10 of those are orphans referenced by no manifest entry. Pre-register
   # the manifest's 250 and the seed, never the name.
-  primary: CIRISBench/engine/data/pipelines/he300/manifest.json
-  n: 250
+  # DISAMBIGUATED 2026-08-08. This block carried two corpora and two counts —
+  # `n: 250` (the shipped HE-300 draw) beside `n_total: 1200` (ours) — and a
+  # reader would reasonably take the first as what runs. So would a runner.
+  #
+  # What runs is OURS: the four-stratum restratified draw below, 1,200 items
+  # from the raw ethics datasets. The he300 manifest is the METHOD REFERENCE —
+  # where the seed, the category split and the pipeline shape come from. It is a
+  # real artifact (verified: 250 scenarios, seed 42, gold `label` on every one,
+  # 50 each across commonsense/deontology/justice/virtue/mixed). It is not the
+  # item list.
+  #
+  # Restratified because that 50/50/50/50/50 split is balanced for benchmarking
+  # and wrong for this design: it gives 50 items to the positive control and 50
+  # to a discriminant control whose entire job is to hold, which is not enough of
+  # either to say anything.
+  method_reference: CIRISBench/engine/data/pipelines/he300/manifest.json
+  method_reference_n: 250
   seed: 42
   orphan_files_excluded: 10
   #
@@ -645,6 +660,11 @@ budget:
     llama_3_3_70b_groq:       {full: 1867, stage0: 187}   # 5.5x DeepInfra, same class
   selected: meta-llama/Llama-3.3-70B-Instruct
   provider: deepinfra
+  # The link between the model id and its costed line, DECLARED rather than
+  # inferred. A fuzzy match on the model name is the same move as narrowing a
+  # regex until it passes: it would silently accept the wrong price line the day
+  # someone adds `llama_3_3_70b_together`.
+  selected_cost_key: llama_3_3_70b_deepinfra
   rationale: >
     70B class is a FLOOR, not a preference. CIRISAgent#892-#895 track local-model
     JSON reliability as an open problem — the DMA schemas need de-unioning and
@@ -778,7 +798,21 @@ repeats:
     # clustering runs SEs small in exactly the stratum carrying a control.
 
 holds:
-  model: Qwen/Qwen3.6-35B-A3B
+  # CORRECTED 2026-08-08. This field read `Qwen/Qwen3.6-35B-A3B`, left over from
+  # the first draft. The model SELECTION (commit 3313ce5) was reasoned, costed
+  # against four candidates, and written into `budget.selected` — and never
+  # copied here. `holds.model` is the field a run reads.
+  #
+  # So the campaign was costed for one model and configured to run another: an
+  # uncosted model, with no recorded rationale, whose JSON reliability against
+  # the DMA schemas is unmeasured — the exact risk the "70B is a FLOOR, not a
+  # preference" argument was made to avoid. Schema parse failures land as
+  # LLM_ERROR retries, which re-inject the English action-verb whitelist below
+  # the capture layer (#975 [I-7]) and inflate retry_depth, a DV.
+  #
+  # preflight.py now asserts holds.model == budget.selected, so a decision cannot
+  # again be recorded in a field nothing reads.
+  model: meta-llama/Llama-3.3-70B-Instruct
   decoding:
     temperature: 0.7                 # >0 REQUIRED: at 0.0 with no seed there is
                                      # no live variance and repeats are not
