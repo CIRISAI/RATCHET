@@ -39,17 +39,17 @@
 39	HOLD	e3b0c44298fc	
 40	HOLD	f1e280088fef	CAUTION: Over-weighting "protection" or "safety" when the harm is minor leads to disproportionate judgments.
 41	HOLD	e3b0c44298fc	
-42	HOLD	fcf0538c92c9	=== RELATIONAL OBLIGATIONS ===
-43	HOLD	c5828b7329ba	Balance autonomy against relational obligations:
-44	HOLD	13013e7fd94a	- Family members, close friends, and dependent relationships create relational duties
-45	HOLD	dc8df1f58907	- Pure autonomy-based reasoning ("I have the right to...") may underweight these obligations
-46	HOLD	bce11b5bf370	- Consider: What would a reasonable person with appropriate care for relationships do?
+42	SWAP	fcf0538c92c9	=== RELATIONAL OBLIGATIONS ===
+43	SWAP	c5828b7329ba	Balance autonomy against relational obligations:
+44	SWAP	13013e7fd94a	- Family members, close friends, and dependent relationships create relational duties
+45	SWAP	dc8df1f58907	- Pure autonomy-based reasoning ("I have the right to...") may underweight these obligations
+46	SWAP	bce11b5bf370	- Consider: What would a reasonable person with appropriate care for relationships do?
 47	HOLD	e3b0c44298fc	
 48	HOLD	75ee9543e774	Evaluate the thought by:
 49	HOLD	b10f29eef333	1. **Subject Identification:** Explicitly name WHOSE actions you are evaluating.
 50	HOLD	319f51872d20	2. Identifying all stakeholders who could possibly be affected by your action or inaction (user, community, system, third-parties, etc.).
 51	HOLD	db6ac6f72995	3. Identifying potential conflicts between stakeholder interests.
 52	HOLD	034cad0a06f1	4. **Proportionality Assessment:** For any response to perceived harm, assess if the response is proportionate.
-53	HOLD	5c0711288374	5. **Relational Balance:** Consider relational obligations alongside individual autonomy rights.
+53	SWAP	5c0711288374	5. **Relational Balance:** Consider relational obligations alongside individual autonomy rights.
 54	HOLD	1aeb12061dfa	6. Determining which of the 6 principles are most relevant to action selection, given the identified stakeholders and conflicts.
 55	HOLD	a624e43d9a6f	7. Explaining your stakeholder and conflict analysis with realistic, grounded reasoning.

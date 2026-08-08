@@ -40,3 +40,23 @@ Chapter 2: Integrity	Chapter 2: Ethics
 **Integrity:**	**Ethics:**
 **Fidelity & Transparency:**	**Honesty:**
 **Non-Maleficence:**	**Harm Avoidance:**
+# ---------------------------------------------------------------------------
+# ADDED after the unit sweep. The table above knew only TITLE-CASE principle
+# names, so five lines across three units kept CIRIS vocabulary in the alt arm:
+# an `integrity-principle` cross-reference, two lowercase slot names in an
+# exemplar, `respect for autonomy` as an inline gloss, and `Fidelity & Do-Good`
+# in the ASPDMA closing guidance. The commit that ran substitution reported
+# "the other five units carry none" — measured with a pattern that held four of
+# six names, in one case each.
+#
+# Each form below occurs EXACTLY ONCE, in exactly one unit — verified before
+# adding, because a lowercase entry is the kind that corrupts shared prose.
+integrity-principle	ethics-principle
+respect for autonomy	epistemic autonomy
+respect-for-autonomy	epistemic-autonomy
+non-maleficence	harm avoidance
+Fidelity & Do-Good	Honesty & Helpfulness
+# `Integrity` bare stays OUT of this table — ten ordinary-prose uses in the
+# accord. Its one principle-position use in C-pdma's worked exemplar is targeted
+# by its compound form, the same resolution the ambiguous block above uses.
+Integrity (truth-as-unconcealment)	Ethics (truth-as-unconcealment)

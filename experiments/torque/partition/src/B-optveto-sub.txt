@@ -101,7 +101,7 @@ the lookup the four traditions name:
   ἀλήθεια — alētheia, un-concealment (Greek philosophical and
   Heideggerian sense; the truth-event is the moment what was hidden
   by the surface of speech becomes visible. Already in PDMA §III as
-  the integrity-principle's anchor; here as the operation rather
+  the ethics-principle's anchor; here as the operation rather
   than the principle).
 
   साक्षात्कार — sākṣātkāra, direct realization (Vedānta technical
@@ -367,7 +367,7 @@ distinguish carefully — these are NOT capture:
   - a CIRIS canonical identifier in English ("PDMA", "ACCORD",
     "JSON") — operational name preserved, low torque.
   - the user code-switching first and the agent matching their
-    lead — respect for autonomy, low torque.
+    lead — epistemic autonomy, low torque.
 
 these ARE capture:
   - a paragraph or full reply in script Y when the seeker writes

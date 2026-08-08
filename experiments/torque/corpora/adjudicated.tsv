@@ -1,0 +1,48 @@
+# Lines the residue detector CATCHES and that are RULED to stand.
+#
+# Format: unit<TAB>line<TAB>matched<TAB>reason
+#
+# An adjudication is a written reason attached to a line, not a narrowed
+# pattern. The distinction is the point. Narrowing a pattern silently stops
+# looking at a whole class and nobody can tell later which lines it used to
+# catch; a ruled line stays caught, stays printed under ADJUDICATED, and carries
+# the argument that let it stand. `detect_residue.py` refuses a row with an
+# empty reason — an allowlist entry with no argument behind it is a suppression.
+#
+# ---------------------------------------------------------------------------
+# "distribution" — the slot-6 pattern matches distributive-justice vocabulary.
+# These three are the STATISTICAL sense: the model's training distribution.
+# Both arms share them; substituting would be nonsense.
+B-optveto-mechanical.txt	34	distribution	"the training distribution's pull toward institutional framings" — statistical sense, not distributive justice. Shared operational content.
+B-optveto-mechanical.txt	76	distribution	"distribution pulled. The response IS your output." — same statistical sense.
+B-optveto-mechanical.txt	322	distribution	"distribution speaking through the agent in the language IT favors" — same statistical sense.
+#
+# ---------------------------------------------------------------------------
+# "Fidelity" — the accord's three audited ordinary-English uses. Slot 4 is
+# "Be Honest (Fidelity & Transparency)"; these say faithfulness-TO-MANDATE,
+# a different concept in a different chapter. terms.tsv already records the
+# audit that separated them.
+A-accord-FINAL.txt	470	Fidelity	"Obligations to Originators / Governors (Fidelity to Mandate)" — faithfulness to a mandate, not slot 4. One of the three audited prose uses.
+A-accord-FINAL.txt	485	Fidelity	Chapter title, same concept as 470.
+A-accord-FINAL.txt	487	Fidelity	"Fidelity to Ethical Mandate: Operate within the scope defined by governing authorities" — scope-of-mandate, not honesty.
+#
+# ---------------------------------------------------------------------------
+# DECLARED RESIDUE — caught, name substituted, CIRIS substance knowingly left.
+#
+# These are the honest cost of the rule that the alt arm is ADAPTED, not
+# AUTHORED. Where removing CIRIS substance would require inventing alt content
+# the source does not contain, the name is substituted and the residue is
+# declared here rather than papered over. Both lines bias `values_effect`
+# toward zero — they leave CIRIS content in the alt arm — so they weaken a
+# positive result rather than manufacture one.
+B-optveto-mechanical.txt	104	integrity-principle→ethics-principle	The claim "aletheia is that principle's anchor" is CIRIS's grounding for slot 3; the alt source has no Heideggerian grounding for its ethics principle. Authoring one would be writing the arm, not adapting it (ALT_NAME_TABLE.md bans exactly this). Name substituted; grounding claim knowingly retained.
+C-pdma-mechanical.txt	125	Integrity/Beneficence→Ethics/Helpfulness	A worked exemplar. Both names substituted via compound forms; the parenthetical glosses "(truth-as-unconcealment)" and "(the user's informed agency)" are CIRIS content under alt labels. Held under the same confound E-exemplars declares: exemplars demonstrate FORMAT and reasoning style, and rewriting them varies the harness rather than the values.
+#
+# ---------------------------------------------------------------------------
+# M-1 telos pattern, added after audit 4 because line 167 framed M-1 as a good
+# to ADVANCE rather than a weighing to PERFORM. 198 is a different shape.
+A-accord-FINAL.txt	198	fulfil M-1	"Each stage deepens capacity to fulfil M-1" — capacity to DO something, which reads correctly against either M-1 content: you can fulfil a weighing requirement as readily as a telos. The label is structurally held (ALT_NAME_TABLE.md: M-1 keeps its label, only the content after the colon swaps), so a bare reference to it is a pointer, not a restatement. Judgement call; recorded as one.
+A-accord-NEUTRAL.txt	198	fulfil M-1	Same line, same reasoning — the neutral arm shares this partition.
+A-accord-NEUTRAL.txt	470	Fidelity	Same as A-accord-FINAL 470.
+A-accord-NEUTRAL.txt	485	Fidelity	Same as A-accord-FINAL 485.
+A-accord-NEUTRAL.txt	487	Fidelity	Same as A-accord-FINAL 487.
