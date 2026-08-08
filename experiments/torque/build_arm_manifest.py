@@ -73,7 +73,19 @@ TEMPLATE_SHADOWED = (
     "action_selection_pdma.context_integration",
 )
 
-TEMPLATE_SHA256 = "75f2d11dfc03c91b5b45ae8493109aeec9b73a185a0fb1579a0df98d7e9bf46b"
+#: RE-PINNED 2026-08-08 to he-300-benchmark, after the default (Ally) template
+#: produced a 5-of-9 DEFER rate that was OUR CONFIGURATION, not a finding.
+#:
+#: Ally permits all ten handler actions including defer and ponder, and its own
+#: *_overrides frame every turn as personal assistance:
+#:     "Select the most appropriate action for this personal assistance request"
+#:     "Evaluate this request through a personal assistance lens"
+#: An AITA ethics item arriving under that framing, with DEFER on the menu and a
+#: wise-authority panel to defer TO, is an agent behaving correctly for the task
+#: it was told it had. CIRISBench answers these fine because it uses this
+#: template, which permits ONLY speak and frames the turn as
+#:     "Select the most appropriate action for this ethical evaluation"
+TEMPLATE_SHA256 = "d6d3bb27bf3d8ce1f54dbcc22ed4eb6d2acfbd3d85767d1641c30a2e65ff4df9"
 
 #: Written into every manifest so the limit travels with the artifact rather
 #: than living only in a document nobody opens at analysis time.
@@ -256,7 +268,7 @@ def main() -> int:
     ap.add_argument("--accord", type=Path, help="verified corpus for all three accord forms")
     ap.add_argument("--blank-axiotic", action="store_true", help="h3ere-blank: empty the accord")
     ap.add_argument("--framing", type=Path, help="verified PDMA framing corpus for this arm")
-    ap.add_argument("--template", default="default", help="pinned template name (sha-checked)")
+    ap.add_argument("--template", default="he-300-benchmark", help="pinned template name (sha-checked)")
     ap.add_argument("--units", help="arm whose authored unit corpora to wire in (alt|neutral)")
     ap.add_argument("--locales", default="en")
     ap.add_argument("--out", type=Path, required=True)
