@@ -65,6 +65,14 @@ TEMPLATE_FIELDS = ("description", "domain", "role_description")
 #: and `he-300-benchmark.yaml` — the obvious pairing for this corpus — permits
 #: ONLY `speak`, which would make selected_verb and defer_rate structurally
 #: constant and kill the action tier before the first call.
+#: Keys the pinned template shadows via its ungated `*_overrides` blocks. The
+#: agent refuses to start if a manifest also sets them. Verified held-identical
+#: across all four h3ere arms before removal.
+TEMPLATE_SHADOWED = (
+    "csdma_common_sense.context_integration",
+    "action_selection_pdma.context_integration",
+)
+
 TEMPLATE_SHA256 = "75f2d11dfc03c91b5b45ae8493109aeec9b73a185a0fb1579a0df98d7e9bf46b"
 
 #: Written into every manifest so the limit travels with the artifact rather
@@ -204,6 +212,38 @@ def build(
             f"baseline refused to guess. Fill them or the arm is not measuring "
             f"what it claims."
         )
+
+    # The pinned template carries its own `*_overrides` blocks, and the agent
+    # consults them BEFORE the prompt loader. It refuses to start rather than
+    # pick a winner:
+    #
+    #   research override precedence conflict — refusing rather than picking
+    #     AgentTemplate.csdma_overrides.user_prompt_template (ungated, consulted
+    #     BEFORE the prompt loader) shadows manifest dma_prompt key
+    #     'csdma_common_sense.context_integration'
+    #
+    # A correct refusal, and the cheap resolution is to drop the manifest keys
+    # rather than strip the template: MEASURED, neither key differs between any
+    # two arms, so removing them costs no contrast and leaves the template's own
+    # text in place identically everywhere. Stripping the template instead would
+    # remove Ally's prompt customisations from a configuration that ships with
+    # them, for no gain.
+    for k in TEMPLATE_SHADOWED:
+        m["overrides"]["dma_prompt"].pop(k, None)
+
+    # Dropping them makes the manifest non-total, and STRICT mode refuses that
+    # too — correctly: "partial replacement leaves CIRIS text in a supposedly
+    # non-CIRIS arm." The two refusals box the manifest in from both sides, and
+    # `additive` is the resolution the tool itself names, because it is RECORDED
+    # IN THE TRACE and so an additive run cannot later be read as a total
+    # replacement.
+    #
+    # It costs nothing here: the two keys left at their template values are
+    # MEASURED held-identical across all four h3ere arms, so no contrast sees
+    # them. What is lost is the STRENGTH OF THE CLAIM — "every reachable key was
+    # named" becomes "every reachable key but two, and those two are held" — and
+    # that difference is now in the artifact rather than in a footnote.
+    m["mode"] = "additive"
 
     m["_torque_domain_limit"] = DOMAIN_LIMIT
     return m

@@ -197,11 +197,21 @@ jobs:
   run-arms:
     needs: [compose, build-arcs]
     runs-on: ubuntu-latest
+    # ONE JOB PER ARM, IN PARALLEL. Serially this is 6 arms x 8 cells = 48
+    # agent boots end to end; as a matrix it is 6 concurrent jobs of 8. The arms
+    # are independent by construction — separate manifests, separate processes,
+    # separate identities — so nothing is shared to serialise on.
+    strategy:
+      fail-fast: false          # one arm failing must not cancel the others;
+                                # a run missing an arm is a different experiment
+                                # and we want to know WHICH arms produced data
+      max-parallel: 6
+      matrix:
+        arm: [bare, values-ciris, h3ere-ciris, h3ere-alt, h3ere-neutral, h3ere-blank]
     # A FRESH CHECKOUT IS THE POINT. CIRISAgent mints its federation identity at
-    # startup, per occurrence. A reused local clone accumulates them and the
-    # Engine and the compose process stop agreeing which is the node's —
-    # "TWO FEDERATION IDENTITIES IN ONE NODE", which is a property of the stale
-    # directory and not of the agent. A runner mints exactly one and discards it.
+    # startup, per occurrence. A reused clone accumulates them and the Engine and
+    # the compose process stop agreeing which is the node's — a property of the
+    # stale directory, not of the agent. Each matrix job mints exactly one.
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -226,7 +236,8 @@ jobs:
         run: cp -r experiments/torque/arcs/english_* agent/tests/safety/
 
       # bare and values-ciris: a plain provider call, no runtime, no identity.
-      - name: Direct-provider arms
+      - name: Direct-provider arm
+        if: startsWith(matrix.arm, 'bare') || startsWith(matrix.arm, 'values-')
         working-directory: agent
         env:
           DI_KEY: ${{ secrets.DEEPINFRA_API_KEY }}
@@ -243,7 +254,8 @@ jobs:
           echo "::add-mask::${DI_KEY:0:10}"
           echo "::add-mask::${DI_KEY: -4}"
           printf '%s' "$DI_KEY" > /tmp/di.key
-          for arm in bare values-ciris; do
+          arm="${{ matrix.arm }}"
+          {
             for cell in $(ls tests/safety | grep '^english_he300_'); do
               d="${cell#english_}"
               CIRIS_RESEARCH_PROMPT_OVERRIDES="$M" CIRIS_TESTING_MODE=true \
@@ -254,10 +266,11 @@ jobs:
                 --key-file /tmp/di.key --temperature 0.7 --top-p 1.0 \
                 --max-tokens 4096 --out "$OUT/$arm/$d"
             done
-          done
+          }
 
       # The four pipeline arms: full runtime, one identity minted per run.
-      - name: H3ERE arms
+      - name: H3ERE arm
+        if: startsWith(matrix.arm, 'h3ere-')
         working-directory: agent
         env:
           DI_KEY: ${{ secrets.DEEPINFRA_API_KEY }}
@@ -272,7 +285,8 @@ jobs:
           echo "::add-mask::${DI_KEY:0:10}"
           echo "::add-mask::${DI_KEY: -4}"
           printf '%s' "$DI_KEY" > /tmp/di.key
-          for arm in h3ere-ciris h3ere-alt h3ere-neutral h3ere-blank; do
+          arm="${{ matrix.arm }}"
+          {
             for cell in $(ls tests/safety | grep '^english_he300_'); do
               d="${cell#english_}"
               CIRIS_RESEARCH_PROMPT_OVERRIDES="${{ github.workspace }}/experiments/torque/arms/$arm.json" \
@@ -286,16 +300,8 @@ jobs:
               mkdir -p "$OUT/$arm/$d"
               cp -r qa_reports/safety_battery/* "$OUT/$arm/$d/" || true
             done
-          done
+          }
 
-      # Instrument health only. Per PILOT.md the pilot reports whether it ran,
-      # recorded and verified — never an effect size. Concordance is emitted per
-      # arm because an instrument that cannot produce the number is broken, and
-      # the pilot's outcome data is discarded and its items excluded from the
-      # main draw.
-      - name: Score
-        working-directory: experiments/torque
-        run: python3 score_run.py --results ${{ github.workspace }}/results --arcs arcs | tee ${{ github.workspace }}/results/SCORES.md
 
       # Agent logs are useful and they are also full of provider chatter and
       # composed prompts. Scrub anything key-shaped before they leave the runner.
@@ -318,7 +324,43 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: results-${{ inputs.scale }}
+          name: results-${{ inputs.scale }}-${{ matrix.arm }}
           path: |
             results/
             scrubbed/
+
+  score:
+    needs: run-arms
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          name: arcs
+          path: experiments/torque/arcs
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: results-${{ inputs.scale }}-*
+          merge-multiple: true
+          path: gathered
+
+      # Instrument health only — coverage, fidelity, concordance per arm, and no
+      # contrast. Subtracting two arms is the analysis, and the analysis happens
+      # after the staked run against the frozen regime. Exits non-zero naming any
+      # arm that produced nothing, because a run missing an arm is not a partial
+      # run, it is a different experiment.
+      - name: Score
+        working-directory: experiments/torque
+        run: |
+          python3 score_run.py --results ${{ github.workspace }}/gathered/results \
+            --arcs arcs | tee $GITHUB_STEP_SUMMARY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: SCORES
+          path: experiments/torque/arcs/build.log
