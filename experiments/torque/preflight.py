@@ -266,34 +266,42 @@ def main() -> int:
     except Exception as e:
         skip.append(f"SAME-QUESTION: {type(e).__name__}")
 
-    # --- THREE VERDICT VOCABULARIES, NOT ONE -------------------------------
-    # ETHICAL/UNETHICAL is one of three pairs. deontology and justice use
-    # REASONABLE/UNREASONABLE, virtue uses MATCHES/CONTRADICTS. Three places must
-    # agree or a stratum is scored against a word it was never asked to say:
-    # the corpus question, the harness prompt, and score.py's table.
+    # --- VERDICT VOCABULARY: superset, polarity, disjointness ---------------
+    # Three things vary by family and all three must move together: the canonical
+    # pair the question names, the wider synonym pool a model may answer with,
+    # and the 0/1 polarity. The same word maps to a DIFFERENT integer depending
+    # on the family — "fair" is 0 on commonsense and 1 on justice — so a table
+    # that drifts from upstream inverts a stratum silently.
     #
-    # The harness gets this right — its PDMA system prompt defers to the
-    # scenario's own instruction and enumerates all three pairs — so the failure
-    # mode is drift, not absence. Asserted rather than trusted.
+    # Checked against he300_runner's own tables rather than a copy of them.
     try:
-        import build_he300_arcs as bh
+        sys.path.insert(0, str(HERE))
+        sys.path.insert(0, "/home/emoore/CIRISBench/engine")
         import score as sc
-        PAIRS = {"commonsense": ("ethical", "unethical"),
-                 "deontology": ("reasonable", "unreasonable"),
-                 "justice": ("reasonable", "unreasonable"),
-                 "virtue": ("matches", "contradicts")}
+        import build_he300_arcs as bh
+        from core.he300_runner import (_CATEGORY_LABELS, _POSITIVE_STRINGS,
+                                       _NEGATIVE_STRINGS, _POSITIVE_LABEL_MAP)
         bad_v = []
-        for cat, (pos, neg) in PAIRS.items():
-            p_set, n_set = sc.VERDICTS[cat]
-            if pos not in p_set or neg not in n_set:
-                bad_v.append(f"{cat}: score.py lacks {pos}/{neg}")
-            if pos.upper() not in bh.QUESTION[cat].upper():
+        for cat, (pos, neg) in _CATEGORY_LABELS.items():
+            P, N = sc.VERDICTS[cat]
+            if pos not in P or neg not in N:
+                bad_v.append(f"{cat}: canonical pair not covered")
+            if sc.POSITIVE_LABEL[cat] != _POSITIVE_LABEL_MAP[cat]:
+                bad_v.append(f"{cat}: POLARITY differs from upstream")
+            if _POSITIVE_STRINGS - P:
+                bad_v.append(f"{cat}: missing positives {sorted(_POSITIVE_STRINGS - P)}")
+            if _NEGATIVE_STRINGS - N:
+                bad_v.append(f"{cat}: missing negatives {sorted(_NEGATIVE_STRINGS - N)}")
+            if P & N:
+                bad_v.append(f"{cat}: word in BOTH pools {sorted(P & N)}")
+            # and the question must actually name the canonical pair
+            if cat in bh.QUESTION and pos.upper() not in bh.QUESTION[cat].upper():
                 bad_v.append(f"{cat}: question does not name {pos.upper()}")
         check("VERDICT-VOCAB", not bad_v,
-              "all four categories agree across question, harness and scorer "
-              "(3 distinct vocabularies)" if not bad_v else "; ".join(bad_v))
+              f"superset of upstream on {len(_CATEGORY_LABELS)} families, polarity "
+              f"matches, pools disjoint" if not bad_v else "; ".join(bad_v[:3]))
     except Exception as e:
-        skip.append(f"VERDICT-VOCAB: {type(e).__name__}")
+        skip.append(f"VERDICT-VOCAB: {type(e).__name__}: {e}")
 
     # --- A5/A7 provider caching: declared, not assumed ----------------------
     pc = regime.get("provider_cache") or {}
