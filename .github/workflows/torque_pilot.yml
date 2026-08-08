@@ -20,9 +20,9 @@ on:
       agent_ref:
         description: "CIRISAgent ref to run against"
         type: string
-        default: "2.9.11-stable"
+        default: "v2.9.11-stable"   # the tag is v-prefixed; the bare form does not exist
       confirm_spend:
-        description: "Type the expected USD figure to proceed (pilot 14, staked 334)"
+        description: "Type the expected USD figure to proceed (pilot 14, staked 167)"
         type: string
         required: true
 
@@ -46,7 +46,7 @@ jobs:
         run: |
           case "${{ inputs.scale }}" in
             pilot)  want=14  ;;
-            staked) want=334 ;;
+            staked) want=167 ;;
           esac
           if [ "${{ inputs.confirm_spend }}" != "$want" ]; then
             echo "REFUSED: scale=${{ inputs.scale }} expects \$$want, got '${{ inputs.confirm_spend }}'."

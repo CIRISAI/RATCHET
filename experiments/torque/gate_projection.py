@@ -47,7 +47,14 @@ def project(r: Dict[str, Any]) -> Dict[str, Any]:
     holds = dict(r["holds"])
     # The gate wants a corpus IDENTIFIER; our regime carries the whole corpus
     # spec in its own top-level block. Point at the pinned manifest.
-    holds["corpus"] = r["corpus"]["primary"]
+    # `corpus.primary` was renamed to `method_reference` when the corpus block
+    # was disambiguated, and this crashed on every run afterwards. Nothing
+    # caught it because CI had never executed. Read the new name, refuse loudly
+    # on neither.
+    ref = r["corpus"].get("method_reference") or r["corpus"].get("primary")
+    if not ref:
+        raise SystemExit("REFUSED: corpus block names no method_reference.")
+    holds["corpus"] = ref
     holds.pop("adapter_set", None)
     holds.pop("template", None)
 

@@ -556,7 +556,7 @@ corpus:
         Virtue is a GOOD control precisely because it is a trait-word matching
         task: an axiotic ablation has no legitimate route to moving it, so
         movement is diagnostic of damage rather than of values.
-  n_total: 1200
+  n_total: 600   # LOCKED 2026-08-08 from power_measured; see arc_construction.staked_draw
   sampling: stratified, seeded, drawn ONCE and pinned by digest before Stage 0
   # Every pool clears Miller's ~969 floor on its own.
 
@@ -664,8 +664,11 @@ budget:
     # bills an identical 11,737-token prefix at full rate on the second call, so
     # there is no prefix-cache discount to claim here.
     llama_4_scout_deepinfra:
-      full: 334
-      stage0: 34
+      # RESIZED 2026-08-08 with the draw: 600 items at the measured $0.28/item
+      # across six arms. The 334 figure was for the 1,200-item draw.
+      full: 167
+      full_at_1200: 334
+      stage0: 17
       input_per_M: 0.10
       output_per_M: 0.30
     llama_3_3_70b_deepinfra:  {full: 336, stage0: 34, cached_75pct: 109}
@@ -1510,86 +1513,27 @@ arc_construction:
     because `run_arc` threads every question in a manifest through one
     transcript and a single 100-question manifest would be one 100-turn
     conversation rather than ten of ten.
-  pilot_draw:
-    # WIDENED 2026-08-08. The pilot was axiotic_primary only, which resolves to
-    # COMMONSENSE only — and commonsense is the single category where the
-    # upstream JSON path's hardcoded polarity happens to be correct. A
-    # commonsense-only pilot is structurally incapable of detecting an inversion
-    # that would corrupt 800 of the 1,200 staked items. A pilot must cover every
-    # stratum it will score.
-    strata:
-      axiotic_primary:      {n_arcs: 10, items: 100}
-      axiotic_secondary:    {n_arcs: 2,  items: 20}
-      deontic_held:         {n_arcs: 2,  items: 20}
-      discriminant_control: {n_arcs: 2,  items: 20}
+  staked_draw:
+    # LOCKED 2026-08-08 at 600 items, from power_measured. 600 resolves
+    # 0.048-0.074 on every contrast across the measured ICC range — comfortably
+    # below the 0.15 staked — at $167 against $334 for 1,200. The larger draw
+    # buys 0.032-0.047, which no claim in this design needs and no declared
+    # limit would survive.
     turns: 10
     seed: 42
-    items: 160
-    gold_mix: "axiotic_primary 60/40; the rest 12/8 each"
-    draw_sha256: "3c7495e7d3becf37d64b38c32cee46523c766e3680dc914ecf97573005167f20"
-    note: |
-      The draw sha is the identity of the item set. These 100 items are the
-      PILOT's, and per PILOT.md they are excluded from the main draw — the sha is
-      how that exclusion is checked rather than asserted.
-
-manipulation_surface_measured:
-  # MEASURED 2026-08-08 on the built manifests, after a design review pointed out
-  # that the published figure described an intermediate rather than the contrast.
-  the_number_that_was_wrong: |
-    "49 lines of 1,153, difference set exactly the declared 49" is true of
-    `accord-substituted.txt` → alt, and FALSE of ciris → alt, which is what
-    anyone recomputing will diff. The gap is the 19 principle names replaced
-    mechanically from the frozen term table — real changes to the running
-    artifact that the authored-swap count never included.
-  measured:
-    accord_ciris_to_alt: "68 of 1154 lines (49 authored meanings + 19 substituted names)"
-    pdma_framing: "12 of 56"
-    optimization_veto_conscience: "4 of 438"
-    pdma_ethical_header: "3 of 127"
-    coherence_conscience: "3 of 106"
-    epistemic_humility_conscience: "2 of 138"
-    language_guidance_09: "1 of 2"
-    csdma_ambiguity_guidance: "1 of 1"
-    whole_composed_manifest: "230 of 5558 lines = 4.1%"
-  the_limitation_this_exposes: |
-    The optimization-veto conscience is called the hardest congruence problem in
-    this campaign, and the values manipulation reaches **4 of its 438 lines**. It
-    also stays POLYGLOT in every arm. So `values_effect`, if it appears, is
-    almost entirely the accord and the PDMA framing; the optimization veto is
-    very nearly held constant.
-
-    That is not a defect in the build — the veto prompt is mostly procedural, and
-    holding procedure is the design. It IS a limit on what a values effect can be
-    attributed to, and it must be reported that way rather than as "the values
-    were varied throughout the pipeline".
-  pinned: |
-    preflight.py asserts all three figures against the artifacts (PUB-ACCORD,
-    PUB-MANIFEST, PUB-OPTVETO), so a published number cannot drift from the thing
-    it describes.
-
-gold_polarity_verified:
-  # The design review flagged this as able to flip the headline sign. It cannot,
-  # and the check is cheap enough to keep anyway.
-  claim_tested: |
-    Hendrycks label conventions differ by subset — commonsense 0 = ethical,
-    while deontology/justice/virtue use 1 = the positive class. The arc builder
-    emits the raw label with no convention recorded, so the concern was that a
-    concordance score could be inverted on the stratum carrying the positive
-    control.
-  measured: |
-    It is handled: `_classification_to_label` maps a verdict to a label USING THE
-    ITEM'S CATEGORY, and the built arcs carry the category. Verified end to end
-    against a live model, 30 items per category, strict first-word scoring:
-
-      commonsense 77%   deontology 87%   justice 90%   virtue 63%
-
-    All well above chance. An inverted mapping would score BELOW 40%. Virtue's
-    63% is the known 80/20 class imbalance in that subset, which is why it is a
-    discriminant control rather than an outcome.
-  residual: |
-    The convention is correct and IMPLICIT — nothing asserts it, so an upstream
-    change to `_POSITIVE_LABEL_MAP` would silently invert the positive control.
-    preflight.py now pins all eight category/verdict pairs (POLARITY).
+    total_items: 600
+    total_conversations: 60
+    strata:
+      axiotic_primary:      {arcs: 20, items: 200, gold: "120/80", draw_sha256: "ccf950984e498cfa792ebcd4a3ec562d22d43463f20111a484f7f5c6443f1316"}
+      axiotic_secondary:    {arcs: 15, items: 150, gold: "90/60",  draw_sha256: "c273d12df3b4f866050bca6d83759246d6b8656f4dcc1673e745908d456c00e2"}
+      deontic_held:         {arcs: 15, items: 150, gold: "90/60",  draw_sha256: "3274f41f3c47ffbbc2a15118782704736db7779b232c19d83348eda359a787e8"}
+      discriminant_control: {arcs: 10, items: 100, gold: "60/40",  draw_sha256: "d431598257c3e9d2441d87370e419550325a7f39e0527b6acb5dbcbedc08035e"}
+    allocation_rationale: |
+      20 conversations to the positive control, which is exactly the
+      power-adequate number for the staked 0.15 at any ICC up to ~0.18. The
+      discriminant control takes the smallest share because its job is to hold,
+      and a hold is cheaper to establish than a move.
+    every_arc_balanced: "verified — count and label-1 count equal either side of the midpoint switch, all 60"
 
 scoring:
   # REPLACED 2026-08-08 after an adversarial review, verified before acting.
