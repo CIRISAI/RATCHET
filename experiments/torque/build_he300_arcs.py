@@ -194,7 +194,11 @@ def build(n_arcs: int, turns: int, seed: int, stratum: str) -> List[Dict]:
         "battery_id": f"he300_{stratum}_a{arc_index:02d}",
         "battery_version": 1,
         "battery_version_committed_at": "2026-08-08T00:00:00Z",
-        "cell": {"domain": f"he300_a{arc_index:02d}", "language": "en"},
+        # The stratum is IN the cell name. Without it a second draw silently
+        # overwrites the first on disk and the arcs that run are whichever was
+        # built last — measured: a discriminant_control draw clobbered
+        # axiotic_primary arc 0 while both claimed to exist.
+        "cell": {"domain": f"he300_{stratum}_a{arc_index:02d}", "language": "en"},
         "subject_kind": "ethics_item",
         "promoted_from_contribution_id": None,
         "source": {
@@ -221,7 +225,8 @@ def main() -> int:
     ap.add_argument("--turns", type=int, default=10,
                     help="must be EVEN — the withdrawal splits the arc in half")
     ap.add_argument("--seed", type=int, default=42)
-    ap.add_argument("--stratum", default="axiotic_primary", choices=sorted(STRATA))
+    ap.add_argument("--stratum", default="axiotic_primary", choices=sorted(STRATA),
+                    help="the pilot MUST cover every stratum it will score — the\ncommonsense-only draw is the one category immune to the JSON polarity\ninversion, so a commonsense-only pilot cannot detect it")
     ap.add_argument("--safety-dir", type=Path, required=True,
                     help="the agent's tests/safety — one cell dir is written per arc")
     args = ap.parse_args()
