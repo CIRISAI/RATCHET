@@ -1631,3 +1631,21 @@ scoring:
   unknown: |
     UNKNOWN is never a guess and never a default class. Reported per arm as
     instruction fidelity.
+
+partition_digests:
+  # PINNED 2026-08-08. Gate B3 previously computed a digest and compared it
+  # against NOTHING — `check(f"B3/{name}", True, ...)`, the literal True was the
+  # verdict, so it could not fail. A check reporting success over ground it never
+  # inspected is the exact class this campaign exists to catch, and it was inside
+  # every "23 pass, 0 fail" reported from this apparatus.
+  #
+  # Digests are `partition.py freeze` output over the tag body. B3 now compares.
+  accord-meanings:      {sha256: "4135fffff971ee58e48d2e198306b340a6ecdd494eb6f5e125486f98c5e0e75e", lines: 1153, swap: 49}
+  G-framing-meanings:   {sha256: "fd5a8adf305fd3a60b20ec8291e7f638847a07fca1a8bd1edef74d53ab4247a5", lines: 55,   swap: 12}
+  B-optveto:            {sha256: "e71b70d0214ef8e5b9f0cffcc9c9d397b5f45045fb0dc8f5f69b27cc0128ce9e", lines: 438,  swap: 2}
+  B-epihum:             {sha256: "b045701a372c55ea16bf9f212ab495390d65e59a5e956207f769bfb5f2e26235", lines: 138,  swap: 2}
+  B-coherence:          {sha256: "2e56c0f0fcce28e46950f680813dcd1e53f06281893b61eecaa33aa305bc3ef1", lines: 106,  swap: 3}
+  C-pdma:               {sha256: "efb6cea872d9fed9fad9c7931e7f1da925bb89d610cf96f9bc724c14109d75be", lines: 127,  swap: 1}
+  D-aspdma:             {sha256: "10a13085ec2b5497f10d8c50e735b4996b6c40e796598e9c9595bf0c37c57a83", lines: 97,   swap: 0}
+  E-exemplars:          {sha256: "5984b025b7ea9adcb8705f42599d2f8958b74b293a6f0c7278404c54ab415666", lines: 57,   swap: 0}
+  F-lg-axiotic:         {sha256: "c7fefc185592fed92e97583b6dba5be717516de93759d7126742a08c6d9034b4", lines: 2,    swap: 1}

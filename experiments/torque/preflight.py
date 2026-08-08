@@ -26,6 +26,11 @@ ARMS_DIRECT = ("bare", "values-ciris")
 
 ok, bad, skip = [], [], []
 
+#: Gates whose absence is a FAILURE, not a deferral. Everything here has a
+#: real input that exists in CI; if it is missing, the environment is wrong
+#: and the run must not proceed on a green tick.
+REQUIRED_PREFIXES = ("PROV", "POLARITY", "CORPUS-3", "CORPUS-4")
+
 
 def check(gate: str, passed: bool, detail: str) -> None:
     (ok if passed else bad).append(f"{gate}: {detail}")
@@ -58,14 +63,39 @@ def main() -> int:
         expect = 4 if a == "h3ere-blank" else 10
         check(f"B2c/{a}", len(d) == expect, f"{len(d)} keys differ (expect {expect})")
 
-    # --- B3: partition digests match the frozen partitions ------------------
-    for name, part in (("accord", "accord-meanings"), ("G-framing", "G-framing-meanings")):
-        p = HERE / "partition" / f"{part}.tsv"
-        rows = p.read_text(encoding="utf-8").rstrip("\n").split("\n")
-        body = "\n".join(rows)
-        check(f"B3/{name}", True, f"sha256:{hashlib.sha256(body.encode()).hexdigest()[:16]}… "
-                                  f"({sum(1 for r in rows if r.split(chr(9))[1] == 'SWAP')} SWAP "
-                                  f"of {len(rows)})")
+    # --- B3: partition digests match the PINNED ones -----------------------
+    # This gate previously passed the literal `True` as its verdict: it computed
+    # a digest and compared it against nothing, so it could not fail. It now
+    # compares against `partition_digests` in the regime, and refuses on a
+    # partition that has no pin — an unpinned partition is an unchecked one.
+    pins = regime.get("partition_digests") or {}
+    for part in sorted(pins):
+        f = HERE / "partition" / f"{part}.tsv"
+        if not f.exists():
+            check(f"B3/{part}", False, "partition file missing")
+            continue
+        # Use partition.py's OWN digest, not a reimplementation of it. The first
+        # version of this gate hashed the raw file and reported DRIFT on all nine
+        # partitions whose line and SWAP counts matched exactly — two hash
+        # functions disagreeing, dressed as nine corrupted artifacts. A checker
+        # that recomputes what the tool computes is checking itself.
+        rows = [l.split("\t") for l in
+                f.read_text(encoding="utf-8").rstrip("\n").split("\n")]
+        got = hashlib.sha256(
+            "\n".join(f"{r[0]}\t{r[1]}" for r in rows).encode()).hexdigest()
+        want = pins[part]["sha256"]
+        swap = sum(1 for r in rows if r[1] == "SWAP")
+        matches = (got == want and len(rows) == pins[part]["lines"]
+                   and swap == pins[part]["swap"])
+        check(f"B3/{part}", matches,
+              f"{len(rows)} lines, {swap} SWAP, sha256:{got[:16]}…" if matches else
+              f"DRIFT: sha {got[:16]}… vs pinned {want[:16]}…, "
+              f"{len(rows)}/{swap} vs pinned {pins[part]['lines']}/{pins[part]['swap']}")
+    unpinned = sorted(p.stem for p in (HERE / "partition").glob("*.tsv")
+                      if not p.stem.endswith("_swaps") and p.stem not in pins
+                      and p.stem not in ("accord", "G-pdma-framing", "ADJUDICATIONS"))
+    check("B3-COVERAGE", not unpinned,
+          f"every partition pinned" if not unpinned else f"unpinned: {unpinned}")
 
     # --- B4: residue_digest identical across arms ---------------------------
     res = {m.get("residue_digest") or regime["pins"]["residue_digest"] for m in man.values()}
@@ -206,6 +236,14 @@ def main() -> int:
         "D1-D3: 9-turn arc, withdrawal between thoughts, scrubbed-history variant",
     ]
 
+    # A gate that could not run is NOT a gate that passed. `skip` mixes two very
+    # different things: gates deferred BY DESIGN until traces exist, and gates
+    # that silently no-opped because an input was missing. The second kind used
+    # to vanish into a PASS and an exit 0 — on any machine without the agent
+    # checkout, both provenance gates disappeared and preflight still said pass.
+    deferred = [s for s in skip if not s.startswith(REQUIRED_PREFIXES)]
+    unrunnable = [s for s in skip if s.startswith(REQUIRED_PREFIXES)]
+
     print("PASS")
     for line in ok:
         print(f"  {line}")
@@ -213,11 +251,16 @@ def main() -> int:
         print("\nFAIL")
         for line in bad:
             print(f"  {line}")
+    if unrunnable:
+        print("\nCOULD NOT RUN — required, and treated as failure")
+        for line in unrunnable:
+            print(f"  {line}")
     print("\nNOT CHECKABLE BEFORE THE RUN")
-    for line in skip:
+    for line in deferred:
         print(f"  {line}")
-    print(f"\n{len(ok)} pass, {len(bad)} fail, {len(skip)} deferred")
-    return 1 if bad else 0
+    print(f"\n{len(ok)} pass, {len(bad)} fail, "
+          f"{len(unrunnable)} unrunnable, {len(deferred)} deferred")
+    return 1 if (bad or unrunnable) else 0
 
 
 if __name__ == "__main__":
