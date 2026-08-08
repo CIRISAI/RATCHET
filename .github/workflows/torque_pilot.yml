@@ -235,6 +235,13 @@ jobs:
           OUT: ${{ github.workspace }}/results
         run: |
           set -euo pipefail
+          # RATCHET is a PUBLIC repo, so run logs and artifacts are public.
+          # qa_runner/__main__.py:556 prints `key[:10]...key[-4:]` — 14 of 32
+          # characters. GitHub masks only EXACT matches of a registered secret,
+          # never a truncation the tool builds itself, so that partial would
+          # appear in a public log. Register the truncations too.
+          echo "::add-mask::${DI_KEY:0:10}"
+          echo "::add-mask::${DI_KEY: -4}"
           printf '%s' "$DI_KEY" > /tmp/di.key
           for arm in bare values-ciris; do
             for cell in $(ls tests/safety | grep '^english_he300_'); do
@@ -257,6 +264,13 @@ jobs:
           OUT: ${{ github.workspace }}/results
         run: |
           set -euo pipefail
+          # RATCHET is a PUBLIC repo, so run logs and artifacts are public.
+          # qa_runner/__main__.py:556 prints `key[:10]...key[-4:]` — 14 of 32
+          # characters. GitHub masks only EXACT matches of a registered secret,
+          # never a truncation the tool builds itself, so that partial would
+          # appear in a public log. Register the truncations too.
+          echo "::add-mask::${DI_KEY:0:10}"
+          echo "::add-mask::${DI_KEY: -4}"
           printf '%s' "$DI_KEY" > /tmp/di.key
           for arm in h3ere-ciris h3ere-alt h3ere-neutral h3ere-blank; do
             for cell in $(ls tests/safety | grep '^english_he300_'); do
@@ -283,10 +297,28 @@ jobs:
         working-directory: experiments/torque
         run: python3 score_run.py --results ${{ github.workspace }}/results --arcs arcs | tee ${{ github.workspace }}/results/SCORES.md
 
+      # Agent logs are useful and they are also full of provider chatter and
+      # composed prompts. Scrub anything key-shaped before they leave the runner.
+      - name: Scrub logs before upload
+        if: always()
+        env:
+          DI_KEY: ${{ secrets.DEEPINFRA_API_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p scrubbed
+          if [ -d agent/logs ]; then
+            cp -r agent/logs scrubbed/logs
+            grep -rl . scrubbed/logs 2>/dev/null | while read -r f; do
+              sed -i -e "s/${DI_KEY}/<KEY>/g" \
+                     -e "s/${DI_KEY:0:10}/<KEY>/g" \
+                     -e "s/[A-Za-z0-9]\{28,64\}\.\.\.[A-Za-z0-9]\{4\}/<KEY-TRUNCATED>/g" "$f" || true
+            done
+          fi
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: results-${{ inputs.scale }}
           path: |
             results/
-            agent/logs/
+            scrubbed/
