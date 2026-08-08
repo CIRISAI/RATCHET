@@ -654,17 +654,27 @@ budget:
   # that meets all three conditions, and is not a number to plan on until the
   # provider is confirmed.
   cost_usd:
+    # MEASURED from the provider's own pricing endpoint and measured output
+    # verbosity (90 median completion tokens on the ASPDMA task), not published
+    # figures. cached_75pct is REMOVED: DeepInfra returns no cached_tokens and
+    # bills an identical 11,737-token prefix at full rate on the second call, so
+    # there is no prefix-cache discount to claim here.
+    llama_4_scout_deepinfra:
+      full: 334
+      stage0: 34
+      input_per_M: 0.10
+      output_per_M: 0.30
     llama_3_3_70b_deepinfra:  {full: 336, stage0: 34, cached_75pct: 109}
     deepseek_v4_flash:        {full: 291, stage0: 29}
     llama_3_1_8b_groq:        {full: 160, stage0: 16}
     llama_3_3_70b_groq:       {full: 1867, stage0: 187}   # 5.5x DeepInfra, same class
-  selected: meta-llama/Llama-3.3-70B-Instruct
+  selected: meta-llama/Llama-4-Scout-17B-16E-Instruct
   provider: deepinfra
   # The link between the model id and its costed line, DECLARED rather than
   # inferred. A fuzzy match on the model name is the same move as narrowing a
   # regex until it passes: it would silently accept the wrong price line the day
   # someone adds `llama_3_3_70b_together`.
-  selected_cost_key: llama_3_3_70b_deepinfra
+  selected_cost_key: llama_4_scout_deepinfra
   rationale: >
     70B class is a FLOOR, not a preference. CIRISAgent#892-#895 track local-model
     JSON reliability as an open problem — the DMA schemas need de-unioning and
@@ -812,7 +822,19 @@ holds:
   #
   # preflight.py now asserts holds.model == budget.selected, so a decision cannot
   # again be recorded in a field nothing reads.
-  model: meta-llama/Llama-3.3-70B-Instruct
+  # SELECTED 2026-08-08 on measurement, not on published price. Applies to ALL
+  # SIX ARMS: the model is held constant so no contrast has it as a term.
+  #
+  #   schema    8/8 on the real 31 KB ActionSelectionDMAResult, strict:true
+  #   p50       2.55 s, fastest in the sweep
+  #   unknown   0% — a clean floor, so arm-driven instruction-fidelity
+  #             differences are measured against zero rather than against the
+  #             model's own non-compliance
+  #   accuracy  82% on 60 Hendrycks items (not distinguishable from gpt-oss-120b's
+  #             89% at this n — accuracy did not decide this)
+  #   cost      $334 full / $34 stage 0, the same price as the incumbent that
+  #             scored 0/8
+  model: meta-llama/Llama-4-Scout-17B-16E-Instruct
   decoding:
     temperature: 0.7                 # >0 REQUIRED: at 0.0 with no seed there is
                                      # no live variance and repeats are not
@@ -1398,3 +1420,54 @@ ground_truth_instrument:
     action_tier is undefined for direct-provider arms. Those are exactly the
     contrasts where one side can defer and the other cannot. This is the
     load-bearing DV, not a secondary one.
+
+model_selection_measured:
+  # MEASURED 2026-08-08 against the live provider and the real corpus, replacing
+  # a selection made from published prices and a capability assumption.
+  incumbent_is_dead: |
+    `meta-llama/Llama-3.3-70B-Instruct` does not exist on DeepInfra — the id is
+    `…-Instruct-Turbo`, and the configured one would have 404'd on call one.
+    The Turbo model that does exist scored **0 of 13** on the real 31 KB
+    ActionSelectionDMAResult schema with `strict: true`: it ignores
+    `response_format` entirely and returns markdown prose.
+
+    The "70B is a FLOOR, not a preference" rationale was explicitly about JSON
+    reliability against the DMA schemas. It is exactly backwards on this
+    provider: the 70B fails schemas and the 17B-class MoEs pass 8/8. The floor
+    has to be re-established on capability, and capability has to be measured.
+  measured:
+    # schema: n=8 parallel, real ASPDMA schema. acc/unknown: 60 Hendrycks items
+    # (20 commonsense / 20 deontology / 20 justice), gold from the CSVs, scored
+    # exactly as the batch runner scores — strict first-word, category-aware,
+    # UNKNOWN uncoerced.
+    Llama-4-Scout-17B-16E:        {schema: 8/8, p50_s: 2.55, out_tok: 90,  usd: 334, acc: 0.82, unknown: 0.00}
+    gpt-oss-120b:                 {schema: 7/8, p50_s: 10.6, out_tok: 310, usd: 174, acc: 0.89, unknown: 0.10}
+    gpt-oss-20b:                  {schema: 8/8, p50_s: 4.88, out_tok: 370, usd: 152, acc: 0.96, unknown: 0.60}
+    phi-4:                        {schema: 8/8, p50_s: 3.64, out_tok: 133, usd: 234, acc: 0.80, unknown: 0.00}
+    Mistral-Small-3.2-24B:        {schema: 8/8, p50_s: 3.85, out_tok: 121, usd: 255, acc: 0.80, unknown: 0.00}
+    Llama-4-Maverick-17B-128E:    {schema: 8/8, p50_s: 3.05, out_tok: 92,  usd: 692}
+    Llama-3.3-70B-Turbo:          {schema: 0/8, p50_s: 9.45, out_tok: 80,  usd: 333}
+  the_trap_this_caught: |
+    gpt-oss-20b posts the BEST accuracy in the table, 96%, and it is an artifact.
+    It fails the output format on 60% of items, and the 96% is computed on the
+    40% it happened to comply with — a heavily selected subset, scored on the
+    easy cases it chose to answer cleanly.
+
+    This is differential attrition visible in miniature, in a single cell, before
+    any arm exists. Had the earlier "force a verdict slot in every arm" design
+    survived, gpt-oss-20b would have looked like the best model in the sweep at
+    half the price of the runner-up.
+  accuracy_is_not_the_discriminator: |
+    At n=60 the binomial SE near p=0.85 is ~4.6 points, so 82% and 89% are
+    inside 1.5 SE of each other. Do not select on that gap. The measurements that
+    DO separate these candidates are unknown-rate, latency and price.
+  no_prefix_cache_discount: |
+    MEASURED, and it retires the budget's `cached_75pct: 109` line for this
+    provider. Two calls sharing an identical 11,737-token prefix were billed
+    within 0.03% of each other; no `cached_tokens` field is returned at all.
+    DeepInfra gives no automatic prefix-caching discount on these models, so the
+    "caching is a larger lever than model choice" argument does not apply here.
+  groq_not_comparable: |
+    `~/.groq_key` returns 401 Invalid API Key, so no live Groq comparison was
+    possible. The regime's Groq cost lines are unverified published figures and
+    should be treated as such until a working key exists.
