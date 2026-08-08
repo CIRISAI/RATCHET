@@ -11,9 +11,18 @@
 | `h3ere-neutral` | `A-accord-NEUTRAL.txt` | **verified** — same partition, 49 / 1104 |
 | `h3ere-blank` | empty axiotic | trivial |
 
-All three value arms share **one frozen partition**: 1,104 lines byte-identical
-across ciris / alt / neutral, and each pairwise difference set is exactly the
-declared 49.
+All three value arms share **one frozen partition**. Two numbers, and the second
+is the one a reader recomputes:
+
+| comparison | lines differing |
+|---|---|
+| substituted intermediate → alt (the authored meanings) | 49 of 1,153 |
+| **shipped accord → alt (what the arms actually differ by)** | **68 of 1,154** |
+
+The extra 19 are principle names replaced mechanically from the frozen term
+table. Across the whole composed manifest the manipulation is **230 of 5,558
+lines, 4.1%**. `preflight.py` asserts all three figures against the artifacts, so
+they cannot drift out of the prose again.
 
 ## Units
 

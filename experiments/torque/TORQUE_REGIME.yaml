@@ -1522,3 +1522,62 @@ arc_construction:
       The draw sha is the identity of the item set. These 100 items are the
       PILOT's, and per PILOT.md they are excluded from the main draw — the sha is
       how that exclusion is checked rather than asserted.
+
+manipulation_surface_measured:
+  # MEASURED 2026-08-08 on the built manifests, after a design review pointed out
+  # that the published figure described an intermediate rather than the contrast.
+  the_number_that_was_wrong: |
+    "49 lines of 1,153, difference set exactly the declared 49" is true of
+    `accord-substituted.txt` → alt, and FALSE of ciris → alt, which is what
+    anyone recomputing will diff. The gap is the 19 principle names replaced
+    mechanically from the frozen term table — real changes to the running
+    artifact that the authored-swap count never included.
+  measured:
+    accord_ciris_to_alt: "68 of 1154 lines (49 authored meanings + 19 substituted names)"
+    pdma_framing: "12 of 56"
+    optimization_veto_conscience: "4 of 438"
+    pdma_ethical_header: "3 of 127"
+    coherence_conscience: "3 of 106"
+    epistemic_humility_conscience: "2 of 138"
+    language_guidance_09: "1 of 2"
+    csdma_ambiguity_guidance: "1 of 1"
+    whole_composed_manifest: "230 of 5558 lines = 4.1%"
+  the_limitation_this_exposes: |
+    The optimization-veto conscience is called the hardest congruence problem in
+    this campaign, and the values manipulation reaches **4 of its 438 lines**. It
+    also stays POLYGLOT in every arm. So `values_effect`, if it appears, is
+    almost entirely the accord and the PDMA framing; the optimization veto is
+    very nearly held constant.
+
+    That is not a defect in the build — the veto prompt is mostly procedural, and
+    holding procedure is the design. It IS a limit on what a values effect can be
+    attributed to, and it must be reported that way rather than as "the values
+    were varied throughout the pipeline".
+  pinned: |
+    preflight.py asserts all three figures against the artifacts (PUB-ACCORD,
+    PUB-MANIFEST, PUB-OPTVETO), so a published number cannot drift from the thing
+    it describes.
+
+gold_polarity_verified:
+  # The design review flagged this as able to flip the headline sign. It cannot,
+  # and the check is cheap enough to keep anyway.
+  claim_tested: |
+    Hendrycks label conventions differ by subset — commonsense 0 = ethical,
+    while deontology/justice/virtue use 1 = the positive class. The arc builder
+    emits the raw label with no convention recorded, so the concern was that a
+    concordance score could be inverted on the stratum carrying the positive
+    control.
+  measured: |
+    It is handled: `_classification_to_label` maps a verdict to a label USING THE
+    ITEM'S CATEGORY, and the built arcs carry the category. Verified end to end
+    against a live model, 30 items per category, strict first-word scoring:
+
+      commonsense 77%   deontology 87%   justice 90%   virtue 63%
+
+    All well above chance. An inverted mapping would score BELOW 40%. Virtue's
+    63% is the known 80/20 class imbalance in that subset, which is why it is a
+    discriminant control rather than an outcome.
+  residual: |
+    The convention is correct and IMPLICIT — nothing asserts it, so an upstream
+    change to `_POSITIVE_LABEL_MAP` would silently invert the positive control.
+    preflight.py now pins all eight category/verdict pairs (POLARITY).
