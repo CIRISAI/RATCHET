@@ -1,0 +1,170 @@
+name: TORQUE pilot
+
+# The pilot and the staked run are THE SAME WORKFLOW at different scale. That is
+# the point: a pilot run by different machinery proves the pilot's machinery
+# works. `scale` is the only input that differs.
+#
+# Nothing here computes an effect. Per PILOT.md the pilot's output is instrument
+# health — did it run, did it record, did it verify — and its outcome data is
+# discarded, its items excluded from the main draw. A pilot that reports effect
+# sizes is an invitation to tune the design against them.
+
+on:
+  workflow_dispatch:
+    inputs:
+      scale:
+        description: "pilot (10 items) or staked (full draw)"
+        type: choice
+        options: [pilot, staked]
+        default: pilot
+      agent_ref:
+        description: "CIRISAgent ref to run against"
+        type: string
+        default: "2.9.11-stable"
+      confirm_spend:
+        description: "Type the expected USD figure to proceed (pilot 14, staked 334)"
+        type: string
+        required: true
+
+concurrency:
+  group: torque-${{ inputs.scale }}
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml
+
+      # A typo'd spend figure stops the run before the first call. The staked
+      # run costs 24x the pilot and the only thing between them is a dropdown.
+      - name: Confirm spend matches scale
+        run: |
+          case "${{ inputs.scale }}" in
+            pilot)  want=14  ;;
+            staked) want=334 ;;
+          esac
+          if [ "${{ inputs.confirm_spend }}" != "$want" ]; then
+            echo "REFUSED: scale=${{ inputs.scale }} expects \$$want, got '${{ inputs.confirm_spend }}'."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          repository: CIRISAI/CIRISAgent
+          ref: ${{ inputs.agent_ref }}
+          path: agent
+      - run: pip install -r agent/requirements.txt
+
+      # Every PILOT.md gate that can be checked before spending anything:
+      # manifest digests distinct, key spaces identical, arms differing on
+      # exactly the declared keys, partitions frozen, corpora reproducing from
+      # the shipped accord, residue clean, model == the model that was costed.
+      - name: Pre-flight gates
+        working-directory: experiments/torque
+        run: python3 preflight.py | tee preflight.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: preflight
+          path: experiments/torque/preflight.txt
+
+  compose:
+    needs: preflight
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/checkout@v4
+        with:
+          repository: CIRISAI/CIRISAgent
+          ref: ${{ inputs.agent_ref }}
+          path: agent
+      - run: pip install -r agent/requirements.txt pyyaml
+
+      # Build the four h3ere manifests from the frozen corpora. --units is what
+      # carries the authored conscience prompts, the PDMA header, the ASPDMA
+      # fields and the exemplars; without it the manifests vary the accord and
+      # nothing else, which is what the gate caught on 2026-08-08.
+      - name: Build arm manifests
+        working-directory: experiments/torque
+        env:
+          AGENT: ${{ github.workspace }}/agent
+        run: |
+          set -euo pipefail
+          mkdir -p arms
+          python3 build_arm_manifest.py --agent-root "$AGENT" --arm h3ere-ciris \
+            --accord "$AGENT/accord_1.2b.txt" \
+            --framing corpora/monoglot/pdma_framing_ciris_en.txt --units ciris \
+            --out arms/h3ere-ciris.json
+          python3 build_arm_manifest.py --agent-root "$AGENT" --arm h3ere-alt \
+            --accord corpora/values-alt/A-accord-FINAL.txt \
+            --framing corpora/monoglot/pdma_framing_alt_en.txt --units alt \
+            --out arms/h3ere-alt.json
+          python3 build_arm_manifest.py --agent-root "$AGENT" --arm h3ere-neutral \
+            --accord corpora/values-neutral/A-accord-NEUTRAL.txt \
+            --framing corpora/monoglot/pdma_framing_neutral_en.txt --units neutral \
+            --out arms/h3ere-neutral.json
+          python3 build_arm_manifest.py --agent-root "$AGENT" --arm h3ere-blank \
+            --blank-axiotic --units ciris \
+            --out arms/h3ere-blank.json
+
+      # Compose every arm through the real seams and run the ablation gate.
+      # Arms are composed subprocess-per-arm because the prompt caches are
+      # process-global singletons.
+      - name: Compose dumps and ablation gate
+        working-directory: experiments/torque
+        env:
+          AGENT: ${{ github.workspace }}/agent
+        run: |
+          set -euo pipefail
+          mkdir -p dumps
+          python3 gate_projection.py --regime TORQUE_REGIME.yaml --out dumps/regime-gate.yaml
+          for a in h3ere-ciris h3ere-alt h3ere-neutral h3ere-blank; do
+            (cd "$AGENT" && python3 -m ciris_engine.logic.utils.compose_dump dump \
+              --arm "$a" --locales en \
+              --manifest "$GITHUB_WORKSPACE/experiments/torque/arms/$a.json" \
+              --out "$GITHUB_WORKSPACE/experiments/torque/dumps/$a.jsonl")
+          done
+          for a in bare values-ciris; do
+            (cd "$AGENT" && CIRIS_RESEARCH_PROMPT_OVERRIDES="$GITHUB_WORKSPACE/experiments/torque/arms/h3ere-ciris.json" \
+              CIRIS_TESTING_MODE=true PYTHONPATH="$AGENT" \
+              python3 tools/research/direct_provider.py compose-dump --arm "$a" \
+                --regime "$GITHUB_WORKSPACE/experiments/torque/TORQUE_REGIME.yaml" \
+                --reference-dump "$GITHUB_WORKSPACE/experiments/torque/dumps/h3ere-ciris.jsonl" \
+                --out "$GITHUB_WORKSPACE/experiments/torque/dumps/$a.jsonl")
+          done
+          # Gate is RECORDED, not required to pass: Phase 1 refuses `vary` on
+          # mixed blocks and eight of our block families are mixed. See
+          # gate_phase1_limit in the regime — recorded as a limit, not a pass.
+          (cd "$AGENT" && python3 -m ciris_engine.logic.utils.compose_dump gate \
+            --dump-a "$GITHUB_WORKSPACE/experiments/torque/dumps/h3ere-ciris.jsonl" \
+            --dump-b "$GITHUB_WORKSPACE/experiments/torque/dumps/h3ere-alt.jsonl" \
+            --regime "$GITHUB_WORKSPACE/experiments/torque/dumps/regime-gate.yaml" \
+            | tee "$GITHUB_WORKSPACE/experiments/torque/dumps/gate.txt") || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: manifests-and-dumps
+          path: |
+            experiments/torque/arms/
+            experiments/torque/dumps/
+
+  run-arms:
+    needs: compose
+    runs-on: ubuntu-latest
+    # BLOCKED — see PILOT_BLOCKER.md. The corpus is 1,200 Hendrycks items and
+    # every contrast's instrument is concordance against their gold labels; the
+    # only 9-turn arc machinery that exists is the safety battery's authored
+    # mental-health escalation, which has no gold labels and is not HE-300.
+    # No runner drives HE-300 items as arcs. Enabling this job before that is
+    # resolved would spend the budget measuring a different experiment.
+    if: false
+    steps:
+      - run: echo "see experiments/torque/PILOT_BLOCKER.md"
