@@ -27,7 +27,45 @@ arms:
     harness: direct-provider           # tools/research/direct_provider.py (#978)
   values-ciris:
     harness: direct-provider
-    inject: {axiotic: corpora/values-ciris/}
+    # CORRECTED 2026-08-08. This read `corpora/values-ciris/` — a directory that
+    # does not exist, in a format the harness does not accept. `direct_provider`
+    # takes `corpus:accord.{polyglot_compressed,polyglot_full,localized}` or
+    # `file:<path>`, and would have refused with "unknown inject source" at the
+    # first call of the run.
+    #
+    # `file:` and specifically the MONOGLOT accord, because the h3ere arms now
+    # carry monoglot English on all three accord keys. Injecting
+    # `corpus:accord.polyglot_compressed` would hand this arm text no h3ere arm
+    # holds, and `pipeline_effect` would differ by pipeline AND by language —
+    # the polyglot confound crossing the harness boundary.
+    #
+    # These are the SAME SOURCE BYTES the h3ere arm holds (accord_ciris_sha256),
+    # which is what makes the §12 cross-harness assertion a real check:
+    # source-hash injection, not composed-context equality [M-3].
+    inject: {axiotic: "corpus:accord.polyglot_compressed"}
+    # The label is MEASURED from the reference dump, not chosen by name.
+    # h3ere composition emits its 21 accord blocks under
+    # `corpus:accord.polyglot_compressed`; it emits `corpus:accord.localized`
+    # NOWHERE, so injecting that label would match nothing and report 0 held.
+    # The name is historical — under this campaign's manifests all three accord
+    # keys hold the same MONOGLOT ENGLISH text, so this resolves to monoglot
+    # English. Do not read the label as a claim about language.
+    # `corpus:` NOT `file:`. Both resolve, and only one is checkable: the
+    # harness matches an injected source against the reference dump's `source`
+    # column, and a `file:` label appears in no h3ere dump — so it silently
+    # reports "0 held" and assertion 3 compares nothing. Measured: the first
+    # `file:` configuration produced a values-ciris dump BYTE-IDENTICAL to the
+    # bare arm's, 208 blocks all `n/a`. An arm that injects the values and an
+    # arm that injects nothing looked the same, and nothing failed.
+    #
+    # `corpus:accord.localized` resolves through `get_localized_accord_text`,
+    # the SAME accessor h3ere composition routes through, which honours the
+    # §5.2 in-memory corpus substitution. So the process must run with
+    #   CIRIS_RESEARCH_PROMPT_OVERRIDES=<h3ere-ciris manifest>
+    #   CIRIS_TESTING_MODE=true
+    # and it then injects the monoglot English accord — the same bytes the
+    # h3ere arm holds, resolved independently rather than copied, which is what
+    # keeps assertion 3 from being tautological.
   h3ere-ciris:
     harness: h3ere
   h3ere-alt:
