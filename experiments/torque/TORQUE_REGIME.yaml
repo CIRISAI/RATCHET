@@ -1903,3 +1903,39 @@ withdrawal_unimplemented:
     TRANSCRIPT — and, in the scrubbed condition, carrying it truncated. Both
     harnesses already accept a transcript; what does not exist is a runner that
     holds one arc across both.
+
+reversion_arm_built:
+  # 2026-08-09. The mechanism the campaign is named for, built and demonstrated.
+  what_runs: |
+    withdraw_arc.py holds ONE arc across TWO harnesses. Turns 1-5 go to the live
+    H3ERE agent on a shared channel; the pipeline is withdrawn BETWEEN THOUGHTS;
+    turns 6-10 go to the bare provider carrying the same conversation.
+
+    The switch is observable without any analysis — 11-21s per turn before it,
+    0.6-6.3s after. A 20x latency drop is the pipeline leaving.
+  three_failures_to_get_there: |
+    Each a clean immediate refusal, which is the good kind:
+      1. token read from /work/ciris/token — 401, the path is never written
+      2. login as the default admin — 401, the account had never been created
+      3. POST /v1/setup/complete first, then log in — works
+    Booting main.py directly leaves a server with NO USERS. qa_runner does setup
+    via its server manager; a runner that starts the agent itself must do it.
+  first_observation:
+    # ONE ARC. Not a result. Recorded because it is what the discriminator is FOR.
+    measured: |
+      intact    pre 2/5  post 3/5   mean response length: pre 8 chars, post 8
+      scrubbed  pre 2/5  post 3/5   mean response length: pre 8 chars, post 478
+    reading: |
+      Concordance is identical across conditions at this n and says nothing. The
+      LENGTH does not: with the agent's terse prior turns still in context, the
+      bare model answers in 8 characters — it mimics the format it can see. With
+      those turns scrubbed at the switch, the same model on the same items
+      reverts to 478 characters, its own natural verbosity.
+
+      That is the confound the scrubbed condition exists to detect, appearing on
+      the first arc, and it appears in FORMAT rather than in verdict. Any
+      "persistence" measured on the intact condition alone would have been at
+      least partly the model pattern-matching its own earlier outputs.
+
+      One arc. It is an instrument observation, not a finding, and it is exactly
+      why running only `intact` is refused.

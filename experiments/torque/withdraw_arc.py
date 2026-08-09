@@ -93,7 +93,8 @@ def main() -> int:
     ap.add_argument("--domain", required=True)
     ap.add_argument("--safety-dir", default="/app/tests/safety")
     ap.add_argument("--agent-url", default="http://localhost:8080")
-    ap.add_argument("--token", required=True)
+    ap.add_argument("--username", default="jeff")
+    ap.add_argument("--password", default="qa_test_password_12345")
     ap.add_argument("--model", required=True)
     ap.add_argument("--base-url", required=True)
     ap.add_argument("--key-file", required=True)
@@ -110,6 +111,44 @@ def main() -> int:
     if len(qs) % 2:
         raise SystemExit(f"REFUSED: {len(qs)} turns cannot split evenly at the switch.")
     key = pathlib.Path(args.key_file).read_text().strip()
+
+    # COMPLETE SETUP FIRST, then log in. Booting `main.py` directly leaves a
+    # server with no users at all, so the first attempt 401'd on a token path
+    # that never existed and the second 401'd on a login for an account that had
+    # never been created. qa_runner does this via its server manager; a runner
+    # that starts the agent itself has to do it itself.
+    setup = json.dumps({
+        "llm_provider": "openai",
+        "llm_api_key": key,
+        "llm_model": args.model,
+        "llm_base_url": args.base_url,
+        "template_id": "he-300-benchmark",
+        "enabled_adapters": ["api"],
+        "adapter_config": {},
+        "admin_username": args.username,
+        "admin_password": args.password,
+        "agent_port": 8080,
+    }).encode()
+    try:
+        req = urllib.request.Request(f"{args.agent_url}/v1/setup/complete", data=setup,
+                                     headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=300) as r:
+            r.read()
+        print("  setup completed; waiting for the runtime to resume", flush=True)
+        time.sleep(20)
+    except urllib.error.HTTPError as e:
+        # Already set up is fine — the container may be reused within a run.
+        if e.code not in (400, 409):
+            raise
+
+    login = json.dumps({"username": args.username, "password": args.password}).encode()
+    req = urllib.request.Request(f"{args.agent_url}/v1/auth/login", data=login,
+                                 headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        tok = json.loads(r.read())
+    token = tok.get("access_token") or (tok.get("data") or {}).get("access_token")
+    if not token:
+        raise SystemExit(f"REFUSED: no access_token in login reply: {list(tok)[:6]}")
     channel = f"torque_withdraw_{args.domain}_{int(time.time())}"
 
     rows, transcript = [], []
@@ -120,7 +159,7 @@ def main() -> int:
         if phase == "pre":
             # The agent keeps its own conversation state on `channel`; the local
             # transcript is built in parallel so the bare half can inherit it.
-            resp = ask_agent(args.agent_url, args.token, text, channel, args.timeout)
+            resp = ask_agent(args.agent_url, token, text, channel, args.timeout)
             transcript.append({"role": "user", "content": text})
             transcript.append({"role": "assistant", "content": resp})
         else:

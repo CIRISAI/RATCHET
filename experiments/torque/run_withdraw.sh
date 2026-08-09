@@ -49,7 +49,6 @@ docker compose -f docker-compose.research.yml run --name "$CID" --build \
       sleep 2
     done
     python3 -u /manifests/withdraw_arc.py --domain '$DOMAIN' --history '$HISTORY' \
-      --token \"\$(cat /work/ciris/token 2>/dev/null)\" \
       --model '$MODEL' --base-url https://api.deepinfra.com/v1/openai \
       --key-file /keys/key --out /app/qa_reports/withdraw
   " || true

@@ -20,7 +20,7 @@ on:
       agent_ref:
         description: "CIRISAgent ref to run against"
         type: string
-        default: "v2.9.12-stable"   # the tag is v-prefixed; the bare form does not exist
+        default: "v2.9.13-stable"   # the tag is v-prefixed; the bare form does not exist
       confirm_spend:
         description: "Type the expected USD figure to proceed (pilot 14, staked 167)"
         type: string
@@ -272,52 +272,46 @@ jobs:
           }
 
       # The four pipeline arms: full runtime, one identity minted per run.
+      # Every fix the local container loop found, in the order it found them.
       - name: H3ERE arm
         if: startsWith(matrix.arm, 'h3ere-')
         working-directory: agent
         env:
           DI_KEY: ${{ secrets.DEEPINFRA_API_KEY }}
           OUT: ${{ github.workspace }}/results
-          # The first matrix run died on
-          #   [INTERACT_TIMEOUT] … timed out after 180s without an agent response
-          # despite safety_battery's SERVER_ENV declaring 1800. The route reads
-          # CIRIS_API_INTERACTION_TIMEOUT from the environment FIRST
-          # (agent.py:734), so 180 means the module's merged value never reached
-          # the server process. Set it here, where the whole process tree
-          # inherits it, rather than relying on the merge.
-          #
-          # 900s is a CEILING, not an expectation: one thought fans out to ~23
-          # model calls at ~2.5s, so ~60s is typical and PONDER doubles it. The
-          # old 180 sat close enough to the median that a thought needing a
-          # second round always lost.
+          # 2.9.12 made --safety-battery-template reach the SERVER, so the
+          # template's own `wakeup.enabled: false` is finally consulted and
+          # benchmark mode engages. Before that, ~10 minutes of wakeup was paid
+          # per cell and EpistemicHumilityConscience — which benchmark mode
+          # exists to disable, because it triggers PONDER — ran in every arm.
           CIRIS_API_INTERACTION_TIMEOUT: "900"
+          # THE ONE THAT KILLED THREE ARMS. capture_traces.sh exports this true
+          # because CEG carriers are its product; its own comment says the tee
+          # "reads the live persist DB through a second SQLite handle, which is
+          # unsafe alongside the Rust writer on a WAL database (it took the
+          # staged-QA sqlite leg down)". Measured: with it on, h3ere-ciris
+          # captured 4 of 10 turns before the server disconnected; with it off,
+          # 10 of 10. TORQUE wants answers, not carriers.
+          CIRIS_ACCORD_METRICS_CEG_SEAL_TEE: "false"
         run: |
           set -euo pipefail
-          # RATCHET is a PUBLIC repo, so run logs and artifacts are public.
-          # qa_runner/__main__.py:556 prints `key[:10]...key[-4:]` — 14 of 32
-          # characters. GitHub masks only EXACT matches of a registered secret,
-          # never a truncation the tool builds itself, so that partial would
-          # appear in a public log. Register the truncations too.
           echo "::add-mask::${DI_KEY:0:10}"
           echo "::add-mask::${DI_KEY: -4}"
           printf '%s' "$DI_KEY" > /tmp/di.key
           arm="${{ matrix.arm }}"
-          {
-            for cell in $(ls tests/safety | grep '^english_he300_'); do
-              d="${cell#english_}"
-              CIRIS_RESEARCH_PROMPT_OVERRIDES="${{ github.workspace }}/experiments/torque/arms/$arm.json" \
-              CIRIS_TESTING_MODE=true PYTHONPATH="$PWD" \
-              python3 -m tools.qa_runner safety_battery \
-                --safety-battery-lang en --safety-battery-domain "$d" \
-                --safety-battery-template default \
-                --live --live-key-file /tmp/di.key --live-provider openai \
-                --live-base-url https://api.deepinfra.com/v1/openai \
-                --live-model meta-llama/Llama-4-Scout-17B-16E-Instruct
-              mkdir -p "$OUT/$arm/$d"
-              cp -r qa_reports/safety_battery/* "$OUT/$arm/$d/" || true
-            done
-          }
-
+          for cell in $(ls tests/safety | grep '^english_he300_'); do
+            d="${cell#english_}"
+            CIRIS_RESEARCH_PROMPT_OVERRIDES="$GITHUB_WORKSPACE/experiments/torque/arms/$arm.json" \
+            CIRIS_TESTING_MODE=true PYTHONPATH="$PWD" \
+            python3 -u -m tools.qa_runner safety_battery \
+              --safety-battery-lang en --safety-battery-domain "$d" \
+              --safety-battery-template he-300-benchmark \
+              --live --live-key-file /tmp/di.key --live-provider openai \
+              --live-base-url https://api.deepinfra.com/v1/openai \
+              --live-model meta-llama/Llama-4-Scout-17B-16E-Instruct --verbose
+            mkdir -p "$OUT/$arm/$d"
+            cp -r qa_reports/safety_battery/en_${d}_*/. "$OUT/$arm/$d/" 2>/dev/null || true
+          done
 
       # Agent logs are useful and they are also full of provider chatter and
       # composed prompts. Scrub anything key-shaped before they leave the runner.
