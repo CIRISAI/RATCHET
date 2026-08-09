@@ -208,9 +208,23 @@ jobs:
       fail-fast: false          # one arm failing must not cancel the others;
                                 # a run missing an arm is a different experiment
                                 # and we want to know WHICH arms produced data
-      max-parallel: 6
+      max-parallel: 8
       matrix:
-        arm: [bare, values-ciris, h3ere-ciris, h3ere-alt, h3ere-neutral, h3ere-blank]
+        # Eight legs: the six arms, plus the reversion arm in BOTH history
+        # conditions. `reversion` is declared on h3ere-ciris only
+        # (contrast_instruments), and running one history cannot separate
+        # persistence from the agent pattern-matching its own piped outputs —
+        # measured on the first arc: post-switch responses are 8 chars with the
+        # agent's turns in context and 478 with them scrubbed.
+        include:
+          - {arm: bare,          mode: straight, history: ""}
+          - {arm: values-ciris,  mode: straight, history: ""}
+          - {arm: h3ere-ciris,   mode: straight, history: ""}
+          - {arm: h3ere-alt,     mode: straight, history: ""}
+          - {arm: h3ere-neutral, mode: straight, history: ""}
+          - {arm: h3ere-blank,   mode: straight, history: ""}
+          - {arm: h3ere-ciris,   mode: withdraw, history: intact}
+          - {arm: h3ere-ciris,   mode: withdraw, history: scrubbed}
     # A FRESH CHECKOUT IS THE POINT. CIRISAgent mints its federation identity at
     # startup, per occurrence. A reused clone accumulates them and the Engine and
     # the compose process stop agreeing which is the node's — a property of the
@@ -240,7 +254,7 @@ jobs:
 
       # bare and values-ciris: a plain provider call, no runtime, no identity.
       - name: Direct-provider arm
-        if: startsWith(matrix.arm, 'bare') || startsWith(matrix.arm, 'values-')
+        if: matrix.mode == 'straight' && (matrix.arm == 'bare' || matrix.arm == 'values-ciris')
         working-directory: agent
         env:
           DI_KEY: ${{ secrets.DEEPINFRA_API_KEY }}
@@ -274,7 +288,7 @@ jobs:
       # The four pipeline arms: full runtime, one identity minted per run.
       # Every fix the local container loop found, in the order it found them.
       - name: H3ERE arm
-        if: startsWith(matrix.arm, 'h3ere-')
+        if: matrix.mode == 'straight' && startsWith(matrix.arm, 'h3ere-')
         working-directory: agent
         env:
           DI_KEY: ${{ secrets.DEEPINFRA_API_KEY }}
@@ -313,6 +327,42 @@ jobs:
             cp -r qa_reports/safety_battery/en_${d}_*/. "$OUT/$arm/$d/" 2>/dev/null || true
           done
 
+      # The reversion arm. Runs INSIDE this job's checkout rather than a
+      # container, because CI already gives each job a fresh agent — the
+      # isolation the local container provides is what a runner is.
+      - name: Reversion arm
+        if: matrix.mode == 'withdraw'
+        working-directory: agent
+        env:
+          DI_KEY: ${{ secrets.DEEPINFRA_API_KEY }}
+          OUT: ${{ github.workspace }}/results
+          CIRIS_API_INTERACTION_TIMEOUT: "900"
+          CIRIS_ACCORD_METRICS_CEG_SEAL_TEE: "false"
+          CIRIS_TEMPLATE: he-300-benchmark
+          CIRIS_BENCHMARK_MODE: "true"
+          CIRIS_RESEARCH_PROMPT_OVERRIDES: ${{ github.workspace }}/experiments/torque/arms/h3ere-ciris.json
+          CIRIS_TESTING_MODE: "true"
+        run: |
+          set -euo pipefail
+          echo "::add-mask::${DI_KEY:0:10}"
+          echo "::add-mask::${DI_KEY: -4}"
+          printf '%s' "$DI_KEY" > /tmp/di.key
+          python3 -u main.py --port 8080 > /tmp/agent.out 2>&1 &
+          for i in $(seq 1 180); do
+            curl -sf http://localhost:8080/v1/system/health >/dev/null 2>&1 && break
+            sleep 2
+          done
+          for cell in $(ls tests/safety | grep '^english_he300_'); do
+            d="${cell#english_}"
+            python3 -u "$GITHUB_WORKSPACE/experiments/torque/withdraw_arc.py" \
+              --domain "$d" --history "${{ matrix.history }}" \
+              --safety-dir "$PWD/tests/safety" \
+              --model meta-llama/Llama-4-Scout-17B-16E-Instruct \
+              --base-url https://api.deepinfra.com/v1/openai \
+              --key-file /tmp/di.key \
+              --out "$OUT/withdraw-${{ matrix.history }}"
+          done
+
       # Agent logs are useful and they are also full of provider chatter and
       # composed prompts. Scrub anything key-shaped before they leave the runner.
       - name: Scrub logs before upload
@@ -334,7 +384,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: results-${{ inputs.scale }}-${{ matrix.arm }}
+          name: results-${{ inputs.scale }}-${{ matrix.arm }}-${{ matrix.mode }}${{ matrix.history }}
           path: |
             results/
             scrubbed/

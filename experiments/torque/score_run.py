@@ -78,7 +78,16 @@ def main() -> int:
     for res in sorted(args.results.rglob("results.jsonl")):
         arm = res.relative_to(args.results).parts[0]
         domain = res.relative_to(args.results).parts[1]
-        gold = arcs.get(domain)
+        # Withdrawal rows carry their own gold, phase and harness — they are the
+        # only rows where `pre` and `post` mean what the column names say,
+        # because they are the only rows where a switch happened.
+        probe = list(rows_of(res))[:1]
+        if probe and "phase" in probe[0] and "he300" in probe[0]:
+            r0 = probe[0]
+            arm = f"{arm}·{r0.get('history','?')}"
+            gold = [(r["he300"]["gold_label"], r["category"]) for r in rows_of(res)]
+        else:
+            gold = arcs.get(domain)
         if not gold:
             print(f"  (no arc for {domain}, skipped)", file=sys.stderr)
             continue
