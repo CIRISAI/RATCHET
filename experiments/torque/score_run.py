@@ -36,10 +36,20 @@ TEXT_FIELDS = ("agent_response", "response_text", "speak_content")
 def load_arcs(arcs_dir: Path) -> dict:
     """cell domain -> [(gold, category), …] in turn order."""
     out = {}
-    for f in sorted(arcs_dir.rglob("v4_english_*_arc.json")):
-        a = json.loads(f.read_text(encoding="utf-8"))
+    # Only OUR arcs carry `he300`. The agent ships ~29 mental-health cells under
+    # the same v4 naming, and `docker cp` of qa_reports brings their old reports
+    # along, so a loader that assumed every v4 arc was ours died on the first
+    # shipped one.
+    for f in sorted(arcs_dir.rglob("v4_*_arc.json")):
+        try:
+            a = json.loads(f.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        qs = a.get("questions") or []
+        if not qs or "he300" not in qs[0]:
+            continue
         out[a["cell"]["domain"]] = [
-            (q["he300"]["gold_label"], q["category"]) for q in a["questions"]
+            (q["he300"]["gold_label"], q["category"]) for q in qs
         ]
     return out
 

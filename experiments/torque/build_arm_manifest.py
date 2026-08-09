@@ -69,8 +69,17 @@ TEMPLATE_FIELDS = ("description", "domain", "role_description")
 #: agent refuses to start if a manifest also sets them. Verified held-identical
 #: across all four h3ere arms before removal.
 TEMPLATE_SHADOWED = (
-    "csdma_common_sense.context_integration",
-    "action_selection_pdma.context_integration",
+    # 2.9.13 derives the shadow set from REPLACEABLE_FIELDS — the map the DMAs
+    # themselves consult — instead of a hand-written table that had gone stale
+    # against #996's field-scoped overrides. That cut the conflict from five keys
+    # to two, and removed the decisive one: pdma_ethical.system_guidance_header,
+    # which PDMA composes ADDITIVELY and which TORQUE VARIES (unit C-pdma). The
+    # values manipulation reaches the PDMA header after all.
+    #
+    # The two below are genuine replacements, and MEASURED held-identical across
+    # all four h3ere arms — so leaving them to the template costs no contrast.
+    "csdma_common_sense.system_guidance_header",
+    "action_selection_pdma.system_header",
 )
 
 #: RE-PINNED 2026-08-08 to he-300-benchmark, after the default (Ally) template
@@ -263,7 +272,7 @@ def build(
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--agent-root", type=Path, default=Path("/tmp/a2912"))
+    ap.add_argument("--agent-root", type=Path, default=Path("/tmp/a2913"))
     ap.add_argument("--arm", required=True)
     ap.add_argument("--accord", type=Path, help="verified corpus for all three accord forms")
     ap.add_argument("--blank-axiotic", action="store_true", help="h3ere-blank: empty the accord")

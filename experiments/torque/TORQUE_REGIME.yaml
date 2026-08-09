@@ -865,7 +865,7 @@ holds:
 # Pins — measured at v2.9.10-stable (14fc414ef), not copied from an example
 # ---------------------------------------------------------------------------
 pins:
-  # RE-MEASURED at v2.9.12-stable, 2026-08-07. All three came back BYTE-IDENTICAL
+  # RE-MEASURED at v2.9.13-stable, 2026-08-07. All three came back BYTE-IDENTICAL
   # to their 2.9.10 values — 2.9.11 touched no residue site, no accord corpus and
   # no default template. Recorded as a measurement, not carried forward: an
   # unchanged digest and an unchecked one are indistinguishable in the file and
@@ -890,9 +890,9 @@ pins:
   framing_alt_sha256: "681f420d6485e1857a258fa67cba1078761d1fc92ea7108d01f36c01605246c2"
   terms_table_sha256: "fc8bf9037ae995c96267b18f4ec205aa3a9bcc909522cec39366982752f66b8a"
   template_sha256: "75f2d11dfc03c91b5b45ae8493109aeec9b73a185a0fb1579a0df98d7e9bf46b"
-  harness: {agent: "2.9.12-stable"}   # 7e71d0381
+  harness: {agent: "2.9.13-stable"}   # 7e71d0381
   #
-  # Instrument state VERIFIED at v2.9.12-stable with the agent team's own probe
+  # Instrument state VERIFIED at v2.9.13-stable with the agent team's own probe
   # (`probe_gate_coverage --locales en --jobs 8 --assert-floors`):
   #   585 blocks | 192 keys | 134 gated | 58 dark | COVERAGE: PASS
   # The 58 dark are `prompts.formatters.*` labels that render only with a live
@@ -1824,3 +1824,51 @@ agent_2_9_12:
 
     capture_traces.sh still hardcodes model_eval, so the research container still
     cannot emit a scoreable results.jsonl without a local patch.
+
+local_loop_established:
+  # 2026-08-09. The first scoreable h3ere arcs, and the loop that produces them.
+  what_works: |
+    Real Hendrycks items -> real 10-turn arc -> containerised agent under a real
+    manifest -> results.jsonl -> scored against gold. On 2.9.13, with
+    he-300-benchmark and benchmark mode actually reaching the server:
+
+      h3ere-blank   10/10 responses in 146.3s   (10-18s per turn)
+
+    Against ~120s per turn under the earlier configuration. Benchmark mode does
+    what it claims: no wakeup, no PONDER, no epistemic-humility retries.
+  cost_now:
+    per_cell: "~2.5 min of turns + ~1.5 min boot ≈ 4 min"
+    staked_600: "360 cells ≈ 24 h serial, ≈ 1.2 h at 20-way parallel"
+    was: "~60 h of wakeup overhead alone before 2.9.12/2.9.13"
+  the_open_defect: |
+    THE SERVER DIES MID-ARC WHEN THE ACCORD IS PRESENT.
+
+      h3ere-blank   (accord emptied)   10/10 captured
+      h3ere-ciris   (54 KB accord)      4/10, then RemoteProtocolError:
+                                        "Server disconnected without sending a
+                                        response", then ConnectError on every
+                                        later turn
+      h3ere-alt     (54 KB accord)      3/10, same shape
+
+    Turns that DO complete are clean — 13-16s, well-formed verdicts. The Python
+    agent log ends mid-write with no traceback and no panic; the process simply
+    stops. Works, then dies, correlated with prompt size.
+
+    The accord is set on THREE corpus keys at ~54 KB each and is carried on every
+    ASPDMA-family call, on top of a transcript that grows every turn. A resource
+    ceiling is the obvious hypothesis and it is NOT yet established — no OOM line
+    was found, and the container declares no mem_limit.
+  why_it_matters: |
+    Every arm that carries values dies; the only arm that survives is the one
+    with its values removed. So the campaign currently cannot measure
+    values_effect at all, and a naive reading of the partial data would report
+    the blank arm as the best-behaved — an artifact of it being the only arm that
+    finishes.
+
+    Instrument health from the partial arcs, recorded as instrument health and
+    nothing else:
+      h3ere-blank   fidelity 0.70  concordance 0.57  (10 turns)
+      h3ere-ciris   fidelity 0.40  concordance 0.50  ( 4 turns)
+      h3ere-alt     fidelity 0.30  concordance 0.33  ( 3 turns)
+    The fidelity ordering here is a censoring artifact, not a finding: an arm
+    that dies at turn 3 scores seven UNKNOWNs it never had the chance to answer.

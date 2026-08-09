@@ -194,7 +194,7 @@ def main() -> int:
     check("PUB-ACCORD", acc == (68, 1154),
           f"ciris vs alt accord: {acc[0]} of {acc[1]} lines "
           f"(49 authored + 19 substituted names)")
-    check("PUB-MANIFEST", (changed, total) == (230, 5435),
+    check("PUB-MANIFEST", (changed, total) == (230, 5507),
           f"whole composed manifest: {changed} of {total} lines = {100*changed/total:.1f}%")
     ov = per_key.get("conscience_prompt.optimization_veto_conscience.system_prompt", (0, 0))
     check("PUB-OPTVETO", ov == (4, 438),
