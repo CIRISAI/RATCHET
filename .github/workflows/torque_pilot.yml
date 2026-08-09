@@ -338,9 +338,18 @@ jobs:
           done
           exit $FAILED
 
-      # The reversion arm. Runs INSIDE this job's checkout rather than a
-      # container, because CI already gives each job a fresh agent — the
-      # isolation the local container provides is what a runner is.
+      # THE REVERSION ARM, assembled from two paths that already work.
+      #
+      # Six attempts at a runner that boots the agent itself failed on six
+      # different pieces of qa_runner's startup sequence — token path, missing
+      # user, fixed sleep, an AgentState string, a PID check, a `set -e` exit.
+      # Every one is something qa_runner already handles, and the straight arms
+      # have been green throughout precisely because they let it.
+      #
+      # So nothing here starts an agent. Turns 1-5 are an ORDINARY battery cell
+      # (`..._pre`) run by qa_runner on the green path; turns 6-10 are a plain
+      # provider call seeded with that cell's transcript. The switch is the
+      # boundary between two files.
       - name: Reversion arm
         if: matrix.mode == 'withdraw'
         working-directory: agent
@@ -349,55 +358,37 @@ jobs:
           OUT: ${{ github.workspace }}/results
           CIRIS_API_INTERACTION_TIMEOUT: "900"
           CIRIS_ACCORD_METRICS_CEG_SEAL_TEE: "false"
-          CIRIS_TEMPLATE: he-300-benchmark
-          CIRIS_BENCHMARK_MODE: "true"
-          CIRIS_RESEARCH_PROMPT_OVERRIDES: ${{ github.workspace }}/experiments/torque/arms/h3ere-ciris.json
-          CIRIS_TESTING_MODE: "true"
         run: |
-          set -euo pipefail
+          set -uo pipefail
           echo "::add-mask::${DI_KEY:0:10}"
           echo "::add-mask::${DI_KEY: -4}"
           printf '%s' "$DI_KEY" > /tmp/di.key
-          # Surface the agent's own output on failure. Three rounds were spent
-          # on this leg reading GitHub's step log, which does not carry a
-          # background process's stderr — the cause was always in /tmp/agent.out
-          # and nothing printed it.
-          python3 -u main.py --port 8080 > /tmp/agent.out 2>&1 &
-          AGENT_PID=$!
-          UP=0
-          for i in $(seq 1 180); do
-            # `if`, NOT `cmd && { ...; }`. Under `set -e` a failing command at
-            # the end of an && list terminates the script, so the very first
-            # unsuccessful poll exited the whole step — 62 seconds, one attempt,
-            # against a loop written to allow 360. An `if` puts the command in a
-            # condition context, where set -e does not fire.
-            if curl -sf http://localhost:8080/v1/system/health >/dev/null 2>&1; then
-              UP=1; break
-            fi
-            # NO PID LIVENESS CHECK. `kill -0` on the backgrounded shell job is
-            # not a test of whether the agent is alive — main.py re-execs during
-            # startup, so the original PID disappears while the agent comes up
-            # perfectly well. Added as a diagnostic, it INTRODUCED a failure:
-            # the loop bailed at ~30s while the agent's own log showed adapters
-            # starting and the delivery probe rooting. Wait for the health
-            # endpoint, which is the only thing that actually answers.
-            sleep 2
-          done
-          if [ "$UP" != "1" ]; then
-            echo "── agent output ──"; tail -60 /tmp/agent.out || true
-            echo "── incidents ──"; tail -30 logs/*/incidents_latest.log 2>/dev/null || true
-            exit 1
-          fi
-          for cell in $(ls tests/safety | grep '^english_he300_'); do
+          FAILED=0
+          for cell in $(ls tests/safety | grep '^english_he300_.*_pre$'); do
             d="${cell#english_}"
-            python3 -u "$GITHUB_WORKSPACE/experiments/torque/withdraw_arc.py" \
-              --domain "$d" --history "${{ matrix.history }}" \
-              --safety-dir "$PWD/tests/safety" \
+            full="${d%_pre}"
+            CIRIS_RESEARCH_PROMPT_OVERRIDES="$GITHUB_WORKSPACE/experiments/torque/arms/h3ere-ciris.json" \
+            CIRIS_TESTING_MODE=true PYTHONPATH="$PWD" \
+            python3 -u -m tools.qa_runner safety_battery \
+              --safety-battery-lang en --safety-battery-domain "$d" \
+              --safety-battery-template he-300-benchmark \
+              --live --live-key-file /tmp/di.key --live-provider openai \
+              --live-base-url https://api.deepinfra.com/v1/openai \
+              --live-model meta-llama/Llama-4-Scout-17B-16E-Instruct --verbose || true
+            PRE=$(ls -d qa_reports/safety_battery/en_${d}_*/ 2>/dev/null | tail -1)
+            if [ -z "$PRE" ] || [ ! -s "$PRE/results.jsonl" ]; then
+              echo "::error::$d pre half produced nothing"; FAILED=1; continue
+            fi
+            python3 -u "$GITHUB_WORKSPACE/experiments/torque/withdraw_post.py" \
+              --pre "$PRE/results.jsonl" \
+              --arc "tests/safety/english_${full}/v4_english_${full}_arc.json" \
+              --history "${{ matrix.history }}" \
               --model meta-llama/Llama-4-Scout-17B-16E-Instruct \
               --base-url https://api.deepinfra.com/v1/openai \
               --key-file /tmp/di.key \
-              --out "$OUT/withdraw-${{ matrix.history }}"
+              --out "$OUT/withdraw-${{ matrix.history }}/$full" || FAILED=1
           done
+          exit $FAILED
 
       # Agent logs are useful and they are also full of provider chatter and
       # composed prompts. Scrub anything key-shaped before they leave the runner.

@@ -201,6 +201,23 @@ def build(n_arcs: int, turns: int, seed: int, stratum: str) -> List[Dict]:
             "translations": {"en": f"{QUESTION[it['category']]}\n\n{it['text']}"},
         })
 
+      # Emit the arc AND its pre-half as separate cells. The withdrawal needs
+      # turns 1-5 answered by the agent and 6-10 by the bare provider; splitting
+      # at build time means the agent half is an ORDINARY battery cell on the
+      # path that already works, instead of a hand-rolled agent startup.
+      arcs.append({
+        "$schema": "ciris.ai/safety_battery_arc/v4",
+        "battery_id": f"he300_{stratum}_a{arc_index:02d}_pre",
+        "battery_version": 1,
+        "battery_version_committed_at": "2026-08-08T00:00:00Z",
+        "cell": {"domain": f"he300_{stratum}_a{arc_index:02d}_pre", "language": "en"},
+        "subject_kind": "ethics_item",
+        "promoted_from_contribution_id": None,
+        "source": {"corpus": "Hendrycks ETHICS", "stratum": stratum,
+                   "seed": seed, "half": "pre", "of_arc": arc_index},
+        "questions": questions[:turns // 2],
+      })
+
       body = {
         "$schema": "ciris.ai/safety_battery_arc/v4",
         "battery_id": f"he300_{stratum}_a{arc_index:02d}",
