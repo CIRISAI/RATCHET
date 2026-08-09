@@ -2137,3 +2137,67 @@ implied_sigma:
     and a positive is inside the label noise. Report them as EQUIVALENCE with the
     bound stated, or change the DV so the contrast can move on items where both
     accords reach the same verdict by different routes.
+
+staked_scope_2026_08_09:
+  # The design decision the two probes forced, taken rather than deferred.
+  #
+  # The distinction that settles it: a LIMITATION is something you disclose. An
+  # INSTRUMENT THAT CANNOT RESOLVE THE EFFECT is something you replace. Honesty
+  # does not rescue the second — you can declare a bathroom scale accurate to
+  # ±1 lb with total integrity, and the letter you weigh on it still weighs less
+  # than that.
+  staked:
+    - contrast: pipeline_effect
+      why: |
+        Full pipeline vs the SAME values as plain instructions. Nothing caps how
+        far those can sit apart — the pipeline can change anything about how the
+        model responds. At 600 items a half-sized effect lands near 9σ. Neither
+        probe touched it.
+    - contrast: scaffold_floor
+      why: "Same reasoning: empty pipeline vs none, uncapped."
+    - contrast: reversion
+      why: |
+        HARNESS-SIDE, so uncapped, and the highest-value measurement in the
+        design: it tests the MECHANISM claim, not an effect size. An effect
+        without reversion could be anything; an effect WITH reversion is
+        maintenance, demonstrated — which is what the campaign is named for.
+
+        60 arcs give 300 post-switch items: 4.9σ at delta 0.10, 3.4σ at 300.
+        Both history conditions, because intact alone cannot separate persistence
+        from the model reading its own earlier outputs.
+  rescoped:
+    - contrast: accord_swap_effect
+      from: "a test of whether values transfer"
+      to: |
+        AN EQUIVALENCE RESULT. Measured today at n=120: the two accords give the
+        same verdict on 90.8% of this corpus, 95% Wilson CI on the discriminating
+        rate [5.2%, 15.7%] — so the publishable claim is "the same verdict on at
+        least 84.3%", tightening to ±2.3% at n=600.
+      why: |
+        Real, cheap, honest, and genuinely interesting — just not what the arm
+        was named for. A positive could not be told from label noise (movable
+        range 9.2% against a 4.1% mislabel floor, and 11.1% on the positive
+        control, which is BELOW the movable range). A null would say "these two
+        humane constitutions agree", which was already the prior.
+    - contrast: form_vs_content
+      to: "same treatment — same swap logic, same ceiling"
+  deferred:
+    - to: "a second experiment, not a patch"
+      change: |
+        THE DV. Concordance can only move when one document makes the agent WORSE
+        at matching consensus, so it measures DEGRADATION, not transfer. Measure
+        instead WHICH CONSIDERATIONS ARE CITED. That moves on the items where
+        both accords reach the same verdict by different routes — 90.8% of them,
+        the very items concordance discards as noise.
+      why_not_now: |
+        It needs its own instrument, its own reliability work and its own
+        pre-registration. Bolting it onto this run would be the third time this
+        campaign measured something and called it by another name.
+  the_cruel_part_recorded: |
+    The positive control is the worst stratum. Annotator-annotator agreement on
+    axiotic_primary is 59.3% — barely above chance on a binary question. That is
+    not a flaw in the draw; it is one property showing both faces. Long-form
+    contested moral material is the MOST values-sensitive precisely because
+    humans disagree about it, which is exactly what destroys it as a scoreable
+    answer key. Any future values-transfer design has to face that directly
+    rather than sampling around it.
