@@ -367,9 +367,13 @@ jobs:
           UP=0
           for i in $(seq 1 180); do
             curl -sf http://localhost:8080/v1/system/health >/dev/null 2>&1 && { UP=1; break; }
-            if ! kill -0 "$AGENT_PID" 2>/dev/null; then
-              echo "::error::agent process exited during startup"; break
-            fi
+            # NO PID LIVENESS CHECK. `kill -0` on the backgrounded shell job is
+            # not a test of whether the agent is alive — main.py re-execs during
+            # startup, so the original PID disappears while the agent comes up
+            # perfectly well. Added as a diagnostic, it INTRODUCED a failure:
+            # the loop bailed at ~30s while the agent's own log showed adapters
+            # starting and the delivery probe rooting. Wait for the health
+            # endpoint, which is the only thing that actually answers.
             sleep 2
           done
           if [ "$UP" != "1" ]; then
