@@ -53,31 +53,43 @@ cp "arms/$ARM.json" "$AGENT/docker/manifests/manifest.json"
 rm -f "$LOGS"/* 2>/dev/null || true
 
 echo "── $ARM · $DOMAIN · $MODULE · $AGENT_REF ──"
-cd "$AGENT/docker"
 RESULTS="${RESULTS:-/tmp/torque-results/$ARM/$DOMAIN}"
 mkdir -p "$RESULTS"
+CID="torque-${ARM}-$$"
 
-# `qa_reports/` lives INSIDE /app, so it cannot be bind-mounted out without
-# tripping verify_manifest_integrity. Keep the container alive after the run and
-# `docker cp` the reports, rather than mounting over the app tree.
-CID="torque-$ARM-$DOMAIN-$$"
+cd "$AGENT/docker"
+
+# BYPASS capture_traces.sh AND RUN qa_runner DIRECTLY.
+#
+# That script is a TRACE-CAPTURE tool: CEG carriers are its product, so it
+# unconditionally exports CIRIS_ACCORD_METRICS_CEG_SEAL_TEE=true. Its own comment
+# says what that costs:
+#
+#   "The tee reads the live persist DB through a second SQLite handle, which is
+#    unsafe alongside the Rust writer on a WAL database (it took the staged-QA
+#    sqlite leg down), so it is off by default and opted into here"
+#
+# Off by default, and this script opts in. TORQUE wants answers, not carriers,
+# and the observed failure is exactly that warning: the server dies mid-arc with
+# no Python traceback, sooner the larger the prompts — 10/10 turns with the
+# accord emptied, 4/10 and 3/10 with it present. Bigger seals, more tee traffic,
+# more contention on the WAL database.
 docker compose -f docker-compose.research.yml run --name "$CID" --build \
-  -e PROVIDER=deepinfra \
-  -e BASE_URL=https://api.deepinfra.com/v1/openai \
-  -e MODEL="$MODEL" \
-  -e MODULE="$MODULE" \
-  -e BATTERY_DOMAIN="$DOMAIN" \
-  -e BATTERY_TEMPLATE=he-300-benchmark \
-  -e LANGUAGES=en \
-  -e CONCURRENCY=1 \
+  --entrypoint bash \
   -e OVERRIDES=/manifests/manifest.json \
-  -e API_KEY_FILE=/keys/key \
+  -e CIRIS_RESEARCH_PROMPT_OVERRIDES=/manifests/manifest.json \
+  -e CIRIS_TESTING_MODE=true \
+  -e CIRIS_ACCORD_METRICS_CEG_SEAL_TEE=false \
   -v "$KEY:/keys/key:ro" \
   -v "$AGENT/docker/manifests:/manifests:ro" \
   -v "$LOGS:/work/ciris/logs" \
-  capture || true
+  capture -lc "cd /app && python3 -u -m tools.qa_runner safety_battery \
+      --live --live-key-file /keys/key --live-provider openai \
+      --live-model '$MODEL' --live-base-url https://api.deepinfra.com/v1/openai \
+      --safety-battery-lang en --safety-battery-domain '$DOMAIN' \
+      --safety-battery-template he-300-benchmark --verbose" || true
 
 docker cp "$CID:/app/qa_reports/safety_battery/." "$RESULTS/" 2>/dev/null \
   && echo "results -> $RESULTS" || echo "no qa_reports in container"
 docker rm -f "$CID" >/dev/null 2>&1 || true
-find "$RESULTS" -name results.jsonl | head -3
+ls "$RESULTS" | grep en_he300 | tail -1

@@ -1872,3 +1872,34 @@ local_loop_established:
       h3ere-alt     fidelity 0.30  concordance 0.33  ( 3 turns)
     The fidelity ordering here is a censoring artifact, not a finding: an arm
     that dies at turn 3 scores seven UNKNOWNs it never had the chance to answer.
+
+withdrawal_unimplemented:
+  # STATED 2026-08-09, because the pilot's pre/post columns read as if it were.
+  fact: |
+    NO RUNNER IMPLEMENTS THE MID-ARC HARNESS SWITCH. `direct_provider.py` runs one
+    arm for a whole arc; `safety_battery` runs one agent for a whole arc. Nothing
+    switches h3ere -> bare between turns 5 and 6.
+  what_pre_post_currently_is: |
+    Turns 1-5 and 6-10 of the SAME arm — a POSITION effect. The halves are
+    balanced on count and on label-1 count by construction, so they are
+    comparable to each other, and a difference between them says nothing about
+    persistence because nothing was withdrawn.
+
+    The columns are computed anyway because the geometry has to be checkable
+    before the mechanism is built. score_run.py now prints that in full rather
+    than a caption that could be read the other way.
+  what_it_blocks: |
+    `reversion` — the campaign's most interesting claim, and the one the name
+    TORQUE refers to. `withdrawal.granularity: between_thoughts` and
+    `switch_point: after turn 5 of 10` are declared and unbuilt.
+
+    It also blocks the scrubbed-history variant, which is the discriminator
+    between real persistence and the agent pattern-matching its own earlier
+    piped outputs. Without it, "no reversion" has two readings and the design
+    cannot separate them.
+  cost_to_build: |
+    The arc runner must, between thoughts 5 and 6, stop routing to the h3ere
+    agent and start routing to the plain provider WHILE CARRYING THE SAME
+    TRANSCRIPT — and, in the scrubbed condition, carrying it truncated. Both
+    harnesses already accept a transcript; what does not exist is a runner that
+    holds one arc across both.

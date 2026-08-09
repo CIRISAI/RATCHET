@@ -122,10 +122,15 @@ def main() -> int:
         post = f"{s['cpost']}/{s['post']}" if s["post"] else "—"
         print(f"| `{arm}` | {s['arcs']} | {s['turns']} | {fid} | {conc} | {pre} | {post} |")
 
-    print("\n**pre / post** are either side of the withdrawal switch at the arc")
-    print("midpoint. Both halves carry the same count and the same number of")
-    print("label-1 items by construction, so they are comparable — but the")
-    print("comparison itself is not made here.")
+    print("\n**pre / post** are turns 1-5 and 6-10 — the halves the withdrawal")
+    print("WILL split, balanced by construction on count and on label-1 count.")
+    print()
+    print("NO WITHDRAWAL HAPPENED IN THESE RUNS. Every arm ran all ten turns as")
+    print("itself; no runner implements the mid-arc harness switch. So pre/post")
+    print("here is a POSITION effect, not a reversion effect, and a difference")
+    print("between the halves says nothing about persistence. The columns exist")
+    print("because the geometry is right and the split must be checkable before")
+    print("the mechanism is built — not because they currently measure it.")
 
     missing = [a for a in ("bare", "values-ciris", "h3ere-ciris", "h3ere-alt",
                            "h3ere-neutral", "h3ere-blank") if a not in stat]
