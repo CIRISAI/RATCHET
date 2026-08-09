@@ -165,8 +165,13 @@ def main() -> int:
                 headers={"Authorization": f"Bearer {token}"})
             with urllib.request.urlopen(req, timeout=30) as r:
                 s = json.loads(r.read())
-            state = str((s.get("data") or s).get("cognitive_state", "UNKNOWN")).upper()
-            if state == "WORK":
+            state = str((s.get("data") or s).get("cognitive_state", "UNKNOWN"))
+            # Match qa_runner's own test, which accepts three surface forms. The
+            # API returns "AgentState.WORK", so an exact == "WORK" never fires —
+            # the agent logged "Work processor initialized successfully" and this
+            # poll timed out anyway, for 600 seconds, on a string comparison.
+            low = state.lower()
+            if low in ("work", "agentstate.work") or state.endswith(".WORK"):
                 break
         except Exception:
             pass
