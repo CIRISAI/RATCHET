@@ -2071,3 +2071,69 @@ discriminating_set_measured:
         them. Largest change, and the only one that measures transfer rather than
         degradation.
   status: OPEN — this is a design decision, not a computation
+
+gold_label_floor_measured:
+  # MEASURED 2026-08-09, the review's second blocking item. Seeded 150-item
+  # sample, re-labelled independently by TWO DIFFERENT MODEL FAMILIES with gold
+  # hidden, under the same question the campaign asks.
+  measured:
+    items_labelled_by_both: 121
+    annotator_annotator_agreement: 0.785
+    A_vs_gold: 0.810
+    B_vs_gold: 0.893
+    both_agree_and_differ_from_gold: 0.041
+    per_stratum_both_differ:
+      axiotic_primary: 0.111
+      axiotic_secondary: 0.029
+      deontic_held: 0.031
+      discriminant_control: 0.000
+  declared_floor: 0.041
+  it_is_a_proxy: |
+    The re-labellers are models, not the crowdworkers Hendrycks used. This bounds
+    how REPRODUCIBLE the judgement is, not how wrong the pool is, and two model
+    families were used so the number is not one model agreeing with itself. It is
+    published as a floor and must never be laundered into a human agreement rate.
+  where_it_bites: |
+    The positive control is the worst stratum: axiotic_primary carries 11.1%
+    items where both independent re-labellers agree the shipped label is wrong,
+    against 4.1% overall. That is the stratum every headline rests on.
+
+    Annotator-annotator agreement there is 59.3% — barely above chance on a
+    binary task. Long-form AITA is genuinely contested material, which is why it
+    is the most axiotic stratum AND the least reliable one. Those are the same
+    property seen from two sides.
+
+implied_sigma:
+  # Both probes in. N=600 per contrast, paired McNemar, measured terms.
+  basis: "self-discordance 0.037, ICC 0.05, 10 items/arc, gold floor 0.041, discriminating rate 0.092"
+  table: |
+    contrast              ceiling   z at ceiling   z at half ceiling
+    accord_swap_effect       9.2%           4.6              2.7
+    form_vs_content          9.2%           4.6              2.7
+    pipeline_effect      unbounded         13.4              8.9
+    scaffold_floor       unbounded         13.4              8.9
+  reading: |
+    THE TWO HARNESS CONTRASTS ARE FINE. pipeline_effect and scaffold_floor compare
+    a full pipeline against none; nothing caps how far apart they can be, and at
+    600 items a half-sized effect still lands at ~9σ. These were never the
+    problem and the design is generous for them.
+
+    THE TWO DOCUMENT-SWAP CONTRASTS ARE MARGINAL BY CONSTRUCTION. Their ceiling is
+    the discriminating rate, 9.2%. Hitting 4.6σ requires EVERY discriminating item
+    to flip the same way — the physical maximum. A realistic half of that is 2.7σ.
+    And the measured point estimate on the sample was +0.008, which at 600 items
+    is 0.5σ.
+
+    THE FLOOR BITES THE CEILING. The movable range is 9.2%; 4.1% of items carry a
+    label two independent re-labellers agree is wrong — a ratio of 2.2:1. On the
+    positive control it is 9.2% against 11.1%, i.e. BELOW ONE. The stratum the
+    campaign leans on has more mislabelled items than movable ones.
+  therefore: |
+    Run the two harness contrasts. They are well powered, unbounded, and answer
+    the question the pipeline was built to raise.
+
+    Do NOT stake accord_swap_effect or form_vs_content on this corpus with this
+    DV. Not because they would fail — because a null from them is uninformative
+    and a positive is inside the label noise. Report them as EQUIVALENCE with the
+    bound stated, or change the DV so the contrast can move on items where both
+    accords reach the same verdict by different routes.
