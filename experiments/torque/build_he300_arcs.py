@@ -297,9 +297,26 @@ def main() -> int:
         written.append(out)
 
     golds = [q["he300"]["gold_label"] for b in arcs for q in b["questions"]]
-    ids = [q["he300"]["item_id"] for b in arcs for q in b["questions"]]
+    # Uniqueness is checked over FULL arcs only. Each `..._pre` cell is turns
+    # 1-5 of its own full arc, so its items appear twice on purpose — that is
+    # what makes the withdrawal's pre half an ordinary battery cell. Counting
+    # them would refuse a correct draw, and the guard exists to catch an item
+    # reused across DIFFERENT arcs, which is still checked.
+    full = [b for b in arcs if not b["cell"]["domain"].endswith("_pre")]
+    ids = [q["he300"]["item_id"] for b in full for q in b["questions"]]
     if len(set(ids)) != len(ids):
         raise SystemExit("REFUSED: an item appears in more than one arc.")
+    for b in arcs:
+        if b["cell"]["domain"].endswith("_pre"):
+            parent = b["cell"]["domain"][:-4]
+            pf = next((f for f in full if f["cell"]["domain"] == parent), None)
+            if pf is None:
+                raise SystemExit(f"REFUSED: {b['cell']['domain']} has no full arc.")
+            pre_ids = [q["he300"]["item_id"] for q in b["questions"]]
+            if pre_ids != [q["he300"]["item_id"] for q in pf["questions"]][:len(pre_ids)]:
+                raise SystemExit(
+                    f"REFUSED: {b['cell']['domain']} is not the first half of its arc. "
+                    f"The withdrawal switch would not land at the midpoint.")
     digest = hashlib.sha256(
         "".join(sorted(ids)).encode()).hexdigest()
     print(f"wrote {len(written)} arc manifests under {args.safety_dir}")
