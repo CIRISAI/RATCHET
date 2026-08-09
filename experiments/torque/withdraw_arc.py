@@ -64,8 +64,12 @@ def ask_agent(url: str, token: str, text: str, channel: str, timeout: float) -> 
     req = urllib.request.Request(
         f"{url}/v1/agent/interact", data=body,
         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        d = json.loads(r.read())
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            d = json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        body = e.read()[:300].decode("utf-8", "replace")
+        raise SystemExit(f"REFUSED: interact returned {e.code}: {body}")
     # The response shape nests differently across versions; take the first
     # string that looks like the agent's speech rather than guessing one path.
     for path in (("data", "response"), ("data", "message"), ("response",), ("message",)):
@@ -134,8 +138,7 @@ def main() -> int:
                                      headers={"Content-Type": "application/json"})
         with urllib.request.urlopen(req, timeout=300) as r:
             r.read()
-        print("  setup completed; waiting for the runtime to resume", flush=True)
-        time.sleep(20)
+        print("  setup completed; waiting for WORK state", flush=True)
     except urllib.error.HTTPError as e:
         # Already set up is fine — the container may be reused within a run.
         if e.code not in (400, 409):
@@ -149,6 +152,30 @@ def main() -> int:
     token = tok.get("access_token") or (tok.get("data") or {}).get("access_token")
     if not token:
         raise SystemExit(f"REFUSED: no access_token in login reply: {list(tok)[:6]}")
+    # POLL FOR WORK STATE, do not sleep a fixed interval. A 20s sleep was enough
+    # locally and not on a CI runner: setup returned, the runtime had not
+    # resumed, and the first interact came back 500 about 105 seconds later. The
+    # agent tells you when it is ready; ask it.
+    deadline = time.time() + 600
+    state = "UNKNOWN"
+    while time.time() < deadline:
+        try:
+            req = urllib.request.Request(
+                f"{args.agent_url}/v1/agent/status",
+                headers={"Authorization": f"Bearer {token}"})
+            with urllib.request.urlopen(req, timeout=30) as r:
+                s = json.loads(r.read())
+            state = str((s.get("data") or s).get("cognitive_state", "UNKNOWN")).upper()
+            if state == "WORK":
+                break
+        except Exception:
+            pass
+        time.sleep(5)
+    if state != "WORK":
+        raise SystemExit(f"REFUSED: agent never reached WORK (last state {state!r}). "
+                         f"Sending turns to an agent that is not working measures the wait.")
+    print(f"  agent WORK after {600 - int(deadline - time.time())}s", flush=True)
+
     channel = f"torque_withdraw_{args.domain}_{int(time.time())}"
 
     rows, transcript = [], []
