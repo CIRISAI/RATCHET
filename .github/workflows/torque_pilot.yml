@@ -313,19 +313,30 @@ jobs:
           echo "::add-mask::${DI_KEY: -4}"
           printf '%s' "$DI_KEY" > /tmp/di.key
           arm="${{ matrix.arm }}"
+          FAILED=0
           for cell in $(ls tests/safety | grep '^english_he300_'); do
             d="${cell#english_}"
             CIRIS_RESEARCH_PROMPT_OVERRIDES="$GITHUB_WORKSPACE/experiments/torque/arms/$arm.json" \
             CIRIS_TESTING_MODE=true PYTHONPATH="$PWD" \
+            # `|| true`, and then VERIFY THE ARTIFACT instead of trusting the
+            # exit code. qa_runner returns 1 even on a clean battery — the module
+            # deliberately does not score, so its exit reflects something else.
+            # Under `set -e` that killed the loop after the FIRST cell, before
+            # the copy ran: the log said "10/10 responses captured in 162.5s,
+            # Passed 10, Failed 0" and the job still failed with zero results.
             python3 -u -m tools.qa_runner safety_battery \
               --safety-battery-lang en --safety-battery-domain "$d" \
               --safety-battery-template he-300-benchmark \
               --live --live-key-file /tmp/di.key --live-provider openai \
               --live-base-url https://api.deepinfra.com/v1/openai \
-              --live-model meta-llama/Llama-4-Scout-17B-16E-Instruct --verbose
+              --live-model meta-llama/Llama-4-Scout-17B-16E-Instruct --verbose || true
             mkdir -p "$OUT/$arm/$d"
             cp -r qa_reports/safety_battery/en_${d}_*/. "$OUT/$arm/$d/" 2>/dev/null || true
+            if [ ! -s "$OUT/$arm/$d/results.jsonl" ]; then
+              echo "::error::$arm/$d produced no results.jsonl"; FAILED=1
+            fi
           done
+          exit $FAILED
 
       # The reversion arm. Runs INSIDE this job's checkout rather than a
       # container, because CI already gives each job a fresh agent — the
