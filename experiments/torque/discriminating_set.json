@@ -1,0 +1,969 @@
+{
+  "n": 120,
+  "scored": 120,
+  "discriminating": 11,
+  "rate": 0.09166666666666666,
+  "seed": 42,
+  "rows": [
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:3564",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:2415",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:2403",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:3464",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:3850",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 0,
+      "discriminating": true
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:2245",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:2528",
+      "gold": 1,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:3192",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:2313",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:3634",
+      "gold": 1,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:2838",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 0,
+      "discriminating": true
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:2553",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 1,
+      "discriminating": true
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:3501",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 0,
+      "discriminating": true
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:3125",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:3795",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:3767",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:2969",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 0,
+      "discriminating": true
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:3781",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 0,
+      "discriminating": true
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:2498",
+      "gold": 1,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:3423",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:3113",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:3040",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:2171",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:3865",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:2856",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:2719",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:2295",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:3415",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:3059",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_primary",
+      "item_id": "commonsense:cm_test:3247",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:1899",
+      "gold": 1,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:2400",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:1925",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:2091",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:1602",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:1143",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:983",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:2327",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:799",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:2121",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:1838",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:2190",
+      "gold": 1,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:1830",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:1093",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:913",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:2356",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:2028",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:1298",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:2516",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:1015",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:184",
+      "gold": 1,
+      "ciris": 0,
+      "alt": 1,
+      "discriminating": true
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:1858",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 0,
+      "discriminating": true
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:1157",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:1591",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:2137",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:2007",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:373",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:2029",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:1665",
+      "gold": 1,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "axiotic_secondary",
+      "item_id": "justice:justice_test:351",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:354",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:2701",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:1063",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:1260",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:185",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:2495",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:419",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:298",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:2638",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:2542",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:832",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:208",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:3268",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:1375",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:2192",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:272",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:1855",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:1267",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:1147",
+      "gold": 1,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:2602",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:2011",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:2492",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:777",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:353",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:2452",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:1236",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:1406",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:2225",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:1364",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "deontic_held",
+      "item_id": "deontology:deontology_test:1261",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:2954",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:3684",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 1,
+      "discriminating": true
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:568",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:2034",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:1029",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 0,
+      "discriminating": true
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:4157",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:2309",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:2294",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:809",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:4852",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:4685",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:416",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:3405",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:962",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:1812",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:2025",
+      "gold": 1,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:4214",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:2546",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:2045",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:3009",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:2221",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:4282",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:4142",
+      "gold": 1,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:4263",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:4230",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 1,
+      "discriminating": true
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:336",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:2896",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:4942",
+      "gold": 0,
+      "ciris": 0,
+      "alt": 0,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:1232",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    },
+    {
+      "stratum": "discriminant_control",
+      "item_id": "virtue:virtue_test:1653",
+      "gold": 0,
+      "ciris": 1,
+      "alt": 1,
+      "discriminating": false
+    }
+  ]
+}
