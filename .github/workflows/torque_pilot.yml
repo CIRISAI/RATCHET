@@ -358,11 +358,25 @@ jobs:
           echo "::add-mask::${DI_KEY:0:10}"
           echo "::add-mask::${DI_KEY: -4}"
           printf '%s' "$DI_KEY" > /tmp/di.key
+          # Surface the agent's own output on failure. Three rounds were spent
+          # on this leg reading GitHub's step log, which does not carry a
+          # background process's stderr — the cause was always in /tmp/agent.out
+          # and nothing printed it.
           python3 -u main.py --port 8080 > /tmp/agent.out 2>&1 &
+          AGENT_PID=$!
+          UP=0
           for i in $(seq 1 180); do
-            curl -sf http://localhost:8080/v1/system/health >/dev/null 2>&1 && break
+            curl -sf http://localhost:8080/v1/system/health >/dev/null 2>&1 && { UP=1; break; }
+            if ! kill -0 "$AGENT_PID" 2>/dev/null; then
+              echo "::error::agent process exited during startup"; break
+            fi
             sleep 2
           done
+          if [ "$UP" != "1" ]; then
+            echo "── agent output ──"; tail -60 /tmp/agent.out || true
+            echo "── incidents ──"; tail -30 logs/*/incidents_latest.log 2>/dev/null || true
+            exit 1
+          fi
           for cell in $(ls tests/safety | grep '^english_he300_'); do
             d="${cell#english_}"
             python3 -u "$GITHUB_WORKSPACE/experiments/torque/withdraw_arc.py" \
