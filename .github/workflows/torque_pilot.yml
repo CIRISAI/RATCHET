@@ -366,7 +366,14 @@ jobs:
           AGENT_PID=$!
           UP=0
           for i in $(seq 1 180); do
-            curl -sf http://localhost:8080/v1/system/health >/dev/null 2>&1 && { UP=1; break; }
+            # `if`, NOT `cmd && { ...; }`. Under `set -e` a failing command at
+            # the end of an && list terminates the script, so the very first
+            # unsuccessful poll exited the whole step — 62 seconds, one attempt,
+            # against a loop written to allow 360. An `if` puts the command in a
+            # condition context, where set -e does not fire.
+            if curl -sf http://localhost:8080/v1/system/health >/dev/null 2>&1; then
+              UP=1; break
+            fi
             # NO PID LIVENESS CHECK. `kill -0` on the backgrounded shell job is
             # not a test of whether the agent is alive — main.py re-execs during
             # startup, so the original PID disappears while the agent comes up
