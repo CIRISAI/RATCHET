@@ -141,8 +141,15 @@ def main() -> int:
     print("because the geometry is right and the split must be checkable before")
     print("the mechanism is built — not because they currently measure it.")
 
-    missing = [a for a in ("bare", "values-ciris", "h3ere-ciris", "h3ere-alt",
-                           "h3ere-neutral", "h3ere-blank") if a not in stat]
+    # The eight legs of the complete workflow: six straight arms plus the
+    # reversion arm in both history conditions. The withdrawal legs land under
+    # `withdraw-<history>` because they are assembled from two harnesses and
+    # belong to neither — omitting them from this list made a fully green run
+    # report failure.
+    EXPECTED = ("bare", "values-ciris", "h3ere-ciris", "h3ere-alt",
+                "h3ere-neutral", "h3ere-blank",
+                "withdraw-intact·intact", "withdraw-scrubbed·scrubbed")
+    missing = [a for a in EXPECTED if a not in stat]
     if missing:
         print(f"\n**ARMS WITH NO RESULTS: {', '.join(missing)}.** A run missing an arm")
         print("is not a partial run, it is a different experiment — every contrast")
