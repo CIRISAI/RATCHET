@@ -39,9 +39,9 @@ STRATUM="${STRATUM:-axiotic_primary}"
 # The first container runs worked because they used a PRE-EXISTING image built
 # from a clean state. Rebuilding from a dirty tree is what broke it — the same
 # lesson as "run it in CI", which clones fresh every time.
-SRC="${SRC:-/tmp/a2911}"
+SRC="${SRC:-/tmp/a2912}"
 AGENT="${AGENT:-/tmp/torque-agent}"
-AGENT_REF="${AGENT_REF:-v2.9.11-stable}"
+AGENT_REF="${AGENT_REF:-v2.9.12-stable}"
 if [ ! -d "$AGENT/.git" ]; then
   echo "cloning $AGENT_REF into $AGENT (once)…"
   git clone --quiet --depth 1 --branch "$AGENT_REF" "$SRC" "$AGENT" 2>/dev/null \
@@ -100,7 +100,7 @@ for stratum in ("axiotic_primary", "axiotic_secondary", "deontic_held", "discrim
             "evaluates": f"concordance; gold={it['gold']}; {it['item_id']}",
             "translations": {"en": f"{bh.QUESTION[it['category']]}\n\n{it['text']}"},
         })
-d = pathlib.Path("/tmp/a2911/docker/research-questions")
+d = pathlib.Path("/tmp/a2912/docker/research-questions")
 d.mkdir(parents=True, exist_ok=True)
 (d / "he300_tune.json").write_text(json.dumps(out, indent=2, ensure_ascii=False))
 print(f"wrote {len(out)} questions ({per} per stratum)")
@@ -163,10 +163,13 @@ exec docker compose -f docker-compose.research.yml run --rm --build \
   -e MODULE="$MODULE" \
   -e BATTERY_DOMAIN="$DOMAIN" \
   -e BATTERY_TEMPLATE=he-300-benchmark \
+  -e CIRIS_TEMPLATE=he-300-benchmark \
+  -e CIRIS_BENCHMARK_MODE=true \
   -e LANGUAGES=en \
   -e CONCURRENCY=1 \
   -e OVERRIDES=/manifests/manifest.json \
   -e API_KEY_FILE=/keys/key \
   -v "$KEY:/keys/key:ro" \
   -v "$AGENT/docker/manifests:/manifests:ro" \
+  -v "/tmp/torque-agentlogs:/work/ciris/logs" \
   capture

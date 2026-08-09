@@ -865,7 +865,7 @@ holds:
 # Pins — measured at v2.9.10-stable (14fc414ef), not copied from an example
 # ---------------------------------------------------------------------------
 pins:
-  # RE-MEASURED at v2.9.11-stable, 2026-08-07. All three came back BYTE-IDENTICAL
+  # RE-MEASURED at v2.9.12-stable, 2026-08-07. All three came back BYTE-IDENTICAL
   # to their 2.9.10 values — 2.9.11 touched no residue site, no accord corpus and
   # no default template. Recorded as a measurement, not carried forward: an
   # unchanged digest and an unchecked one are indistinguishable in the file and
@@ -890,9 +890,9 @@ pins:
   framing_alt_sha256: "681f420d6485e1857a258fa67cba1078761d1fc92ea7108d01f36c01605246c2"
   terms_table_sha256: "fc8bf9037ae995c96267b18f4ec205aa3a9bcc909522cec39366982752f66b8a"
   template_sha256: "75f2d11dfc03c91b5b45ae8493109aeec9b73a185a0fb1579a0df98d7e9bf46b"
-  harness: {agent: "2.9.11-stable"}   # 7e71d0381
+  harness: {agent: "2.9.12-stable"}   # 7e71d0381
   #
-  # Instrument state VERIFIED at v2.9.11-stable with the agent team's own probe
+  # Instrument state VERIFIED at v2.9.12-stable with the agent team's own probe
   # (`probe_gate_coverage --locales en --jobs 8 --assert-floors`):
   #   585 blocks | 192 keys | 134 gated | 58 dark | COVERAGE: PASS
   # The 58 dark are `prompts.formatters.*` labels that render only with a live
@@ -1741,3 +1741,86 @@ verdict_polarity_per_family:
     NOTE the draw is therefore NOT representative of the virtue subset's base
     rate. That is correct for a control whose job is to hold, and it must not be
     reported as a virtue-subset accuracy.
+
+benchmark_mode_not_reached:
+  # FOUND 2026-08-08. Eric: "just turn off wakeup? it should already be disabled
+  # for HE-300." It is disabled in the template, and the template was not
+  # reaching the server.
+  what_happens: |
+    `qa_runner/server.py:995` sets the two env vars that matter ONLY when the
+    module is QAModule.HE300_BENCHMARK:
+
+        if any(m == QAModule.HE300_BENCHMARK for m in self.modules):
+            env["CIRIS_TEMPLATE"] = "he-300-benchmark"
+            env["CIRIS_BENCHMARK_MODE"] = "true"
+
+    Running `safety_battery --safety-battery-template he-300-benchmark` passes
+    the template to the SETUP WIZARD (`setup_template_id`) and never sets either
+    variable. `component_builder` reads them from the environment, so the server
+    boots under default behaviour.
+  two_consequences: |
+    1. WAKEUP RUNS. he-300-benchmark declares
+       `cognitive_state_behaviors.wakeup.enabled: false`, and that config is
+       never consulted because the template override never arrives. The
+       ~10-minute wakeup — "60 LLM calls x ~40K tokens" per qa_runner's own
+       comment — was being paid on every boot, in every arm, in every cell.
+
+    2. EPISTEMIC HUMILITY STAYS ON. CIRIS_BENCHMARK_MODE disables that
+       conscience specifically because it triggers PONDER, which the benchmark
+       does not permit. Without it the faculty is live and can force retries the
+       action menu cannot express.
+
+    The second is the one that would have quietly damaged results: a conscience
+    the benchmark configuration exists to disable was running in every h3ere arm.
+  fix: |
+    Set CIRIS_TEMPLATE and CIRIS_BENCHMARK_MODE in the run environment.
+    `server.py:793` builds the server env from `os.environ.copy()`, so container
+    env reaches the agent.
+  upstream: |
+    The real fix belongs in qa_runner: `--safety-battery-template` should set the
+    server env, or the template's own cognitive_state_behaviors should be
+    consulted without an env override. A template whose behaviour config is
+    silently ignored is worse than no template, because the run reports the
+    template name.
+
+agent_2_9_12:
+  # UPDATED 2026-08-09. 2.9.12 lands the fix for the defect this campaign found
+  # yesterday, and its docstring names the same two consequences:
+  #
+  #   "The setup wizard got --<module>-template via setup_template_id, while the
+  #    SERVER env got CIRIS_TEMPLATE only when the module happened to be
+  #    he300_benchmark. So a run launched with an explicit template completed
+  #    setup under it and then booted the agent under the DEFAULT template's
+  #    behaviour config. […] cognitive_state_behaviors.wakeup.enabled: false was
+  #    never consulted, so ~10 minutes of wakeup was paid on every boot of every
+  #    arm of every cell; and EpistemicHumilityConscience — which benchmark mode
+  #    exists to disable because it triggers PONDER, which the benchmark does not
+  #    permit — stayed live in every arm."
+  #
+  # `resolve_template_id()` is now the single answer, CIRIS_TEMPLATE is exported
+  # unconditionally, and benchmark mode keys off the RESOLVED TEMPLATE rather
+  # than the module list — so --safety-battery-template he-300-benchmark gets
+  # benchmark mode from any module. The local -e workaround is now redundant and
+  # is kept only as belt and braces.
+  verified_unchanged:
+    accord_1.2b.txt: "identical to 2.9.11 — f10ea4be…, no re-pin needed"
+    templates: "he-300-benchmark and default both byte-identical, sha unchanged"
+    profile_loader.py: "unchanged"
+    research_overrides.py: "unchanged"
+  still_open_in_2_9_12: |
+    THE PRECEDENCE CONFLICT REMAINS. profile_loader and both templates are
+    byte-identical, so he-300-benchmark still refuses to load beside a manifest
+    that names the keys its *_overrides shadow:
+
+      pdma_overrides.system_prompt        shadows pdma_ethical.system_guidance_header
+      pdma_overrides.user_prompt_template shadows pdma_ethical.context_integration
+      csdma_overrides.system_prompt       shadows csdma_common_sense.system_guidance_header
+                                                  csdma_common_sense.evaluation_steps
+                                                  csdma_common_sense.response_format
+
+    One of those — pdma_ethical.system_guidance_header — is a key TORQUE VARIES
+    (unit C-pdma). So the template would override the values manipulation at the
+    PDMA header even if the agent started.
+
+    capture_traces.sh still hardcodes model_eval, so the research container still
+    cannot emit a scoreable results.jsonl without a local patch.

@@ -20,7 +20,7 @@ on:
       agent_ref:
         description: "CIRISAgent ref to run against"
         type: string
-        default: "v2.9.11-stable"   # the tag is v-prefixed; the bare form does not exist
+        default: "v2.9.12-stable"   # the tag is v-prefixed; the bare form does not exist
       confirm_spend:
         description: "Type the expected USD figure to proceed (pilot 14, staked 167)"
         type: string
