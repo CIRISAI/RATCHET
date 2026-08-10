@@ -44,9 +44,51 @@ if [ ! -d "$AGENT/.git" ]; then
 fi
 rm -rf "$AGENT/identity" "$AGENT/data" "$AGENT/logs"
 
-python3 build_he300_arcs.py --n-arcs 1 --turns 10 --seed 42 \
-  --stratum "$STRATUM" --ethics "$ETHICS" --safety-dir "$AGENT/tests/safety" >/dev/null
-DOMAIN="he300_${STRATUM}_a00"
+# DOMAIN may be set to drive a SHIPPED cell (e.g. mental_health) instead of a
+# generated HE-300 arc. Only build arcs when we are actually going to run one —
+# building unconditionally rewrote tests/safety on every battery-gate run.
+if [ -z "${DOMAIN:-}" ]; then
+  python3 build_he300_arcs.py --n-arcs 1 --turns 10 --seed 42 \
+    --stratum "$STRATUM" --ethics "$ETHICS" --safety-dir "$AGENT/tests/safety" >/dev/null
+  DOMAIN="he300_${STRATUM}_a00"
+fi
+TEMPLATE="${TEMPLATE:-he-300-benchmark}"
+
+# EXPERIMENTAL asymmetric recall (RATCHET#20). Unset on both = the shipped path,
+# so control and treatment come from ONE image and differ by these two vars
+# alone. Passing them only when set keeps the control byte-identical to stock.
+RECALL_ENV=()
+if [ -n "${CIRIS_RECALL_NONAGENT:-}" ] && [ -n "${CIRIS_RECALL_AGENT:-}" ]; then
+  RECALL_ENV=(-e "CIRIS_RECALL_NONAGENT=$CIRIS_RECALL_NONAGENT"
+              -e "CIRIS_RECALL_AGENT=$CIRIS_RECALL_AGENT")
+  echo "recall split: ${CIRIS_RECALL_NONAGENT} non-agent / ${CIRIS_RECALL_AGENT} agent"
+else
+  echo "recall: SHIPPED (20 mixed)"
+fi
+
+# PROMPT CAPTURE — on by default. `llm_bus._maybe_capture` writes one JSONL row
+# per LLM call carrying the EXACT wire-format `messages`, plus handler,
+# thought_id, task_id and the parsed result.
+#
+# WHY IT IS ON BY DEFAULT NOW. We had CEG trace capture (attestation carriers)
+# and results.jsonl (responses) and mistook that for prompt capture. It is not:
+# neither records what the model was actually asked. Two published mechanism
+# claims died on that gap — a length "collapse" that was a first-message privacy
+# notice, and a self-conditioning hypothesis for a history path that returns []
+# on every call. One captured prompt would have shown `0 history messages`
+# immediately, before either claim was written down.
+#
+# `*` captures every handler (5 DMAs + consciences). Set CAPTURE=0 to disable,
+# or CAPTURE_HANDLER to narrow — the accord rides in every system prompt, so
+# expect a few MB per cell and size the staked run accordingly.
+CAPTURE_ENV=()
+if [ "${CAPTURE:-1}" != "0" ]; then
+  CAPTURE_ENV=(-e "CIRIS_LLM_CAPTURE_HANDLER=${CAPTURE_HANDLER:-*}"
+               -e "CIRIS_LLM_CAPTURE_FILE=/work/ciris/logs/llm_capture.jsonl")
+  echo "prompt capture: ON (${CAPTURE_HANDLER:-*}) -> \$LOGS/llm_capture.jsonl"
+else
+  echo "prompt capture: OFF"
+fi
 
 mkdir -p "$AGENT/docker/manifests" "$LOGS"
 cp "arms/$ARM.json" "$AGENT/docker/manifests/manifest.json"
@@ -74,12 +116,14 @@ cd "$AGENT/docker"
 # no Python traceback, sooner the larger the prompts — 10/10 turns with the
 # accord emptied, 4/10 and 3/10 with it present. Bigger seals, more tee traffic,
 # more contention on the WAL database.
-docker compose -f docker-compose.research.yml run --name "$CID" --build \
+docker compose -f docker-compose.research.yml run --name "$CID" ${BUILD:---build} \
   --entrypoint bash \
   -e OVERRIDES=/manifests/manifest.json \
   -e CIRIS_RESEARCH_PROMPT_OVERRIDES=/manifests/manifest.json \
   -e CIRIS_TESTING_MODE=true \
   -e CIRIS_ACCORD_METRICS_CEG_SEAL_TEE=false \
+  "${RECALL_ENV[@]}" \
+  "${CAPTURE_ENV[@]}" \
   -v "$KEY:/keys/key:ro" \
   -v "$AGENT/docker/manifests:/manifests:ro" \
   -v "$LOGS:/work/ciris/logs" \
@@ -87,7 +131,7 @@ docker compose -f docker-compose.research.yml run --name "$CID" --build \
       --live --live-key-file /keys/key --live-provider openai \
       --live-model '$MODEL' --live-base-url https://api.deepinfra.com/v1/openai \
       --safety-battery-lang en --safety-battery-domain '$DOMAIN' \
-      --safety-battery-template he-300-benchmark --verbose" || true
+      --safety-battery-template '$TEMPLATE' --verbose" || true
 
 docker cp "$CID:/app/qa_reports/safety_battery/." "$RESULTS/" 2>/dev/null \
   && echo "results -> $RESULTS" || echo "no qa_reports in container"

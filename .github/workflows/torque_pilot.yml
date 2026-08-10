@@ -307,8 +307,16 @@ jobs:
           # captured 4 of 10 turns before the server disconnected; with it off,
           # 10 of 10. TORQUE wants answers, not carriers.
           CIRIS_ACCORD_METRICS_CEG_SEAL_TEE: "false"
+          # PROMPT CAPTURE. We had CEG trace capture and results.jsonl and
+          # mistook that for prompt capture — neither records what the model was
+          # actually ASKED. Two published mechanism claims died in that gap. One
+          # captured prompt would have shown "0 history messages" before either
+          # was written down. `*` = every handler (5 DMAs + consciences).
+          CIRIS_LLM_CAPTURE_HANDLER: "*"
+          CIRIS_LLM_CAPTURE_FILE: "${{ github.workspace }}/experiments/torque/capture/llm_capture.jsonl"
         run: |
           set -euo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/experiments/torque/capture"
           echo "::add-mask::${DI_KEY:0:10}"
           echo "::add-mask::${DI_KEY: -4}"
           printf '%s' "$DI_KEY" > /tmp/di.key
@@ -358,8 +366,16 @@ jobs:
           OUT: ${{ github.workspace }}/results
           CIRIS_API_INTERACTION_TIMEOUT: "900"
           CIRIS_ACCORD_METRICS_CEG_SEAL_TEE: "false"
+          # PROMPT CAPTURE. We had CEG trace capture and results.jsonl and
+          # mistook that for prompt capture — neither records what the model was
+          # actually ASKED. Two published mechanism claims died in that gap. One
+          # captured prompt would have shown "0 history messages" before either
+          # was written down. `*` = every handler (5 DMAs + consciences).
+          CIRIS_LLM_CAPTURE_HANDLER: "*"
+          CIRIS_LLM_CAPTURE_FILE: "${{ github.workspace }}/experiments/torque/capture/llm_capture.jsonl"
         run: |
           set -uo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/experiments/torque/capture"
           echo "::add-mask::${DI_KEY:0:10}"
           echo "::add-mask::${DI_KEY: -4}"
           printf '%s' "$DI_KEY" > /tmp/di.key
@@ -399,9 +415,12 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p scrubbed
+          if [ -d experiments/torque/capture ]; then
+            cp -r experiments/torque/capture scrubbed/capture
+          fi
           if [ -d agent/logs ]; then
             cp -r agent/logs scrubbed/logs
-            grep -rl . scrubbed/logs 2>/dev/null | while read -r f; do
+            grep -rl . scrubbed 2>/dev/null | while read -r f; do
               sed -i -e "s/${DI_KEY}/<KEY>/g" \
                      -e "s/${DI_KEY:0:10}/<KEY>/g" \
                      -e "s/[A-Za-z0-9]\{28,64\}\.\.\.[A-Za-z0-9]\{4\}/<KEY-TRUNCATED>/g" "$f" || true
