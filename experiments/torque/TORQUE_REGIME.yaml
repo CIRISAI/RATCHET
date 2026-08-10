@@ -2201,3 +2201,77 @@ staked_scope_2026_08_09:
     humans disagree about it, which is exactly what destroys it as a scoreable
     answer key. Any future values-transfer design has to face that directly
     rather than sampling around it.
+
+# ─────────────────────────────────────────────────────────────────────────────
+turn_position_confound_2026_08_09:
+  status: MEASURED — invalidates the pipeline_effect direction reported 2026-08-08
+  raised_by: operator ("CIRISBench measured the opposite, I suspect a confound")
+
+  what_differs:
+    cirisbench: |
+      he300_runner.run_batch fans every scenario out through asyncio.gather
+      under a semaphore. Each item is an INDEPENDENT single-turn call. No
+      channel is shared, no transcript accumulates. Every CIRISBench item is
+      a turn 1.
+    torque: |
+      Ten items run SEQUENTIALLY in one conversation on one channel, because
+      the reversion arm requires a conversation to withdraw the pipeline from
+      mid-way. Items 2..10 carry everything before them.
+
+  measured:
+    turn_1_only:      {pipeline: 0.891, direct: 0.812, delta: +0.078, n: [64, 32],  fisher_p: 0.348}
+    turns_2_through_10: {pipeline: 0.615, direct: 0.803, delta: -0.188, n: [416, 208], fisher_p: 0.0000}
+    note: |
+      The SIGN OF pipeline_effect FLIPS WITH TURN POSITION. In CIRISBench's
+      condition there is no measurable deficit and the point estimate favours
+      the pipeline. The deficit exists only in later turns.
+
+  mechanism_visible_in_the_text:
+    h3ere_response_length: {turn_1: 137, turn_10: 9}
+    direct_response_length: {bare: [237, 263], values_ciris: [311, 340]}
+    what_9_chars_is: |
+      A bare verdict word and nothing else. From roughly turn 5 the pipeline
+      arms emit "UNREASONABLE" / "MATCHES" / "ETHICAL" with no reasoning,
+      while both direct arms keep producing verdict-plus-justification for all
+      ten turns. Extraction still succeeds — fidelity stays 1.00 — so this is
+      not a parsing failure. The agent stops speaking its reasoning, and
+      concordance falls with it.
+    class_skew_it_explains: |
+      Also explains the verdict skew: h3ere arms answer class 0 at 47-51%
+      against gold's 60%, while direct arms sit at 62-63%. Degenerating toward
+      a stock token pushes the distribution off the gold base rate, which costs
+      accuracy independently of judgement quality.
+
+  what_this_does_to_the_campaign:
+    pipeline_effect: |
+      CONFOUNDED AS SPECIFIED. It cannot separate "the pipeline judges
+      differently" from "the pipeline degrades over a conversation". Both are
+      real findings and they are different claims; the contrast as written
+      reports their sum.
+    the_2026_08_08_report: |
+      RETRACTED. I reported "pipeline_effect points negative, a direction the
+      regime pre-registered as reportable" and hedged it only on n. The hedge
+      was the wrong one. The number is not weak evidence for a negative effect;
+      it is a turn-position artifact, and at CIRISBench's turn 1 the sign is
+      the other way.
+    reversion: |
+      QUALIFIED, not void. The 8-chars-intact vs 478-chars-scrubbed observation
+      stands as format persistence, but its MAGNITUDE is inflated: by turn 6 the
+      agent has already degenerated to bare tokens, so the bare model is copying
+      a terseness that is itself partly artifact. The contrast still separates
+      in-context persistence from trained persistence — that logic is untouched
+      — but the effect size must not be quoted as though the agent's pre-switch
+      style were healthy.
+    unaffected: |
+      accord_swap_effect and form_vs_content compare h3ere arms to EACH OTHER,
+      so the degradation is common-mode and cancels. They were already rescoped
+      to equivalence for unrelated reasons (the two probes).
+
+  open_question_worth_more_than_the_original: |
+    Whether an ethics pipeline stops deliberating over a sustained conversation
+    is a safety question, and a better one than the concordance delta TORQUE was
+    built to measure. It is not yet established: n is one scale model, and the
+    cause is undiagnosed — context pressure from the 54 KB accord plus an
+    accumulating transcript is the leading candidate, and it is a HARNESS
+    property, not necessarily an agent property. Do not promote it to a finding
+    on this evidence.
