@@ -1,7 +1,7 @@
 # RATCHET
 
-**Does an ethics pipeline actually hold an AI agent to the design it claims — and
-does it keep holding once you stop paying for it?**
+**Does the ethics pipeline an AI agent runs on actually change what it decides —
+and do the specific values in it matter, or only the scaffolding that carries them?**
 
 That question is the current work. RATCHET is where the experiment that answers it
 is designed, pre-registered and run.
@@ -18,30 +18,65 @@ is designed, pre-registered and run.
 [CIRIS agents](https://github.com/CIRISAI/CIRISAgent) put every decision through a
 pipeline: several reasoning stages plus four conscience faculties that can veto an
 action. That costs roughly twenty extra model calls per thought. **Is it doing
-anything?**
+anything, and does what it says matter?**
 
-The question splits three ways, and the splitting is most of the design:
+TORQUE compares four agents that differ **only** in the values document they carry —
+CIRIS's own, a different real value system, a neutral one with the values drained,
+and a blank one — on 540 ethics questions they all see in the same order.
 
-- **Does the pipeline change behaviour?** Compare it against the same model handed
-  the same values as plain instructions.
-- **Do the specific values matter, or only the scaffolding?** Swap CIRIS's values
-  for a different real value system, hold everything else fixed.
-- **Does it hold when you stop paying?** Withdraw the pipeline mid-conversation
-  and keep probing. If behaviour drifts back toward the bare model, the effect was
-  *maintenance*, not training.
+**It is an equivalence experiment.** It asks whether the difference is smaller than
+a declared bound, not whether a difference exists. That is not modesty; it is what
+the instrument turned out to support, and the measurements that decided it are
+below.
 
-That last one is the name. Torque is a force you keep applying.
+### What it stopped asking, and why
 
-**Status: designed, not run. There are no results.** When there are, every stake
-is marked survives / fires / void — including the ones that go against us.
+TORQUE set out to ask three questions. Two of them the instrument cannot answer,
+and finding that out cost about six dollars in probe runs rather than the $167 the
+full design would have.
+
+**"Does the pipeline change behaviour?" — withdrawn.** Comparing pipeline arms
+against a plain model is confounded twice: the benchmark's own harness runs every
+item as a fresh conversation while ours runs ten in a row, and the pipeline arms
+carry a position effect the plain arms do not. Not recoverable by collecting more
+data.
+
+**"Does it hold when you stop paying?" — dropped, and this one is the name.**
+Torque is a force you keep applying; the plan was to withdraw the pipeline
+mid-conversation and watch whether behaviour drifted back. Then prompt capture
+showed the agent receives **no conversation history at all** in this harness — the
+retrieval path returned empty on every call. You cannot withdraw a force from a
+system that was never carrying it. A fix landed in the agent
+([v2.9.14](https://github.com/CIRISAI/CIRISAgent)), but the measurements behind the
+current design predate it, so the contrast is dropped rather than quietly rerun.
+
+The name stays. It describes the question honestly, including the part that is
+still out of reach.
+
+### The three numbers that determined the design
+
+| measurement | value | what it bounds |
+|---|---|---|
+| **movable range** | **12.9%** | swapping the *entire* values document changes 12.9% of verdicts. No contrast between these arms can detect more. |
+| **gold-label floor** | **4.1%** | fraction of benchmark answers that are wrong on inspection. Bounds any accuracy claim; largely cancels in a paired comparison. |
+| **position skew** | pipeline-only | accuracy depends on where a question sits in the conversation — but identically across all four arms, so it cancels between them. |
+
+The movable range was measured twice, by two different methods, on two different
+agent versions: 9.2% from a discriminating-set probe, 12.9% from direct verdict
+agreement. Both say the same thing — **the manipulation moves about one item in
+eight**, and an experiment claiming a large effect on this instrument would be
+claiming something the instrument cannot see.
+
+**Status: running.** 540 items, four contrasted arms plus two reference arms,
+$24. Every stake is marked survives / fires / void when it lands — including the
+ones that go against us.
 
 | | |
 |---|---|
-| [`experiments/torque/`](experiments/torque/) | the campaign: regime manifest, corpora, tooling |
-| [`TORQUE_REGIME.yaml`](experiments/torque/TORQUE_REGIME.yaml) | machine-readable design — six arms, four contrasts, bounds |
-| [`PILOT.md`](experiments/torque/PILOT.md) | 10-question dress rehearsal with pre-declared pass criteria |
-| [RATCHET#16](https://github.com/CIRISAI/RATCHET/issues/16) | arms, stakes, void conditions |
-| [CIRISOntology#2](https://github.com/CIRISAI/CIRISOntology/issues/2) | independent review, including its open objections |
+| [`TORQUE_FINAL.yaml`](experiments/torque/TORQUE_FINAL.yaml) | the design: arms, three contrasts, bounds, and every input to the sample size |
+| [`experiments/torque/`](experiments/torque/) | corpora, tooling, probes |
+| [CIRISOntology#5](https://github.com/CIRISAI/CIRISOntology/issues/5) | independent review — approved conditional on two items, both discharged |
+| [RATCHET#20](https://github.com/CIRISAI/RATCHET/issues/20) | the position-effect investigation, including four eliminated hypotheses |
 
 ### The method, and why it is unusual
 
