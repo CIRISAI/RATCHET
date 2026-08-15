@@ -81,6 +81,14 @@ fi
 # `*` captures every handler (5 DMAs + consciences). Set CAPTURE=0 to disable,
 # or CAPTURE_HANDLER to narrow — the accord rides in every system prompt, so
 # expect a few MB per cell and size the staked run accordingly.
+# CHANNEL-PER-QUESTION (RATCHET#20). Separates conversation position from agent
+# lifetime: a fresh channel resets the former and leaves the latter alone.
+PERQ_ENV=()
+if [ "${PER_QUESTION:-0}" = "1" ]; then
+  PERQ_ENV=(-e "CIRIS_BATTERY_CHANNEL_PER_QUESTION=1")
+  echo "channel-per-question: ON"
+fi
+
 CAPTURE_ENV=()
 if [ "${CAPTURE:-1}" != "0" ]; then
   CAPTURE_ENV=(-e "CIRIS_LLM_CAPTURE_HANDLER=${CAPTURE_HANDLER:-*}"
@@ -129,6 +137,7 @@ docker compose -f docker-compose.research.yml run --name "$CID" ${BUILD:---build
   -e CIRIS_ACCORD_METRICS_CEG_SEAL_TEE=false \
   "${RECALL_ENV[@]}" \
   "${CAPTURE_ENV[@]}" \
+  "${PERQ_ENV[@]}" \
   -v "$KEY:/keys/key:ro" \
   -v "$MANIFEST_DIR:/manifests:ro" \
   -v "$LOGS:/work/ciris/logs" \
