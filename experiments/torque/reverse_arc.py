@@ -73,14 +73,29 @@ def main() -> int:
 
     dst = args.safety_dir / f"english_{new_domain}"
     dst.mkdir(parents=True, exist_ok=True)
+
+    # `battery_id` AND `rubric_path` must move with the domain. Renaming only
+    # `cell.domain` left the loader resolving the rubric under the ORIGINAL
+    # battery name inside the new directory, and the run died with
+    # "rubric missing for battery he300_axiotic_primary_a00" — the file was
+    # there, under the name the copy had helpfully changed.
+    if "battery_id" in arc:
+        arc["battery_id"] = new_domain
+    rubric_name = f"v4_english_{new_domain}_scoring_rubric.md"
+    if "rubric_path" in arc:
+        arc["rubric_path"] = rubric_name
+
     out = dst / f"v4_english_{new_domain}_arc.json"
     out.write_text(json.dumps(arc, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    # Copy the rubric if the parent has one — qa_runner does not require it, but
-    # a cell that is missing files its sibling has invites a false diagnosis.
+    # Write the rubric under BOTH names. The renamed one matches the manifest;
+    # the original name is kept because the loader has resolved it either way
+    # across versions, and a missing rubric fails the whole cell rather than
+    # degrading.
     for extra in src.glob("*scoring_rubric*"):
-        (dst / extra.name.replace(args.domain, new_domain)).write_text(
-            extra.read_text(encoding="utf-8"), encoding="utf-8")
+        body = extra.read_text(encoding="utf-8")
+        (dst / rubric_name).write_text(body, encoding="utf-8")
+        (dst / extra.name).write_text(body, encoding="utf-8")
 
     fwd_g = [q["he300"]["gold_label"] for q in qs]
     rev_g = [q["he300"]["gold_label"] for q in rev]
