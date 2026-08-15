@@ -99,8 +99,18 @@ def main() -> int:
     stat = defaultdict(lambda: dict(turns=0, unknown=0, correct=0,
                                     pre=0, post=0, cpre=0, cpost=0, arcs=0))
     for res in sorted(args.results.rglob("results.jsonl")):
-        arm = res.relative_to(args.results).parts[0]
-        domain = res.relative_to(args.results).parts[1]
+        # The artifact layout nests the arm one level down:
+        #   results-final-<arm>-straight/results/<arm>/<cell>/results.jsonl
+        # Taking parts[0] read the ARTIFACT name as the arm, so every arm was
+        # reported missing on a run where all six succeeded. Prefer a path
+        # component that IS an expected arm; fall back to parts[0].
+        parts = res.relative_to(args.results).parts
+        arm = next((p for p in parts if p in _expected_arms()), parts[0])
+        # Same nesting problem as the arm: parts[1] is the literal "results"
+        # directory in the artifact layout. Match against the arcs we loaded,
+        # longest first so `<cell>` never wins over `<cell>_pre`.
+        hits = [c for c in arcs if c in str(res)]
+        domain = max(hits, key=len) if hits else res.parent.name
         # Withdrawal rows carry their own gold, phase and harness — they are the
         # only rows where `pre` and `post` mean what the column names say,
         # because they are the only rows where a switch happened.
