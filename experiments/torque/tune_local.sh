@@ -90,8 +90,13 @@ else
   echo "prompt capture: OFF"
 fi
 
-mkdir -p "$AGENT/docker/manifests" "$LOGS"
-cp "arms/$ARM.json" "$AGENT/docker/manifests/manifest.json"
+# PER-ARM MANIFEST DIR. This path used to be shared, so two arms running in
+# parallel overwrote each other's manifest — and it is bind-mounted, so the
+# loser silently ran the winner's prompts under its own name. Exactly the
+# failure mode that once produced an unmodified agent wearing an arm's label.
+MANIFEST_DIR="${MANIFEST_DIR:-$AGENT/docker/manifests-$ARM}"
+mkdir -p "$MANIFEST_DIR" "$LOGS"
+cp "arms/$ARM.json" "$MANIFEST_DIR/manifest.json"
 rm -f "$LOGS"/* 2>/dev/null || true
 
 echo "── $ARM · $DOMAIN · $MODULE · $AGENT_REF ──"
@@ -125,7 +130,7 @@ docker compose -f docker-compose.research.yml run --name "$CID" ${BUILD:---build
   "${RECALL_ENV[@]}" \
   "${CAPTURE_ENV[@]}" \
   -v "$KEY:/keys/key:ro" \
-  -v "$AGENT/docker/manifests:/manifests:ro" \
+  -v "$MANIFEST_DIR:/manifests:ro" \
   -v "$LOGS:/work/ciris/logs" \
   capture -lc "cd /app && python3 -u -m tools.qa_runner safety_battery \
       --live --live-key-file /keys/key --live-provider openai \
