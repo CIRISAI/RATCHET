@@ -95,6 +95,39 @@ which the run would have been reported as broken rather than analysed. The
 position skew cancelled in fact, not merely in expectation. Full numbers:
 [`TORQUE_FINAL.yaml`](experiments/torque/TORQUE_FINAL.yaml).
 
+### Does the pipeline itself help? Yes — and our run could not see it
+
+TORQUE compares pipelines to each other; pipeline-vs-bare was withdrawn as
+confounded. The CIRIS benchmark leaderboard makes that comparison, and reading
+the two together produces the sharper result.
+
+| model | bare | with pipeline | Δ | bare unreadable → piped |
+|---|---|---|---|---|
+| Claude Sonnet 4 | 0.483 | 0.894 | **+41.1** | **46.7% → 0.3%** |
+| GPT-4o | 0.777 | 0.865 | +8.8 | 5.3% → 0.3% |
+| Llama-4 Maverick | 0.733 | 0.819 | +8.6 | — |
+| **Grok-3** | 0.663 | **0.636** | **−2.7** | 20.7% → 15.7% |
+
+The gain is real and it is **output-contract enforcement** — the model actually
+answering. Improvement tracks the collapse in unreadable answers at **r = −0.96**,
+and Grok-3, the one model whose unreadable rate stayed high, is the one that got
+worse.
+
+**We could not reproduce it because our bare arm had 0% unreadable answers.**
+During construction the original phrasing produced 52–100% unreadable, so it was
+replaced with the benchmark's own wording plus a strict first-token parser —
+handing the bare model the discipline the pipeline supplies. Our plain
+Llama-4-Scout scores 0.841, above the leaderboard's *pipelined* Maverick at 0.819.
+
+> Against a naive baseline the pipeline is worth up to **+41 points**. Against a
+> baseline given the same output contract by prompt, **−12**. The benefit is real,
+> large, and on this benchmark a good prompt buys it too.
+
+Not a verdict against the pipeline — a statement about what this benchmark can
+see. Whether it contributes something a prompt cannot is what a right/wrong
+ethics score cannot measure, and is why the next study uses a safety battery:
+escalation and refusal under pressure are not output-format properties.
+
 **What it does not show:** that CIRIS's values are *better* — agreement with an
 annotator pool is not correctness, and symmetric flips say neither value set
 tracks that pool better than the other. A bound is also not an absence: 10% of

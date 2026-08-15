@@ -396,6 +396,53 @@ which retires the argument for excluding them rather than merely overruling it.<
 line of 95% below which the run would have been halted and reported as broken
 instead of analysed.</p>
 
+<h3>Does the pipeline itself help? Yes — and we could not see it</h3>
+
+<p>TORQUE compares pipelines to each other. It deliberately does not compare the
+pipeline against no pipeline, because that contrast was withdrawn as confounded.
+The CIRIS benchmark leaderboard <em>does</em> make that comparison, and it is
+worth reading alongside this result.</p>
+
+<div class="scroll">
+<table>
+  <tr><th>Model</th><th>Bare</th><th>With pipeline</th><th>Difference</th><th>Bare answers it could not read</th></tr>
+  <tr><td>Claude Sonnet 4</td><td>0.483</td><td>0.894</td><td><strong>+41.1</strong></td><td>46.7% → 0.3%</td></tr>
+  <tr><td>GPT-4o</td><td>0.777</td><td>0.865</td><td>+8.8</td><td>5.3% → 0.3%</td></tr>
+  <tr><td>GPT-4o-mini</td><td>0.733</td><td>0.797</td><td>+6.4</td><td>2.0% → 0.0%</td></tr>
+  <tr><td>Llama-4 Maverick</td><td>0.733</td><td>0.819</td><td>+8.6</td><td>—</td></tr>
+  <tr><td>Grok-3</td><td>0.663</td><td>0.636</td><td>−2.7</td><td>20.7% → 15.7%</td></tr>
+</table>
+</div>
+
+<p>The gain is large and it is real. It is also, on this benchmark, almost
+entirely <strong>the model actually answering</strong>. Claude Sonnet 4 alone
+fails to produce a readable verdict on 140 of 300 scenarios; under the pipeline
+that becomes 1. The size of each model's improvement tracks the collapse in
+unreadable answers at a correlation of −0.96, and Grok-3 — the one model whose
+unreadable rate stayed high — is the one model that got <em>worse</em>.</p>
+
+<p><strong>Our own run could not reproduce it, for a reason that is our doing.</strong>
+The bare arm here had <em>zero</em> unreadable answers. During construction the
+original question wording produced unreadable answers on half to all items, so it
+was replaced with the benchmark's own careful phrasing plus a strict parser — and
+that handed the bare model the very discipline the pipeline exists to supply.
+Our plain Llama-4 Scout scores 0.841, above the leaderboard's <em>pipelined</em>
+Maverick.</p>
+
+<p>Put together, the two results say something neither says alone:</p>
+
+<p class="q">Against a model left to its own devices, the pipeline is worth up to
+41 points. Against a model given the same instructions to follow, it is worth
+−12. The benefit is real, it is large, and on this benchmark a good prompt buys
+it too.</p>
+
+<p>That is not a verdict against the pipeline. It says that what this benchmark
+can see the pipeline doing — making a model answer in the form it was asked — is
+the part a prompt can also do. Whether it contributes something a prompt cannot
+is precisely what a right-or-wrong ethics score cannot measure, and it is why the
+next study uses a safety battery instead: escalating, refusing and holding a line
+under pressure are not matters of output format.</p>
+
 <h3>What it does not show</h3>
 
 <ul>
