@@ -40,6 +40,7 @@ import csv
 import hashlib
 import json
 import random
+import pathlib
 import re
 import sys
 from pathlib import Path
@@ -117,7 +118,38 @@ def load_items(stratum: str) -> List[Dict]:
     return rows
 
 
-def build(n_arcs: int, turns: int, seed: int, stratum: str) -> List[Dict]:
+def load_used(paths: List[str]) -> set:
+    """item_ids already spent, read from previously-built arc manifests.
+
+    The staked draw MUST NOT reuse pilot or readiness items. Those runs measured
+    the instrument on them, and an item whose behaviour informed the design is
+    not an independent observation of it. The builder printed this as a warning
+    for weeks and had no way to enforce it, which is a rule that exists only in
+    prose.
+    """
+    used = set()
+    for root in paths:
+        rp = pathlib.Path(root)
+        # A plain JSON list of item_ids is also accepted, because CI has no
+        # copy of the pilot's arc directory — the spent set travels with the
+        # repo instead of being reconstructed from artifacts.
+        if rp.is_file() and rp.suffix == ".json":
+            used |= set(json.loads(rp.read_text(encoding="utf-8")))
+            continue
+        for f in rp.rglob("v4_*_arc.json"):
+            try:
+                arc = json.loads(f.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            for q in arc.get("questions") or []:
+                iid = (q.get("he300") or {}).get("item_id")
+                if iid:
+                    used.add(iid)
+    return used
+
+
+def build(n_arcs: int, turns: int, seed: int, stratum: str,
+          exclude: set = frozenset()) -> List[Dict]:
     """One manifest PER ARC.
 
     `run_arc` threads every question in a manifest through a single transcript,
@@ -126,6 +158,11 @@ def build(n_arcs: int, turns: int, seed: int, stratum: str) -> List[Dict]:
     turn 5 of nine — both are wrong if the arcs are concatenated.
     """
     items = load_items(stratum)
+    if exclude:
+        before = len(items)
+        items = [it for it in items if it["item_id"] not in exclude]
+        print(f"  excluded {before - len(items)} already-spent items "
+              f"({len(items)} remain in {stratum})")
     need = n_arcs * turns
     if len(items) < need:
         raise SystemExit(
@@ -258,6 +295,9 @@ def main() -> int:
                     help="the pilot MUST cover every stratum it will score — the\ncommonsense-only draw is the one category immune to the JSON polarity\ninversion, so a commonsense-only pilot cannot detect it")
     ap.add_argument("--ethics", type=Path, default=None,
                     help="path to the ETHICS datasets dir (CI clones CIRISBench)")
+    ap.add_argument("--exclude-from", action="append", default=[],
+                    help="directory of previously-built arc manifests whose "
+                         "item_ids must NOT be redrawn; repeatable")
     ap.add_argument("--safety-dir", type=Path, required=True,
                     help="the agent's tests/safety — one cell dir is written per arc")
     args = ap.parse_args()
@@ -267,7 +307,10 @@ def main() -> int:
     if not ETHICS.exists():
         raise SystemExit(f"REFUSED: no ETHICS corpus at {ETHICS}. Pass --ethics.")
 
-    arcs = build(args.n_arcs, args.turns, args.seed, args.stratum)
+    used = load_used(args.exclude_from) if args.exclude_from else set()
+    if args.exclude_from:
+        print(f"exclusion set: {len(used)} item_ids from {len(args.exclude_from)} source(s)")
+    arcs = build(args.n_arcs, args.turns, args.seed, args.stratum, used)
 
     # The rubric each manifest pins. There is NO human-scored rubric for this
     # cell — the standard is the gold label — so it points at a stub saying so

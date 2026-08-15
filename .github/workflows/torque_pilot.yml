@@ -13,16 +13,19 @@ on:
   workflow_dispatch:
     inputs:
       scale:
-        description: "pilot (10 items) or staked (full draw)"
+        description: "pilot (10 items), staked (legacy), or final (TORQUE_FINAL.yaml final-2)"
         type: choice
-        options: [pilot, staked]
+        options: [pilot, staked, final]
         default: pilot
       agent_ref:
         description: "CIRISAgent ref to run against"
         type: string
-        default: "v2.9.13-stable"   # the tag is v-prefixed; the bare form does not exist
+        # final-2 pins the PRE-RECALL-SPLIT build. RATCHET#20 proposes a 10/3
+        # recall split against this same release; if it lands, TORQUE's position
+        # control was measured on a different system than it runs on.
+        default: "v2.9.14"
       confirm_spend:
-        description: "Type the expected USD figure to proceed (pilot 14, staked 167)"
+        description: "Type the expected USD figure to proceed (pilot 14, staked 167, final 24)"
         type: string
         required: true
 
@@ -181,12 +184,21 @@ jobs:
           case "${{ inputs.scale }}" in
             pilot)  A=(2 2 2 2)  ;;
             staked) A=(20 15 15 10) ;;
+            # final-2: 54 arcs = 540 items, from the MEASURED pi_d (0.129) and
+            # design effect (1.67). All four strata — final-1 excluded two of
+            # them on arguments that do not hold for an equivalence design.
+            final)  A=(14 13 14 13) ;;
           esac
           S=(axiotic_primary axiotic_secondary deontic_held discriminant_control)
           mkdir -p arcs
           for i in 0 1 2 3; do
+            EXCL=()
+            if [ "${{ inputs.scale }}" = "final" ]; then
+              EXCL=(--exclude-from spent_items.json)   # pilot + readiness items
+            fi
             python3 build_he300_arcs.py --n-arcs "${A[$i]}" --turns 10 --seed 42 \
               --stratum "${S[$i]}" --ethics ../../bench/engine/datasets/ethics \
+              "${EXCL[@]}" \
               --safety-dir arcs | tee -a arcs/build.log
           done
       - uses: actions/upload-artifact@v4
@@ -223,8 +235,10 @@ jobs:
           - {arm: h3ere-alt,     mode: straight, history: ""}
           - {arm: h3ere-neutral, mode: straight, history: ""}
           - {arm: h3ere-blank,   mode: straight, history: ""}
-          - {arm: h3ere-ciris,   mode: withdraw, history: intact}
-          - {arm: h3ere-ciris,   mode: withdraw, history: scrubbed}
+          # The withdrawal legs are NOT part of final-2. The reversion contrast
+          # was qualified then dropped: the agent receives no conversation
+          # history it could be reverting from, and the position effect it was
+          # built around is common mode. Kept out rather than run unused.
     # A FRESH CHECKOUT IS THE POINT. CIRISAgent mints its federation identity at
     # startup, per occurrence. A reused clone accumulates them and the Engine and
     # the compose process stop agreeing which is the node's — a property of the
