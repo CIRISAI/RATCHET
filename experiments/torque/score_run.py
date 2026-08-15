@@ -63,6 +63,29 @@ def rows_of(p: Path):
                 continue
 
 
+def _expected_arms() -> tuple:
+    """Arms the frozen design says must produce data.
+
+    Reads TORQUE_FINAL.yaml so the check tracks the design instead of a
+    hand-maintained tuple. Falls back to the six-arm final-2 shape if the
+    manifest is unreadable — but says so, because a silent fallback is how a
+    completeness check stops checking.
+    """
+    man = Path(__file__).resolve().parent / "TORQUE_FINAL.yaml"
+    try:
+        import yaml
+        d = yaml.safe_load(man.read_text(encoding="utf-8"))
+        arms = [k for k in d["arms"] if k != "direct_reference"]
+        arms += list((d["arms"].get("direct_reference") or {}).get("arms") or [])
+        if arms:
+            return tuple(sorted(arms))
+    except Exception as e:
+        print(f"  (could not read {man.name}: {e}; using the built-in list)",
+              file=sys.stderr)
+    return ("bare", "values-ciris", "h3ere-ciris", "h3ere-alt",
+            "h3ere-neutral", "h3ere-blank")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--results", type=Path, required=True)
@@ -146,9 +169,13 @@ def main() -> int:
     # `withdraw-<history>` because they are assembled from two harnesses and
     # belong to neither — omitting them from this list made a fully green run
     # report failure.
-    EXPECTED = ("bare", "values-ciris", "h3ere-ciris", "h3ere-alt",
-                "h3ere-neutral", "h3ere-blank",
-                "withdraw-intact·intact", "withdraw-scrubbed·scrubbed")
+    # DERIVED FROM THE MANIFEST, not hardcoded. This list has now drifted
+    # TWICE: once missing the withdrawal legs (a fully green run reported
+    # failure), and once still demanding them after the reversion contrast was
+    # dropped (a fully green run would have reported failure again, in the
+    # opposite direction). A completeness check whose idea of completeness is
+    # maintained by hand is a completeness check that will be wrong.
+    EXPECTED = _expected_arms()
     missing = [a for a in EXPECTED if a not in stat]
     if missing:
         print(f"\n**ARMS WITH NO RESULTS: {', '.join(missing)}.** A run missing an arm")
