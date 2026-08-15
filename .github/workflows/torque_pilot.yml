@@ -219,9 +219,13 @@ jobs:
     # agent boots end to end; as a matrix it is 6 concurrent jobs of 8. The arms
     # are independent by construction — separate manifests, separate processes,
     # separate identities — so nothing is shared to serialise on.
-    timeout-minutes: 90        # a hung arm must not eat the 6h default; the
-                               # pilot is 8 cells x 10 turns and should finish
-                               # well inside this
+    # SIZED TO THE DRAW, not to the pilot. This was 90 minutes — correct for the
+    # pilot's 8 cells and silently wrong for final's 54, which cancelled all four
+    # pipeline arms at exactly 90.5 min while the two direct arms (much faster,
+    # no agent boot) finished. Measured throughput: ~108s per 10-turn cell plus
+    # ~60s agent boot, so 54 cells is ~2.5h. 330 leaves headroom and still sits
+    # under the 6h hard limit, so a genuinely hung arm still gets killed.
+    timeout-minutes: 330
     strategy:
       fail-fast: false          # one arm failing must not cancel the others;
                                 # a run missing an arm is a different experiment
@@ -293,7 +297,11 @@ jobs:
           printf '%s' "$DI_KEY" > /tmp/di.key
           arm="${{ matrix.arm }}"
           {
-            for cell in $(ls tests/safety | grep '^english_he300_'); do
+            # SKIP THE _pre CELLS. build_he300_arcs emits a 5-turn first-half cell
+          # beside every arc, for the withdrawal arm's pre-switch leg. That
+          # contrast is DROPPED, so these are pure cost — they doubled the cell
+          # count per arm and contributed to the timeout above.
+          for cell in $(ls tests/safety | grep '^english_he300_' | grep -v '_pre$'); do
               d="${cell#english_}"
               CIRIS_RESEARCH_PROMPT_OVERRIDES="$M" CIRIS_TESTING_MODE=true \
               PYTHONPATH="$PWD" python3 tools/research/direct_provider.py run \
@@ -342,7 +350,11 @@ jobs:
           printf '%s' "$DI_KEY" > /tmp/di.key
           arm="${{ matrix.arm }}"
           FAILED=0
-          for cell in $(ls tests/safety | grep '^english_he300_'); do
+          # SKIP THE _pre CELLS. build_he300_arcs emits a 5-turn first-half cell
+          # beside every arc, for the withdrawal arm's pre-switch leg. That
+          # contrast is DROPPED, so these are pure cost — they doubled the cell
+          # count per arm and contributed to the timeout above.
+          for cell in $(ls tests/safety | grep '^english_he300_' | grep -v '_pre$'); do
             d="${cell#english_}"
             CIRIS_RESEARCH_PROMPT_OVERRIDES="$GITHUB_WORKSPACE/experiments/torque/arms/$arm.json" \
             CIRIS_TESTING_MODE=true PYTHONPATH="$PWD" \
