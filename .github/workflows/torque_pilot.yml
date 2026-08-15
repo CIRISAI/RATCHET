@@ -50,6 +50,12 @@ jobs:
           case "${{ inputs.scale }}" in
             pilot)  want=14  ;;
             staked) want=167 ;;
+            final)  want=24  ;;
+            # An unknown scale left `want` EMPTY and the comparison then tested
+            # against "", so the gate's failure mode was to reject every input
+            # rather than to notice the scale was unhandled. A spend gate that
+            # cannot name its own expected figure must say so.
+            *) echo "REFUSED: no expected spend defined for scale='${{ inputs.scale }}'."; exit 1 ;;
           esac
           if [ "${{ inputs.confirm_spend }}" != "$want" ]; then
             echo "REFUSED: scale=${{ inputs.scale }} expects \$$want, got '${{ inputs.confirm_spend }}'."
