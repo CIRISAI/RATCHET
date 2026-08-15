@@ -106,6 +106,12 @@ jobs:
       matrix:
         arm: [bare, values-ciris, h3ere-ciris, h3ere-neutral, h3ere-blank]
         locale: [en, es, fr, it, pt]
+        exclude:
+          # h3ere-neutral has no localized corpus — see the build step.
+          - {arm: h3ere-neutral, locale: es}
+          - {arm: h3ere-neutral, locale: fr}
+          - {arm: h3ere-neutral, locale: it}
+          - {arm: h3ere-neutral, locale: pt}
     steps:
       - uses: actions/checkout@v4
       # A FRESH CLONE PER JOB. CIRISAgent mints its federation identity at
@@ -115,7 +121,7 @@ jobs:
         with: {repository: CIRISAI/CIRISAgent, ref: "${{ inputs.agent_ref }}", path: agent}
 
       - name: Build arm manifest (pipeline arms only)
-        if: startsWith(matrix.arm, 'h3ere')
+        if: startsWith(matrix.arm, 'h3ere') && matrix.arm != 'h3ere-ciris' 
         working-directory: experiments/torque
         env: {AGENT: "${{ github.workspace }}/agent"}
         run: |
@@ -123,18 +129,28 @@ jobs:
           mkdir -p arms
           case "${{ matrix.arm }}" in
             h3ere-ciris)
-              python3 build_arm_manifest.py --agent-root "$AGENT" --arm h3ere-ciris \
-                --accord "$AGENT/accord_1.2b.txt" \
-                --framing corpora/monoglot/pdma_framing_ciris_en.txt --units ciris \
-                --out arms/h3ere-ciris.json ;;
+              # NO MANIFEST. build_arm_manifest overrides ACCORD_KEYS — which
+              # includes `accord.localized` — so passing --accord would replace
+              # the shipped LOCALIZED accord with English monoglot in every
+              # locale, and the arm would stop being the deployment it is meant
+              # to represent. The shipped agent IS h3ere-ciris.
+              echo "h3ere-ciris runs shipped: no override" ;;
             h3ere-neutral)
+              # ENGLISH-ONLY BY CONSTRUCTION. The neutral corpus was authored in
+              # English; there is no localized drained-values document to
+              # substitute. Outside `en` this arm would compare a localized
+              # ciris against an English neutral, confounding values with
+              # language. Restricted to en in the matrix exclusions.
               python3 build_arm_manifest.py --agent-root "$AGENT" --arm h3ere-neutral \
                 --accord corpora/values-neutral/A-accord-NEUTRAL.txt \
                 --framing corpora/monoglot/pdma_framing_neutral_en.txt --units neutral \
-                --out arms/h3ere-neutral.json ;;
+                --template default --out arms/h3ere-neutral.json ;;
             h3ere-blank)
+              # Emptying is language-agnostic, but the key space is per-locale,
+              # so the baseline must cover every locale we run.
               python3 build_arm_manifest.py --agent-root "$AGENT" --arm h3ere-blank \
-                --blank-axiotic --units ciris \
+                --blank-axiotic --units ciris --template default \
+                --locales "${{ inputs.locales }}" \
                 --out arms/h3ere-blank.json ;;
           esac
 
@@ -179,15 +195,16 @@ jobs:
                 # runner refuses an empty injection, which is how that was caught.
                 python3 -m tools.research.direct_provider run \
                   --arm values-ciris --lang "${{ matrix.locale }}" --domain mental_health \
-                  --inject "axiotic=file:$GITHUB_WORKSPACE/agent/accord_1.2b.txt" \
+                  --inject axiotic=corpus:accord.localized \
                   --model "$M" --base-url https://api.deepinfra.com/v1/openai \
                   --key-file /tmp/di.key --temperature 0.7 --out "$CELL" </dev/null || true ;;
               *)
                 # TEMPLATE=default, NOT he-300-benchmark: that template forces
                 # terse verdicts for an ethics quiz and suppresses the
                 # deliberation this battery exists to observe.
-                CIRIS_RESEARCH_PROMPT_OVERRIDES="$GITHUB_WORKSPACE/experiments/torque/arms/${{ matrix.arm }}.json" \
-                OVERRIDES="$GITHUB_WORKSPACE/experiments/torque/arms/${{ matrix.arm }}.json" \
+                OV=""
+                [ "${{ matrix.arm }}" != "h3ere-ciris" ] && OV="$GITHUB_WORKSPACE/experiments/torque/arms/${{ matrix.arm }}.json"
+                CIRIS_RESEARCH_PROMPT_OVERRIDES="$OV" OVERRIDES="$OV" \
                 PYTHONPATH="$PWD" python3 -u -m tools.qa_runner safety_battery \
                   --safety-battery-lang "${{ matrix.locale }}" --safety-battery-domain mental_health \
                   --safety-battery-template default \
