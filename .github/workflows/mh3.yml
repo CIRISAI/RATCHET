@@ -1,0 +1,241 @@
+name: MH-3 safety battery (5 arms x 5 locales x 5 models)
+
+# Does the covenant's CONTENT carry the safety, or does the machinery that
+# carries it? MH-2 could not tell: h3ere-ciris 4.4% vs h3ere-neutral 8.9% vs
+# h3ere-blank 11.1%, all mutually p > 0.4 at 45 turns/arm. Separating 4.4% from
+# 11.1% at 80% power needs ~252 turns/arm.
+#
+# 5 locales x 5 models x 9 turns = 225 turns/arm, which is the bar, using the
+# ONLY five locales legal for an axiotic-varying arm: `en es fr it pt` are the
+# split ones (RATCHET#19). The other 24 resolve through the unsplit parent where
+# `language_guidance` stays `mixed`, and §10.2.1 REFUSES an axiotic regime on a
+# mixed block carrying axiotic content. Running them would not be a bigger
+# study, it would be a refused one.
+#
+# Sequential local docker was ~15 hours for this. The matrix is 25 jobs.
+
+on:
+  workflow_dispatch:
+    inputs:
+      agent_ref:
+        description: "CIRISAgent ref"
+        type: string
+        default: "v2.9.14"
+      confirm_spend:
+        description: "Type the expected USD figure to proceed (90)"
+        type: string
+        required: true
+      locales:
+        description: "space-separated locale codes"
+        type: string
+        default: "en es fr it pt"
+
+concurrency:
+  group: mh3
+  cancel-in-progress: false
+
+env:
+  MODELS: >-
+    meta-llama/Llama-4-Scout-17B-16E-Instruct
+    meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8
+    meta-llama/Llama-3.3-70B-Instruct
+    google/gemma-3-27b-it
+    mistralai/Mistral-Small-24B-Instruct-2501
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Confirm spend
+        run: |
+          if [ "${{ inputs.confirm_spend }}" != "90" ]; then
+            echo "REFUSED: expected 90, got '${{ inputs.confirm_spend }}'."; exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with: {repository: CIRISAI/CIRISAgent, ref: "${{ inputs.agent_ref }}", path: agent}
+      - name: The five locales must be SPLIT, not merely present
+        run: |
+          set -euo pipefail
+          # Resolve locale -> directory through the RUNNER'S OWN map
+          # (safety_battery.ISO_TO_LANG_DIR), never a hardcoded case statement
+          # here. A second copy of that mapping is a second thing to drift.
+          PYTHONPATH=agent python3 - ${{ inputs.locales }} <<'EOF'
+          import json, pathlib, sys
+          from tools.qa_runner.modules.safety_battery import ISO_TO_LANG_DIR
+          SPLIT = {"en", "es", "fr", "it", "pt"}   # RATCHET#19: the only split locales
+          bad = 0
+          for code in sys.argv[1:]:
+              if code not in ISO_TO_LANG_DIR:
+                  print(f"REFUSED: {code!r} unknown to the runner"); bad = 1; continue
+              if code not in SPLIT:
+                  print(f"REFUSED: {code!r} is unsplit — language_guidance stays "
+                        f"'mixed' and 10.2.1 refuses an axiotic regime on it"); bad = 1; continue
+              d = pathlib.Path("agent/tests/safety") / f"{ISO_TO_LANG_DIR[code]}_mental_health"
+              f = next(iter(d.glob("*canonical_universal_criteria*.json")), None)
+              n = len(json.loads(f.read_text())["universal"]) if f else 0
+              st = json.loads(f.read_text()).get("status", "?") if f else "-"
+              print(f"  {code} -> {ISO_TO_LANG_DIR[code]:12s} criteria={n} status={st}")
+              if n != 7:
+                  print("    REFUSED: needs all 7 universal criteria"); bad = 1
+          sys.exit(bad)
+          EOF
+
+  run:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        arm: [bare, values-ciris, h3ere-ciris, h3ere-neutral, h3ere-blank]
+        locale: [en, es, fr, it, pt]
+    steps:
+      - uses: actions/checkout@v4
+      # A FRESH CLONE PER JOB. CIRISAgent mints its federation identity at
+      # startup per occurrence; a reused checkout accumulates them and the
+      # engine stops agreeing which is the node's.
+      - uses: actions/checkout@v4
+        with: {repository: CIRISAI/CIRISAgent, ref: "${{ inputs.agent_ref }}", path: agent}
+
+      - name: Build arm manifest (pipeline arms only)
+        if: startsWith(matrix.arm, 'h3ere')
+        working-directory: experiments/torque
+        env: {AGENT: "${{ github.workspace }}/agent"}
+        run: |
+          set -euo pipefail
+          mkdir -p arms
+          case "${{ matrix.arm }}" in
+            h3ere-ciris)
+              python3 build_arm_manifest.py --agent-root "$AGENT" --arm h3ere-ciris \
+                --accord "$AGENT/accord_1.2b.txt" \
+                --framing corpora/monoglot/pdma_framing_ciris_en.txt --units ciris \
+                --out arms/h3ere-ciris.json ;;
+            h3ere-neutral)
+              python3 build_arm_manifest.py --agent-root "$AGENT" --arm h3ere-neutral \
+                --accord corpora/values-neutral/A-accord-NEUTRAL.txt \
+                --framing corpora/monoglot/pdma_framing_neutral_en.txt --units neutral \
+                --out arms/h3ere-neutral.json ;;
+            h3ere-blank)
+              python3 build_arm_manifest.py --agent-root "$AGENT" --arm h3ere-blank \
+                --blank-axiotic --units ciris \
+                --out arms/h3ere-blank.json ;;
+          esac
+
+      - name: Run the battery — 5 models
+        env:
+          DI_KEY: ${{ secrets.DEEPINFRA_API_KEY }}
+          # The tee reads the live persist DB through a second SQLite handle,
+          # which is unsafe alongside the Rust writer on WAL. It took three arms
+          # down in TORQUE. Off.
+          CIRIS_ACCORD_METRICS_CEG_SEAL_TEE: "false"
+          CIRIS_TESTING_MODE: "true"
+        working-directory: agent
+        run: |
+          set -uo pipefail
+          echo "::add-mask::${DI_KEY:0:10}"
+          printf '%s' "$DI_KEY" > /tmp/di.key
+          OUT="$GITHUB_WORKSPACE/captures"; mkdir -p "$OUT"
+          pip install -q -e . 2>/dev/null || pip install -q -r requirements.txt 2>/dev/null || true
+          for M in $MODELS; do
+            SHORT=$(echo "$M" | sed 's#.*/##;s/-Instruct.*//;s/-it$//' | tr 'A-Z' 'a-z')
+            CELL="$OUT/${{ matrix.arm }}__${{ matrix.locale }}__$SHORT"
+            echo "=== ${{ matrix.arm }} · ${{ matrix.locale }} · $SHORT ==="
+            case "${{ matrix.arm }}" in
+              bare)
+                python3 -m tools.research.direct_provider run \
+                  --arm bare --lang "${{ matrix.locale }}" --domain mental_health \
+                  --model "$M" --base-url https://api.deepinfra.com/v1/openai \
+                  --key-file /tmp/di.key --temperature 0.7 --out "$CELL" </dev/null || true ;;
+              values-ciris)
+                # MUST inject, or the arm is `bare` wearing another name — the
+                # runner refuses an empty injection, which is how that was caught.
+                python3 -m tools.research.direct_provider run \
+                  --arm values-ciris --lang "${{ matrix.locale }}" --domain mental_health \
+                  --inject "axiotic=file:$GITHUB_WORKSPACE/agent/accord_1.2b.txt" \
+                  --model "$M" --base-url https://api.deepinfra.com/v1/openai \
+                  --key-file /tmp/di.key --temperature 0.7 --out "$CELL" </dev/null || true ;;
+              *)
+                # TEMPLATE=default, NOT he-300-benchmark: that template forces
+                # terse verdicts for an ethics quiz and suppresses the
+                # deliberation this battery exists to observe.
+                CIRIS_RESEARCH_PROMPT_OVERRIDES="$GITHUB_WORKSPACE/experiments/torque/arms/${{ matrix.arm }}.json" \
+                OVERRIDES="$GITHUB_WORKSPACE/experiments/torque/arms/${{ matrix.arm }}.json" \
+                PYTHONPATH="$PWD" python3 -u -m tools.qa_runner safety_battery \
+                  --safety-battery-lang "${{ matrix.locale }}" --safety-battery-domain mental_health \
+                  --safety-battery-template default \
+                  --live --live-key-file /tmp/di.key --live-provider openai \
+                  --live-base-url https://api.deepinfra.com/v1/openai \
+                  --live-model "$M" --verbose </dev/null || true
+                # qa_runner writes under qa_reports; move OUR cell out by locale+date
+                src=$(ls -dt qa_reports/safety_battery/${{ matrix.locale }}_mental_health_* 2>/dev/null | head -1)
+                # qa_runner names the capture by ISO code, not directory name —
+                # verified against ISO_TO_LANG_DIR in preflight.
+                [ -n "$src" ] && mkdir -p "$CELL" && cp -r "$src/." "$CELL/" || true ;;
+            esac
+            rows=$(grep -c . "$CELL/results.jsonl" 2>/dev/null || echo 0)
+            echo "    rows: $rows/9"
+          done
+          # scrub the key out of anything we ship
+          grep -rl . "$OUT" 2>/dev/null | while read -r f; do
+            sed -i -e "s/${DI_KEY}/<KEY>/g" "$f" 2>/dev/null || true
+          done
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: captures-${{ matrix.arm }}-${{ matrix.locale }}
+          path: captures/
+          if-no-files-found: warn
+
+  score:
+    needs: run
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with: {repository: CIRISAI/CIRISAgent, ref: "${{ inputs.agent_ref }}", path: agent}
+      - uses: actions/download-artifact@v4
+        with: {pattern: captures-*, path: all, merge-multiple: true}
+
+      - name: Score every complete cell with the shipped judge
+        env: {OR_KEY: "${{ secrets.RATCHET_OPENROUTER_KEY }}"}
+        working-directory: agent
+        run: |
+          set -uo pipefail
+          echo "::add-mask::${OR_KEY:0:10}"
+          printf '%s' "$OR_KEY" > /tmp/or.key
+          pip install -q -e . 2>/dev/null || true
+          mkdir -p "$GITHUB_WORKSPACE/verdicts"
+          for cell in "$GITHUB_WORKSPACE"/all/*__*__*; do
+            [ -d "$cell" ] || continue
+            n=$(grep -c . "$cell/results.jsonl" 2>/dev/null || echo 0)
+            # A 9-turn staged battery truncated early is missing the adversarial
+            # probes, which is where most failures live. Refuse, do not score.
+            [ "$n" -eq 9 ] || { echo "SKIP $(basename $cell) ($n/9)"; continue; }
+            python3 -m tools.qa_runner safety_interpret \
+              --safety-interpret-capture-dir "$cell" \
+              --safety-interpret-openrouter-key-file /tmp/or.key </dev/null 2>&1 | tail -2
+            b=$(ls -dt qa_reports/safety_interpret/"$(basename $cell)"_* 2>/dev/null | head -1)
+            [ -n "$b" ] && cp -r "$b" "$GITHUB_WORKSPACE/verdicts/$(basename $cell)" || true
+          done
+          echo "scored: $(ls "$GITHUB_WORKSPACE/verdicts" | wc -l) cells"
+
+      - name: Analyse
+        working-directory: experiments/torque
+        run: |
+          python3 mh_analyze.py --verdicts "$GITHUB_WORKSPACE/verdicts" \
+            --agent-root "$GITHUB_WORKSPACE/agent" | tee "$GITHUB_WORKSPACE/MH3_RESULTS.md"
+          cat "$GITHUB_WORKSPACE/MH3_RESULTS.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mh3-verdicts-and-results
+          path: |
+            verdicts/
+            MH3_RESULTS.md
