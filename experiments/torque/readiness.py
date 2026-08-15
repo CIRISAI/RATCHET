@@ -78,13 +78,28 @@ def collect(root: Path, arcs: dict, arm_of) -> dict:
     acc = defaultdict(list)
     fid = defaultdict(lambda: [0, 0])  # group -> [scored, total]
     for res in root.rglob("results.jsonl"):
-        if "en_he300" not in str(res):
+        # Two layouts. Local runs land in `<cell>/en_he300_<cell>_<ts>/`; CI
+        # artifacts land in `results/<arm>/<cell>/`. Filtering on "en_he300"
+        # matched only the first and silently dropped every pilot row — the
+        # control arm vanished from the table rather than erroring.
+        # The results.jsonl's OWN directory must be the cell — either the local
+        # `en_he300_<cell>_<ts>` form or the CI `<cell>` form. Matching anywhere
+        # in the path let the agent's ~29 shipped mental-health reports through:
+        # `docker cp` of qa_reports drags them along, they land UNDER a
+        # he300-named parent, and they were being graded against he300 golds.
+        # Fidelity read 160/28960 = 0.01, which is how it surfaced.
+        parent = res.parent.name
+        if not (parent.startswith("en_he300") or parent in arcs):
             continue
         arm = arm_of(res)
         if arm is None:
             continue
         group = "h3ere" if arm in H3ERE else "direct"
-        cell = next((c for c in arcs if c in str(res)), None)
+        # LONGEST match wins. `he300_axiotic_primary_a00` is a substring of
+        # `..._a00_pre`, so a first-match lookup graded a 5-turn half against
+        # the 10-turn parent's golds and mispaired every turn.
+        hits = [c for c in arcs if c in str(res)]
+        cell = max(hits, key=len) if hits else None
         if not cell:
             continue
         gold = arcs[cell]
