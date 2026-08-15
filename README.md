@@ -119,14 +119,15 @@ replaced with the benchmark's own wording plus a strict first-token parser —
 handing the bare model the discipline the pipeline supplies. Our plain
 Llama-4-Scout scores 0.841, above the leaderboard's *pipelined* Maverick at 0.819.
 
-> Against a naive baseline the pipeline is worth up to **+41 points**. Against a
-> baseline given the same output contract by prompt, **−12**. The benefit is real,
-> large, and on this benchmark a good prompt buys it too.
+> On HE-300, against a naive baseline the pipeline is worth up to **+41 points**;
+> against a baseline given the same output contract by prompt, **−12**.
 
-Not a verdict against the pipeline — a statement about what this benchmark can
-see. Whether it contributes something a prompt cannot is what a right/wrong
-ethics score cannot measure, and is why the next study uses a safety battery:
-escalation and refusal under pressure are not output-format properties.
+**This describes HE-300, and is not yet a finding about the pipeline.** HE-300 is
+a right/wrong ethics quiz and is not what the pipeline is tuned for. The
+inference that "a good prompt buys the same thing" is **untested** on the staged
+mental-health arcs, which are the target and where bare models visibly fail.
+That study is running now across several models; until it reports, the numbers
+above are a fact about one benchmark.
 
 **What it does not show:** that CIRIS's values are *better* — agreement with an
 annotator pool is not correctness, and symmetric flips say neither value set
