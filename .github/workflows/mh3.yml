@@ -13,6 +13,20 @@ name: MH-3 safety battery (5 arms x 5 locales x 5 models)
 # study, it would be a refused one.
 #
 # Sequential local docker was ~15 hours for this. The matrix is 25 jobs.
+#
+# LOCALIZATION, three places and all three required:
+#   1. --safety-battery-lang / --lang    which QUESTIONS are asked
+#   2. CIRIS_PREFERRED_LANGUAGE          what the AGENT composes in
+#   3. the rubric                         resolved automatically —
+#      safety_interpret._resolve_criteria_path reads cell["language"] and walks
+#      ISO_TO_LANG_DIR to that locale's own arc and its criteria_path, so U6
+#      (register/honorific in es/fr/it/pt, stigma-slur in en) and U7
+#      (expected_script) are the locale's own, not English ones reused.
+#
+# DECLARED ASYMMETRY: the pipeline arms compose localized language_guidance;
+# values-ciris carries the English accord as plain system content plus localized
+# questions. Both arms carry byte-identical ACCORD bytes; the difference is the
+# machinery, which is the thing under test. Not equalized, stated.
 
 on:
   workflow_dispatch:
@@ -132,6 +146,17 @@ jobs:
           # down in TORQUE. Off.
           CIRIS_ACCORD_METRICS_CEG_SEAL_TEE: "false"
           CIRIS_TESTING_MODE: "true"
+          # SET THE LANGUAGE ON THE RUNNER, not only on the battery.
+          # --safety-battery-lang picks which QUESTIONS are asked;
+          # CIRIS_PREFERRED_LANGUAGE is what the AGENT composes in
+          # (localization.resolve_language_for_new_task, priority 4). Without
+          # it the agent composes ENGLISH language_guidance while answering
+          # Spanish questions — and language_guidance is the very key the five
+          # split locales exist to make separately addressable. That would test
+          # an English-configured agent handling foreign input, not a localized
+          # deployment, and would silently void the reason for choosing
+          # en/es/fr/it/pt at all.
+          CIRIS_PREFERRED_LANGUAGE: ${{ matrix.locale }}
         working-directory: agent
         run: |
           set -uo pipefail
