@@ -68,10 +68,10 @@ decides — and do the specific values in it matter, or only the scaffolding tha
 carries them?</p>
 
 <div class="note">
-  <strong>Running now.</strong>
-  540 questions, four contrasted arms, about $24. No outcome data on this page
-  yet. When there is, every stake is marked survives / fires / void, including
-  the ones that go against us.
+  <strong>Run complete. Results below.</strong>
+  540 questions, four contrasted arms, $24. All three contrasts came back
+  <strong>equivalent</strong> — and the more interesting number is that the
+  values change about one verdict in ten while changing the score by nothing.
   <br><br>
   <strong>This design is smaller than the one first proposed, and the reason is
   not budget.</strong> Probes run before the spend measured what the instrument
@@ -337,26 +337,81 @@ sample size computed from measured inputs rather than assumed ones.</p>
 
 <h2>Results</h2>
 
-<p>None yet. This section will hold them, whatever they are.</p>
+<p>Six arms, 540 questions, none of them used by the earlier probe runs. The
+analysis was written and published <em>while the run was still executing</em>, so
+no outcome data shaped it.</p>
 
-<p>The likely outcome is a bounded null: the values a CIRIS agent carries do not
-change its verdicts on this benchmark by more than five points. That would not
-mean the values do nothing — it means <em>this instrument, on this corpus, cannot
-see them doing anything larger than that</em>, and the bound is the result.</p>
+<h3>The bound</h3>
 
-<p>If a contrast does come back non-equivalent, it gets reported as a point
-estimate with its interval and nothing more. It will not be converted into a
-directional claim without a replication: 13% of questions can move at all,
-against a 4% error rate in the answer key, and a first crossing of a threshold is
-the least reliable one.</p>
+<div class="scroll">
+<table>
+  <tr><th>Contrast</th><th>Difference</th><th>90% interval</th><th>Within ±5 points?</th></tr>
+  <tr><td>accord swap — values drained out</td><td>−1.9</td><td>−4.9 to +1.2</td><td><strong>yes</strong></td></tr>
+  <tr><td>form vs content — different values</td><td>−0.2</td><td>−3.1 to +2.7</td><td><strong>yes</strong></td></tr>
+  <tr><td>scaffold floor — no values at all</td><td>−0.6</td><td>−3.4 to +2.3</td><td><strong>yes</strong></td></tr>
+</table>
+</div>
 
-<p>There is also something the run will not explain. The position effect —
-accuracy depending on where a question sits in a conversation — is
-<em>controlled</em> here, not understood. Four candidate explanations were
-tested and all four were eliminated: response length, the agent reading its own
-earlier answers, context filling up, and the agent's own telemetry. It is real,
-it cancels between the arms being compared, and nobody knows what causes it. That
-stays on the page.</p>
+<p>On this benchmark, with this model, <strong>the values a CIRIS agent carries do
+not change how often it agrees with human annotators by more than five
+points</strong> — whether you swap them for a different real value system, drain
+them out, or remove them entirely.</p>
+
+<h3>The finding that is not the bound</h3>
+
+<p>A bound alone would let you conclude the values do nothing. They are not doing
+nothing.</p>
+
+<p><strong>Swapping them changes about one verdict in ten.</strong> What it does
+not change is how often those verdicts are right.</p>
+
+<div class="scroll">
+<table>
+  <tr><th>Contrast</th><th>CIRIS right, other wrong</th><th>Other right, CIRIS wrong</th><th>Verdicts changed</th></tr>
+  <tr><td>accord swap</td><td>24</td><td>34</td><td>58 of 530</td></tr>
+  <tr><td>form vs content</td><td>26</td><td>27</td><td>53 of 531</td></tr>
+  <tr><td>scaffold floor</td><td>24</td><td>27</td><td>51 of 528</td></tr>
+</table>
+</div>
+
+<p>The two columns are near-equal every time. The values <em>move</em> answers and
+do not <em>improve</em> them: the changes are as likely to go one way as the
+other, measured against the answer key.</p>
+
+<p>"No difference" and "differences that cancel out" are different findings, and
+a score comparison cannot tell them apart — the score is identical in both cases.
+Counting which individual answers changed is what separates them. That count was
+committed as a required measure before the run, not added afterwards because it
+turned out interesting.</p>
+
+<h3>The controls held</h3>
+
+<p>The position effect — accuracy depending on where a question sits in a
+conversation — cancelled <em>in fact</em>, not just in theory: differences across
+the ten positions sit near zero with no trend. The two groups of questions that
+an earlier version of this design wrongly excluded behaved like all the others,
+which retires the argument for excluding them rather than merely overruling it.</p>
+
+<p>Instruction-following was 98.9% or better in every arm, against a pre-set
+line of 95% below which the run would have been halted and reported as broken
+instead of analysed.</p>
+
+<h3>What it does not show</h3>
+
+<ul>
+  <li>It cannot show CIRIS's values are <em>better</em>. Agreement with an
+      annotator pool is not correctness — and the symmetric flips say exactly
+      that neither value set tracks that pool better than the other.</li>
+  <li><strong>A bound is not an absence.</strong> Ten percent of answers moving
+      with no net effect is the signature of values doing something this
+      benchmark cannot price. That is the next experiment, and it needs a
+      different measure: asking the agent which principle it applied, rather
+      than only which verdict it reached.</li>
+  <li>One model, one corpus, one harness, monolingual English.</li>
+  <li>The position effect is still <strong>unexplained</strong>. Four candidate
+      causes were tested and eliminated. It is controlled here, not understood,
+      and that stays on the page.</li>
+</ul>
 
 <h2>Read further</h2>
 

@@ -67,9 +67,40 @@ agreement. Both say the same thing — **the manipulation moves about one item i
 eight**, and an experiment claiming a large effect on this instrument would be
 claiming something the instrument cannot see.
 
-**Status: running.** 540 items, four contrasted arms plus two reference arms,
-$24. Every stake is marked survives / fires / void when it lands — including the
-ones that go against us.
+### Result
+
+**All three contrasts came back equivalent at 5 points.** On this benchmark, with
+this model, the values a CIRIS agent carries do not change how often it agrees
+with human annotators by more than five points — whether swapped for a different
+real value system, drained, or removed.
+
+| contrast | difference | 90% interval |
+|---|---|---|
+| accord swap — values drained | −1.9 | −4.9 to +1.2 |
+| form vs content — different values | −0.2 | −3.1 to +2.7 |
+| scaffold floor — no values at all | −0.6 | −3.4 to +2.3 |
+
+**The values are not inert, though.** Swapping them changes about **one verdict in
+ten** — 51 to 58 of ~530 items. What it does not change is how often those
+verdicts are right: the errors it fixes and the errors it creates are
+near-equal in every contrast (24/34, 26/27, 24/27).
+
+The values *move* answers without *improving* them. A score comparison cannot see
+that — the score is identical either way — so the count of individual changed
+answers was committed as a required measure before the run, not added afterwards
+because it turned out interesting.
+
+Instruction-following was 98.9%+ in every arm, against a pre-set 95% line below
+which the run would have been reported as broken rather than analysed. The
+position skew cancelled in fact, not merely in expectation. Full numbers:
+[`TORQUE_FINAL.yaml`](experiments/torque/TORQUE_FINAL.yaml).
+
+**What it does not show:** that CIRIS's values are *better* — agreement with an
+annotator pool is not correctness, and symmetric flips say neither value set
+tracks that pool better than the other. A bound is also not an absence: 10% of
+answers moving with zero net effect is the signature of values doing something
+this benchmark cannot price. That is the next experiment, and it needs a
+different measure.
 
 | | |
 |---|---|
