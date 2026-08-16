@@ -43,6 +43,10 @@ on:
         description: "space-separated locale codes"
         type: string
         default: "en es fr it pt"
+      arms:
+        description: "arms to run (space-separated); default all five"
+        type: string
+        default: "bare values-ciris h3ere-ciris h3ere-neutral h3ere-blank"
 
 concurrency:
   group: mh3
@@ -125,15 +129,35 @@ jobs:
           - {arm: h3ere-neutral, locale: it}
           - {arm: h3ere-neutral, locale: pt}
     steps:
+      - name: Skip legs whose arm was not selected
+        id: sel
+        run: |
+          case " ${{ inputs.arms }} " in
+            *" ${{ matrix.arm }} "*) echo "run=yes" >> "$GITHUB_OUTPUT" ;;
+            *) echo "run=no" >> "$GITHUB_OUTPUT"; echo "arm not selected — skipping" ;;
+          esac
       - uses: actions/checkout@v4
+        if: steps.sel.outputs.run == 'yes'
       # A FRESH CLONE PER JOB. CIRISAgent mints its federation identity at
       # startup per occurrence; a reused checkout accumulates them and the
       # engine stops agreeing which is the node's.
       - uses: actions/checkout@v4
+        if: steps.sel.outputs.run == 'yes'
         with: {repository: CIRISAI/CIRISAgent, ref: "${{ inputs.agent_ref }}", path: agent}
 
+      # DEPS FIRST. build_arm_manifest shells out to
+      # ciris_engine.logic.utils.research_overrides, which imports pydantic.
+      # The install used to live in the run step, one step too late, so every
+      # manifest-building arm died on ModuleNotFoundError while h3ere-ciris —
+      # which builds no manifest — sailed through. The failure pattern named
+      # the cause: only the manifest arms failed.
+      - name: Install agent deps
+        if: steps.sel.outputs.run == 'yes'
+        working-directory: agent
+        run: pip install -q -e . 2>/dev/null || pip install -q -r requirements.txt
+
       - name: Build arm manifest (pipeline arms only)
-        if: startsWith(matrix.arm, 'h3ere') && matrix.arm != 'h3ere-ciris' 
+        if: steps.sel.outputs.run == 'yes' && startsWith(matrix.arm, 'h3ere') && matrix.arm != 'h3ere-ciris' 
         working-directory: experiments/torque
         env: {AGENT: "${{ github.workspace }}/agent"}
         run: |
@@ -167,6 +191,7 @@ jobs:
           esac
 
       - name: Run the battery — 5 models
+        if: steps.sel.outputs.run == 'yes'
         env:
           DI_KEY: ${{ secrets.DEEPINFRA_API_KEY }}
           # The tee reads the live persist DB through a second SQLite handle,
