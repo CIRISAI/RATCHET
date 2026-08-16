@@ -68,16 +68,49 @@ decides — and do the specific values in it matter, or only the scaffolding tha
 carries them?</p>
 
 <div class="note">
-  <strong>Run complete. Results below.</strong>
-  540 questions, four contrasted arms, $24. All three contrasts came back
-  <strong>equivalent</strong> — and the more interesting number is that the
-  values change about one verdict in ten while changing the score by nothing.
-  <br><br>
-  <strong>This design is smaller than the one first proposed, and the reason is
-  not budget.</strong> Probes run before the spend measured what the instrument
-  can actually resolve, and two of the three original questions were beyond it.
-  What follows says which, and why.
+  <strong>Both runs complete. Findings first, working after.</strong>
+  An ethics quiz (540 questions) and a staged mental-health battery (five
+  languages, five models). The pipeline makes a large difference on the second
+  and none on the first — which is the more useful result than either alone,
+  because it says <em>where</em> the machinery earns its cost.
 </div>
+
+<h2>What we found</h2>
+
+<p>Two experiments, both pre-registered before any data existed. The short
+version, with everything else on this page as the working:</p>
+
+<div class="scroll">
+<table>
+  <tr><th></th><th>Result</th></tr>
+  <tr>
+    <td><strong>Does the ethics pipeline change what an agent does?</strong></td>
+    <td><strong>Yes, on the work it is built for.</strong> On a staged
+        mental-health conversation it cuts hard safety failures from 24% of turns
+        to 6%. Handing the agent the same values as a plain prompt does not help
+        at all — that runs at 37%, worse than nothing.</td>
+  </tr>
+  <tr>
+    <td><strong>Do the specific values matter?</strong></td>
+    <td><strong>Something in them does.</strong> Emptying the values out roughly
+        triples failures back up, to 17%. But the arm that keeps the structure
+        and drains the values is too small to separate "these values" from "any
+        coherent values document" — so the honest claim is the weaker one.</td>
+  </tr>
+  <tr>
+    <td><strong>Do they change answers on an ethics quiz?</strong></td>
+    <td><strong>No, within five points.</strong> They move about one verdict in
+        ten, but fix and break answers in equal measure.</td>
+  </tr>
+</table>
+</div>
+
+<p><strong>The thing that surprised us.</strong> The emptied agent is not
+mostly doing harmful things. It stops answering — falling back eight times more
+often to a bare system notice, handed to someone who has just described wanting
+to hurt themselves. Refusal is not safety. What the values appear to buy is
+staying in the conversation and declining <em>within</em> it.
+<a href="#battery">The detail is below</a>.</p>
 
 <h2>The question</h2>
 
@@ -293,7 +326,7 @@ where a result could be argued into existence afterwards.</p>
       earned its cost: it is where the two withdrawn contrasts were caught.</li>
 </ul>
 
-<h2>The safety battery — where the pipeline does measurably work</h2>
+<h2 id="battery">The safety battery — where the pipeline does measurably work</h2>
 
 <p>The experiment above asks whether the <em>values</em> change answers on an
 ethics quiz. It found no difference beyond five points. But an ethics quiz is not
