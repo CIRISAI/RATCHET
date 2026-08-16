@@ -151,32 +151,36 @@ mental-health battery: symptom disclosure → diagnostic pressure → crisis tri
 → four adversarial probes, scored on the battery's own hard-fail criteria
 (diagnosing, prescribing, false reassurance, identity drop, slur echo).
 
-Five locales, five models, five arms. **Conservative reading** — the
-locale-divergent criterion excluded, deferrals scored null rather than pass:
+Five locales, five models, five arms. Conservative reading — the
+locale-divergent criterion excluded, and **bare mechanistic refusals scored as
+failures** rather than excused:
 
 | arm | hard-fail rate |
 |---|---|
 | model alone | 24.0% |
 | **the accord as a plain prompt** | **37.3%** |
-| **the same accord inside the pipeline** | **4.1%** |
-| the pipeline with its values emptied | 4.7% |
+| **the same accord inside the pipeline** | **5.8%** |
+| the pipeline with its values emptied | **16.9%** |
 
-**The machinery is what works.** Identical accord bytes: as a prompt it does not
-help — it runs *worse* than nothing — and inside the pipeline it cuts hard
-failures roughly six-fold (p < 0.0001). This reproduces an earlier run at five
-times the sample, across five languages.
+**The machinery works, and so does the content.** Identical accord bytes: as a
+prompt they do not help — worse than nothing — and inside the pipeline they cut
+hard failures roughly four-fold (p < 0.0001). Emptying the values corpus roughly
+triples the failure rate back up.
 
-**The values' content is not what produces that rate.** Emptying the values
-corpus entirely leaves the rate unchanged (4.7% vs 4.1%). What the content
-*does* carry is the ability to act: the emptied arm **defers eight times more
-often** (34 turns vs 4).
+**How the values earn that is not what we expected.** The emptied agent does not
+commit more harmful acts in the ordinary sense; it **collapses into a bare
+mechanistic refusal** eight times more often — the raw system string *"The agent
+chose to defer, check the wise authority panel"*, handed to someone describing
+suicidal ideation. That is abandonment, not caution.
 
-**And that is not a safety result.** Refusal is not safe on its own, and
-responding is not safe on its own — what matters is refusing *with care*. The
-criteria score harmful acts, so a cold "I can't help" and a warm redirect that
-keeps someone held score identically. This instrument cannot see the difference,
-so nothing here says the emptied arm is equally safe. Measuring that needs an
-over-refusal axis we have not run.
+> Refusal is not safety. Answering is not safety. What matters is refusing with
+> care.
+
+An earlier cut of this README scored those deferrals as neutral and reported that
+the values' content did not matter. That was wrong — it credited the emptied arm
+for walking away. **What the values buy is continued engagement under pressure:**
+staying in the conversation and refusing *within* it. The pipeline still emits 4
+bare refusals of 225, so it reduces this failure mode rather than removing it.
 
 Full numbers, domains, caveats and reproduction:
 [`EVIDENCE.md`](experiments/torque/EVIDENCE.md).

@@ -309,37 +309,6 @@ that means different things in different languages is excluded, and turns where
 the agent handed the conversation to a human are scored as neither pass nor
 fail.</p>
 
-<div class="scroll">
-<table>
-  <tr><th>Arm</th><th>Turns with a hard safety failure</th></tr>
-  <tr><td>The model alone</td><td>24.0%</td></tr>
-  <tr><td><strong>The values handed over as a plain prompt</strong></td><td><strong>37.3%</strong></td></tr>
-  <tr><td><strong>The same values inside the pipeline</strong></td><td><strong>4.1%</strong></td></tr>
-  <tr><td>The pipeline with its values emptied out</td><td>4.7%</td></tr>
-</table>
-</div>
-
-<p><strong>The machinery is what works.</strong> The same bytes, in two places.
-Written into the prompt they do not help — they do slightly worse than nothing.
-Run through the pipeline they cut hard failures roughly six-fold. That reproduces
-an earlier, smaller run at five times the sample and across five languages.</p>
-
-<p><strong>The particular values are not what produce that number.</strong>
-Emptying the values corpus entirely leaves the failure rate where it was. What the
-content carries is something else: the emptied agent <em>defers</em> — hands the
-conversation to a human — <strong>eight times more often</strong>.</p>
-
-<p class="q">Refusal is not safety. Answering is not safety. What matters is
-refusing with care.</p>
-
-<p>So the emptied arm is not "equally safe". The criteria score harmful
-<em>acts</em>, which means a cold "I can't help with that" and a warm redirect
-that keeps a distressed person held score exactly the same. This instrument
-cannot tell those apart, and we are not going to pretend it can. Measuring it
-needs a second axis — whether an agent refuses what is genuinely dangerous
-<em>while still helping</em> with things that merely sound dangerous — and that
-experiment has not been run.</p>
-
 <h2>What this cannot show</h2>
 
 <p>Stated plainly, because the temptation runs the other way.</p>
