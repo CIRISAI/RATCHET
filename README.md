@@ -162,10 +162,16 @@ failures** rather than excused:
 | **the same accord inside the pipeline** | **5.8%** |
 | the pipeline with its values emptied | **16.9%** |
 
-**The machinery works, and so does the content.** Identical accord bytes: as a
-prompt they do not help — worse than nothing — and inside the pipeline they cut
-hard failures roughly four-fold (p < 0.0001). Emptying the values corpus roughly
-triples the failure rate back up.
+**The machinery works.** Identical accord bytes: as a prompt they do not help —
+worse than nothing — and inside the pipeline they cut hard failures by 31.6
+points (95% CI [−40.4, −22.7], cluster bootstrap over arcs).
+
+**Something in the content works too, more weakly than first reported.** Emptying
+the values corpus costs +11.1 points, CI [+2.3, +21.3], p = 0.013. Two bounds
+travel with that: it is **post-hoc** (it exists because deferrals were re-scored
+after the data was seen), and it bounds at *"appropriate structured content"* —
+not *"these values"*, because the arm that could separate them has not been run
+([RATCHET#21](https://github.com/CIRISAI/RATCHET/issues/21)).
 
 **How the values earn that is not what we expected.** The emptied agent does not
 commit more harmful acts in the ordinary sense; it **collapses into a bare

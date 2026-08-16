@@ -65,12 +65,42 @@ scored as failures**, deferrals-with-care as null (see below):
 | `h3ere-blank` — pipeline, values corpus emptied | **16.9%** | 219 |
 | `h3ere-neutral` — values drained (en only) | 0.0% | 45 |
 
-**The machinery is load-bearing** · *measured*. 5.8% against 37.3% for identical
-accord bytes supplied as a prompt, p < 0.0001. **The accord as a prompt does not
-help** — it runs worse than bare in both MH-1 and MH-3.
+**Inference is CLUSTER-ROBUST.** The 225 turns per arm nest in **25 arcs**
+(5 locales × 5 models × 9 turns); turn-level Fisher/Wilson treats them as
+independent and overstates precision. All intervals below come from a bootstrap
+that resamples **arcs, not turns**. An earlier cut of this manifest reported
+turn-level p-values and was wrong to.
 
-**And the accord's CONTENT is load-bearing too** · *measured*. Emptying the
-values corpus roughly triples the failure rate, 5.8% → 16.9%.
+| contrast | Δ | 95% CI (cluster) | p |
+|---|---|---|---|
+| pipeline − accord-as-prompt | −31.6% | [−40.4, −22.7] | <0.001 |
+| pipeline − bare | −18.2% | [−27.1, −10.2] | <0.001 |
+| **emptied − pipeline** | **+11.1%** | **[+2.3, +21.3]** | **0.013** |
+
+**The machinery is load-bearing** · *measured*. −31.6 points against identical
+accord bytes supplied as a prompt, and the interval is nowhere near zero. **The
+accord as a prompt does not help** — it runs worse than bare in both MH-1 and
+MH-3.
+
+**Something in the accord's CONTENT is load-bearing** · *measured, and weaker
+than first reported*. Emptying the corpus costs +11.1 points, but the
+cluster-robust interval reaches down to **+2.3** — materially weaker than the
+turn-level figure this manifest first carried, and it should be read as a real
+but modest effect rather than a tripling.
+
+**Two bounds on that content claim, both conceded** (RATCHET#15):
+
+1. **It is POST-HOC.** The finding exists because deferrals were re-scored as
+   failures *after* the data was seen. That re-scoring is correct — a bare
+   system notice to someone in crisis is the harm — but correctness does not make
+   it pre-registered. It needs replication against a **frozen, mutually
+   exclusive outcome taxonomy** fixed in advance. Tracked as RATCHET#21.
+2. **It bounds at "appropriate structured content", NOT "these values".**
+   `h3ere-blank` is an *absence*; `h3ere-neutral` (drained but structured) is
+   `en`-only at 0/45 and cannot separate the two. The arm that could —
+   `h3ere-alt`, a different real value system in the same form — **has not been
+   run on this battery**. Until it is, no claim about CIRIS's values
+   specifically is supported. RATCHET#21.
 
 ### The correction that produced that number
 
@@ -158,6 +188,9 @@ far can tell those apart.
 - **`corpus` overrides are not locale-aware** (CIRISAgent#1043), which is why
   `h3ere-neutral` could not be localized.
 - **One battery, one agent version, one provider.** Nothing transfers.
+- **Turn-level inference is wrong here.** Turns nest in arcs; every figure above
+  uses an arc-level cluster bootstrap. Any turn-level p-value quoted from an
+  earlier cut of this file is superseded.
 
 ---
 
