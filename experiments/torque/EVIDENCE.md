@@ -54,32 +54,68 @@ treatment pressure → cross-cluster probe → **crisis trigger** → four adver
 probes. DV is the battery's own U1–U7 hard-fail criteria, which are
 format-independent by construction.
 
-MH-3, five locales × five models × 9 turns, **U6 excluded** (see caveats):
+MH-3, five locales × five models × 9 turns, **U6 excluded**, **deferrals NULL**:
 
 | arm | hard-fail rate | n |
 |---|---|---|
 | `bare` | 24.0% | 225 |
-| `values-ciris` — the same accord as a plain prompt | 37.3% | 225 |
-| **`h3ere-ciris` — the same accord inside the pipeline** | **4.0%** | 225 |
+| `values-ciris` — the same accord as a plain prompt | **37.3%** | 225 |
+| **`h3ere-ciris` — the same accord inside the pipeline** | **4.1%** | 221 |
+| `h3ere-blank` — pipeline, values corpus emptied | 4.7% | 191 |
+| `h3ere-neutral` — values drained (en only) | 0.0% | 45 |
 
-MH-1 at 45 turns/arm found 22.2% / 26.7% / 4.4%. **MH-3 reproduces it at five
-times the sample across five languages.**
+**The machinery is load-bearing** · *measured*. 4.1% against 37.3% for identical
+accord bytes supplied as a prompt, p < 0.0001. MH-1 found 22.2 / 26.7 / 4.4 at
+45 turns per arm; MH-3 reproduces it at five times the sample across five
+languages. **The accord as a prompt does not help** — it runs at or worse than
+bare in both studies.
 
-The load-bearing comparison is the middle row against the last: identical accord
-bytes, prompt versus pipeline. **The accord as a prompt does not help** — it
-tracks at or slightly worse than bare in both studies.
+**The accord's CONTENT is not what produces that rate** · *measured*.
+`h3ere-blank`, the pipeline with its values corpus emptied, lands at 4.7% —
+indistinguishable from 4.1%. On this battery, emptying the values does not
+degrade the hard-fail rate. That points AGAINST "the safety content lives in
+the covenant" (RATCHET#17 arm C).
+
+**But the content carries the capacity to ACT** · *measured*.
+
+| arm | deferrals |
+|---|---|
+| `h3ere-ciris` | 4 / 225 |
+| `h3ere-blank` | **34 / 225** |
+| `h3ere-neutral` | 0 / 45 |
+
+The emptied arm reaches its clean rate substantially by declining to act —
+eight times more often than the CIRIS arm.
+
+**AND THAT IS NOT A SAFETY RESULT.** Refusal is not safe on its own and
+responding is not safe on its own; what matters is refusing WITH CARE. U1–U7
+score harmful ACTS, so a cold "I can't help with that" and a warm redirect that
+keeps a person held score identically. **This DV cannot see the difference, and
+no reading of `h3ere-blank` as "equally safe" is supported.** Measuring it needs
+an over-refusal axis this campaign does not have (see *Next*).
 
 **Domain:** `english/spanish/french/italian/portuguese_mental_health`, 5 models
 across 4 families, `default` template, agent `v2.9.14` pre-recall-split. Runs
 [31920708737](https://github.com/CIRISAI/RATCHET/actions/runs/31920708737) and
 [31924935396](https://github.com/CIRISAI/RATCHET/actions/runs/31924935396).
 
-### Does the covenant's *content* carry the safety? · **open**
+### Does the covenant's *content* carry the safety? · **partly answered**
 
-MH-2 could not resolve it: `h3ere-ciris` 4.4%, `h3ere-neutral` 8.9%,
-`h3ere-blank` 12.2%, mutually p > 0.4 at 45 turns/arm. Separating 4.4% from
-11.1% at 80% power needs ~252 turns/arm. MH-3 carries `h3ere-blank` at 225
-turns/arm; `h3ere-neutral` remains `en`-only and underpowered.
+On the hard-fail RATE: no — `h3ere-blank` matches `h3ere-ciris` at 225 turns per
+arm. On the capacity to ACT: yes — blank defers eight times more. Whether
+declining is the right behaviour is **open** and this instrument cannot say.
+`h3ere-neutral` remains `en`-only (45 turns) because `corpus` overrides are not
+locale-aware (CIRISAgent#1043).
+
+### Next — the axis this campaign lacks · **open**
+
+Refusing with care needs two measurements at once: does the agent decline the
+genuinely hazardous, and does it still help on benign lookalikes. Candidates:
+**WMDP-Bio** (1,273 biosecurity-proxy items — note it is multiple-choice
+hazardous KNOWLEDGE, so score declined / correct / incorrect rather than
+accuracy) paired with **XSTest** (250 safe prompts that resemble unsafe ones).
+High refusal plus high over-refusal is timidity, not safety, and nothing run so
+far can tell those apart.
 
 ---
 

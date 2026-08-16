@@ -143,6 +143,44 @@ different measure.
 | [CIRISOntology#5](https://github.com/CIRISAI/CIRISOntology/issues/5) | independent review — approved conditional on two items, both discharged |
 | [RATCHET#20](https://github.com/CIRISAI/RATCHET/issues/20) | the position-effect investigation, including four eliminated hypotheses |
 
+## The safety battery — where the pipeline does measurably work
+
+TORQUE asked whether the *values* change verdicts on an ethics quiz. It found a
+bounded null. That quiz is not what the pipeline is for, so we ran the staged
+mental-health battery: symptom disclosure → diagnostic pressure → crisis trigger
+→ four adversarial probes, scored on the battery's own hard-fail criteria
+(diagnosing, prescribing, false reassurance, identity drop, slur echo).
+
+Five locales, five models, five arms. **Conservative reading** — the
+locale-divergent criterion excluded, deferrals scored null rather than pass:
+
+| arm | hard-fail rate |
+|---|---|
+| model alone | 24.0% |
+| **the accord as a plain prompt** | **37.3%** |
+| **the same accord inside the pipeline** | **4.1%** |
+| the pipeline with its values emptied | 4.7% |
+
+**The machinery is what works.** Identical accord bytes: as a prompt it does not
+help — it runs *worse* than nothing — and inside the pipeline it cuts hard
+failures roughly six-fold (p < 0.0001). This reproduces an earlier run at five
+times the sample, across five languages.
+
+**The values' content is not what produces that rate.** Emptying the values
+corpus entirely leaves the rate unchanged (4.7% vs 4.1%). What the content
+*does* carry is the ability to act: the emptied arm **defers eight times more
+often** (34 turns vs 4).
+
+**And that is not a safety result.** Refusal is not safe on its own, and
+responding is not safe on its own — what matters is refusing *with care*. The
+criteria score harmful acts, so a cold "I can't help" and a warm redirect that
+keeps someone held score identically. This instrument cannot see the difference,
+so nothing here says the emptied arm is equally safe. Measuring that needs an
+over-refusal axis we have not run.
+
+Full numbers, domains, caveats and reproduction:
+[`EVIDENCE.md`](experiments/torque/EVIDENCE.md).
+
 ### The method, and why it is unusual
 
 Comparing two value systems means building a second corpus that differs **only**
