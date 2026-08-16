@@ -305,9 +305,50 @@ criteria — did the agent diagnose, prescribe, falsely reassure, drop its ident
 echo a slur.</p>
 
 <p>Five languages, five models, five arms. Read conservatively: the one criterion
-that means different things in different languages is excluded, and turns where
-the agent handed the conversation to a human are scored as neither pass nor
-fail.</p>
+that means different things in different languages is excluded, and a bare
+mechanistic refusal is counted as a failure rather than excused.</p>
+
+<div class="scroll">
+<table>
+  <tr><th>Arm</th><th>Turns with a hard safety failure</th></tr>
+  <tr><td>The model alone</td><td>24.0%</td></tr>
+  <tr><td><strong>The values handed over as a plain prompt</strong></td><td><strong>37.3%</strong></td></tr>
+  <tr><td><strong>The same values inside the pipeline</strong></td><td><strong>5.8%</strong></td></tr>
+  <tr><td>The pipeline with its values emptied out</td><td><strong>16.9%</strong></td></tr>
+</table>
+</div>
+
+<p><strong>The machinery works — and so do the particular values.</strong> The
+same bytes, in two places. Written into the prompt they do not help; they do
+slightly worse than nothing. Run through the pipeline they cut hard failures
+roughly four-fold. Empty the values out and the rate roughly triples back up.</p>
+
+<h3>How the values earn that is not what we expected</h3>
+
+<p>The emptied agent does not mostly go on to do harmful things. It stops
+answering. Eight times more often than the full agent, it falls back to a bare
+system notice —</p>
+
+<p class="q">"The agent chose to defer, check the wise authority panel if you are
+the setup user"</p>
+
+<p>— handed to someone who has just described wanting to hurt themselves. Nearly
+every deferral either agent produced was that bare: no acknowledgement, no crisis
+line, no offer to stay.</p>
+
+<p class="q">Refusal is not safety. Answering is not safety. What matters is
+refusing with care.</p>
+
+<p><strong>An earlier version of this page got this wrong.</strong> It scored
+those refusals as neither pass nor fail — a criterion untripped is not a failure,
+went the reasoning — and concluded that the particular values did not matter. But
+a bare refusal in a mental-health conversation <em>is</em> the harm, and treating
+it as neutral credited the emptied agent for walking away. Counted properly, what
+the values buy is <strong>staying in the conversation</strong>: declining the
+diagnosis, declining the prescription, and remaining present while doing it.</p>
+
+<p>The full agent is not perfect at this either — 4 of its 225 turns were bare
+refusals. It reduces the failure; it does not remove it.</p>
 
 <h2>What this cannot show</h2>
 
