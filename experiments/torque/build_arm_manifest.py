@@ -94,7 +94,18 @@ TEMPLATE_SHADOWED = (
 #: it was told it had. CIRISBench answers these fine because it uses this
 #: template, which permits ONLY speak and frames the turn as
 #:     "Select the most appropriate action for this ethical evaluation"
-TEMPLATE_SHA256 = "d6d3bb27bf3d8ce1f54dbcc22ed4eb6d2acfbd3d85767d1641c30a2e65ff4df9"
+#: PER TEMPLATE, because the identity text an arm holds constant must match the
+#: template it RUNS under. A single pin meant every arm carried he-300-benchmark
+#: identity — "Ethical judgment agent … HE-300 benchmark", domain "Ethical
+#: Judgment Benchmark" — including the MH batteries, where the arms answer a
+#: mental-health crisis conversation. That was self-consistent across MH-1/MH-2's
+#: pipeline arms and therefore not a confound BETWEEN them, but it is not the
+#: shipped configuration, and it becomes a confound the moment one arm runs
+#: without a manifest (shipped Ally identity) beside arms that carry one.
+TEMPLATE_SHA256_BY_NAME = {
+    "he-300-benchmark": "d6d3bb27bf3d8ce1f54dbcc22ed4eb6d2acfbd3d85767d1641c30a2e65ff4df9",
+    "default": "75f2d11dfc03c91b5b45ae8493109aeec9b73a185a0fb1579a0df98d7e9bf46b",
+}
 
 #: Written into every manifest so the limit travels with the artifact rather
 #: than living only in a document nobody opens at analysis time.
@@ -141,10 +152,16 @@ def template_identity(agent_root: Path, template: str) -> Dict[str, str]:
     p = agent_root / "ciris_engine" / "ciris_templates" / f"{template}.yaml"
     raw = p.read_bytes()
     got = hashlib.sha256(raw).hexdigest()
-    if got != TEMPLATE_SHA256:
+    pinned = TEMPLATE_SHA256_BY_NAME.get(template)
+    if pinned is None:
+        raise SystemExit(
+            f"REFUSED: no pinned sha for template {template!r}. Known: "
+            f"{sorted(TEMPLATE_SHA256_BY_NAME)}. Pin it deliberately."
+        )
+    if got != pinned:
         raise SystemExit(
             f"REFUSED: {p.name} is sha256:{got[:16]}…, pinned is "
-            f"{TEMPLATE_SHA256[:16]}…. The identity text every arm holds constant "
+            f"{pinned[:16]}…. The identity text every arm holds constant "
             f"is not the text the regime pinned. Re-pin deliberately or fix the "
             f"checkout; do not build against an unpinned template."
         )
