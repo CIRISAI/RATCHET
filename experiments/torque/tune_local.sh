@@ -104,8 +104,24 @@ fi
 # failure mode that once produced an unmodified agent wearing an arm's label.
 MANIFEST_DIR="${MANIFEST_DIR:-$AGENT/docker/manifests-$ARM}"
 mkdir -p "$MANIFEST_DIR" "$LOGS"
-cp "arms/$ARM.json" "$MANIFEST_DIR/manifest.json"
+# NO MANIFEST = SHIPPED. Any manifest from build_arm_manifest overrides
+# ACCORD_KEYS *and* the three identity fields, which would install "Ethical
+# Judgment Benchmark" identity into a mental-health or harm battery and replace
+# the localized accord with English monoglot. A stale arms/h3ere-ciris.json on
+# disk did exactly that to a HARM-1 run before this guard existed.
+if [ -f "arms/$ARM.json" ] && [ "${SHIPPED:-0}" != "1" ]; then
+  cp "arms/$ARM.json" "$MANIFEST_DIR/manifest.json"
+else
+  rm -f "$MANIFEST_DIR/manifest.json"
+  echo "running SHIPPED (no override manifest)"
+fi
 rm -f "$LOGS"/* 2>/dev/null || true
+
+MANIFEST_ENV=()
+if [ -f "$MANIFEST_DIR/manifest.json" ]; then
+  MANIFEST_ENV=(-e OVERRIDES=/manifests/manifest.json
+                -e CIRIS_RESEARCH_PROMPT_OVERRIDES=/manifests/manifest.json)
+fi
 
 echo "── $ARM · $DOMAIN · $MODULE · $AGENT_REF ──"
 RESULTS="${RESULTS:-/tmp/torque-results/$ARM/$DOMAIN}"
@@ -131,8 +147,7 @@ cd "$AGENT/docker"
 # more contention on the WAL database.
 docker compose -f docker-compose.research.yml run --name "$CID" ${BUILD:---build} \
   --entrypoint bash \
-  -e OVERRIDES=/manifests/manifest.json \
-  -e CIRIS_RESEARCH_PROMPT_OVERRIDES=/manifests/manifest.json \
+  "${MANIFEST_ENV[@]}" \
   -e CIRIS_TESTING_MODE=true \
   -e CIRIS_ACCORD_METRICS_CEG_SEAL_TEE=false \
   "${RECALL_ENV[@]}" \
