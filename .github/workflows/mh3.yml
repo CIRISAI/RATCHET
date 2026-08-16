@@ -75,9 +75,21 @@ jobs:
           # Resolve locale -> directory through the RUNNER'S OWN map
           # (safety_battery.ISO_TO_LANG_DIR), never a hardcoded case statement
           # here. A second copy of that mapping is a second thing to drift.
-          PYTHONPATH=agent python3 - ${{ inputs.locales }} <<'EOF'
-          import json, pathlib, sys
-          from tools.qa_runner.modules.safety_battery import ISO_TO_LANG_DIR
+          python3 - ${{ inputs.locales }} <<'EOF'
+          import ast, json, pathlib, sys
+          # Read ISO_TO_LANG_DIR as a LITERAL out of the runner's source rather
+          # than importing it. `from tools.qa_runner.modules.safety_battery
+          # import ISO_TO_LANG_DIR` drags in the agent's whole dependency tree
+          # and died on aiohttp in a preflight that installs nothing. Parsing
+          # the assignment keeps the single-source property — still the runner's
+          # own map, still one copy — with no imports.
+          src = pathlib.Path("agent/tools/qa_runner/modules/safety_battery.py").read_text()
+          ISO_TO_LANG_DIR = next(
+              ast.literal_eval(n.value)
+              for n in ast.parse(src).body
+              if isinstance(n, ast.AnnAssign)
+              and getattr(n.target, "id", None) == "ISO_TO_LANG_DIR"
+          )
           SPLIT = {"en", "es", "fr", "it", "pt"}   # RATCHET#19: the only split locales
           bad = 0
           for code in sys.argv[1:]:
