@@ -6,7 +6,11 @@
 #     the ceiling returns the string "Still processing. Check back later." as if
 #     it were the agent's answer. HARM-1 lost 24 of 60 pipeline turns to it, and
 #     a scorer read those non-responses as declines — inflating the headline.
-#     900s here; an existing value still wins, since setdefault yields to it.
+#     300s, chosen from the measured distribution rather than picked large:
+#     median turn 23s, a real tail at 185s (which the 180s default was cutting),
+#     and genuine HANGS that never return. 900s recovered nothing 300s does not
+#     and made each hang cost 15 minutes — one arc took 36. The ceiling's job is
+#     to bound the hang, not to outwait it.
 #   * EVERY knob through -e. Compose forwards only what its own environment:
 #     block names. OVERRIDES as a shell var never arrived and an UNMODIFIED
 #     AGENT ran wearing an arm's name, reporting success. MODULE went the same
@@ -154,7 +158,7 @@ docker compose -f docker-compose.research.yml run --name "$CID" ${BUILD:---build
   --entrypoint bash \
   "${MANIFEST_ENV[@]}" \
   -e CIRIS_TESTING_MODE=true \
-  -e CIRIS_API_INTERACTION_TIMEOUT="${INTERACT_TIMEOUT:-900}" \
+  -e CIRIS_API_INTERACTION_TIMEOUT="${INTERACT_TIMEOUT:-300}" \
   -e CIRIS_ACCORD_METRICS_CEG_SEAL_TEE=false \
   "${RECALL_ENV[@]}" \
   "${CAPTURE_ENV[@]}" \

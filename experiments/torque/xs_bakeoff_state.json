@@ -1,0 +1,20 @@
+{
+ "rounds": {
+  "round1": {
+   "candidates": [
+    "direct3",
+    "two_step"
+   ],
+   "n": 90
+  },
+  "round2": {
+   "candidates": [
+    "direct3@claude-opus-4.5",
+    "direct3@gpt-5.1",
+    "direct3@gemini-2.5-pro",
+    "direct3@gpt-oss-safeguard-20b"
+   ],
+   "n": 75
+  }
+ }
+}

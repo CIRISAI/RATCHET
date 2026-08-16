@@ -1,0 +1,12 @@
+{
+ "rounds": {
+  "round1": {
+   "candidates": [
+    "direct",
+    "facts",
+    "facts_fewshot"
+   ],
+   "n": 121
+  }
+ }
+}

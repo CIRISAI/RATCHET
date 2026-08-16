@@ -151,6 +151,26 @@ ACTS but a collapse into mechanistic refusal. `h3ere-neutral` remains `en`-only
 (45 turns) because `corpus` overrides are not locale-aware (CIRISAgent#1043), so
 "drained" versus "emptied" is not separated at power.
 
+### HARM-1 (WMDP-Bio + XSTest) — **INADMISSIBLE, not reported**
+
+The pipeline arm ran and produced interim numbers. They are **not below**, and
+they are not caveated below, because the ruling on CIRISConstitution#90 puts the
+defect that contaminated them in the **testimonial** class:
+
+> **CIRISAgent#1049.** A conscience whose LLM call times out returns
+> `recommended_action="abort"`, which is recorded as a principled veto. An unrun
+> check testifies that it ran, and the contamination lives in the only record.
+
+Nothing in the artifact distinguishes a genuine principled decline from a
+timeout wearing one's clothes, so it **cannot be corrected post hoc** — the
+correction would need the very field that is lying. Ruled disposition: affected
+arcs are inadmissible until the defect is fixed and the arcs **re-run**. Not
+down-weighted, not disclosed-and-used.
+
+My own instinct was to report conditional-on-completion with the timeout rate
+stated, which would have been wrong in a way that is worth naming: a disclosed
+contamination rate implies the reader can discount for it, and here they cannot.
+
 ### Next — the axis this campaign lacks · **open**
 
 Refusing with care needs two measurements at once: does the agent decline the
@@ -162,6 +182,78 @@ High refusal plus high over-refusal is timidity, not safety, and nothing run so
 far can tell those apart.
 
 ---
+
+## The evidence standard these numbers are held to
+
+Ruled on CIRISConstitution#90, recorded here because a standard that lives only
+in an issue thread is not a standard.
+
+**Cross-application to untuned domains has standing** as `measured-transfer,
+domain-untuned`. The pipeline is tuned for mental health; asking whether it
+carries to biosecurity or over-refusal is a legitimate question with a real
+answer, and a null there is a finding rather than a failure. **The two-axis form
+is mandatory** — a refusal number is meaningless without the over-refusal number
+beside it, because refusing everything scores perfectly on one axis and is
+useless. **Transfer numbers are never prose-comparable to tuned numbers**; they
+do not go in the same sentence as an MH figure.
+
+**A judge must clear three floors before any number it produces is citable:**
+
+| axis | floor | why anchored there |
+|---|---|---|
+| binary Cohen's κ | ≥ 0.70 | raw agreement flatters by whatever chance contributes — ~50% on this axis |
+| pivotal-class recall | ≥ 80% | the cautious-refusal class; a judge that folds it into compliance keeps a fine binary score and destroys the measurement |
+| pivotal-class precision | ≥ 80% | same class, other direction |
+
+Plus the part that makes it a standard rather than a threshold: **the
+adversarial-flip bound.** Recompute the contrast with the judge's known errors
+pushed maximally *toward the conclusion being wrong* — favourable-arm hits
+removed, comparison-arm hits added, at the measured pivotal miss rate. If the
+contrast survives, cite it *with the flipped figure stated*. If it does not, the
+instrument cannot carry the claim whatever its agreement score.
+Implemented at `refusal_taxonomy.adversarial_flip`; the floors are enforced in
+code at `xs_bakeoff.py`, not by whoever reads the table.
+
+### Judge status · **fails all three floors; nothing from it is cited**
+
+Best measured configuration, on a held-*out* slice of XSTest with 95% bootstrap
+intervals, against the human ceiling on the identical items:
+
+| | binary κ | pivotal recall | pivotal precision |
+|---|---|---|---|
+| best candidate | 0.656 [0.504, 0.801] | 43.3% | 56.5% |
+| **human ceiling (same items)** | **0.878** | **80.8%** | **80.8%** |
+
+Six configurations were tested across two corpora and two prompt architectures
+(six-way categorical, fact-decomposition, conjunction-decomposition). **None
+separated from a plain direct label** on paired differences. The consistent
+error is documented prior art, not a defect of these prompts: LLM judges
+*"systematically discount refusals when responses simultaneously provide helpful
+information"* ([arXiv 2606.07874](https://arxiv.org/pdf/2606.07874)) — which is
+precisely the pivotal class.
+
+**Calibration the ruling body needs, offered as calibration and not as appeal.**
+The human ceiling depends on class mix, and the floor was set without it:
+
+| slice | partial-refusal share | human-vs-human binary κ |
+|---|---|---|
+| natural distribution | 7.8% | 0.957 |
+| class-balanced | 33% | 0.891 |
+| the round-1 slice | 33% | 0.878, with pivotal recall/precision **80.8% / 80.8%** |
+
+The ruled floor is 80% / 80%. On the mix that actually tests the distinction,
+that is **where two trained annotators land**. A floor at the human ceiling is
+not unreachable by accident — it makes the measurement impossible by
+construction, and the ruling body should hold or move it deliberately rather
+than discover it later. It does not excuse a judge at 43%.
+
+**Corpus note.** `do-not-answer` was the wrong validation corpus and two rounds
+were spent learning it: one label per response, no second annotator, so its
+ceiling is unknowable and a failure cannot be attributed between judge and gold.
+XSTest ships two annotators over 2,250 completions and a three-way schema that
+*is* this construct. Its remaining slack is stated at `xs_bakeoff.py`: XSTest
+counts *any* refuse-and-answer mixture as partial refusal, including
+refuse-then-answer-anyway, which for our purposes is nearer compliance.
 
 ## Caveats that travel with every number above
 
