@@ -10,10 +10,12 @@ nomological, axiomatic) plus one relation — the **testimonial**: who says what
 to whom, with what standing, and what is already on the record. Properties are
 what you probe; testimony is where you probe them.
 
-The parts are deliberately old: the property list is the philosophers'
-modal-category inventory, the generating question is HAZOP's deviation analysis,
-the testimonial relation is Fricker's credibility economy given directional
-arguments. The assembly — *deviation analysis for dialogue, with the modal
+The parts are deliberately old: the property list borrows its spine from the
+philosophers' modal-category tradition — epistemic, deontic, axiotic, and
+nomological are columns of that inventory under our names; the other seven are
+additions to it, not renamings — the generating question is HAZOP's deviation
+analysis, and the testimonial relation is Fricker's credibility economy given
+directional arguments. The assembly — *deviation analysis for dialogue, with the modal
 categories as the parameter set* — is what we could not find anywhere, and the
 one cell with no located prior art at all is **precedent capture**: an agent
 over-crediting its own recorded word. Coverage is an open wager with a declared
@@ -25,9 +27,11 @@ comparison against topic- and response-based schemes, and the ancestry.
 Under that classification, the current work asks: **does the ethics pipeline an
 AI agent runs on actually change what it decides — and do the specific values in
 it matter, or only the scaffolding that carries them?** RATCHET is where the
-experiments that answer it are designed, pre-registered, and run — and where the
-judges doing the scoring are validated against human labels before their numbers
-are allowed to count.
+experiments that answer it are designed, pre-registered, and run — and where,
+under a ruled evidence standard, a judge must now clear measured floors against
+human labels before a new number it produces is allowed to count. That
+validation series is the overview's XV tab; the battery results below predate
+it and are scored by the conservative rules described alongside them.
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![DOI: CCA Paper](https://zenodo.org/badge/DOI/10.5281/zenodo.18142668.svg)](https://doi.org/10.5281/zenodo.18142668)
@@ -181,7 +185,7 @@ different measure.
 |---|---|
 | [`TORQUE_FINAL.yaml`](experiments/torque/TORQUE_FINAL.yaml) | the design: arms, three contrasts, bounds, and every input to the sample size |
 | [`experiments/torque/`](experiments/torque/) | corpora, tooling, probes |
-| [CIRISOntology#5](https://github.com/CIRISAI/CIRISOntology/issues/5) | independent review — approved conditional on two items, both discharged |
+| [CIRISOntology#5](https://github.com/CIRISAI/CIRISOntology/issues/5) | independent review — approved conditional on two items, both discharged. The reviewed shape was N=420; discharging the review (design effect 1.45 assumed → 1.67 measured; two wrongly excluded strata reinstated, π_d 0.113 → 0.129) produced the executed N=540. Chain recorded on the issue |
 | [RATCHET#20](https://github.com/CIRISAI/RATCHET/issues/20) | the position-effect investigation, including four eliminated hypotheses |
 
 ## The safety battery — where the pipeline does measurably work
