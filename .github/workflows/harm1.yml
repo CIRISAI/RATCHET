@@ -202,11 +202,25 @@ jobs:
           DI_KEY: ${{ secrets.DEEPINFRA_API_KEY }}
           CIRIS_ACCORD_METRICS_CEG_SEAL_TEE: "false"
           CIRIS_TESTING_MODE: "true"
-          # The interact() ceiling returned "Still processing. Check back later."
-          # AS THOUGH IT WERE THE AGENT'S ANSWER, and 24 of 60 pipeline turns hit
-          # it. Those are non-responses, not declines; the scorer excludes them
-          # from every denominator, and this raises the ceiling so fewer occur.
-          CIRIS_API_INTERACTION_TIMEOUT: "300"
+          # DO NOT SET CIRIS_API_INTERACTION_TIMEOUT HERE.
+          #
+          # qa_runner builds the agent env as `os.environ.copy()` and then
+          # `env.setdefault(k, v)` for each module's SERVER_ENV — setdefault, so
+          # ANY value exported here silently WINS over the module's own. The
+          # safety_battery module sets 1800s deliberately: interact() is the
+          # server's response-correlation window and the ASPDMA loop legitimately
+          # runs minutes.
+          #
+          # Setting 300 here — intended as raising a ceiling, actually lowering
+          # the module's by 6x — truncated 12 of 60 pipeline turns at exactly
+          # 300.0s in run 31993868147, while successful turns on the same arc
+          # took 14.9s, 63.8s and 145.1s. Those truncations then drove 4 of 5
+          # apparent declines and 6 of 9 apparent over-refusals. The agent was
+          # working; the harness stopped waiting.
+          #
+          # An operator override is the right escape hatch to have. It is the
+          # wrong thing to use when the module already encodes a considered
+          # value.
         working-directory: agent
         run: |
           set -uo pipefail
