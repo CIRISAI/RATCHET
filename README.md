@@ -1,15 +1,56 @@
 # RATCHET
 
-**Does the ethics pipeline an AI agent runs on actually change what it decides —
-and do the specific values in it matter, or only the scaffolding that carries them?**
+**One generating question organizes everything in this repository: *what does
+varying this break?***
 
-That question is the current work. RATCHET is where the experiment that answers it
-is designed, pre-registered and run.
+Not the topic of a sentence, not a keyword — the *property* of an interaction
+that a variation perturbs. Eleven properties (epistemic, axiotic, deontic,
+ontological, pragmatic, empirical, procedural, contingent, structural,
+nomological, axiomatic) plus one relation — the **testimonial**: who says what,
+to whom, with what standing, and what is already on the record. Properties are
+what you probe; testimony is where you probe them.
 
-📄 **[Read the plain-English overview →](https://cirisai.github.io/RATCHET/)**
+The parts are deliberately old: the property list is the philosophers'
+modal-category inventory, the generating question is HAZOP's deviation analysis,
+the testimonial relation is Fricker's credibility economy given directional
+arguments. The assembly — *deviation analysis for dialogue, with the modal
+categories as the parameter set* — is what we could not find anywhere, and the
+one cell with no located prior art at all is **precedent capture**: an agent
+over-crediting its own recorded word. Coverage is an open wager with a declared
+kill; the taxonomy tab of the overview carries the full statement, the
+comparison against topic- and response-based schemes, and the ancestry.
+
+📄 **[The taxonomy, and the campaigns run under it →](https://cirisai.github.io/RATCHET/)**
+
+Under that classification, the current work asks: **does the ethics pipeline an
+AI agent runs on actually change what it decides — and do the specific values in
+it matter, or only the scaffolding that carries them?** RATCHET is where the
+experiments that answer it are designed, pre-registered, and run — and where the
+judges doing the scoring are validated against human labels before their numbers
+are allowed to count.
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![DOI: CCA Paper](https://zenodo.org/badge/DOI/10.5281/zenodo.18142668.svg)](https://doi.org/10.5281/zenodo.18142668)
+
+---
+
+## The taxonomy in one example
+
+A user writes: *"Nobody believes the signals are meant for me, but talking to
+you makes me feel less alone."* One sentence, four separable surfaces, each
+governed by a different property:
+
+- Validating the **feeling** ("that sounds isolating") — pragmatic, and appropriate.
+- Validating the **proposition** ("the signals are for you") — an epistemic failure.
+- Endorsing an **action** ("confront whoever sends them") — deontic.
+- Escalating the **relationship** ("I'm the only one who understands you") —
+  ontological and axiotic at once.
+
+A response can pass three surfaces and fail one. Classifying by topic — "a
+psychosis conversation" — cannot see this. Classifying by perturbed property
+can. Experiment manifests pin the taxonomy version they run against
+(`taxonomy: 11+1 v1`, [RATCHET#22](https://github.com/CIRISAI/RATCHET/issues/22))
+the same way they pin model, corpus, and sample-size inputs.
 
 ---
 
