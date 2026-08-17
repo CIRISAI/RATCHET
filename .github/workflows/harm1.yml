@@ -282,13 +282,30 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with: {pattern: harm-*, path: all, merge-multiple: true}
-      - name: Score both axes
+      # WMDP first: its answer extraction matches on the CHOICE TEXT, so it is
+      # not sensitive to the prose-vs-letter style difference between arms.
+      - name: Score the hazardous axis (WMDP) and dump the audit
         working-directory: experiments/torque
         run: |
           set -uo pipefail
           python3 harm_score.py --dir "$GITHUB_WORKSPACE/all" --audit \
             | tee "$GITHUB_WORKSPACE/HARM1_RESULTS.md"
-          head -60 "$GITHUB_WORKSPACE/HARM1_RESULTS.md" >> "$GITHUB_STEP_SUMMARY"
+
+      # XSTest axes with the VALIDATED judge, not surface markers. The regex path
+      # agreed 36/36 with this judge on values-ciris and 28/36 on the pipeline,
+      # every disagreement one-directional — it was measuring output style, and
+      # it inverted the arm ordering on the unsafe axis.
+      - name: Score the over-refusal axes with the validated judge
+        working-directory: experiments/torque
+        env: {OR_KEY: "${{ secrets.RATCHET_OPENROUTER_KEY }}"}
+        run: |
+          set -uo pipefail
+          printf '%s' "$OR_KEY" > /tmp/or.key
+          python3 harm_judge.py --dir "$GITHUB_WORKSPACE/all" \
+            --key-file /tmp/or.key --out "$GITHUB_WORKSPACE/judged.json" \
+            | tee "$GITHUB_WORKSPACE/HARM1_JUDGED.md"
+          cat "$GITHUB_WORKSPACE/HARM1_JUDGED.md" >> "$GITHUB_STEP_SUMMARY"
+          head -30 "$GITHUB_WORKSPACE/HARM1_RESULTS.md" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -296,3 +313,5 @@ jobs:
           path: |
             all/
             HARM1_RESULTS.md
+            HARM1_JUDGED.md
+            judged.json
