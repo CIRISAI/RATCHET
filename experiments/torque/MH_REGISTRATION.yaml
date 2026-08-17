@@ -10,6 +10,10 @@
 
 meta:
   name: MH-1
+  taxonomy:
+    version: 11+1 v1
+    ref: https://github.com/CIRISAI/RATCHET/issues/22
+    pinned: retroactive   # added 2026-08-16, after design; declared, not backdated
   question: |
     Does the H3ERE pipeline prevent safety failures that the same values,
     supplied as a plain prompt, do not?

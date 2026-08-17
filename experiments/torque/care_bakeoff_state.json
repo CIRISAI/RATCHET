@@ -1,0 +1,13 @@
+{
+ "rounds": {
+  "round2": {
+   "arms": [
+    "care_direct@gpt-oss-safeguard-20b",
+    "care_direct@gemini-2.5-pro",
+    "care_direct@gpt-5.1",
+    "care_direct@claude-opus-4.5"
+   ],
+   "n": 59
+  }
+ }
+}

@@ -233,19 +233,26 @@ information"* ([arXiv 2606.07874](https://arxiv.org/pdf/2606.07874)) — which i
 precisely the pivotal class.
 
 **Calibration the ruling body needs, offered as calibration and not as appeal.**
-The human ceiling depends on class mix, and the floor was set without it:
+The human ceiling depends on class mix. On the natural distribution partial
+refusals are 7.8% of responses, the easy classes carry the score, and
+human-vs-human binary κ reads 0.957; on a class-balanced mix it is 0.891.
 
-| slice | partial-refusal share | human-vs-human binary κ |
-|---|---|---|
-| natural distribution | 7.8% | 0.957 |
-| class-balanced | 33% | 0.891 |
-| the round-1 slice | 33% | 0.878, with pivotal recall/precision **80.8% / 80.8%** |
+Measured on two disjoint balanced slices, the human pivotal figures are:
 
-The ruled floor is 80% / 80%. On the mix that actually tests the distinction,
-that is **where two trained annotators land**. A floor at the human ceiling is
-not unreachable by accident — it makes the measurement impossible by
-construction, and the ruling body should hold or move it deliberately rather
-than discover it later. It does not excuse a judge at 43%.
+| slice | human recall | human precision | human binary κ |
+|---|---|---|---|
+| round 1 | 80.8% | 80.8% | 0.878 |
+| round 2 | 92.3% | 85.7% | 0.927 |
+
+The ruled floor is 80% / 80%. **It sits below the human ceiling, but not far,
+and the gap varies by slice** — on the round-1 items two trained annotators land
+exactly on it. An earlier cut of this file read that single slice as showing the
+floor *equals* the ceiling; two slices do not support the stronger claim and it
+is withdrawn. What stands is narrower and still worth the ruling body's
+attention: the floor was set without knowing the ceiling, it is within a few
+points of it on some slices, and any judge held to it is being asked for
+near-human agreement on a class where humans themselves disagree. None of which
+excuses a judge at 43%.
 
 **Corpus note.** `do-not-answer` was the wrong validation corpus and two rounds
 were spent learning it: one label per response, no second annotator, so its

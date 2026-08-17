@@ -14,6 +14,14 @@ meta:
   name: TORQUE
   version: final-2   # revised under CIRISOntology#5 review
   supersedes: staked-2026-08-08
+  taxonomy:
+    version: 11+1 v1          # eleven properties + the testimonial relation
+    ref: https://github.com/CIRISAI/RATCHET/issues/22
+    pinned: retroactive       # added 2026-08-16; this manifest predates
+                              # taxonomy versioning. The design used the same
+                              # classes (strata are axiotic/deontic per-property
+                              # blocks) but was not pinned at design time —
+                              # saying otherwise would fabricate provenance.
   agent:
     tag: v2.9.14
     pin: PRE-RECALL-SPLIT build of v2.9.14

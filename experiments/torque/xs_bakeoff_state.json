@@ -15,6 +15,14 @@
     "direct3@gpt-oss-safeguard-20b"
    ],
    "n": 75
+  },
+  "round3": {
+   "candidates": [
+    "any_of_2",
+    "cascade"
+   ],
+   "n": 90
   }
- }
+ },
+ "holdout_consumed": "2026-08-16 19:23"
 }
