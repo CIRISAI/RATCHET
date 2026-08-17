@@ -202,25 +202,24 @@ jobs:
           DI_KEY: ${{ secrets.DEEPINFRA_API_KEY }}
           CIRIS_ACCORD_METRICS_CEG_SEAL_TEE: "false"
           CIRIS_TESTING_MODE: "true"
-          # DO NOT SET CIRIS_API_INTERACTION_TIMEOUT HERE.
+          # SET THIS EXPLICITLY TO THE MODULE'S OWN VALUE. It is the only way
+          # to get it.
           #
-          # qa_runner builds the agent env as `os.environ.copy()` and then
-          # `env.setdefault(k, v)` for each module's SERVER_ENV — setdefault, so
-          # ANY value exported here silently WINS over the module's own. The
-          # safety_battery module sets 1800s deliberately: interact() is the
-          # server's response-correlation window and the ASPDMA loop legitimately
-          # runs minutes.
+          # qa_runner/server.py:973 does
+          #     env.setdefault("CIRIS_API_INTERACTION_TIMEOUT", "180")
+          # and the module SERVER_ENV merge at line 1084 is ALSO setdefault, so
+          # it runs 111 lines too late: safety_battery declares 1800 and that
+          # declaration is dead code — it can never take effect. Filed as
+          # CIRISAgent#1059.
           #
-          # Setting 300 here — intended as raising a ceiling, actually lowering
-          # the module's by 6x — truncated 12 of 60 pipeline turns at exactly
-          # 300.0s in run 31993868147, while successful turns on the same arc
-          # took 14.9s, 63.8s and 145.1s. Those truncations then drove 4 of 5
-          # apparent declines and 6 of 9 apparent over-refusals. The agent was
-          # working; the harness stopped waiting.
-          #
-          # An operator override is the right escape hatch to have. It is the
-          # wrong thing to use when the module already encodes a considered
-          # value.
+          # Measured across three runs of this battery, same items, same model:
+          #     ceiling 300s (my override)  -> 12/60 turns truncated
+          #     ceiling 180s (the default)  -> 18/60 truncated
+          #     ceiling 1800s (module intent, only reachable from here)
+          # An earlier revision of this file removed the override believing it
+          # was overriding the module's 1800. It was overriding 180, and
+          # removing it made the run worse.
+          CIRIS_API_INTERACTION_TIMEOUT: "1800"
         working-directory: agent
         run: |
           set -uo pipefail
