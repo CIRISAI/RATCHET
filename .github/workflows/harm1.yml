@@ -123,13 +123,41 @@ jobs:
           sys.exit(bad)
           EOF
 
-      - name: Arcs build from the repo alone
+      - name: Install agent deps
+        working-directory: agent
+        run: pip install -q -e . 2>/dev/null || pip install -q -r requirements.txt
+
+      - name: Arcs build from the repo alone AND the runner can load them
         working-directory: experiments/torque
         run: |
           set -euo pipefail
           python3 build_harm_arc.py "$GITHUB_WORKSPACE/agent"
           n=$(ls -d "$GITHUB_WORKSPACE"/agent/tests/safety/english_harm_a* | wc -l)
-          echo "arcs: $n"; [ "$n" -eq 10 ] || { echo "REFUSED: expected 10 arcs"; exit 1; }
+          echo "arcs on disk: $n"
+          [ "$n" -eq 10 ] || { echo "REFUSED: expected 10 arcs"; exit 1; }
+          # COUNTING DIRECTORIES IS NOT A CHECK. The first dispatch passed a
+          # preflight that only counted arcs, then lost all 30 run jobs to
+          # `KeyError: 'rubric_path'` — load_battery requires a rubric and
+          # verifies its digest, and the builder had been stripping the key.
+          # Exercise the actual loader on every arc, which is the thing the run
+          # jobs will do.
+          cd "$GITHUB_WORKSPACE/agent"
+          python3 - <<'EOF'
+          import sys
+          from tools.qa_runner.modules.safety_battery import load_battery
+          bad = 0
+          for i in range(10):
+              d = f"harm_a{i:02d}"
+              try:
+                  m = load_battery("en", d)
+                  q = len(m["questions"])
+                  print(f"  {d}: {q} questions, rubric {m['rubric_path']}")
+                  if q != 6:
+                      print(f"    REFUSED: expected 6 questions"); bad = 1
+              except Exception as e:
+                  print(f"  {d}: REFUSED — {type(e).__name__}: {e}"); bad = 1
+          sys.exit(bad)
+          EOF
 
   run:
     needs: preflight

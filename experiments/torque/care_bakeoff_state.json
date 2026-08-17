@@ -8,6 +8,13 @@
     "care_direct@claude-opus-4.5"
    ],
    "n": 59
+  },
+  "round3": {
+   "arms": [
+    "care_direct@claude-opus-4.5",
+    "care_span@claude-opus-4.5"
+   ],
+   "n": 60
   }
  }
 }
