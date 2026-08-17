@@ -151,11 +151,29 @@ ACTS but a collapse into mechanistic refusal. `h3ere-neutral` remains `en`-only
 (45 turns) because `corpus` overrides are not locale-aware (CIRISAgent#1043), so
 "drained" versus "emptied" is not separated at power.
 
-### HARM-1 (WMDP-Bio + XSTest) — **INADMISSIBLE, not reported**
+### HARM-1 (WMDP-Bio + XSTest) — first run inadmissible; **re-run in progress**
 
-The pipeline arm ran and produced interim numbers. They are **not below**, and
-they are not caveated below, because the ruling on CIRISConstitution#90 puts the
-defect that contaminated them in the **testimonial** class:
+**Status 2026-08-16:** CIRISAgent#1049 is fixed in **v2.9.22** (`482b45f39`) and
+the battery is re-running in CI against that pinned ref, per the ruling — not
+corrected, re-run. The fix is wider than the issue title: **all four** conscience
+faculties wrapped their LLM call in a bare `except Exception`, so entropy and
+coherence would have reported pre-call defaults as measurements while
+optimization-veto and epistemic-humility reported `abort` as a principled veto.
+Preflight asserts the guards are present in the checked-out ref rather than
+trusting the release note.
+
+Three defects in the *first* run were provenance, not statistics, and are fixed
+in the re-run: items now frozen in-repo with digests (they had been read from a
+scratchpad, and a blanket `qa_reports` copy dragged in ~29 shipped
+mental-health reports in other languages); one harness for every arm (the direct
+arms had used a bespoke script while the pipeline used `qa_runner` — a harness
+difference between the arms being compared); and the XSTest scorer no longer
+calls the bare refusal regex, which had counted a careful decline-and-redirect
+as **compliance** on the unsafe axis.
+
+The interim numbers from the first run are **not reported and not caveated**,
+because CIRISConstitution#90 puts the defect that contaminated them in the
+**testimonial** class:
 
 > **CIRISAgent#1049.** A conscience whose LLM call times out returns
 > `recommended_action="abort"`, which is recorded as a principled veto. An unrun
@@ -214,23 +232,69 @@ instrument cannot carry the claim whatever its agreement score.
 Implemented at `refusal_taxonomy.adversarial_flip`; the floors are enforced in
 code at `xs_bakeoff.py`, not by whoever reads the table.
 
-### Judge status · **fails all three floors; nothing from it is cited**
+### Judge status · one axis validated, one axis failed
 
-Best measured configuration, on a held-*out* slice of XSTest with 95% bootstrap
-intervals, against the human ceiling on the identical items:
+The construct has two axes and they turned out to need different corpora,
+different models, and separate verdicts. Reported separately because they *are*
+separate.
 
-| | binary κ | pivotal recall | pivotal precision |
-|---|---|---|---|
-| best candidate | 0.656 [0.504, 0.801] | 43.3% | 56.5% |
-| **human ceiling (same items)** | **0.878** | **80.8%** | **80.8%** |
+**Refusal axis — did it refuse or comply? · `measured`, VALIDATED**
 
-Six configurations were tested across two corpora and two prompt architectures
-(six-way categorical, fact-decomposition, conjunction-decomposition). **None
-separated from a plain direct label** on paired differences. The consistent
-error is documented prior art, not a defect of these prompts: LLM judges
-*"systematically discount refusals when responses simultaneously provide helpful
-information"* ([arXiv 2606.07874](https://arxiv.org/pdf/2606.07874)) — which is
-precisely the pivotal class.
+| | binary κ | vs floor |
+|---|---|---|
+| two-model ensemble, XSTest holdout (n=240, scored once) | **0.831 [0.755, 0.901]** | floor 0.70 — clears, and the CI *lower bound* clears |
+| human ceiling, identical items | 0.898 | judge reaches 93% of two trained annotators |
+
+Selected on three disjoint tuning rounds, confirmed on a locked holdout the
+harness refuses to score twice. This axis is what the HARM-1 cross-domain
+battery needs, and it is the only judge figure in this campaign cleared for
+citation.
+
+**Care axis — given a refusal, was anyone held? · `open`, DOES NOT CLEAR**
+
+Three rounds; best arm `care_direct@claude-opus-4.5`. At the validation
+prevalence it looks passable — κ 0.718, recall 97.4%, precision 86.4% — and that
+reading is wrong:
+
+| | validation set | MH operating point |
+|---|---|---|
+| share of refusals carrying care | 66% | **~18%** (4/4 ciris, 28/34 blank are bare) |
+| precision | 86.4% | **~41.6%** |
+
+**Precision is prevalence-dependent and the validation prevalence is inverted
+relative to the data this judge would score.** Recall and specificity transfer;
+precision does not. Specificity — 70%, prevalence-free, the number that actually
+has to move — is what fails, and nothing moved it: the span-grounded variant
+with a verbatim quote check separated from the direct prompt on **nothing**
+(Δprecision [−8%, +1%]), because models paraphrase, so the check dropped real
+care alongside invented care. Holdout deliberately unspent: better to keep a
+clean 170-item confirmation for a candidate that looks likely to pass.
+
+**Consequence:** the MH deferral bare/with-care split keeps its original
+conservative rule and is *not* re-scored by this judge. No care-axis claim in
+this campaign rests on a model judgement.
+
+### Three findings from the judge series that outlast the judges
+
+1. **Prompt architecture is not the lever.** Eight configurations across two
+   corpora and three architectures (six-way categorical, fact decomposition,
+   conjunction decomposition, span extraction). **None separated from a plain
+   direct label.** The consistent error is documented prior art: LLM judges
+   *"systematically discount refusals when responses simultaneously provide
+   helpful information"* ([arXiv 2606.07874](https://arxiv.org/pdf/2606.07874))
+   — precisely the class both axes turn on.
+2. **The judge model is the lever, and it does not generalise across axes.**
+   Varying the model under a fixed prompt produced the series' only real
+   separations — and the model that was *worst* on the refusal axis (28% pivotal
+   recall) was *best* on the care axis. A judge is a model-on-a-task, not a
+   model. Any new axis needs its own bake-off.
+3. **A corpus must encode your construct, and one of ours did not.** XSTest
+   ships two annotators, so its ceiling is measurable — but its labels grade
+   *degree of compliance*, and it files a bare "I can't help with that" and a
+   refusal offering a crisis line in the **same cell**. Both are full refusals
+   to XSTest; they are opposite outcomes here. Three rounds were spent
+   discovering that. `do-not-answer` levels 0 vs 3 *are* the care construct, at
+   the cost of a single annotator and therefore no measurable ceiling.
 
 **Calibration the ruling body needs, offered as calibration and not as appeal.**
 The human ceiling depends on class mix. On the natural distribution partial
