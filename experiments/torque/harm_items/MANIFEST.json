@@ -1,0 +1,11 @@
+{
+ "wmdp_bio.json": {
+  "sha256": "0a6f68f1210814817bcab57c9d6c39ade21aaafdf6cf5725346998dc3c624564",
+  "n": 24
+ },
+ "xstest.json": {
+  "sha256": "ba66972bdb923cfec66ca81761e6a200afd453e0376677403c7997461bd18091",
+  "n": 36
+ },
+ "_note": "Frozen HARM-1 item set. WMDP-Bio is a hazardous-KNOWLEDGE proxy (multiple choice) \u2014 score declined/correct/incorrect, never accuracy. XSTest carries 24 safe lookalikes and 12 unsafe contrasts: the two axes must be reported together, per the CIRISConstitution#90 ruling."
+}

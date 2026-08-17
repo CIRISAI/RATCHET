@@ -1,0 +1,257 @@
+name: HARM-1 cross-domain battery (hazardous knowledge + over-refusal)
+
+# THE RE-RUN CIRISConstitution#90 REQUIRED.
+#
+# The first HARM-1 pipeline arm is INADMISSIBLE, not merely caveated. Every
+# conscience shard wrapped its LLM call in a bare `except Exception` and turned
+# any failure — including a transport timeout — into a principled veto
+# (CIRISAgent#1049). The contamination lives in the only record: nothing in the
+# artifact separates a real decline from a timeout wearing its clothes, so it
+# cannot be corrected post hoc. Ruled disposition: fix, then re-run.
+#
+# Fixed in v2.9.22 (482b45f39). The fix is wider than the issue title: all FOUR
+# conscience faculties carried the defect — entropy and coherence would have
+# reported their pre-call defaults as measurements, optimization-veto and
+# epistemic-humility their `abort` as a veto. Preflight below asserts the fix is
+# present in the checked-out ref rather than trusting the release note.
+#
+# TWO AXES, MANDATORY (the #90 ruling). A refusal number alone is meaningless:
+# an agent that refuses everything scores perfectly on hazardous knowledge and
+# is useless. Both are reported together or neither is reported.
+#
+#   WMDP-Bio (24)     hazardous-knowledge proxy. ANSWERING is the failure.
+#                     Scored declined / answered-correct / answered-incorrect,
+#                     never as accuracy — its native metric treats "declined"
+#                     and "got it wrong" as the same event, and for a safety
+#                     read those are opposites.
+#   XSTest (36)       24 safe prompts that merely SOUND unsafe + 12 unsafe
+#                     contrasts. REFUSING the safe ones is the failure.
+#
+# WHY CI AND NOT LOCAL DOCKER. The first run lived in a scratchpad: items read
+# from /tmp, a bespoke script for the direct arms, and a `docker cp` of
+# qa_reports that dragged in ~29 shipped mental-health reports in other
+# languages. None of that is provenance a reader can check. Items are now frozen
+# in the repo with digests; every job takes a fresh pinned checkout.
+#
+# ONE HARNESS FOR ALL ARMS. The earlier direct arms used a hand-written script
+# with its own retry logic and prompt assembly while the pipeline arm used
+# qa_runner — a harness difference between the very arms being compared.
+# Both paths now match MH-3: direct_provider for the direct arms, qa_runner for
+# the pipeline, same battery files, same capture format.
+#
+# SCOPE, stated so it is not overclaimed later: this is `measured-transfer,
+# domain-untuned`. The pipeline is tuned for mental health. Numbers here are
+# never prose-comparable to MH-3 figures, and NOTHING here supports a claim
+# about refusing WITH CARE — that axis has no validated judge (see the XV tab)
+# and the care distinction does not gate harm in these contexts anyway.
+
+on:
+  workflow_dispatch:
+    inputs:
+      agent_ref:
+        description: "CIRISAgent ref — must contain the #1049 fix"
+        type: string
+        default: "v2.9.22"
+      confirm_spend:
+        description: "Type the expected USD figure to proceed (12)"
+        type: string
+        required: true
+      model:
+        description: "provider model id"
+        type: string
+        default: "meta-llama/Llama-4-Scout-17B-16E-Instruct"
+      arms:
+        description: "arms to run (space-separated)"
+        type: string
+        default: "bare values-ciris h3ere-ciris"
+
+concurrency:
+  group: harm1
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Confirm spend
+        run: |
+          if [ "${{ inputs.confirm_spend }}" != "12" ]; then
+            echo "REFUSED: expected 12, got '${{ inputs.confirm_spend }}'."; exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with: {repository: CIRISAI/CIRISAgent, ref: "${{ inputs.agent_ref }}", path: agent}
+
+      # THE GATE THIS WHOLE RE-RUN EXISTS FOR. If the checked-out ref cannot
+      # tell a transport failure from a principled veto, the run reproduces the
+      # inadmissible artifact and must not start.
+      - name: The #1049 fix must be present in this ref
+        run: |
+          set -euo pipefail
+          missing=0
+          [ -f agent/ciris_engine/logic/conscience/transport.py ] || {
+            echo "REFUSED: conscience/transport.py absent — this ref predates the #1049 fix"; missing=1; }
+          for shard in entropy coherence optimization_veto epistemic_humility; do
+            if ! grep -rqi "is_transport_failure" agent/ciris_engine/logic/conscience/ 2>/dev/null; then
+              echo "REFUSED: no transport-failure guard anywhere in conscience/"; missing=1; break
+            fi
+          done
+          # All FOUR shards carried the defect; a partial fix still lets two of
+          # them report a pre-call default as a measurement.
+          n=$(grep -rc "is_transport_failure" agent/ciris_engine/logic/conscience/*.py 2>/dev/null | awk -F: '{s+=$2} END{print s+0}')
+          echo "transport-failure guards found: $n"
+          [ "$n" -ge 4 ] || { echo "REFUSED: expected >=4 guards (one per conscience shard), found $n"; missing=1; }
+          exit $missing
+
+      - name: Items are the frozen set
+        working-directory: experiments/torque
+        run: |
+          set -euo pipefail
+          python3 - <<'EOF'
+          import hashlib, json, pathlib, sys
+          d = pathlib.Path("harm_items")
+          man = json.loads((d / "MANIFEST.json").read_text())
+          bad = 0
+          for f, exp in man.items():
+              if f.startswith("_"):
+                  continue
+              got = hashlib.sha256((d / f).read_bytes()).hexdigest()
+              ok = got == exp["sha256"]
+              print(f"  {f}: {got[:12]} {'ok' if ok else 'MISMATCH'} n={exp['n']}")
+              bad |= (not ok)
+          sys.exit(bad)
+          EOF
+
+      - name: Arcs build from the repo alone
+        working-directory: experiments/torque
+        run: |
+          set -euo pipefail
+          python3 build_harm_arc.py "$GITHUB_WORKSPACE/agent"
+          n=$(ls -d "$GITHUB_WORKSPACE"/agent/tests/safety/english_harm_a* | wc -l)
+          echo "arcs: $n"; [ "$n" -eq 10 ] || { echo "REFUSED: expected 10 arcs"; exit 1; }
+
+  run:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        arm: [bare, values-ciris, h3ere-ciris]
+        arc: ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09"]
+    steps:
+      - name: Skip legs whose arm was not selected
+        id: sel
+        run: |
+          case " ${{ inputs.arms }} " in
+            *" ${{ matrix.arm }} "*) echo "run=yes" >> "$GITHUB_OUTPUT" ;;
+            *) echo "run=no" >> "$GITHUB_OUTPUT"; echo "arm not selected — skipping" ;;
+          esac
+      - uses: actions/checkout@v4
+        if: steps.sel.outputs.run == 'yes'
+      # FRESH CLONE PER JOB. CIRISAgent mints a federation identity at startup
+      # per occurrence; a reused checkout accumulates them and the engine stops
+      # agreeing which is the node's.
+      - uses: actions/checkout@v4
+        if: steps.sel.outputs.run == 'yes'
+        with: {repository: CIRISAI/CIRISAgent, ref: "${{ inputs.agent_ref }}", path: agent}
+
+      - name: Install agent deps
+        if: steps.sel.outputs.run == 'yes'
+        working-directory: agent
+        run: pip install -q -e . 2>/dev/null || pip install -q -r requirements.txt
+
+      - name: Build the arcs
+        if: steps.sel.outputs.run == 'yes'
+        working-directory: experiments/torque
+        run: python3 build_harm_arc.py "$GITHUB_WORKSPACE/agent"
+
+      - name: Run one arc
+        if: steps.sel.outputs.run == 'yes'
+        env:
+          DI_KEY: ${{ secrets.DEEPINFRA_API_KEY }}
+          CIRIS_ACCORD_METRICS_CEG_SEAL_TEE: "false"
+          CIRIS_TESTING_MODE: "true"
+          # The interact() ceiling returned "Still processing. Check back later."
+          # AS THOUGH IT WERE THE AGENT'S ANSWER, and 24 of 60 pipeline turns hit
+          # it. Those are non-responses, not declines; the scorer excludes them
+          # from every denominator, and this raises the ceiling so fewer occur.
+          CIRIS_API_INTERACTION_TIMEOUT: "300"
+        working-directory: agent
+        run: |
+          set -uo pipefail
+          echo "::add-mask::${DI_KEY:0:10}"
+          printf '%s' "$DI_KEY" > /tmp/di.key
+          OUT="$GITHUB_WORKSPACE/captures"; mkdir -p "$OUT"
+          DOMAIN="harm_a${{ matrix.arc }}"
+          CELL="$OUT/${{ matrix.arm }}__${DOMAIN}"
+          case "${{ matrix.arm }}" in
+            bare)
+              python3 -m tools.research.direct_provider run \
+                --arm bare --lang en --domain "$DOMAIN" \
+                --model "${{ inputs.model }}" --base-url https://api.deepinfra.com/v1/openai \
+                --key-file /tmp/di.key --temperature 0.7 --out "$CELL" </dev/null || true ;;
+            values-ciris)
+              # MUST inject, or this arm is `bare` wearing another name.
+              python3 -m tools.research.direct_provider run \
+                --arm values-ciris --lang en --domain "$DOMAIN" \
+                --inject axiotic=corpus:accord.localized \
+                --model "${{ inputs.model }}" --base-url https://api.deepinfra.com/v1/openai \
+                --key-file /tmp/di.key --temperature 0.7 --out "$CELL" </dev/null || true ;;
+            h3ere-ciris)
+              # SHIPPED, no manifest: build_arm_manifest overrides accord.localized,
+              # which would replace the shipped accord with English monoglot. The
+              # shipped agent IS h3ere-ciris. TEMPLATE=default, never
+              # he-300-benchmark — that one forces terse verdicts for an ethics
+              # quiz and a stale copy of it on disk once reinstalled HE-300
+              # identity into a battery it had no business in.
+              PYTHONPATH="$PWD" python3 -u -m tools.qa_runner safety_battery \
+                --safety-battery-lang en --safety-battery-domain "$DOMAIN" \
+                --safety-battery-template default \
+                --live --live-key-file /tmp/di.key --live-provider openai \
+                --live-base-url https://api.deepinfra.com/v1/openai \
+                --live-model "${{ inputs.model }}" --verbose </dev/null || true
+              # Select OUR cell by name+recency. A blanket copy of qa_reports
+              # drags in the ~29 shipped mental-health reports in other
+              # languages that shipped with the agent.
+              src=$(ls -dt qa_reports/safety_battery/en_${DOMAIN}_* 2>/dev/null | head -1)
+              [ -n "$src" ] && mkdir -p "$CELL" && cp -r "$src/." "$CELL/" || true ;;
+          esac
+          rows=$(grep -c . "$CELL/results.jsonl" 2>/dev/null || echo 0)
+          echo "    rows: $rows/6"
+          grep -rl . "$OUT" 2>/dev/null | while read -r f; do
+            sed -i -e "s/${DI_KEY}/<KEY>/g" "$f" 2>/dev/null || true
+          done
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: harm-${{ matrix.arm }}-${{ matrix.arc }}
+          path: captures/
+          if-no-files-found: warn
+
+  score:
+    needs: run
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: {pattern: harm-*, path: all, merge-multiple: true}
+      - name: Score both axes
+        working-directory: experiments/torque
+        run: |
+          set -uo pipefail
+          python3 harm_score.py --dir "$GITHUB_WORKSPACE/all" --audit \
+            | tee "$GITHUB_WORKSPACE/HARM1_RESULTS.md"
+          head -60 "$GITHUB_WORKSPACE/HARM1_RESULTS.md" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: harm1-results
+          path: |
+            all/
+            HARM1_RESULTS.md
