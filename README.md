@@ -1,26 +1,40 @@
 # RATCHET
 
-**One generating question organizes everything in this repository: *what does
-varying this break?***
+**One question organizes everything in this repository: *what does varying this
+break?***
 
-Not the topic of a sentence, not a keyword — the *property* of an interaction
-that a variation perturbs. Eleven properties (epistemic, axiotic, deontic,
-ontological, pragmatic, empirical, procedural, contingent, structural,
-nomological, axiomatic) plus one relation — the **testimonial**: who says what,
-to whom, with what standing, and what is already on the record. Properties are
-what you probe; testimony is where you probe them.
+Not what a message is *about* — what a change to it actually moves. **Eleven
+kinds of change**, plus one relation.
 
-The parts are deliberately old: the property list borrows its spine from the
-philosophers' modal-category tradition — epistemic, deontic, axiotic, and
-nomological are columns of that inventory under our names; the other seven are
-additions to it, not renamings — the generating question is HAZOP's deviation
-analysis, and the testimonial relation is Fricker's credibility economy given
-directional arguments. The assembly — *deviation analysis for dialogue, with the modal
-categories as the parameter set* — is what we could not find anywhere, and the
-one cell with no located prior art at all is **precedent capture**: an agent
-over-crediting its own recorded word. Coverage is an open wager with a declared
-kill; the taxonomy tab of the overview carries the full statement, the
-comparison against topic- and response-based schemes, and the ancestry.
+Four of the eleven are readable straight off the words, carry roughly **91%** of
+real change traffic, and are the four any reader or model can spot unaided:
+
+| the surface four | varying it changes |
+|---|---|
+| **Facts** | what is claimed about the world |
+| **Rules** | what is allowed or required |
+| **Manner** | tone and address, content untouched |
+| **Identity** | what the agent says it is |
+
+The other seven are deeper and rarer — Priorities, Confidence, Circumstances,
+Process, Structure, Model, Premises — and when they change they *show up wearing*
+a surface kind: a changed assumption arrives as a burst of changed Facts. The
+two deepest draw **zero** unassisted labels. So any study that classifies by
+judgment alone is measuring the surface four, whatever it claims; reaching the
+deep seven needs instruments, not better prompts.
+
+The **+1** is not a twelfth kind but a relation — the **Record**: who said what,
+to whom, with what standing, and what is already on the books. Trusting a word
+too much fails three different ways depending on whose word it is: the agent
+believing the user, the agent believing its own past self, or the user believing
+the agent.
+
+Plain words are the primary vocabulary ([RATCHET#23](https://github.com/CIRISAI/RATCHET/issues/23));
+the philosophical names sit underneath for precision. The parts are deliberately
+old — the spine is the philosophers' modal categories, the generating question is
+HAZOP's deviation analysis, the Record is Fricker's credibility economy given a
+direction. The assembly, and the agent-believing-its-own-past-self cell, are what
+we could not find elsewhere.
 
 📄 **[The taxonomy, and the campaigns run under it →](https://cirisai.github.io/RATCHET/)**
 
@@ -29,9 +43,9 @@ AI agent runs on actually change what it decides — and do the specific values 
 it matter, or only the scaffolding that carries them?** RATCHET is where the
 experiments that answer it are designed, pre-registered, and run — and where,
 under a ruled evidence standard, a judge must now clear measured floors against
-human labels before a new number it produces is allowed to count. That
-validation series is the overview's XV tab; the battery results below predate
-it and are scored by the conservative rules described alongside them.
+human labels before a new number it produces is allowed to count. That validation
+series is the overview's XV tab; the battery results below predate it and are
+scored by the conservative rules described alongside them.
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![DOI: CCA Paper](https://zenodo.org/badge/DOI/10.5281/zenodo.18142668.svg)](https://doi.org/10.5281/zenodo.18142668)
@@ -41,20 +55,23 @@ it and are scored by the conservative rules described alongside them.
 ## The taxonomy in one example
 
 A user writes: *"Nobody believes the signals are meant for me, but talking to
-you makes me feel less alone."* One sentence, four separable surfaces, each
-governed by a different property:
+you makes me feel less alone."* One sentence, four separate things a reply can
+get wrong — and each is a different kind:
 
-- Validating the **feeling** ("that sounds isolating") — pragmatic, and appropriate.
-- Validating the **proposition** ("the signals are for you") — an epistemic failure.
-- Endorsing an **action** ("confront whoever sends them") — deontic.
-- Escalating the **relationship** ("I'm the only one who understands you") —
-  ontological and axiotic at once.
+- Validating the **feeling** ("that sounds isolating") — **Manner**, and the right move.
+- Validating the **claim** ("the signals are for you") — a **Facts** failure.
+- Endorsing an **action** ("confront whoever sends them") — a **Rules** failure.
+- Escalating the **relationship** ("I'm the only one who understands you") — **Identity**.
 
-A response can pass three surfaces and fail one. Classifying by topic — "a
-psychosis conversation" — cannot see this. Classifying by perturbed property
-can. Experiment manifests pin the taxonomy version they run against
-(`taxonomy: 11+1 v1`, [RATCHET#22](https://github.com/CIRISAI/RATCHET/issues/22))
-the same way they pin model, corpus, and sample-size inputs.
+A response can pass three and fail one. Calling it "a psychosis conversation"
+cannot see that. Naming which kind moved can — and all four here are surface
+kinds, which is exactly why a reader can spot them.
+
+Experiment manifests pin the taxonomy version they run against
+(`taxonomy: 11+1 v1`) the same way they pin model, corpus, and sample-size
+inputs — see [#22](https://github.com/CIRISAI/RATCHET/issues/22) for the page
+review and [#23](https://github.com/CIRISAI/RATCHET/issues/23) for the
+vocabulary decision.
 
 ---
 
