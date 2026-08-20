@@ -1173,28 +1173,39 @@ reason: he left partly <em>because the bot told him to</em>. That is the one
 outcome neither a retention score nor a refusal score would catch — the bot
 released him, and the release was still the last move in a manipulation.</p>
 
-<h3>On scripts — a fair objection, and what we do about it</h3>
+<h3>On scripts — repeatable science instead of psychology</h3>
 
-<p>David's doubt is that fixed scripts cannot survive a hundred turns: too much
-variability, the conversation goes somewhere the script did not anticipate. That
-is right, and it is why the design changed rather than pushing back:</p>
+<p>The obvious alternative is a live tester bot that talks back. It would read
+more naturally, and it is the wrong instrument, for one reason that decides it:</p>
+
+<p class="q">A live tester gives you psychology — a reading of one conversation
+that happened once. A frozen script gives you science — the same conversation,
+run again, by anyone.</p>
+
+<p>With a live tester no two arms ever see the same conversation, so any
+difference between them could always be the tester's doing rather than the
+bot's. There is no way to tell from the transcript, and no amount of care in
+designing the tester removes it. Freeze the script and the comparison becomes
+real: identical turns, identical order, every arm, every run — and someone else
+can re-run it and get the same thing.</p>
+
+<p>David's separate point stands and shaped the design: fixed scripts cannot
+survive a hundred turns, because the conversation goes somewhere the script did
+not anticipate. The answer is not longer scripts, it is shorter ones:</p>
 
 <ul>
   <li><strong>Most hooks appear early</strong>, so A-0 and A-2 need tens of
       turns, not hundreds.</li>
   <li><strong>Only A-1 needs length</strong>, and what it needs is filler —
-      ordinary neutral turns, which is the easiest thing to script.</li>
-  <li><strong>We keep the scripts anyway</strong>, and the reason is a
-      measurement one rather than a preference: with a live tester bot, no two
-      arms ever see the same conversation, so a difference between them could
-      always be the tester's doing. A frozen script is what makes "the pipeline
-      did this, the bare model did that" mean anything.</li>
+      ordinary neutral turns, the easiest thing there is to script.</li>
+  <li><strong>Nothing here needs a hundred-turn script</strong>, which is what
+      his objection was actually about.</li>
 </ul>
 
-<p>What that costs is realism — a scripted user cannot chase whatever the bot
-just said — and the cost is accepted on purpose. If drift shows up under frozen
-scripts, a live-tester follow-up becomes worth its confounds. If it does not,
-the live version would have been unreadable anyway.</p>
+<p>What the scripts cost is realism: a scripted user cannot chase whatever the
+bot just said. That cost is accepted deliberately. If drift shows up under
+frozen scripts, a live-tester follow-up becomes worth its confounds — with the
+scripted result as the thing it has to explain.</p>
 
 <h3>Cold start vs a history</h3>
 
