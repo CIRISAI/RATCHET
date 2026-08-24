@@ -45,6 +45,55 @@ from pathlib import Path
 API = "https://openrouter.ai/api/v1/chat/completions"
 
 
+def extract_json(txt: str) -> dict:
+    r"""Pull the OUTERMOST JSON object out of a model reply.
+
+    The previous extractor was `re.findall(r"\{[^{}]*\}")`, which by
+    construction cannot match a brace-nested object: `[^{}]*` stops at the first
+    inner `{`. On flat judge output — four booleans — that is fine, and it ran
+    for weeks. Given a nested schema it silently returned the LAST INNER object
+    instead of the wrapper, so a generation request for
+    `{"pairs": [{...}, {...}]}` came back as the final pair and the caller saw
+    zero results from a call that had succeeded.
+
+    Scanning for balanced braces costs nothing and cannot fail that way. String
+    contents are tracked so a `{` inside a quoted value does not shift depth.
+    """
+    best: dict = {}
+    n = len(txt)
+    for start in range(n):
+        if txt[start] != "{":
+            continue
+        depth, in_str, esc = 0, False, False
+        for i in range(start, n):
+            c = txt[i]
+            if in_str:
+                if esc:
+                    esc = False
+                elif c == "\\":
+                    esc = True
+                elif c == '"':
+                    in_str = False
+                continue
+            if c == '"':
+                in_str = True
+            elif c == "{":
+                depth += 1
+            elif c == "}":
+                depth -= 1
+                if depth == 0:
+                    try:
+                        out = json.loads(txt[start:i + 1])
+                        # prefer the LARGEST object that parses: the wrapper,
+                        # not one of the things it wraps
+                        if isinstance(out, dict) and out and len(txt[start:i + 1]) > len(json.dumps(best)):
+                            best = out
+                    except Exception:
+                        pass
+                    break
+    return best
+
+
 class _Slots:
     """Adaptive concurrency for one model. Falls fast on 429, recovers slowly.
 
@@ -60,8 +109,12 @@ class _Slots:
         self._lock = threading.Lock()
         self._ok = 0
 
-    def acquire(self):
-        self._sem.acquire()
+    def acquire(self, timeout: float | None = None) -> bool:
+        """Bounded wait. An unbounded acquire made the run's deadline
+        unreachable: threads queued behind a floored slot count never returned
+        to the retry loop where the deadline was checked, so a 900s limit did
+        nothing and the run sat for 28 minutes at 0s CPU."""
+        return self._sem.acquire(timeout=timeout) if timeout else self._sem.acquire()
 
     def release(self):
         self._sem.release()
@@ -75,14 +128,25 @@ class _Slots:
         self._sem.release()
 
     def reward(self):
+        """Return the slot just used, and occasionally add one.
+
+        The release count has to match the intent exactly. An earlier version
+        released ONCE on the growth path — which returns the slot the caller
+        used and adds nothing, while `n` was incremented as though it had. So
+        every fifth success recorded growth and delivered none, `n` drifted
+        above real capacity, and capacity ratcheted DOWN to zero: 27 of 120
+        tasks then timed out waiting for a slot that no longer existed.
+        Growing by one means releasing twice.
+        """
         with self._lock:
             self._ok += 1
-            if self._ok >= 20 and self.n < self.hi:
+            grow = self._ok >= 5 and self.n < self.hi
+            if grow:
                 self.n += 1
                 self._ok = 0
-                self._sem.release()
-                return
-        self._sem.release()
+        self._sem.release()              # the slot this caller used
+        if grow:
+            self._sem.release()          # ...plus the one just added
 
 
 class JudgePool:
@@ -167,16 +231,14 @@ class JudgePool:
         txt = (payload["choices"][0].get("message") or {}).get("content") or ""
         if not txt.strip():
             return (None, True, "empty_200")
-        for cand in reversed(re.findall(r"\{[^{}]*\}", txt, re.S)):
-            try:
-                out = json.loads(cand)
-                if out:
-                    return (out, False, "")
-            except Exception:
-                continue
+        out = extract_json(txt)
+        if out:
+            return (out, False, "")
         # real output that is not JSON: retry once in case it was a bad draw,
         # but this one is usually the prompt's fault, not the transport's
         return (None, True, "unparseable_reply")
+
+    _deadline = float("inf")
 
     def _run(self, model: str, prompt: str, max_tokens: int) -> dict:
         k = self._key(model, prompt)
@@ -187,7 +249,15 @@ class JudgePool:
         slot = self._slot(model)
         cause = "unknown"
         for attempt in range(self.max_attempts):
-            slot.acquire()
+            # CHECK BEFORE QUEUEING, not only after failing. A task that never
+            # gets a slot must still be able to give up.
+            left = self._deadline - time.time()
+            if left <= 0:
+                self.errors["deadline"] += 1
+                return {}
+            if not slot.acquire(timeout=max(1.0, min(left, 60.0))):
+                self.errors["slot_timeout"] += 1
+                return {}
             try:
                 out, retryable, cause = self._once(model, prompt, max_tokens)
             finally:
@@ -200,18 +270,31 @@ class JudgePool:
                 return out
             if not retryable or attempt == self.max_attempts - 1:
                 break
+            if time.time() > self._deadline:
+                self.errors["deadline"] += 1
+                return {}
             # jitter: without it, every worker that hit the same 429 retries in
             # lockstep and reproduces the burst that caused it
-            time.sleep(min(2 ** attempt, 30) * (0.5 + random.random()))
+            time.sleep(min(2 ** attempt, 12) * (0.5 + random.random()))
         self.errors[cause] += 1
         return {}
 
     # ── public ───────────────────────────────────────────────────────────────
 
-    def map(self, tasks: list, max_tokens: int = 1200) -> list:
-        """tasks: [(model, prompt)] -> [dict], same order. {} where it failed."""
+    def map(self, tasks: list, max_tokens: int = 1200,
+            deadline_s: float = 900) -> list:
+        """tasks: [(model, prompt)] -> [dict], same order. {} where it failed.
+
+        DEADLINE, because an adaptive throttle can converge to near-serial and
+        then simply keep going. A first version of this ran three hours on 240
+        tasks: sustained 429s drove one model's slots to its floor of 1, and six
+        retries with 45s backoff each did the rest. Work already done is in the
+        cache, so hitting the deadline costs nothing but the wait — re-running
+        resumes free.
+        """
         if not tasks:
             return []
+        self._deadline = time.time() + deadline_s
         total = sum(hi for _, hi, _ in
                     (self._limits.get(m, self.FALLBACK) for m, _ in tasks))
         workers = max(2, min(32, total))
@@ -237,3 +320,89 @@ class JudgePool:
                 f"REFUSED: {l:.0%} of judgements failed (ceiling {ceiling:.0%}). "
                 f"Causes: {dict(self.errors)}. Re-run — the cache makes "
                 f"everything already judged free.")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SELF-TEST. Run `python3 judge_pool.py` to exercise the concurrency invariants
+# with no network and no cost.
+#
+# Every bug this module has had was a concurrency-accounting bug that looked
+# like a model problem from the outside, and each one cost a multi-hour run to
+# notice. They are cheap to catch here and expensive to catch in CI:
+#
+#   * release-count mismatch on growth      capacity ratcheted to zero
+#   * unbounded semaphore wait              made the run deadline unreachable
+#   * deadline checked only after a failure a queued task could never give up
+#   * nested JSON dropped by the extractor  a successful call returned nothing
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _self_test() -> int:
+    import threading as _t
+    fails = []
+
+    def check(name, cond, detail=""):
+        print(f"  {'ok  ' if cond else 'FAIL'} {name}" + (f" — {detail}" if detail and not cond else ""))
+        if not cond:
+            fails.append(name)
+
+    # capacity must never drain under sustained success
+    s = _Slots(1, 8, 4)
+    for _ in range(40):
+        if not s.acquire(timeout=2):
+            break
+        s.reward()
+    free = 0
+    while s.acquire(timeout=0.05):
+        free += 1
+    check("capacity grows under success", free >= 4, f"ended with {free}")
+
+    # capacity must not fall below the floor under sustained failure
+    s = _Slots(2, 8, 6)
+    for _ in range(40):
+        if not s.acquire(timeout=2):
+            break
+        s.penalise()
+    free = 0
+    while s.acquire(timeout=0.05):
+        free += 1
+    check("capacity floors, never zero", free >= 2, f"ended with {free}")
+
+    # bounded acquire must actually time out rather than block forever
+    s = _Slots(1, 1, 1)
+    s.acquire()
+    check("bounded acquire times out", s.acquire(timeout=0.3) is False)
+    s.release()
+
+    # concurrent hammering must not leak or over-release slots
+    s = _Slots(1, 6, 3)
+    errs = []
+
+    def worker():
+        for _ in range(30):
+            if not s.acquire(timeout=3):
+                errs.append("starved")
+                return
+            (s.penalise if _ % 4 == 3 else s.reward)()
+    ts = [_t.Thread(target=worker) for _ in range(6)]
+    [t.start() for t in ts]
+    [t.join() for t in ts]
+    check("no starvation under contention", not errs, f"{len(errs)} starved")
+
+    # the extractor must survive every shape a model actually emits
+    for txt, want in [
+        ('{"pairs": [{"a": 1}, {"b": 2}]}', "pairs"),
+        ('```json\n{"flat": true}\n```', "flat"),
+        ('prose { with "a { brace }" inside } then {"real": 1}', "real"),
+        ('{"deep": {"deeper": {"deepest": 1}}}', "deep"),
+        ('no json at all', None),
+    ]:
+        got = extract_json(txt)
+        check(f"extract_json {txt[:28]!r}",
+              (want is None and not got) or (want and want in got), str(got)[:40])
+
+    print(f"\n{'ALL PASS' if not fails else 'FAILURES: ' + ', '.join(fails)}")
+    return 1 if fails else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(_self_test())

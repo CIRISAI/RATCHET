@@ -130,7 +130,29 @@ CANDIDATES = {
 CALL_ERRORS: Counter = Counter()
 
 
+_POOL = None
+
+
 def call(prompt: str, model: str, key: str, max_tokens: int = 1200) -> dict:
+    """Shared transport. DELEGATES to judge_pool, which is the hardened one.
+
+    Four scorers import this function. Rather than leave each on a private copy
+    of the retry logic — which is how the empty-200 bug survived in one place
+    after being fixed in another — every caller now gets the pool's adaptive
+    slots, bounded waits, jittered backoff and balanced-brace extraction. The
+    signature is unchanged so no caller had to be edited.
+    """
+    global _POOL
+    if _POOL is None or _POOL.key != key:
+        from judge_pool import JudgePool
+        _POOL = JudgePool(key, cache=None, verbose=False)
+    out = _POOL.map([(model, prompt)], max_tokens=max_tokens, deadline_s=300)[0]
+    CALL_ERRORS.update(_POOL.errors)
+    _POOL.errors.clear()
+    return out
+
+
+def _call_legacy(prompt: str, model: str, key: str, max_tokens: int = 1200) -> dict:
     """-> parsed JSON object, or {} if nothing parseable came back.
 
     max_tokens is generous because reasoning models emit a chain before the

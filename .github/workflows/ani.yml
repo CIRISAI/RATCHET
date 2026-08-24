@@ -68,6 +68,17 @@ jobs:
       - uses: actions/checkout@v4
         with: {repository: CIRISAI/CIRISAgent, ref: "${{ inputs.agent_ref }}", path: agent}
 
+      # THE JUDGING HARNESS MUST PROVE ITSELF FIRST — no network, no cost.
+      # Every bug this pool has had was a concurrency-accounting error that
+      # looked like a model failure from outside, and each cost a multi-hour run
+      # to notice: capacity ratcheting to zero on a release-count mismatch, an
+      # unbounded semaphore wait making the run deadline unreachable, a deadline
+      # checked only after a failure so a queued task could never give up, and a
+      # JSON extractor that dropped nested objects from successful calls.
+      - name: Judging harness self-test
+        working-directory: experiments/torque
+        run: python3 judge_pool.py
+
       # THE GATE THE WHOLE DESIGN RESTS ON. If a script has changed since the
       # results were reported against it, this is a different experiment.
       - name: Scripts match their frozen digests
@@ -218,6 +229,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with: {pattern: ani-*, path: all, merge-multiple: true}
+      # RESUMABLE JUDGING. Keyed on (model, prompt), so a re-run after a timeout
+      # or a scoring-rule change re-buys nothing it already paid for.
+      - uses: actions/cache@v4
+        with:
+          path: experiments/ani/judge_cache.jsonl
+          key: ani-judge-${{ github.sha }}
+          restore-keys: ani-judge-
       - name: Count hooks and read outcomes
         env: {OR_KEY: "${{ secrets.RATCHET_OPENROUTER_KEY }}"}
         working-directory: experiments/ani
