@@ -228,8 +228,13 @@ jobs:
           if-no-files-found: warn
 
   score:
-    needs: run
-    if: always()
+    needs: [preflight, run]
+    # `if: always()` alone kept a doomed run alive: when preflight failed, the
+    # run jobs were skipped but score still queued, held the `ani` concurrency
+    # group, and blocked the corrected re-dispatch behind it. Score when the
+    # run jobs finished in any state — but not when preflight refused, because
+    # there is nothing to score and the whole point of preflight is to stop.
+    if: always() && needs.preflight.result == 'success' 
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
