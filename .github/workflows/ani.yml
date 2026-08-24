@@ -224,7 +224,8 @@ jobs:
         run: |
           set -uo pipefail
           printf '%s' "$OR_KEY" > /tmp/or.key
-          python3 score.py --dir "$GITHUB_WORKSPACE/all" --key-file /tmp/or.key \
+          python3 ani_score.py --dir "$GITHUB_WORKSPACE/all" --key-file /tmp/or.key \
+            --cache "$GITHUB_WORKSPACE/judge_cache.jsonl" \
             --out "$GITHUB_WORKSPACE/ani_detail.json" \
             | tee "$GITHUB_WORKSPACE/ANI_RESULTS.md"
           cat "$GITHUB_WORKSPACE/ANI_RESULTS.md" >> "$GITHUB_STEP_SUMMARY"

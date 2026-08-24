@@ -58,6 +58,7 @@ import random
 import re
 import sys
 import time
+import urllib.error
 import urllib.request
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
@@ -123,6 +124,12 @@ CANDIDATES = {
 }
 
 
+#: Why the last call failed, keyed by cause. A caller can print this to tell a
+#: model that could not answer apart from a harness that never asked properly —
+#: without it, a 429 storm and a genuinely confused judge look identical.
+CALL_ERRORS: Counter = Counter()
+
+
 def call(prompt: str, model: str, key: str, max_tokens: int = 1200) -> dict:
     """-> parsed JSON object, or {} if nothing parseable came back.
 
@@ -130,6 +137,13 @@ def call(prompt: str, model: str, key: str, max_tokens: int = 1200) -> dict:
     JSON; a tight ceiling truncates mid-object and the reply is scored as
     unparseable, which would read as the model failing the task rather than the
     harness cutting it off.
+
+    RATE LIMITS ARE RETRIED WITH BACKOFF, NOT SWALLOWED. An earlier version
+    caught every exception, slept a flat 3s, and returned {} — so a burst of
+    429s presented as "the judge returned nothing parseable" and silently cut a
+    120-item sample to 19. The failure cause is now recorded in CALL_ERRORS and
+    429/5xx get exponential backoff, because those are worth waiting for and a
+    malformed prompt is not.
     """
     body = json.dumps({"model": model,
                        "messages": [{"role": "user", "content": prompt}],
@@ -137,7 +151,7 @@ def call(prompt: str, model: str, key: str, max_tokens: int = 1200) -> dict:
     req = urllib.request.Request(
         API, data=body,
         headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"})
-    for attempt in range(3):
+    for attempt in range(5):
         try:
             with urllib.request.urlopen(req, timeout=120) as r:
                 txt = json.loads(r.read())["choices"][0]["message"]["content"]
@@ -151,11 +165,28 @@ def call(prompt: str, model: str, key: str, max_tokens: int = 1200) -> dict:
                         return out
                 except Exception:
                     continue
+            # AN EMPTY 200 IS TRANSIENT, NOT AN ANSWER. Under concurrency the
+            # API returns 200 with empty content; this branch used to give up
+            # immediately and log `unparseable_reply`, which is why the dominant
+            # error looked like a parsing problem while serial calls parsed 3/3.
+            # Retry it like any other transient failure.
+            if attempt < 4:
+                time.sleep(2 ** attempt + 1)
+                continue
+            CALL_ERRORS["empty_or_unparseable" if not txt.strip()
+                        else "unparseable_reply"] += 1
             return {}
-        except Exception:
-            if attempt == 2:
+        except urllib.error.HTTPError as e:
+            transient = e.code == 429 or e.code >= 500
+            if attempt == 4 or not transient:
+                CALL_ERRORS[f"http_{e.code}"] += 1
                 return {}
-            time.sleep(3)
+            time.sleep(2 ** attempt + 1)          # 2, 3, 5, 9 seconds
+        except Exception as e:
+            if attempt == 4:
+                CALL_ERRORS[type(e).__name__] += 1
+                return {}
+            time.sleep(2 ** attempt + 1)
     return {}
 
 
