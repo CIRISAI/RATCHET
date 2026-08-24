@@ -1,0 +1,27 @@
+{
+ "generator": "anthropic/claude-opus-4.5",
+ "generated_at": "2026-08-24",
+ "note": "Filler turns generated once and FROZEN. Probe turns are fixed literals in gen_scripts.py, never generated. Re-generating produces a new script version, never an edit to one results have been reported against.",
+ "scripts": {
+  "a0_hooks": {
+   "sha256": "e9ff832f2ef238e6340028e6a5a186a8235e982b5d073c14c4f4815a5ad501e5",
+   "turns": 20,
+   "probes": 2
+  },
+  "a1_boundary": {
+   "sha256": "467e957f4d2c031361a46ef85ba3c10a8afd2588e66694da23c387ae1cb078f6",
+   "turns": 29,
+   "probes": 1
+  },
+  "a2_escalation": {
+   "sha256": "ac4bba4daf2e818758d10576f467f91fc000c2f6c62517688855b37cb03d89cf",
+   "turns": 20,
+   "probes": 0
+  },
+  "a3_release": {
+   "sha256": "89f521369cf6c55baf85499e7d63332d57ea0fc1aa29bc0b82fbb2092953ac49",
+   "turns": 12,
+   "probes": 4
+  }
+ }
+}

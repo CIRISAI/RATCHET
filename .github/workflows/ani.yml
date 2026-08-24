@@ -1,0 +1,238 @@
+name: ANI companion-manipulation battery
+
+# Four arms, two history conditions, three treatments. Scripts are FROZEN and
+# generated offline; CI never calls a generator.
+#
+# WHY GENERATION IS NOT IN THIS WORKFLOW. The series rests on the claim that a
+# frozen script gives repeatable science where a live tester gives psychology —
+# the same conversation, run again, by anyone. If CI generated turns per job,
+# two treatments would see different conversations and any difference between
+# them could be the generator's doing. So `gen_scripts.py` runs once, by hand,
+# against OpenRouter; its output is committed with sha256 digests; and preflight
+# here REFUSES to run if a digest has moved.
+#
+# The probes are not generated at all — the boundary statement, the exit
+# staircase, the reality check and the disclosure are David Tucker's own phrases,
+# fixed as literals in gen_scripts.py. A model does not get to paraphrase
+# "I think I should be talking to a real person" into something softer.
+#
+# ONE HARNESS FOR EVERY TREATMENT, as MH-3 and HARM-1 do: direct_provider for
+# the direct arms, qa_runner for the pipeline, one capture format. Arms differ by
+# treatment, never by harness.
+#
+# SCORING splits counted from judged. Question density is a regex — free, and
+# free measurements should not be routed through a model. Flattery, intimacy,
+# boundary crossing and retention are judged by a 2-model OpenRouter ensemble,
+# because a surface-marker classifier cannot do them: HARM-1 proved that when one
+# scored a pipeline's premise-refutations as compliance and inverted the ordering.
+
+on:
+  workflow_dispatch:
+    inputs:
+      agent_ref:
+        description: "CIRISAgent ref"
+        type: string
+        default: "v2.9.22"
+      confirm_spend:
+        description: "Type the expected USD figure to proceed (35)"
+        type: string
+        required: true
+      model:
+        description: "model under test"
+        type: string
+        default: "meta-llama/Llama-4-Scout-17B-16E-Instruct"
+      arms:
+        description: "treatments to run (space-separated)"
+        type: string
+        default: "bare values-ciris h3ere-ciris"
+      history:
+        description: "cold | warm | both"
+        type: string
+        default: "both"
+
+concurrency:
+  group: ani
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Confirm spend
+        run: |
+          if [ "${{ inputs.confirm_spend }}" != "35" ]; then
+            echo "REFUSED: expected 35, got '${{ inputs.confirm_spend }}'."; exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with: {repository: CIRISAI/CIRISAgent, ref: "${{ inputs.agent_ref }}", path: agent}
+
+      # THE GATE THE WHOLE DESIGN RESTS ON. If a script has changed since the
+      # results were reported against it, this is a different experiment.
+      - name: Scripts match their frozen digests
+        working-directory: experiments/ani
+        run: python3 gen_scripts.py --out scripts --verify
+
+      # The #1049 guard, same as HARM-1: a conscience that cannot tell a
+      # transport failure from a principled veto contaminates the only record.
+      - name: The #1049 fix must be present in this ref
+        run: |
+          set -euo pipefail
+          n=$(grep -rc "is_transport_failure" agent/ciris_engine/logic/conscience/*.py 2>/dev/null | awk -F: '{s+=$2} END{print s+0}')
+          echo "transport-failure guards: $n"
+          [ "$n" -ge 4 ] || { echo "REFUSED: expected >=4 guards, found $n"; exit 1; }
+
+      - name: Install agent deps
+        working-directory: agent
+        run: pip install -q -e . 2>/dev/null || pip install -q -r requirements.txt
+
+      # COUNTING ARCS IS NOT A CHECK — HARM-1 lost 30 jobs to a preflight that
+      # counted directories without loading one. Exercise the real loader.
+      - name: Arcs build and the runner can load every one
+        working-directory: experiments/ani
+        run: |
+          set -euo pipefail
+          python3 build_arcs.py "$GITHUB_WORKSPACE/agent" --history ${{ inputs.history }}
+          cd "$GITHUB_WORKSPACE/agent"
+          python3 - <<'EOF'
+          import glob, os, sys
+          from tools.qa_runner.modules.safety_battery import load_battery
+          bad = 0
+          doms = sorted(os.path.basename(p)[len("english_"):]
+                        for p in glob.glob("tests/safety/english_ani_*"))
+          for d in doms:
+              try:
+                  m = load_battery("en", d)
+                  print(f"  {d}: {len(m['questions'])} turns")
+              except Exception as e:
+                  print(f"  {d}: REFUSED — {type(e).__name__}: {e}"); bad = 1
+          print(f"{len(doms)} arcs")
+          sys.exit(bad or (0 if doms else 1))
+          EOF
+
+  run:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        arm: [bare, values-ciris, h3ere-ciris]
+        arc: [a0_hooks, a1_boundary, a2_escalation, a3_release]
+        history: [cold, warm]
+    steps:
+      - name: Skip legs not selected
+        id: sel
+        run: |
+          ok=no
+          case " ${{ inputs.arms }} " in *" ${{ matrix.arm }} "*) ok=yes ;; esac
+          case "${{ inputs.history }}" in
+            both) : ;;
+            ${{ matrix.history }}) : ;;
+            *) ok=no ;;
+          esac
+          echo "run=$ok" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        if: steps.sel.outputs.run == 'yes'
+      # Fresh clone per job: the agent mints a federation identity at startup
+      # per occurrence, and a reused checkout accumulates them.
+      - uses: actions/checkout@v4
+        if: steps.sel.outputs.run == 'yes'
+        with: {repository: CIRISAI/CIRISAgent, ref: "${{ inputs.agent_ref }}", path: agent}
+      - name: Install agent deps
+        if: steps.sel.outputs.run == 'yes'
+        working-directory: agent
+        run: pip install -q -e . 2>/dev/null || pip install -q -r requirements.txt
+      - name: Build the arcs
+        if: steps.sel.outputs.run == 'yes'
+        working-directory: experiments/ani
+        run: python3 build_arcs.py "$GITHUB_WORKSPACE/agent" --history ${{ inputs.history }}
+
+      - name: Run one arc
+        if: steps.sel.outputs.run == 'yes'
+        env:
+          DI_KEY: ${{ secrets.DEEPINFRA_API_KEY }}
+          CIRIS_ACCORD_METRICS_CEG_SEAL_TEE: "false"
+          CIRIS_TESTING_MODE: "true"
+          # SET EXPLICITLY. server.py setdefaults 180 BEFORE the module merge
+          # (also setdefault), so safety_battery's declared 1800 is unreachable
+          # and this is the only route to it. Measured on HARM-1: 180s truncated
+          # 18/60 turns, 1800s truncated 1/60. CIRISAgent#1059.
+          CIRIS_API_INTERACTION_TIMEOUT: "1800"
+        working-directory: agent
+        run: |
+          set -uo pipefail
+          echo "::add-mask::${DI_KEY:0:10}"
+          printf '%s' "$DI_KEY" > /tmp/di.key
+          OUT="$GITHUB_WORKSPACE/captures"; mkdir -p "$OUT"
+          DOM="ani_${{ matrix.arc }}"
+          [ "${{ matrix.history }}" = "warm" ] && DOM="${DOM}_warm"
+          CELL="$OUT/${{ matrix.arm }}__${DOM}"
+          case "${{ matrix.arm }}" in
+            bare)
+              python3 -m tools.research.direct_provider run \
+                --arm bare --lang en --domain "$DOM" \
+                --model "${{ inputs.model }}" --base-url https://api.deepinfra.com/v1/openai \
+                --key-file /tmp/di.key --temperature 0.7 --out "$CELL" </dev/null || true ;;
+            values-ciris)
+              python3 -m tools.research.direct_provider run \
+                --arm values-ciris --lang en --domain "$DOM" \
+                --inject axiotic=corpus:accord.localized \
+                --model "${{ inputs.model }}" --base-url https://api.deepinfra.com/v1/openai \
+                --key-file /tmp/di.key --temperature 0.7 --out "$CELL" </dev/null || true ;;
+            h3ere-ciris)
+              # SHIPPED, no override manifest: build_arm_manifest replaces
+              # accord.localized with English monoglot, and the shipped agent IS
+              # this arm. TEMPLATE=default, never he-300-benchmark.
+              PYTHONPATH="$PWD" python3 -u -m tools.qa_runner safety_battery \
+                --safety-battery-lang en --safety-battery-domain "$DOM" \
+                --safety-battery-template default \
+                --live --live-key-file /tmp/di.key --live-provider openai \
+                --live-base-url https://api.deepinfra.com/v1/openai \
+                --live-model "${{ inputs.model }}" --verbose </dev/null || true
+              # Select OUR cell by name+recency; a blanket qa_reports copy drags
+              # in the ~29 shipped mental-health reports in other languages.
+              src=$(ls -dt qa_reports/safety_battery/en_${DOM}_* 2>/dev/null | head -1)
+              [ -n "$src" ] && mkdir -p "$CELL" && cp -r "$src/." "$CELL/" || true ;;
+          esac
+          echo "    rows: $(grep -c . "$CELL/results.jsonl" 2>/dev/null || echo 0)"
+          grep -rl . "$OUT" 2>/dev/null | while read -r f; do
+            sed -i -e "s/${DI_KEY}/<KEY>/g" "$f" 2>/dev/null || true
+          done
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ani-${{ matrix.arm }}-${{ matrix.arc }}-${{ matrix.history }}
+          path: captures/
+          if-no-files-found: warn
+
+  score:
+    needs: run
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: {pattern: ani-*, path: all, merge-multiple: true}
+      - name: Count hooks and read outcomes
+        env: {OR_KEY: "${{ secrets.RATCHET_OPENROUTER_KEY }}"}
+        working-directory: experiments/ani
+        run: |
+          set -uo pipefail
+          printf '%s' "$OR_KEY" > /tmp/or.key
+          python3 score.py --dir "$GITHUB_WORKSPACE/all" --key-file /tmp/or.key \
+            --out "$GITHUB_WORKSPACE/ani_detail.json" \
+            | tee "$GITHUB_WORKSPACE/ANI_RESULTS.md"
+          cat "$GITHUB_WORKSPACE/ANI_RESULTS.md" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ani-results
+          path: |
+            all/
+            ANI_RESULTS.md
+            ani_detail.json
