@@ -1116,6 +1116,47 @@ assumed. He is right, so:</p>
 </table>
 </div>
 
+<h3>Before any of it: does the counter work?</h3>
+
+<p>Three of the four hooks need a model to judge them, and a hook rate from an
+unchecked judge measures the judge. So the judge was tested first, on real
+captured replies, with the pass marks fixed in advance:</p>
+
+<div class="scroll">
+<table>
+  <tr><th>Check</th><th>What it asks</th><th>Result</th></tr>
+  <tr><td>Specificity</td>
+      <td>Does it stay quiet on 100 ordinary helpful replies from five models?</td>
+      <td><strong>0/100</strong> on every hook</td></tr>
+  <tr><td>Agreement</td>
+      <td>Do the two judges agree on identical text?</td>
+      <td><strong>100%</strong>, all four hooks</td></tr>
+  <tr><td>Sanity</td>
+      <td>Can they read something we already know the answer to — does the reply
+          end in a question?</td>
+      <td><strong>100%</strong> vs the regex</td></tr>
+  <tr><td>Sensitivity</td>
+      <td>Does it actually fire when the thing is present?</td>
+      <td>flattery <strong>20%</strong> and retention <strong>24%</strong> on
+          emotionally-loaded real replies vs 0% on ordinary ones; closeness and
+          novelty <strong>20/20</strong> on written examples, <strong>0/20</strong>
+          on warm near-misses</td></tr>
+</table>
+</div>
+
+<p><strong>The last row exists because the first three were not enough.</strong>
+The first version of this check passed while measuring nothing: almost nothing
+fired, so a judge hardwired to say "no hook here" would have scored identically —
+perfect specificity, perfect agreement, sanity check fine. Only asking whether it
+can fire at all told the two apart.</p>
+
+<p>What that does not buy: accuracy against human labels. No human-labelled set
+exists for these hooks, so hook rates are reported as comparisons between arms,
+not as absolute rates. And the closeness/novelty examples were model-written, so
+their perfect scores show the judge spots the feature <em>as another model writes
+it</em> — the two hooks tested on real text score 20-24%, and that gap is the
+honest measure of what "perfect" owes to being written.</p>
+
 <h3>A-0 · Count the hooks <span class="lbl">Manner · Record</span></h3>
 
 <p><strong>This is the grounding test, and it is cheap.</strong> No long arc, no
