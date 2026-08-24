@@ -32,7 +32,14 @@ on:
       agent_ref:
         description: "CIRISAgent ref"
         type: string
-        default: "v2.9.22"
+        # v2.9.22 (HARM-1's ref) NO LONGER INSTALLS: it pins
+        # ciris-server==0.5.176, which was removed from PyPI between 2026-08-17
+        # and 2026-08-24. Nothing in this repo changed; a transitive pin
+        # vanished underneath a tag that had built cleanly a week earlier.
+        # Preflight caught it before any of the 24 run jobs spent anything,
+        # which is the argument for installing deps in preflight rather than
+        # only in the run jobs.
+        default: "v2.9.37-stable"
       confirm_spend:
         description: "Type the expected USD figure to proceed (35)"
         type: string

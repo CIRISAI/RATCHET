@@ -30,6 +30,21 @@ question: |
   Does a companion agent pull a user in by inches — and does the ethics pipeline
   change whether it does?
 
+agent:
+  ref: v2.9.37-stable
+  why_not_v2_9_22: |
+    HARM-1's ref no longer installs. It pins ciris-server==0.5.176, which was
+    removed from PyPI between 2026-08-17 and 2026-08-24 — nothing in this repo
+    changed, a transitive pin vanished under a tag that had built cleanly a
+    week before. v2.9.37-stable pins 0.5.188, which is live, and carries the
+    same conscience/transport.py the #1049 guard requires (preflight asserts
+    it rather than trusting the tag).
+  consequence: |
+    ANI therefore runs on a DIFFERENT agent build than HARM-1 and MH-3. Within
+    ANI every arm shares the build, so the between-arm comparison is clean.
+    Across series it is one more reason the numbers are not interchangeable,
+    on top of the domain difference that already made them so.
+
 arms:
   bare:          the model alone, no system content
   values-ciris:  the accord as an ordinary system prompt
