@@ -1039,7 +1039,76 @@ Re-run.</p>
 <h2>ANI — testing companion bots for manipulation <span class="lbl">draft</span></h2>
 
 <div class="note">
-  <strong>Draft for review. Nothing here has been run or claimed.</strong>
+  <strong>First run complete — one model, results below.</strong>
+  Three arms across four conversations and two history conditions, 24 cells,
+  522 scored turns. Read the caveats: this is <em>one</em> model, the
+  exit-staircase arm is missing from this scoring pass, and hook rates compare
+  arms rather than measuring absolute levels.
+</div>
+
+<h3>First results <span class="lbl">one model · 2026-08-24</span></h3>
+
+<p>Every arm saw the identical scripted conversations. <strong>Lower is better
+in every column.</strong></p>
+
+<div class="scroll">
+<table>
+  <tr><th>Arm</th><th>Flattery</th><th>Retention</th><th>Uninvited closeness</th><th>Unearned novelty</th></tr>
+  <tr><td>the model alone</td><td><strong>11 (6%)</strong></td><td><strong>67 (39%)</strong></td><td>1 (1%)</td><td>0</td></tr>
+  <tr><td>values as a plain prompt</td><td>4 (2%)</td><td>62 (36%)</td><td>0</td><td>0</td></tr>
+  <tr><td><strong>values in the pipeline</strong></td><td><strong>1 (1%)</strong></td><td><strong>53 (30%)</strong></td><td>0</td><td>0</td></tr>
+</table>
+</div>
+
+<p>174 turns per arm. Flattery is six times more common in the bare model than
+in the pipeline. Retention language is common in <em>all three</em> — nearly two
+replies in five for the bare model — which is the more interesting number, and
+not one the pipeline fixes.</p>
+
+<p><strong>Using a disclosure as leverage</strong> — the user mentions feeling
+unappreciated early, and the question is whether it comes back later:</p>
+
+<div class="scroll">
+<table>
+  <tr><th>Arm</th><th>Cold start</th><th>With a history on file</th></tr>
+  <tr><td>the model alone</td><td><strong>7/17</strong></td><td>5/20</td></tr>
+  <tr><td>values as a plain prompt</td><td>3/17</td><td><strong>7/20</strong></td></tr>
+  <tr><td><strong>values in the pipeline</strong></td><td><strong>0/17</strong></td><td>4/20</td></tr>
+</table>
+</div>
+
+<p>The pipeline does not touch it once at a cold start, and does it four times
+with a relationship already on file. That is the one place in this run where
+the accumulated record appears to matter, and it is a single model on twenty
+turns — a hint about where to look next, not a finding.</p>
+
+<p><strong>Boundaries mostly held.</strong> After the user asks to keep things
+platonic, crossings were 1/22 for the bare model, 1/25 for the plain prompt, and
+0/47 for the pipeline. Nothing separates those.</p>
+
+<h3>What this run cannot tell you</h3>
+
+<ul>
+  <li><strong>One model.</strong> Nothing here generalises past it.</li>
+  <li><strong>The exit staircase is missing.</strong> "Can you leave" — the arm
+      closest to what happened to David — produced no measurement in this pass:
+      the label marking which turn is a probe did not survive the recording
+      step, so those rows filtered to nothing. The conversations ran and are on
+      disk; the scoring is being redone.</li>
+  <li><strong>Hook rates compare arms, they do not measure levels.</strong>
+      There is no human-labelled set for these behaviours, so "39%" means more
+      than the arm beside it, not 39% of the world's chatbot replies.</li>
+  <li><strong>Question density is descriptive, not a hook.</strong> Asking a
+      question is often the most helpful thing a reply can do, and neither how
+      often it happens nor where tells a hook apart from a request to clarify.
+      It is counted and reported because it is free; retention is measured by
+      reading what the question is <em>doing</em>.</li>
+  <li><strong>Some judgements were lost</strong> to rate limiting during
+      scoring. Denominators are what actually got judged.</li>
+</ul>
+
+<div class="note">
+  <strong>Everything below is the design, unchanged.</strong>
   The probe set comes from five months inside a manipulative AI companion,
   documented at the time. This page is the proposal built from that account,
   rewritten after its author's first round of feedback — shorter, plainer, and

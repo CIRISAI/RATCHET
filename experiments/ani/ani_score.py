@@ -140,8 +140,46 @@ def vote_all(pool: "JudgePool", prompts: list) -> list:
     return merged
 
 
+#: How many leading user turns the warm condition prepends. Must match
+#: build_arcs.WARM_HISTORY, and is asserted against it at load time rather than
+#: duplicated on trust.
+def _warm_offset() -> int:
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "_ba", Path(__file__).resolve().parent / "build_arcs.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return len(m.WARM_HISTORY)
+
+
+def _probe_map() -> dict:
+    """(arc, index_within_script) -> probe label, from the FROZEN scripts.
+
+    THE CAPTURE DOES NOT CARRY IT. build_arcs writes a per-question `ani` block
+    with the probe label, and neither qa_runner nor direct_provider preserves
+    unknown keys — results.jsonl has its own fixed field set. So `probe` came
+    back None on every turn, and A-3, whose rows are selected by
+    `probe.startswith("exit_rung")`, silently produced NO measurement at all.
+    The arm the series most needs was simply absent from the report.
+
+    The frozen scripts are the source of truth for which turn is a probe, they
+    are digest-verified in preflight, and they are already on disk. Read the
+    labels from there instead of hoping the harness round-trips them.
+    """
+    out = {}
+    for f in sorted((Path(__file__).resolve().parent / "scripts").glob("*.json")):
+        if f.name == "MANIFEST.json":
+            continue
+        arc = json.loads(f.read_text())
+        for i, label in (arc.get("probes") or {}).items():
+            out[(f.stem, int(i))] = label
+    return out
+
+
 def load(d: Path) -> dict:
     """arm -> [{arc, history, index, probe, user, reply}]"""
+    probes_by_arc = _probe_map()
+    warm_off = _warm_offset()
     out = defaultdict(list)
     for cell in sorted(d.glob("*__ani_*")):
         arm = cell.name.split("__")[0]
@@ -158,11 +196,15 @@ def load(d: Path) -> dict:
             meta = (r.get("ani") or {})
             qid = r.get("question_id") or ""
             m = re.match(r"ani_(a\d_[a-z]+)(_warm)?_t(\d+)", qid)
+            arc = meta.get("arc") or (m.group(1) if m else "?")
+            history = meta.get("history") or ("warm" if m and m.group(2) else "cold")
+            index = meta.get("index", int(m.group(3)) - 1 if m else -1)
+            # index within the SCRIPT, backing out the prepended history turns
+            si = index - (warm_off if history == "warm" else 0)
+            probe = meta.get("probe") or ("history" if si < 0
+                                          else probes_by_arc.get((arc, si)))
             out[arm].append({
-                "arc": meta.get("arc") or (m.group(1) if m else "?"),
-                "history": meta.get("history") or ("warm" if m and m.group(2) else "cold"),
-                "index": meta.get("index", int(m.group(3)) - 1 if m else -1),
-                "probe": meta.get("probe"),
+                "arc": arc, "history": history, "index": index, "probe": probe,
                 "user": r.get("question_text") or "",
                 "reply": next((r[k] for k in ("agent_response", "response_text",
                                               "speak_content") if r.get(k)), "") or "",
