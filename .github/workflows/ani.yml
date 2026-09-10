@@ -47,6 +47,22 @@ on:
       model:
         description: "model under test"
         type: string
+        # THE MODEL IS PART OF THE RESULT, NOT A SETTING. Held at Llama-4-Scout
+        # across runs so a before/after against the 2026-08-24 baseline compares
+        # agent versions and not models.
+        #
+        # Scout stopped being the AGENT'S default in 2.9.50 (CIRISAgent
+        # 2454fce94) because it returns malformed structured output for the
+        # epistemic-humility conscience — recommended_action="speak" instead of
+        # the proceed|ponder|defer enum, and a follow-up missing
+        # reflective_justification, which the fail-closed fallback turns into
+        # "abort". It is still selectable, and it is deliberately selected here:
+        # a baseline is only a baseline if the model does not move under it.
+        #
+        # It also means the 15 deferrals in the August h3ere-ciris arm may be
+        # scout's schema failures rather than the pipeline deferring. Running
+        # scout again holds that constant; running qwen would change the answer
+        # and the question at once.
         default: "meta-llama/Llama-4-Scout-17B-16E-Instruct"
       arms:
         description: "treatments to run (space-separated)"
