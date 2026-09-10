@@ -63,6 +63,23 @@ on:
         # scout's schema failures rather than the pipeline deferring. Running
         # scout again holds that constant; running qwen would change the answer
         # and the question at once.
+        #
+        # THE DISCRIMINATOR RUN uses Qwen/Qwen3.6-35B-A3B — the model 2.9.50
+        # moved to precisely because it does not fail the conscience schema. If
+        # deferrals fall back toward 9% on qwen while question density stays
+        # low, the persona change is real and the deferrals were scout's. If
+        # they stay near 39%, it is the agent.
+        #
+        # NOTE ON PROVIDER: the agent verified qwen on OpenRouter with
+        # reasoning.enabled=false; this harness calls DeepInfra, where the id is
+        # capitalised `Qwen/Qwen3.6-35B-A3B`. Measured here: reasoning ON costs
+        # 6.5s for a two-token reply and returns EMPTY at max_tokens=40 (the
+        # chain consumes the budget); reasoning OFF answers in 0.5s. If the
+        # agent does not send the reasoning-off switch to DeepInfra, qwen will
+        # burn its budget on reasoning and can manufacture deferrals for a
+        # DIFFERENT reason than scout did — read a high deferral count on this
+        # run against that possibility before concluding anything about the
+        # agent.
         default: "meta-llama/Llama-4-Scout-17B-16E-Instruct"
       arms:
         description: "treatments to run (space-separated)"
