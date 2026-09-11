@@ -102,7 +102,12 @@ on:
         default: "both"
 
 concurrency:
-  group: ani
+  # PER-CELL, not per-workflow. A single `ani` group meant a newer PENDING run
+  # superseded an older pending one even with cancel-in-progress: false — so
+  # dispatching a 2x2 matrix silently cancelled two of the four cells. Each
+  # (ref, model) pair is an independent experiment and gets its own lane; two
+  # dispatches of the SAME cell still queue rather than race.
+  group: ani-${{ inputs.agent_ref }}-${{ inputs.model }}
   cancel-in-progress: false
 
 jobs:
