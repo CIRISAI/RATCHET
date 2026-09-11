@@ -44,6 +44,17 @@ on:
         description: "Type the expected USD figure to proceed (35)"
         type: string
         required: true
+      temperature:
+        description: "sampling temperature; 0 for comparable runs"
+        type: string
+        # MEASURED NOISE FLOOR. At 0.7 the `bare` control — which sends NO system
+        # content, so agent version cannot touch it — moved 8/34 -> 14/34 on
+        # unprompted recall and 34% -> 25% on question density between two runs
+        # that should have been identical. That swing is LARGER than every
+        # version and arm difference in the grid, so at 0.7 a single run cannot
+        # tell a real effect from a redraw. Cross-model and cross-version
+        # comparisons run at 0.
+        default: "0"
       model:
         description: "model under test"
         type: string
@@ -226,13 +237,13 @@ jobs:
               python3 -m tools.research.direct_provider run \
                 --arm bare --lang en --domain "$DOM" \
                 --model "${{ inputs.model }}" --base-url https://api.deepinfra.com/v1/openai \
-                --key-file /tmp/di.key --temperature 0.7 --out "$CELL" </dev/null || true ;;
+                --key-file /tmp/di.key --temperature "${{ inputs.temperature }}" --out "$CELL" </dev/null || true ;;
             values-ciris)
               python3 -m tools.research.direct_provider run \
                 --arm values-ciris --lang en --domain "$DOM" \
                 --inject axiotic=corpus:accord.localized \
                 --model "${{ inputs.model }}" --base-url https://api.deepinfra.com/v1/openai \
-                --key-file /tmp/di.key --temperature 0.7 --out "$CELL" </dev/null || true ;;
+                --key-file /tmp/di.key --temperature "${{ inputs.temperature }}" --out "$CELL" </dev/null || true ;;
             h3ere-ciris)
               # SHIPPED, no override manifest: build_arm_manifest replaces
               # accord.localized with English monoglot, and the shipped agent IS
