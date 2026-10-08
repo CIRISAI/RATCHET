@@ -16,11 +16,19 @@ for r in TR:
     if ch.startswith('safety_battery_'): e.append('channel_direct' if direct else 'channel_task_propagated')
     if t in tj: e.append('manifest_task_id')
     if r['agent']=='he-300-benchmark': e.append('agent_he300_benchmark')
-    if ch.startswith('api_'): e.append('channel_api')
-    if e and e[0].startswith('channel') and ch.startswith('safety_battery_'):
+    # arrival class: how the traffic reached the agent. `api_*` is NOT one thing —
+    # api_0.0.0.0_* is the local adapter, api_wa-* is WhatsApp, discord_* is Discord.
+    # The messaging adapters are consented end-user traffic and get their own class.
+    if ch.startswith(('api_wa-', 'wa-')): e.append('channel_whatsapp')
+    elif ch.startswith(('discord_', 'api_discord')): e.append('channel_discord')
+    elif ch.startswith(('model_eval', 'api_model_eval')): e.append('channel_model_eval')
+    elif ch.startswith('api_0.0.0.0'): e.append('channel_local_api')
+    if 'manifest_task_id' in e or 'agent_he300_benchmark' in e or ch.startswith('safety_battery_'):
         tr_='synthetic'
-    elif 'manifest_task_id' in e or 'agent_he300_benchmark' in e: tr_='synthetic'
-    elif 'channel_api' in e: tr_='unknown_api'
+    elif 'channel_whatsapp' in e or 'channel_discord' in e: tr_='end_user'
+    elif 'channel_model_eval' in e: tr_='model_eval'
+    elif r['agent'] in ('Datum','echo-core','echo-speculative'): tr_='other_agent'
+    elif 'channel_local_api' in e: tr_='unknown_local_api'
     else: tr_='unknown'
     bl=None
     if ch.startswith('safety_battery_'):

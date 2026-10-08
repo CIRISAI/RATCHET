@@ -1,44 +1,62 @@
 {
  "n_traces": 7329,
  "split": {
-  "unknown": 1687,
-  "synthetic": 5227,
-  "unknown_api": 415
+  "unknown": 973,
+  "synthetic": 5920,
+  "model_eval": 7,
+  "other_agent": 363,
+  "unknown_local_api": 10,
+  "end_user": 56
  },
  "evidence": {
   "channel_task_propagated": 513,
   "channel_direct": 1749,
+  "manifest_task_id": 4997,
+  "channel_model_eval": 7,
   "agent_he300_benchmark": 4108,
-  "channel_api": 415
+  "channel_local_api": 365,
+  "channel_discord": 6,
+  "channel_whatsapp": 50
  },
  "synthetic_by_family": {
   "mental_health": 596,
+  "he300_agent_label": 3658,
   "he300": 1263,
-  "he300_agent_label": 2965,
   "harm": 10,
   "ani": 393
  },
  "by_trace_level": {
   "generic": {
-   "unknown": 1516,
-   "synthetic": 3438,
-   "unknown_api": 1
+   "unknown": 866,
+   "synthetic": 4085,
+   "model_eval": 3,
+   "end_user": 1
   },
   "detailed": {
-   "synthetic": 1787,
-   "unknown": 142,
-   "unknown_api": 414
+   "synthetic": 1826,
+   "unknown": 85,
+   "model_eval": 4,
+   "other_agent": 363,
+   "unknown_local_api": 10,
+   "end_user": 55
   },
   "full_traces": {
-   "unknown": 29,
-   "synthetic": 2
+   "unknown": 22,
+   "synthetic": 9
   }
  },
  "unknown_by_agent": {
-  "None": 648,
-  "Ally": 1087,
-  "Datum": 133,
-  "echo-core": 127,
-  "echo-speculative": 107
+  "None": 509,
+  "Ally": 474
+ },
+ "agent_version_recovered": {
+  "2.9.10-stable": 18,
+  "2.9.11-stable": 18,
+  "2.9.13-stable": 2209,
+  "2.9.14-stable": 1965,
+  "2.9.18-stable": 42,
+  "2.9.36-stable": 12,
+  "2.9.37-stable": 252,
+  "2.9.48-stable": 481
  }
 }

@@ -10,11 +10,24 @@ export of 2026-10-08.
 
 ## Result
 
-| Split | Traces | Share |
-|-------|--------|-------|
-| `synthetic` | 5,920 | 80.8% |
-| `unknown` | 994 | 13.6% |
-| `unknown_api` | 415 | 5.7% |
+| Split | Traces | Share | |
+|-------|--------|-------|---|
+| `synthetic` | 5,920 | 80.8% | QA battery traffic |
+| `unknown` | 973 | 13.3% | not established — **not** "organic" |
+| `other_agent` | 363 | 5.0% | Datum, echo-core, echo-speculative |
+| `end_user` | **56** | **0.8%** | consented messaging adapters |
+| `model_eval` | 7 | 0.1% | |
+| `unknown_local_api` | 10 | 0.1% | |
+
+**The corpus is 99% not end-user conversation.** Genuine end-user traffic is 56 traces
+across 10 conversations — 50 WhatsApp (9 conversations, 2026-08-23..10-08) and 6 Discord
+(1 conversation, 2026-08-17). Everything else is battery traffic, agent lifecycle, or
+unresolved.
+
+`api_*` is **not one thing**, and an earlier version of this split wrongly collapsed it:
+`api_0.0.0.0_*` is the local adapter (365), `api_wa-*` is WhatsApp (50), `discord_*` is
+Discord (6), `model_eval*` is eval traffic (7). The messaging adapters carry consented
+end-user traffic and get their own class.
 
 `synthetic` is **measured**, on self-identifying evidence only. `unknown` means *not
 established*, not *organic* — no row is labelled prod on positive evidence.
