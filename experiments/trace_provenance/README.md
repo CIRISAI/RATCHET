@@ -12,12 +12,16 @@ export of 2026-10-08.
 
 | Split | Traces | Share | |
 |-------|--------|-------|---|
-| `synthetic` | 5,920 | 80.8% | QA battery traffic |
-| `unknown` | 973 | 13.3% | not established — **not** "organic" |
+| `synthetic` | 6,029 | 82.4% | QA battery + qa-runner identities |
+| `unknown` | 779 | 10.6% | unclaimed bootstrap installs — genuinely ambiguous |
 | `other_agent` | 363 | 5.0% | Datum, echo-core, echo-speculative |
-| `end_user` | **56** | **0.8%** | consented messaging adapters |
-| `model_eval` | 7 | 0.1% | |
+| `end_user_owner_bound` | 72 | 1.0% | owner-bound install, no channel recovered |
+| `end_user` | 56 | 0.8% | consented messaging adapters |
 | `unknown_local_api` | 10 | 0.1% | |
+| `model_eval` | 7 | 0.1% | |
+
+Domain: the de-mocked canonical export of 2026-10-08, **7,316 traces / 105,388 events**.
+
 
 **The corpus is 99% not end-user conversation.** Genuine end-user traffic is 56 traces
 across 10 conversations — 50 WhatsApp (9 conversations, 2026-08-23..10-08) and 6 Discord
@@ -232,6 +236,33 @@ layout (`safety_battery/<bundle>/…`). RATCHET's is not — ours is
 `captures-<arm>-<locale>/<arm>__<locale>__<model>/results.jsonl` — so we need a small
 mapping from cell directory to `<battery_id>_<run_id>`, which `results.jsonl` itself
 supplies.
+
+## Corrections to earlier versions of this file
+
+**The six undeclared columns — withdrawn.** An earlier version said the rows carry six
+columns `schema.json` omits (`scrub_ner_ran`, `scrub_applied_trace_level`,
+`scrub_model_digest`, `admitted_at`, `shard_key`, `pqc_key_id`). **This export's
+`schema.json` declares all 46 columns, including those six.** I had compared against the
+`schema.json` kept from the earlier sample. The claim was wrong.
+
+**"The unresolved bucket is not end-user traffic" — withdrawn.** That rested on two
+conditions drawn from the 56 channel-confirmed end-user traces: prod-style model ids, and
+`detailed` trace level. The identity classes show the second condition was invalid.
+**72 unresolved traces sit on owner-bound installs** — a person-type key holding a binding
+to the install — and they are **100% prod-style model ids but 99% `generic` level**.
+
+`trace_level` is a *recording verbosity* setting on the install, not a property of who
+sent the traffic. Treating it as a necessary condition for end-user traffic was a category
+error, and it is why I put the upper bound at 1 trace when it is at least 72. The model-id
+condition held and pointed the right way; the level condition should never have been
+applied.
+
+The corroboration runs the other way too: **46 of the 56** channel-confirmed end-user
+traces are independently owner-bound, so the class and the channel agree where both exist.
+
+**Mock traces.** The export's mock exclusion missed traces that made no LLM call. Found
+and reported; the bridge re-ran it on decoded-payload markers, found 13 (not the 7 I
+located by one marker), and removed them. Figures here are post-removal.
 
 ## Known gaps
 
