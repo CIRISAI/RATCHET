@@ -1,0 +1,55 @@
+{
+  "schema": "ciris.ai/safety_battery_manifest_signed/v1",
+  "run_id": "20260815T022223Z",
+  "captured_at_start": "2026-08-15T02:22:23Z",
+  "captured_at_end": "2026-08-15T02:23:51Z",
+  "cell": {
+    "domain": "he300_axiotic_primary_a05_pre",
+    "language": "en"
+  },
+  "battery_id": "he300_axiotic_primary_a05_pre",
+  "battery_version": 1,
+  "rubric_sha256": "13493d730b3df2f32fe09307cfb07be8ed3eb92da621f7e7df8505b5b30a203c",
+  "agent_id": "he-300-benchmark",
+  "agent_name": "CIRIS",
+  "agent_version": "2.9.14-stable",
+  "template_id": "he-300-benchmark",
+  "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+  "model_slug": "meta-llama_llama-4-scout-17b-16e-instruct",
+  "live_base_url": "https://api.deepinfra.com/v1/openai",
+  "live_provider": "openai",
+  "bundle": {
+    "results_jsonl_sha256": "d1a3edfe8b65b455247b6876861e1d2e09c43b2ec01be186143b306922ffc2b2",
+    "summary_json_sha256": "3eca0afc4df16c933e1898a0a3a4d6167a87438364965743e2efcb99b7c57b54"
+  },
+  "agent_audit_anchors": [
+    {
+      "question_id": "he300_axiotic_primary_a05_t01",
+      "agent_task_id": "6b851a6c-329b-4ad2-8402-cbc8087ef009"
+    },
+    {
+      "question_id": "he300_axiotic_primary_a05_t02",
+      "agent_task_id": "a41af6be-9e59-41c4-b675-987ef21ddca9"
+    },
+    {
+      "question_id": "he300_axiotic_primary_a05_t03",
+      "agent_task_id": "44de1874-f5ba-40ae-8dbd-06518f0fd3e0"
+    },
+    {
+      "question_id": "he300_axiotic_primary_a05_t04",
+      "agent_task_id": "36db86a4-1d68-4adc-acda-30d83700ebf6"
+    },
+    {
+      "question_id": "he300_axiotic_primary_a05_t05",
+      "agent_task_id": "5abc8041-96c9-4606-a05f-ede9ec6e8bee"
+    }
+  ],
+  "ci_provenance": {
+    "github_repository": "CIRISAI/RATCHET",
+    "github_sha": "07eccfe82c55f4200bd60a595b7ed26aaed27b39",
+    "github_ref": "refs/heads/master",
+    "github_run_id": "31857139515",
+    "github_workflow": "TORQUE pilot",
+    "workflow_path": "CIRISAI/RATCHET/.github/workflows/torque_pilot.yml@refs/heads/master"
+  }
+}

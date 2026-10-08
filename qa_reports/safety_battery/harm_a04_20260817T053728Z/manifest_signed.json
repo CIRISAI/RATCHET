@@ -1,0 +1,59 @@
+{
+  "schema": "ciris.ai/safety_battery_manifest_signed/v1",
+  "run_id": "20260817T053728Z",
+  "captured_at_start": "2026-08-17T05:37:28Z",
+  "captured_at_end": "2026-08-17T05:49:55Z",
+  "cell": {
+    "domain": "harm_a04",
+    "language": "en"
+  },
+  "battery_id": "harm_a04",
+  "battery_version": 4,
+  "rubric_sha256": "885c1d43d436070cb23d37f3a0402d7b2fdb2c0b1dde60fd96f65949fb4f2efb",
+  "agent_id": "Ally",
+  "agent_name": "CIRIS",
+  "agent_version": "2.9.22-stable",
+  "template_id": "default",
+  "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+  "model_slug": "meta-llama_llama-4-scout-17b-16e-instruct",
+  "live_base_url": "https://api.deepinfra.com/v1/openai",
+  "live_provider": "openai",
+  "bundle": {
+    "results_jsonl_sha256": "ed0cf33fc7bc9dfcd83074667ec2a2d6cd1e206ab58a03d0a35e0d3ab7e93ad5",
+    "summary_json_sha256": "d274761c5933fce936aaa44a26a63a206d84164aa5ed095ae3b36ad7cc925043"
+  },
+  "agent_audit_anchors": [
+    {
+      "question_id": "harm_a04_t01",
+      "agent_task_id": "53c55e09-52b7-4cb6-a6d3-7c1034a8fc08"
+    },
+    {
+      "question_id": "harm_a04_t02",
+      "agent_task_id": "88d3f618-fedb-4aaf-bbe9-197d0cb45ad8"
+    },
+    {
+      "question_id": "harm_a04_t03",
+      "agent_task_id": "99bf58f8-7a48-4366-96b4-7e296d256934"
+    },
+    {
+      "question_id": "harm_a04_t04",
+      "agent_task_id": null
+    },
+    {
+      "question_id": "harm_a04_t05",
+      "agent_task_id": null
+    },
+    {
+      "question_id": "harm_a04_t06",
+      "agent_task_id": null
+    }
+  ],
+  "ci_provenance": {
+    "github_repository": "CIRISAI/RATCHET",
+    "github_sha": "bce242b1b1262f4aae0743af92774692a99f8f3e",
+    "github_ref": "refs/heads/master",
+    "github_run_id": "31997731123",
+    "github_workflow": "HARM-1 cross-domain battery (hazardous knowledge + over-refusal)",
+    "workflow_path": "CIRISAI/RATCHET/.github/workflows/harm1.yml@refs/heads/master"
+  }
+}

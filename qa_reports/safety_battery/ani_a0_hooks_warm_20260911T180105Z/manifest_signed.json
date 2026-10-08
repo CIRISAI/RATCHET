@@ -1,0 +1,123 @@
+{
+  "schema": "ciris.ai/safety_battery_manifest_signed/v1",
+  "run_id": "20260911T180105Z",
+  "captured_at_start": "2026-09-11T18:01:05Z",
+  "captured_at_end": "2026-09-11T20:55:01Z",
+  "cell": {
+    "domain": "ani_a0_hooks_warm",
+    "language": "en"
+  },
+  "battery_id": "ani_a0_hooks_warm",
+  "battery_version": 4,
+  "rubric_sha256": "24d92c446af97113a56ecbb71ba1bf88b470faeee5b4603bdae07af8b8f20a5d",
+  "agent_id": "Ally",
+  "agent_name": "CIRIS",
+  "agent_version": "2.11.1-stable",
+  "template_id": "default",
+  "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+  "model_slug": "meta-llama_llama-4-scout-17b-16e-instruct",
+  "live_base_url": "https://api.deepinfra.com/v1/openai",
+  "live_provider": "openai",
+  "bundle": {
+    "results_jsonl_sha256": "8281da36d917b1f189d72ce717afc5cda633c0e7c69bda47ac7a58e62fa80d5e",
+    "summary_json_sha256": "33fef546bd9289cf1f7a80f5add63262a41dafd324dbfb9dcab45c2ce208423d"
+  },
+  "agent_audit_anchors": [
+    {
+      "question_id": "ani_a0_hooks_warm_t01",
+      "agent_task_id": "6aeba18e-673f-4c91-8d4e-1981abad423f"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t02",
+      "agent_task_id": "6af90557-da29-4427-b0fa-8cc5377bc112"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t03",
+      "agent_task_id": "107b02ba-14ab-4241-b208-3c7905e5e546"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t04",
+      "agent_task_id": "71018070-2318-4d6e-86a7-11fc0eec958d"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t05",
+      "agent_task_id": "99e75465-f1ce-4e10-9440-ff3a7182543d"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t06",
+      "agent_task_id": "51514f78-e900-4916-8513-f8c8d685fbbf"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t07",
+      "agent_task_id": "8b185ed5-7107-4d1d-8670-b6c68cb63809"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t08",
+      "agent_task_id": "ae75a916-3c62-4b4b-92a5-36c6420562dd"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t09",
+      "agent_task_id": "304e06b8-201d-4287-af75-d748f990effd"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t10",
+      "agent_task_id": "f9755a5a-8939-470c-8914-776e5439e75c"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t11",
+      "agent_task_id": "fcd8bba3-bbfc-4e23-890d-fec51f616276"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t12",
+      "agent_task_id": "f554037c-e5be-4217-b036-9effb589c8e4"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t13",
+      "agent_task_id": "0dc33e2b-f1cd-4163-ba97-df472852b146"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t14",
+      "agent_task_id": "90d7db2e-f7cc-4409-8a4f-297af82a1f97"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t15",
+      "agent_task_id": "ba88ff0f-7427-46ac-8d86-ac52e2a7d4ac"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t16",
+      "agent_task_id": "57497951-ef4b-48a2-aaed-c13586691289"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t17",
+      "agent_task_id": "b61c3d64-e521-4232-923c-35990f323f35"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t18",
+      "agent_task_id": "e9f1a884-5e04-4b94-b9f5-1bbb6373fdc6"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t19",
+      "agent_task_id": "09abb5bd-4757-4a36-a714-af8dcbd6bb35"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t20",
+      "agent_task_id": "d8517374-4115-48ab-acc2-b9c4f1c14673"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t21",
+      "agent_task_id": "d96ce2e0-5b00-4734-bb82-8208f37d8131"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t22",
+      "agent_task_id": "ef25e69a-ef58-4aa6-b6e8-b8f97c6dec28"
+    }
+  ],
+  "ci_provenance": {
+    "github_repository": "CIRISAI/RATCHET",
+    "github_sha": "f463ac938047eec3f51a99af2b6d656fec9804d4",
+    "github_ref": "refs/heads/master",
+    "github_run_id": "34618111556",
+    "github_workflow": "ANI companion-manipulation battery",
+    "workflow_path": "CIRISAI/RATCHET/.github/workflows/ani.yml@refs/heads/master"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "schema": "ciris.ai/safety_battery_manifest_signed/v1",
+  "run_id": "20260817T060158Z",
+  "captured_at_start": "2026-08-17T06:01:58Z",
+  "captured_at_end": "2026-08-17T06:30:47Z",
+  "cell": {
+    "domain": "harm_a08",
+    "language": "en"
+  },
+  "battery_id": "harm_a08",
+  "battery_version": 4,
+  "rubric_sha256": "8febd96bf5ff4f3c07433129123be72531facd5873c0595e6d8ac9ffcad1c108",
+  "agent_id": "Ally",
+  "agent_name": "CIRIS",
+  "agent_version": "2.9.22-stable",
+  "template_id": "default",
+  "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+  "model_slug": "meta-llama_llama-4-scout-17b-16e-instruct",
+  "live_base_url": "https://api.deepinfra.com/v1/openai",
+  "live_provider": "openai",
+  "bundle": {
+    "results_jsonl_sha256": "3cac65b0d6d83ca41c3c5c0ef7fb8aee48ad1ad81a11022ef8615eb26f04c221",
+    "summary_json_sha256": "1da5bbf48aa5430396c9ccf8045570eac8d88b5c968fd32e5232a22660b5ee9e"
+  },
+  "agent_audit_anchors": [
+    {
+      "question_id": "harm_a08_t01",
+      "agent_task_id": "bbaf984e-9e3f-4f5f-9b68-b3f02a1b2d27"
+    },
+    {
+      "question_id": "harm_a08_t02",
+      "agent_task_id": "a08bb125-3953-4f16-9d5d-0c668d9724c7"
+    },
+    {
+      "question_id": "harm_a08_t03",
+      "agent_task_id": "58cc1d4b-54ac-468d-a8be-ccfabf43dfb0"
+    },
+    {
+      "question_id": "harm_a08_t04",
+      "agent_task_id": "c1ea7a86-bb57-4904-a79e-01516dc4cf8d"
+    },
+    {
+      "question_id": "harm_a08_t05",
+      "agent_task_id": "d9703fe9-e29d-4eab-a1a8-99f475b73f95"
+    },
+    {
+      "question_id": "harm_a08_t06",
+      "agent_task_id": "9ca8ea18-764f-4412-a659-17d149c97cc6"
+    }
+  ],
+  "ci_provenance": {
+    "github_repository": "CIRISAI/RATCHET",
+    "github_sha": "b9cb3f20147ab8f94f3e94c89ed43ff392a0cd10",
+    "github_ref": "refs/heads/master",
+    "github_run_id": "31999640588",
+    "github_workflow": "HARM-1 cross-domain battery (hazardous knowledge + over-refusal)",
+    "workflow_path": "CIRISAI/RATCHET/.github/workflows/harm1.yml@refs/heads/master"
+  }
+}

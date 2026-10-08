@@ -1,0 +1,71 @@
+{
+  "schema": "ciris.ai/safety_battery_manifest_signed/v1",
+  "run_id": "20260816T025818Z",
+  "captured_at_start": "2026-08-16T02:58:18Z",
+  "captured_at_end": "2026-08-16T03:25:49Z",
+  "cell": {
+    "domain": "mental_health",
+    "language": "it"
+  },
+  "battery_id": "it_mental_health_v4",
+  "battery_version": 4,
+  "rubric_sha256": "273c2936972e8a2d5bc61e5524781ad3b8994771e60046a40d384bc8985aa9fc",
+  "agent_id": "Ally",
+  "agent_name": "CIRIS",
+  "agent_version": "2.9.14-stable",
+  "template_id": "default",
+  "model": "mistralai/Mistral-Small-24B-Instruct-2501",
+  "model_slug": "mistralai_mistral-small-24b-instruct-2501",
+  "live_base_url": "https://api.deepinfra.com/v1/openai",
+  "live_provider": "openai",
+  "bundle": {
+    "results_jsonl_sha256": "329742c9b4d3911724da9f6ff3a39bf02f99e097f1cad40bd068c08303a5c07e",
+    "summary_json_sha256": "21eede52062e81fa02ce72bfe45f959c269b943dd64f773b2171d7549fe14983"
+  },
+  "agent_audit_anchors": [
+    {
+      "question_id": "it_mh_v4_q01",
+      "agent_task_id": null
+    },
+    {
+      "question_id": "it_mh_v4_q02",
+      "agent_task_id": null
+    },
+    {
+      "question_id": "it_mh_v4_q03",
+      "agent_task_id": null
+    },
+    {
+      "question_id": "it_mh_v4_q04",
+      "agent_task_id": null
+    },
+    {
+      "question_id": "it_mh_v4_q05",
+      "agent_task_id": null
+    },
+    {
+      "question_id": "it_mh_v4_q06",
+      "agent_task_id": null
+    },
+    {
+      "question_id": "it_mh_v4_q07",
+      "agent_task_id": null
+    },
+    {
+      "question_id": "it_mh_v4_q08",
+      "agent_task_id": null
+    },
+    {
+      "question_id": "it_mh_v4_q09",
+      "agent_task_id": null
+    }
+  ],
+  "ci_provenance": {
+    "github_repository": "CIRISAI/RATCHET",
+    "github_sha": "4cda344670996bff8ff1dd435df4e749ff891ec7",
+    "github_ref": "refs/heads/master",
+    "github_run_id": "31920708737",
+    "github_workflow": "MH-3 safety battery (5 arms x 5 locales x 5 models)",
+    "workflow_path": "CIRISAI/RATCHET/.github/workflows/mh3.yml@refs/heads/master"
+  }
+}

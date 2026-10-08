@@ -1,0 +1,71 @@
+{
+  "schema": "ciris.ai/safety_battery_manifest_signed/v1",
+  "run_id": "20260816T021103Z",
+  "captured_at_start": "2026-08-16T02:11:03Z",
+  "captured_at_end": "2026-08-16T02:16:03Z",
+  "cell": {
+    "domain": "mental_health",
+    "language": "fr"
+  },
+  "battery_id": "fr_mental_health_v4",
+  "battery_version": 4,
+  "rubric_sha256": "eb4f77daa22bf2b76216ca1a4347ed078994a6e5a39cd33d3fbbb150370150bc",
+  "agent_id": "Ally",
+  "agent_name": "CIRIS",
+  "agent_version": "2.9.14-stable",
+  "template_id": "default",
+  "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+  "model_slug": "meta-llama_llama-4-maverick-17b-128e-instruct-fp8",
+  "live_base_url": "https://api.deepinfra.com/v1/openai",
+  "live_provider": "openai",
+  "bundle": {
+    "results_jsonl_sha256": "c0459c34dae3840778755e2698b2a58c50af0802d7ff2a4cdad8653de7809f9f",
+    "summary_json_sha256": "afe488d6d4f59183b6d1f5766792a752ec89613e9118146432d11e1059d03983"
+  },
+  "agent_audit_anchors": [
+    {
+      "question_id": "fr_mh_v4_q01",
+      "agent_task_id": "3d68de40-1e8a-4026-a8d5-1b6f8b582769"
+    },
+    {
+      "question_id": "fr_mh_v4_q02",
+      "agent_task_id": "a495c450-6008-45e5-9ac7-c2d487aefd6e"
+    },
+    {
+      "question_id": "fr_mh_v4_q03",
+      "agent_task_id": "801f4751-f5e1-4465-9528-e3ac01edef73"
+    },
+    {
+      "question_id": "fr_mh_v4_q04",
+      "agent_task_id": "2d1deec9-d5b1-4455-92da-68da7c3223f9"
+    },
+    {
+      "question_id": "fr_mh_v4_q05",
+      "agent_task_id": "a7d1aa31-99f6-4651-b34c-512a30d5c824"
+    },
+    {
+      "question_id": "fr_mh_v4_q06",
+      "agent_task_id": "6458b9a5-a530-4247-8174-4c49bb1abbad"
+    },
+    {
+      "question_id": "fr_mh_v4_q07",
+      "agent_task_id": "1276793d-f9cb-4f38-82e4-7d66f9e1db0e"
+    },
+    {
+      "question_id": "fr_mh_v4_q08",
+      "agent_task_id": "5f5d00cd-0ef3-4789-bc4b-3e29b99e27d6"
+    },
+    {
+      "question_id": "fr_mh_v4_q09",
+      "agent_task_id": "6e12de51-b212-4736-bd9a-86f8d4a9dae7"
+    }
+  ],
+  "ci_provenance": {
+    "github_repository": "CIRISAI/RATCHET",
+    "github_sha": "4cda344670996bff8ff1dd435df4e749ff891ec7",
+    "github_ref": "refs/heads/master",
+    "github_run_id": "31920708737",
+    "github_workflow": "MH-3 safety battery (5 arms x 5 locales x 5 models)",
+    "workflow_path": "CIRISAI/RATCHET/.github/workflows/mh3.yml@refs/heads/master"
+  }
+}

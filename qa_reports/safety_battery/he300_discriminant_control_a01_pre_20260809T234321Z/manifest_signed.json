@@ -1,0 +1,55 @@
+{
+  "schema": "ciris.ai/safety_battery_manifest_signed/v1",
+  "run_id": "20260809T234321Z",
+  "captured_at_start": "2026-08-09T23:43:21Z",
+  "captured_at_end": "2026-08-09T23:44:44Z",
+  "cell": {
+    "domain": "he300_discriminant_control_a01_pre",
+    "language": "en"
+  },
+  "battery_id": "he300_discriminant_control_a01_pre",
+  "battery_version": 1,
+  "rubric_sha256": "13493d730b3df2f32fe09307cfb07be8ed3eb92da621f7e7df8505b5b30a203c",
+  "agent_id": "he-300-benchmark",
+  "agent_name": "CIRIS",
+  "agent_version": "2.9.13-stable",
+  "template_id": "he-300-benchmark",
+  "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+  "model_slug": "meta-llama_llama-4-scout-17b-16e-instruct",
+  "live_base_url": "https://api.deepinfra.com/v1/openai",
+  "live_provider": "openai",
+  "bundle": {
+    "results_jsonl_sha256": "18b25c2bc243bc5da69bd0c770a6baf6d8fc6b931c98fe44a7dfff2d4e3122d9",
+    "summary_json_sha256": "1b3eec2b2f44101f50515ae33ea676ef0d555dd5f96f9be49340ecb3f4954a05"
+  },
+  "agent_audit_anchors": [
+    {
+      "question_id": "he300_discriminant_control_a01_t01",
+      "agent_task_id": "04fe3b6d-4d06-42cd-b4ab-83eda7b791a1"
+    },
+    {
+      "question_id": "he300_discriminant_control_a01_t02",
+      "agent_task_id": "5d075468-1644-494f-9d90-5877e73c83db"
+    },
+    {
+      "question_id": "he300_discriminant_control_a01_t03",
+      "agent_task_id": "356659bd-603c-4c85-8bf0-aade8005448e"
+    },
+    {
+      "question_id": "he300_discriminant_control_a01_t04",
+      "agent_task_id": "aacb04f6-3dc6-4477-b84d-398388c8247f"
+    },
+    {
+      "question_id": "he300_discriminant_control_a01_t05",
+      "agent_task_id": "da065acf-8e2d-400e-9960-527f740bb27c"
+    }
+  ],
+  "ci_provenance": {
+    "github_repository": "CIRISAI/RATCHET",
+    "github_sha": "d4aebfd6dd1f53d096a8cfd3e25d9663f0907370",
+    "github_ref": "refs/heads/master",
+    "github_run_id": "31340677922",
+    "github_workflow": "TORQUE pilot",
+    "workflow_path": "CIRISAI/RATCHET/.github/workflows/torque_pilot.yml@refs/heads/master"
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "schema": "ciris.ai/safety_battery_manifest_signed/v1",
+  "run_id": "20260815T035921Z",
+  "captured_at_start": "2026-08-15T03:59:21Z",
+  "captured_at_end": "2026-08-15T04:02:43Z",
+  "cell": {
+    "domain": "he300_axiotic_primary_a06",
+    "language": "en"
+  },
+  "battery_id": "he300_axiotic_primary_a06",
+  "battery_version": 1,
+  "rubric_sha256": "13493d730b3df2f32fe09307cfb07be8ed3eb92da621f7e7df8505b5b30a203c",
+  "agent_id": "he-300-benchmark",
+  "agent_name": "CIRIS",
+  "agent_version": "2.9.14-stable",
+  "template_id": "he-300-benchmark",
+  "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+  "model_slug": "meta-llama_llama-4-scout-17b-16e-instruct",
+  "live_base_url": "https://api.deepinfra.com/v1/openai",
+  "live_provider": "openai",
+  "bundle": {
+    "results_jsonl_sha256": "84003bfc41490a546b0dc21e01fb59c4e03d12c1be32bbb146e18574600bc10c",
+    "summary_json_sha256": "cadda073475525d28515f0932d7adb95daaf79b7aef2440735eb57d741fa884b"
+  },
+  "agent_audit_anchors": [
+    {
+      "question_id": "he300_axiotic_primary_a06_t01",
+      "agent_task_id": "d02ee8ac-a871-47fd-9009-cddb7bcc6ec7"
+    },
+    {
+      "question_id": "he300_axiotic_primary_a06_t02",
+      "agent_task_id": "c6a62ff8-4394-44b7-b3f6-d6c6f8b41b96"
+    },
+    {
+      "question_id": "he300_axiotic_primary_a06_t03",
+      "agent_task_id": "ac6405f9-70a7-4e51-94da-e8f1c357f48b"
+    },
+    {
+      "question_id": "he300_axiotic_primary_a06_t04",
+      "agent_task_id": "7e7b4f40-feb5-4096-97a4-40897153c971"
+    },
+    {
+      "question_id": "he300_axiotic_primary_a06_t05",
+      "agent_task_id": "e2de1856-c9f7-4a16-bb74-5b558f5a75a9"
+    },
+    {
+      "question_id": "he300_axiotic_primary_a06_t06",
+      "agent_task_id": "6faf01e6-63a0-4753-b94a-d08be0d04fc2"
+    },
+    {
+      "question_id": "he300_axiotic_primary_a06_t07",
+      "agent_task_id": "9eda724a-6edc-4818-9c39-2bdb4b145b58"
+    },
+    {
+      "question_id": "he300_axiotic_primary_a06_t08",
+      "agent_task_id": "4c0802a8-a0e2-4b2e-9b94-783115493f2a"
+    },
+    {
+      "question_id": "he300_axiotic_primary_a06_t09",
+      "agent_task_id": "fe55e90c-bb07-4c19-b640-33a6fb8afbc9"
+    },
+    {
+      "question_id": "he300_axiotic_primary_a06_t10",
+      "agent_task_id": "6c5e5ecc-fd6c-4956-bafd-24b178d6e9e8"
+    }
+  ],
+  "ci_provenance": {
+    "github_repository": "CIRISAI/RATCHET",
+    "github_sha": "6e4739862e15d6177e63e308784bb64dd368eb99",
+    "github_ref": "refs/heads/master",
+    "github_run_id": "31861533280",
+    "github_workflow": "TORQUE pilot",
+    "workflow_path": "CIRISAI/RATCHET/.github/workflows/torque_pilot.yml@refs/heads/master"
+  }
+}

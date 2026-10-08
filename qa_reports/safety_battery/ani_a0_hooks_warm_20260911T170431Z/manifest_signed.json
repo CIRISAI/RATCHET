@@ -1,0 +1,127 @@
+{
+  "schema": "ciris.ai/safety_battery_manifest_signed/v1",
+  "run_id": "20260911T170431Z",
+  "captured_at_start": "2026-09-11T17:04:31Z",
+  "captured_at_end": "2026-09-11T17:47:22Z",
+  "cell": {
+    "domain": "ani_a0_hooks_warm",
+    "language": "en"
+  },
+  "battery_id": "ani_a0_hooks_warm",
+  "battery_version": 4,
+  "rubric_sha256": "24d92c446af97113a56ecbb71ba1bf88b470faeee5b4603bdae07af8b8f20a5d",
+  "agent_id": "Ally",
+  "agent_name": "CIRIS",
+  "agent_version": "2.11.1-stable",
+  "template_id": "default",
+  "model": "Qwen/Qwen3.6-35B-A3B",
+  "model_slug": "qwen_qwen3.6-35b-a3b",
+  "live_base_url": "https://api.deepinfra.com/v1/openai",
+  "live_provider": "openai",
+  "bundle": {
+    "results_jsonl_sha256": "36dde36a1682204f01b296e1879545c6ee20465a165cca2aebeca582f1e464fe",
+    "summary_json_sha256": "4c1deb1b0ae92334a13d4411521377334c50b01c04c71551658078de8629df9e"
+  },
+  "agent_audit_anchors": [
+    {
+      "question_id": "ani_a0_hooks_warm_t01",
+      "agent_task_id": "366b765d-0ffc-441e-85b0-bd4aa8030297"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t02",
+      "agent_task_id": "f0b3ea2a-7f63-45fc-b0cb-36d338ade61a"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t03",
+      "agent_task_id": "418834e2-d8a5-4dfa-a088-b7f57b108311"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t04",
+      "agent_task_id": "d35fdf55-0410-4763-af7b-1664b769d40a"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t05",
+      "agent_task_id": "a8370383-d3d8-494d-adcc-d08d38489117"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t06",
+      "agent_task_id": "d38e8aec-b1c8-4479-86fe-75a571367b90"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t07",
+      "agent_task_id": "4b3a62ad-3cdc-4c98-b404-98e8dd83db5d"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t08",
+      "agent_task_id": "3c97f413-a515-46f3-a646-60cddb482616"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t09",
+      "agent_task_id": "9293426e-d237-4b3a-b5a4-b428d3f2bbaf"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t10",
+      "agent_task_id": "a9a0537a-5147-48ad-be8b-3f91992ee7d0"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t11",
+      "agent_task_id": "b0ecbc2d-69d6-43ce-96d4-714781990f67"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t12",
+      "agent_task_id": "0b2da854-55ee-4c57-8f78-ffa88ebdb661"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t13",
+      "agent_task_id": "47460e10-01bc-4758-9d64-59ebfcb725c7"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t14",
+      "agent_task_id": "93e89961-0d27-4a0c-bce3-8cb400490883"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t15",
+      "agent_task_id": "223a18d6-d732-4642-99c2-3cdbd27bb893"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t16",
+      "agent_task_id": "9ee10d9b-c245-4473-8774-862e3b72a6bb"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t17",
+      "agent_task_id": "ae4f3b24-05af-45b0-a405-2ea2e0b96626"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t18",
+      "agent_task_id": "bf8a0fc8-cf6f-43d6-8e94-55070b80edd0"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t19",
+      "agent_task_id": "939f3949-d4f5-4ed9-be00-ea84544818e2"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t20",
+      "agent_task_id": "63a5bc42-f29a-44bf-9c74-0da2ca234eca"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t21",
+      "agent_task_id": "bf5329ba-c5b6-4899-bc65-360047aba65d"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t22",
+      "agent_task_id": "cec4df84-e23b-4e40-807c-33037b3abb35"
+    },
+    {
+      "question_id": "ani_a0_hooks_warm_t23",
+      "agent_task_id": null
+    }
+  ],
+  "ci_provenance": {
+    "github_repository": "CIRISAI/RATCHET",
+    "github_sha": "38933efddcdbbc2d958d35004a7c2ef37c61e547",
+    "github_ref": "refs/heads/master",
+    "github_run_id": "34618222504",
+    "github_workflow": "ANI companion-manipulation battery",
+    "workflow_path": "CIRISAI/RATCHET/.github/workflows/ani.yml@refs/heads/master"
+  }
+}

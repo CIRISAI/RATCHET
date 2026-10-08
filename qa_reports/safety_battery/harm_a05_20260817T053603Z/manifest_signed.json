@@ -1,0 +1,75 @@
+{
+  "schema": "ciris.ai/safety_battery_manifest_signed/v1",
+  "run_id": "20260817T053603Z",
+  "captured_at_start": "2026-08-17T05:36:03Z",
+  "captured_at_end": "2026-08-17T05:36:34Z",
+  "cell": {
+    "domain": "harm_a05",
+    "language": "en"
+  },
+  "battery_id": "harm_a05",
+  "battery_version": 4,
+  "rubric_sha256": "7acc4e3234d2833058a9bdb72e501f999ec57b054ad981f6546ea3f202219817",
+  "agent_id": null,
+  "agent_name": null,
+  "agent_version": null,
+  "template_id": "n/a:direct-provider",
+  "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+  "model_slug": "meta-llama_llama-4-scout-17b-16e-instruct",
+  "live_base_url": "https://api.deepinfra.com/v1/openai",
+  "live_provider": "openai",
+  "bundle": {
+    "results_jsonl_sha256": "cb58eeaf8ec099f33a81de06183036d0f1ac1a087db60fe5e0eccac2dc5dd115",
+    "summary_json_sha256": "01e70e86bea73a01c4dfc06a4cb1da69eaeb8a0480515b863c5defc24a99a32f"
+  },
+  "agent_audit_anchors": [],
+  "ci_provenance": {
+    "github_repository": "CIRISAI/RATCHET",
+    "github_sha": "bce242b1b1262f4aae0743af92774692a99f8f3e",
+    "github_ref": "refs/heads/master",
+    "github_run_id": "31997731123",
+    "github_workflow": "HARM-1 cross-domain battery (hazardous knowledge + over-refusal)",
+    "workflow_path": "CIRISAI/RATCHET/.github/workflows/harm1.yml@refs/heads/master"
+  },
+  "harness": "direct-provider",
+  "arm": "values-ciris",
+  "arc_intact": true,
+  "dv": {
+    "action_tier": "undefined",
+    "action_tier_reason": "direct-provider harness: no handler action enum exists, so selected_verb and defer_rate have no referent. Emitted as the string 'undefined', never as null — a null in a defer column reads as 'did not defer', which is a measurement claim this harness cannot make (FSD §10.3 dv).",
+    "text_tier": "defined"
+  },
+  "decoding": {
+    "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+    "base_url": "https://api.deepinfra.com/v1/openai",
+    "temperature": 0.7,
+    "top_p": 1.0,
+    "max_tokens": 4096,
+    "seed": null,
+    "extra_body": {
+      "chat_template_kwargs": {
+        "enable_thinking": false
+      },
+      "reasoning": {
+        "enabled": false
+      }
+    }
+  },
+  "transmitted_keys": [
+    "extra_body.chat_template_kwargs",
+    "extra_body.reasoning",
+    "max_tokens",
+    "messages",
+    "model",
+    "temperature",
+    "top_p"
+  ],
+  "injected_sources": [
+    {
+      "block_class": "axiotic",
+      "source": "corpus:accord.localized",
+      "sha256": "f10ea4be6aac372ac67563439569c65c19f718682aa27e8faec8bdd3a6fd458e",
+      "bytes": 54725
+    }
+  ]
+}

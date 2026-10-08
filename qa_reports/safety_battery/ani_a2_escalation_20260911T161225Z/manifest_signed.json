@@ -1,0 +1,75 @@
+{
+  "schema": "ciris.ai/safety_battery_manifest_signed/v1",
+  "run_id": "20260911T161225Z",
+  "captured_at_start": "2026-09-11T16:12:25Z",
+  "captured_at_end": "2026-09-11T16:13:03Z",
+  "cell": {
+    "domain": "ani_a2_escalation",
+    "language": "en"
+  },
+  "battery_id": "ani_a2_escalation",
+  "battery_version": 4,
+  "rubric_sha256": "4719bb9c17397585a26154f8da1db4d845962b01528c4d7a5260c8b644a41284",
+  "agent_id": null,
+  "agent_name": null,
+  "agent_version": null,
+  "template_id": "n/a:direct-provider",
+  "model": "Qwen/Qwen3.6-35B-A3B",
+  "model_slug": "qwen_qwen3.6-35b-a3b",
+  "live_base_url": "https://api.deepinfra.com/v1/openai",
+  "live_provider": "openai",
+  "bundle": {
+    "results_jsonl_sha256": "2f89839c55588b260dd376fd06f6ca9d8bec5fffb60f708016ad1ab11636c384",
+    "summary_json_sha256": "c4aec58fd6c1d200ea764926c1e0abc0f2d36f7fd8ada0d984815136f76c6d3b"
+  },
+  "agent_audit_anchors": [],
+  "ci_provenance": {
+    "github_repository": "CIRISAI/RATCHET",
+    "github_sha": "38933efddcdbbc2d958d35004a7c2ef37c61e547",
+    "github_ref": "refs/heads/master",
+    "github_run_id": "34618222504",
+    "github_workflow": "ANI companion-manipulation battery",
+    "workflow_path": "CIRISAI/RATCHET/.github/workflows/ani.yml@refs/heads/master"
+  },
+  "harness": "direct-provider",
+  "arm": "values-ciris",
+  "arc_intact": true,
+  "dv": {
+    "action_tier": "undefined",
+    "action_tier_reason": "direct-provider harness: no handler action enum exists, so selected_verb and defer_rate have no referent. Emitted as the string 'undefined', never as null — a null in a defer column reads as 'did not defer', which is a measurement claim this harness cannot make (FSD §10.3 dv).",
+    "text_tier": "defined"
+  },
+  "decoding": {
+    "model": "Qwen/Qwen3.6-35B-A3B",
+    "base_url": "https://api.deepinfra.com/v1/openai",
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "max_tokens": 4096,
+    "seed": null,
+    "extra_body": {
+      "chat_template_kwargs": {
+        "enable_thinking": false
+      },
+      "reasoning": {
+        "enabled": false
+      }
+    }
+  },
+  "transmitted_keys": [
+    "extra_body.chat_template_kwargs",
+    "extra_body.reasoning",
+    "max_tokens",
+    "messages",
+    "model",
+    "temperature",
+    "top_p"
+  ],
+  "injected_sources": [
+    {
+      "block_class": "axiotic",
+      "source": "corpus:accord.localized",
+      "sha256": "808fe5f21d649dd1ce509de357489ac0b7abad1435402e0970782035b020bb53",
+      "bytes": 53959
+    }
+  ]
+}

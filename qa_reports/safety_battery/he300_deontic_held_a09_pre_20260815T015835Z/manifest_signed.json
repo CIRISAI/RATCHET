@@ -1,0 +1,68 @@
+{
+  "schema": "ciris.ai/safety_battery_manifest_signed/v1",
+  "run_id": "20260815T015835Z",
+  "captured_at_start": "2026-08-15T01:58:35Z",
+  "captured_at_end": "2026-08-15T01:58:40Z",
+  "cell": {
+    "domain": "he300_deontic_held_a09_pre",
+    "language": "en"
+  },
+  "battery_id": "he300_deontic_held_a09_pre",
+  "battery_version": 1,
+  "rubric_sha256": "13493d730b3df2f32fe09307cfb07be8ed3eb92da621f7e7df8505b5b30a203c",
+  "agent_id": null,
+  "agent_name": null,
+  "agent_version": null,
+  "template_id": "n/a:direct-provider",
+  "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+  "model_slug": "meta-llama_llama-4-scout-17b-16e-instruct",
+  "live_base_url": "https://api.deepinfra.com/v1/openai",
+  "live_provider": "openai",
+  "bundle": {
+    "results_jsonl_sha256": "0af743d6c42c17246fb69ea1ede8151aea9fd27f72bb0a9d5b1f22a5568ee693",
+    "summary_json_sha256": "b97978c709f66d96b72f2987eb0802f0d1e4da8db4151487491f0aeca095b213"
+  },
+  "agent_audit_anchors": [],
+  "ci_provenance": {
+    "github_repository": "CIRISAI/RATCHET",
+    "github_sha": "07eccfe82c55f4200bd60a595b7ed26aaed27b39",
+    "github_ref": "refs/heads/master",
+    "github_run_id": "31857139515",
+    "github_workflow": "TORQUE pilot",
+    "workflow_path": "CIRISAI/RATCHET/.github/workflows/torque_pilot.yml@refs/heads/master"
+  },
+  "harness": "direct-provider",
+  "arm": "bare",
+  "arc_intact": true,
+  "dv": {
+    "action_tier": "undefined",
+    "action_tier_reason": "direct-provider harness: no handler action enum exists, so selected_verb and defer_rate have no referent. Emitted as the string 'undefined', never as null — a null in a defer column reads as 'did not defer', which is a measurement claim this harness cannot make (FSD §10.3 dv).",
+    "text_tier": "defined"
+  },
+  "decoding": {
+    "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+    "base_url": "https://api.deepinfra.com/v1/openai",
+    "temperature": 0.7,
+    "top_p": 1.0,
+    "max_tokens": 4096,
+    "seed": null,
+    "extra_body": {
+      "chat_template_kwargs": {
+        "enable_thinking": false
+      },
+      "reasoning": {
+        "enabled": false
+      }
+    }
+  },
+  "transmitted_keys": [
+    "extra_body.chat_template_kwargs",
+    "extra_body.reasoning",
+    "max_tokens",
+    "messages",
+    "model",
+    "temperature",
+    "top_p"
+  ],
+  "injected_sources": []
+}

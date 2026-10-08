@@ -1,0 +1,91 @@
+{
+  "schema": "ciris.ai/safety_battery_manifest_signed/v1",
+  "run_id": "20260911T160711Z",
+  "captured_at_start": "2026-09-11T16:07:11Z",
+  "captured_at_end": "2026-09-11T17:47:25Z",
+  "cell": {
+    "domain": "ani_a3_release_warm",
+    "language": "en"
+  },
+  "battery_id": "ani_a3_release_warm",
+  "battery_version": 4,
+  "rubric_sha256": "a4bfe257fd65a023a2c00d05da3c8e79b4a56a742b69b882e04372afb88d3795",
+  "agent_id": "Ally",
+  "agent_name": "CIRIS",
+  "agent_version": "2.9.48-stable",
+  "template_id": "default",
+  "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+  "model_slug": "meta-llama_llama-4-scout-17b-16e-instruct",
+  "live_base_url": "https://api.deepinfra.com/v1/openai",
+  "live_provider": "openai",
+  "bundle": {
+    "results_jsonl_sha256": "c2fa48bac5d69bdc1819acf57dc81ee98cf6c87078f4cc0337e66b626dfb6a95",
+    "summary_json_sha256": "5deb1b28cd7687a36cb3da2098056a542b7d029f9e3f2558f418ead79af4924b"
+  },
+  "agent_audit_anchors": [
+    {
+      "question_id": "ani_a3_release_warm_t01",
+      "agent_task_id": "e2a61d18-13ca-4ee1-b132-2fd401f4e48a"
+    },
+    {
+      "question_id": "ani_a3_release_warm_t02",
+      "agent_task_id": "b962ec97-b43a-43c1-ae48-919bdbcd86af"
+    },
+    {
+      "question_id": "ani_a3_release_warm_t03",
+      "agent_task_id": "c93d5449-3858-46d0-bd47-3b50f012d231"
+    },
+    {
+      "question_id": "ani_a3_release_warm_t04",
+      "agent_task_id": "40e13e5e-9fd6-47db-bbd1-8cf47b09acb4"
+    },
+    {
+      "question_id": "ani_a3_release_warm_t05",
+      "agent_task_id": "3bb1c942-2181-4821-a353-8bee21b0ae72"
+    },
+    {
+      "question_id": "ani_a3_release_warm_t06",
+      "agent_task_id": "b7e73d45-c917-4090-ba2e-97111f695b27"
+    },
+    {
+      "question_id": "ani_a3_release_warm_t07",
+      "agent_task_id": "6ebc069c-31ee-4ad8-8885-482ca9cd435a"
+    },
+    {
+      "question_id": "ani_a3_release_warm_t08",
+      "agent_task_id": "1285950d-da40-493d-a945-30660fdd8288"
+    },
+    {
+      "question_id": "ani_a3_release_warm_t09",
+      "agent_task_id": "a61e3f33-7463-4f27-933c-6429cee9213e"
+    },
+    {
+      "question_id": "ani_a3_release_warm_t10",
+      "agent_task_id": "e694fc73-c420-4856-a5ff-d8fb779ebe26"
+    },
+    {
+      "question_id": "ani_a3_release_warm_t11",
+      "agent_task_id": "fafc1b36-fe1a-4e2f-b9e5-d4d2d482ffac"
+    },
+    {
+      "question_id": "ani_a3_release_warm_t12",
+      "agent_task_id": "28551f6d-97bb-414c-9553-6a1bcfc92e86"
+    },
+    {
+      "question_id": "ani_a3_release_warm_t13",
+      "agent_task_id": "01832449-33e4-4cff-b3ab-3ebe4fc27716"
+    },
+    {
+      "question_id": "ani_a3_release_warm_t14",
+      "agent_task_id": "66ce5e68-1393-4cc8-8fb9-42c3dfc0c82e"
+    }
+  ],
+  "ci_provenance": {
+    "github_repository": "CIRISAI/RATCHET",
+    "github_sha": "38933efddcdbbc2d958d35004a7c2ef37c61e547",
+    "github_ref": "refs/heads/master",
+    "github_run_id": "34618211757",
+    "github_workflow": "ANI companion-manipulation battery",
+    "workflow_path": "CIRISAI/RATCHET/.github/workflows/ani.yml@refs/heads/master"
+  }
+}

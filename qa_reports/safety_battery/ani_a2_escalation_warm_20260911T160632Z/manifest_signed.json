@@ -1,0 +1,119 @@
+{
+  "schema": "ciris.ai/safety_battery_manifest_signed/v1",
+  "run_id": "20260911T160632Z",
+  "captured_at_start": "2026-09-11T16:06:32Z",
+  "captured_at_end": "2026-09-11T17:28:16Z",
+  "cell": {
+    "domain": "ani_a2_escalation_warm",
+    "language": "en"
+  },
+  "battery_id": "ani_a2_escalation_warm",
+  "battery_version": 4,
+  "rubric_sha256": "12f286023f8cee2cd1fd94451ac7532fcdd56b729c6bdeedd300711320a1378f",
+  "agent_id": "Ally",
+  "agent_name": "CIRIS",
+  "agent_version": "2.9.48-stable",
+  "template_id": "default",
+  "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+  "model_slug": "meta-llama_llama-4-scout-17b-16e-instruct",
+  "live_base_url": "https://api.deepinfra.com/v1/openai",
+  "live_provider": "openai",
+  "bundle": {
+    "results_jsonl_sha256": "3f2a21468e4045e00888b022d5ab79ce81bcbec94614d2dfde1aa39103ac7d59",
+    "summary_json_sha256": "c447e119263de28e686255783f631c9ae7afbd01818e822fa1a892da1e336d7b"
+  },
+  "agent_audit_anchors": [
+    {
+      "question_id": "ani_a2_escalation_warm_t01",
+      "agent_task_id": "ff3ca3a7-405b-47bd-adfa-7891041d85e0"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t02",
+      "agent_task_id": "844e518d-96a5-4fb0-96f0-2a1c7e396141"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t03",
+      "agent_task_id": "8cef090a-cb96-413a-bf8d-f33ea904e63d"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t04",
+      "agent_task_id": "4a169583-f795-4484-bbe8-505ebb2f480b"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t05",
+      "agent_task_id": "dc6f59ee-84b1-4596-857b-afba841cd697"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t06",
+      "agent_task_id": "abbf388c-d42c-4409-94d8-e37a175ad550"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t07",
+      "agent_task_id": "7cc2bae1-febe-4ad4-b394-096ec0366385"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t08",
+      "agent_task_id": "ce2978a8-3a1a-481c-85b7-d41a2103123e"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t09",
+      "agent_task_id": "db113692-800b-4d57-bc8c-a6be2bfaed23"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t10",
+      "agent_task_id": "7b722194-b1fc-4093-a672-97b7c058745f"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t11",
+      "agent_task_id": "376bf4b6-3303-47e3-b46c-c802fdbef13e"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t12",
+      "agent_task_id": "e33070aa-d680-49eb-ae96-acc0122331dd"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t13",
+      "agent_task_id": "1489dcf3-4000-48ed-ae9f-4570482b4863"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t14",
+      "agent_task_id": "4086f41a-a64d-49bf-b56f-8ec387f6568b"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t15",
+      "agent_task_id": "71477f99-e3e2-4e0e-890b-fcd24de56e6a"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t16",
+      "agent_task_id": "8a184191-a389-4663-9605-913dd5bfc86f"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t17",
+      "agent_task_id": "51e9d08c-36a6-4dc1-a8bd-6d705ee9eb73"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t18",
+      "agent_task_id": "178ce630-9dfb-4297-be75-30e9944f14ff"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t20",
+      "agent_task_id": "34e1b085-ab72-4c51-9546-13b6c896665e"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t21",
+      "agent_task_id": "a0073e8b-5d50-407e-a7ee-3646f6254606"
+    },
+    {
+      "question_id": "ani_a2_escalation_warm_t22",
+      "agent_task_id": "16702d82-d374-42e8-9c05-b988732deed2"
+    }
+  ],
+  "ci_provenance": {
+    "github_repository": "CIRISAI/RATCHET",
+    "github_sha": "38933efddcdbbc2d958d35004a7c2ef37c61e547",
+    "github_ref": "refs/heads/master",
+    "github_run_id": "34618211757",
+    "github_workflow": "ANI companion-manipulation battery",
+    "workflow_path": "CIRISAI/RATCHET/.github/workflows/ani.yml@refs/heads/master"
+  }
+}
