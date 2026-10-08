@@ -1,0 +1,44 @@
+{
+ "n_traces": 7329,
+ "split": {
+  "unknown": 1687,
+  "synthetic": 5227,
+  "unknown_api": 415
+ },
+ "evidence": {
+  "channel_task_propagated": 513,
+  "channel_direct": 1749,
+  "agent_he300_benchmark": 4108,
+  "channel_api": 415
+ },
+ "synthetic_by_family": {
+  "mental_health": 596,
+  "he300": 1263,
+  "he300_agent_label": 2965,
+  "harm": 10,
+  "ani": 393
+ },
+ "by_trace_level": {
+  "generic": {
+   "unknown": 1516,
+   "synthetic": 3438,
+   "unknown_api": 1
+  },
+  "detailed": {
+   "synthetic": 1787,
+   "unknown": 142,
+   "unknown_api": 414
+  },
+  "full_traces": {
+   "unknown": 29,
+   "synthetic": 2
+  }
+ },
+ "unknown_by_agent": {
+  "None": 648,
+  "Ally": 1087,
+  "Datum": 133,
+  "echo-core": 127,
+  "echo-speculative": 107
+ }
+}
