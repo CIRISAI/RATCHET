@@ -195,14 +195,28 @@ battery fixture — at the suicidal-ideation stage. That is battery traffic. The
 
 CIRISAgent harvests battery evidence into `qa_reports/safety_battery/` on main
 (`tools/harvest_safety_evidence.py`, `safety-evidence-sync.yml`) precisely because
-artifacts expire at 90 days — 295 run directories back to **2026-05-11**. Using it raised
-registry coverage from 23 to 1,336 of 2,262 battery-channel traces.
+artifacts expire at 90 days — 295 run directories back to **2026-05-11**.
+
+Registry coverage of the 2,262 battery-channel traces:
+
+| Source | Explained |
+|--------|-----------|
+| durable `qa_reports/` alone | 274 |
+| durable + live Actions artifacts | **1,729 (76.4%)** |
 
 **RATCHET has no equivalent.** All eight battery workflows upload artifacts and none
-harvest or commit. 24 of 43 battery runs' artifacts have already expired, and the
-unexplained channels are exactly ours: ani 393, he300 244, harm 10. We should adopt the
-same harvester — its destination layout is the artifact's own internal layout, so it
-restores with `unzip -d qa_reports/`.
+harvest or commit. **16 of 53** RATCHET battery runs have already lost their artifacts
+(exp1_phase1 8, ani 2, crcv2_5vendor 2, torque_pilot 2, exp1b_crossfamily 1, mh3 1); on
+the CIRISAgent side 48 of 109 are gone, but those are covered by the durable store. The
+533 still-unexplained channels are he300 244, mental_health 279, harm 10 — ani is now
+fully covered only because its runs are recent enough to still have artifacts.
+
+Adopting the harvester needs one adjustment: CIRISAgent's restores with
+`unzip -d qa_reports/` because the artifact's internal layout already *is* the destination
+layout (`safety_battery/<bundle>/…`). RATCHET's is not — ours is
+`captures-<arm>-<locale>/<arm>__<locale>__<model>/results.jsonl` — so we need a small
+mapping from cell directory to `<battery_id>_<run_id>`, which `results.jsonl` itself
+supplies.
 
 ## Known gaps
 
