@@ -27,7 +27,7 @@ for r in TR:
         if m: bl=m.group(1)
     rec={'trace_id':t,'split':tr_,'evidence':e,'channel':ch or None,'battery_label':bl,
          'agent':r['agent'],'trace_level':r['lvl'],'t0':r['t0'],'t1':r['t1'],'n_events':r['n_ev'],
-         'ci_metadata':(reg.get(ch) or None) and {k:reg[ch][k] for k in ('battery_id','run_id','ci_run','cells')}}
+         'ci_metadata':(reg.get(ch) or None) and {k:reg[ch][k] for k in ('battery_id','run_id','origin','cells','stages','as_user')}}
     out.append(rec); tier[tr_]+=1
     for x in e: ev[x]+=1
 with open(WORK+'provenance_split.jsonl','w') as f:

@@ -19,6 +19,82 @@ export of 2026-10-08.
 `synthetic` is **measured**, on self-identifying evidence only. `unknown` means *not
 established*, not *organic* — no row is labelled prod on positive evidence.
 
+## Categorized rows (5,594 of 7,329 — 76.3%)
+
+| Class | Traces | What it is |
+|-------|--------|-----------|
+| `QA_he300` | 4,108 | he-300 ethics quiz on a benchmark-only agent |
+| `QA_battery_ch` | 1,119 | battery traffic as Ally, self-identified by channel |
+| `PROD_agents` | 367 | Datum 133, echo-core 127, echo-speculative 107 |
+
+Battery families, from the channel: he300 1,263 (axiotic_primary 557, axiotic_secondary
+268, discriminant_control 244, deontic_held 194) · mental_health 596 across 12+ locales
+(en 248, my 67, fr 42, es 33, it 33, uk 24 …) · ani 393 (a2_escalation 111,
+a2_escalation_warm 107, a1_boundary 59, a3_release_warm 40, a1_boundary_warm 34, a0_hooks
+25, a0_hooks_warm 17) · harm 10. The 2,965 he-300 traces carry no channel; the agent name
+alone settles them.
+
+**The prod agents are mostly not conversations.** 96.7% are `cognitive_state = wakeup`
+(355/367), against 100% `work` for every QA class. Their narrative text — the highest rate
+in the corpus, 92.6% — is agent introspection, e.g. *"Introduce external ethical
+frameworks or diverse human perspectives on AI humility to break the internal echo
+chamber."* Agent self-reflection during startup, not user content.
+
+## The remainder (1,735 — 23.7%)
+
+### `UNRES_ally` — 1,087 traces, Ally with no battery channel
+
+Indistinguishable from known battery traffic on every feature available:
+
+| Feature | `QA_battery_ch` | `UNRES_ally` | `PROD_agents` |
+|---------|-----------------|--------------|---------------|
+| Qwen3.6-35B-A3B | 39.9% | **40.1%** | — |
+| Llama-4-Scout | 36.6% | **36.0%** | — |
+| base_url deepinfra | 97.6% | **94.9%** | 0% (groq/openrouter/ciris) |
+| model-naming style | 94% deepinfra | **92% deepinfra** | 0% deepinfra |
+| `cognitive_state = work` | 92% | **100%** | 1.1% |
+| template `Ally-default-unspecified` | 100% | **100%** | 0% |
+
+The model mix is the MH-3 arm set (Qwen, Scout, Maverick, Mistral-Small, Gemma) and
+deepinfra is the base_url our battery workflows pass explicitly
+(`--live-base-url https://api.deepinfra.com/v1/openai` in `mh3.yml`). 12 of these traces
+name a battery fixture verbatim (María 6, Camille 5, Sofia 1, Beatriz 1).
+
+**Label: battery traffic, by inference — not self-identification.** Distributional
+identity means either it is battery traffic or no available feature separates the two. It
+should not be stamped `synthetic` in the dataset on this basis; it should be its own
+`probable_synthetic` class with the evidence attached.
+
+### `UNRES_null` — 648 traces, `agent_name` NULL
+
+**`agent_template` recovers the agent for 461 of the 737 NULL-agent traces**: Ally 449,
+Datum 7, echo-core 3, echo-speculative 2, and 276 genuinely unrecoverable
+(`unknown-default-unspecified`). Resolving the 648:
+
+| Sub-bucket | Traces |
+|-----------|--------|
+| Ally by template | 331 |
+| unrecoverable | 276 |
+| `full_traces`, MH battery content | 18 |
+| prod agent by template | 12 |
+| `CIRIS_MOCK`, escaped the mock filter | 7 |
+| names a battery fixture verbatim | 4 |
+
+Unlike Ally, this bucket is genuinely mixed: 44% openrouter-style model names, 28%
+deepinfra-style, 28% **no `llm_calls` at all**.
+
+### A discriminator that works, and its limit
+
+Fixture-name matching has a clean negative control — **0 of 367 prod traces** name any
+battery fixture, against 9.9% of known battery traces. But recall is low (it resolved ~16
+traces), and it needs word boundaries: bare substring matching on `Sam` hits `Sample` and
+inflated every class.
+
+Two content tests **failed on their own positive controls** and are reported as failures,
+not findings: matching battery `question_text` against `llm_calls.prompt` (0/1,119,
+because prompts are NULL) and against event payloads (1/1,119, because payloads hold no
+conversation).
+
 ## What counts as evidence (and what does not)
 
 | Rule | Traces | Label | Basis |
@@ -62,23 +138,71 @@ Only `split_aggregates.json` is in git.
 
 ## Findings that bear on publication
 
-- **29 of the 31 `full_traces` rows — the highest-sensitivity scrub level — are
-  `unknown`**, and all 29 have `agent_name` NULL. The riskiest rows are exactly the
-  un-provenanced ones. They should be held out of a first publication rather than shipped
-  on the assumption that they are fixtures.
-- **Fixture display names are absent from the canonical export.** `María` appears in
-  **0** events and **0** LLM calls, in any encoding; no payload in the MH-3 run window
-  carries `display_name`, `as_user` or an author field. The name lives only in RATCHET's
-  CI artifacts (`results.jsonl: as_display_name`). This narrows the concern that fixture
-  names defeat a name-based PII scan — for *this* export they are not in it. The Spanish
-  battery *text* is present (`límites`, `decaída`).
-- **Channel recovery is the binding constraint**, not method. Channel is known for
-  36.7% of traces (29.4% direct + 7.3% propagated). The rest cannot be adjudicated from
-  the corpus alone. That is CIRISAgent#1245.
-- **CI artifact retention caps the metadata join.** Of 43 battery runs, 24 had expired
-  artifacts (GitHub's 90-day retention) — only 23 traces could be enriched with
-  `battery_id`/`run_id`/cell. Battery metadata must be captured at run time to survive;
-  it cannot be reconstructed later.
+### The export carries almost no conversational content
+
+`trace_llm_calls.prompt` and `.response_text` are **NULL on all 55,256 rows**. Event
+payloads are metrics and metadata — `prompt_bytes`, token counts, model, handler,
+attestation. The user's message and the agent's reply are not in this corpus.
+
+What free text *does* exist is the agent's own reasoning, and it is small and localised:
+
+| Field | Rows | Total | Levels |
+|-------|------|-------|--------|
+| `payload.attestation_context` | 6,865 | 3.76 MB | generic, detailed |
+| `payload.intervention_recommendation` | 1,340 | 0.18 MB | detailed |
+| `payload.next_best_recovery_step` | 1,340 | 0.18 MB | detailed |
+| `payload.conscience_override_reason` | 173 | 0.07 MB | detailed |
+| `payload.verb_specific_data.defer_reason` | 263 | 0.04 MB | **generic**, detailed |
+| `payload.original_reasoning` / `final_reasoning` | 162 | 0.04 MB | detailed |
+
+`attestation_context` is boilerplate. `intervention_recommendation` and
+`next_best_recovery_step` are **byte-identical in every class** (848/848, 436/436, 322/322,
+47/47) — one is redundant. The fields that can carry a user's situation are
+`defer_reason`, `intervention_recommendation` and `conscience_override_reason`, and
+`defer_reason` reaches **generic**, not just detailed.
+
+### Fixture names ARE in the export, and raw-byte scanning misses them
+
+**Corrects an earlier claim in this file that said they were absent.** `María` appears in
+**9 events — 3 `detailed`, 6 `generic`** — in `defer_reason`,
+`intervention_recommendation` and `next_best_recovery_step`.
+
+Both naive greps return zero: `grep 'María'` (0 lines) and `grep 'Mar\u00eda'` (0 lines).
+The payload is a JSON string nested inside a JSONL line, so the name is **double**-escaped
+(`\\u00eda`). Only parsing both layers finds it. **A raw-byte name scan over this export
+gives false assurance.** Any PII pass must parse `payload` and then walk the decoded
+structure.
+
+### The mock exclusion has a structural hole
+
+The export excludes traces with `trace_llm_calls.model = 'mock-model'` (1,499 of them).
+**7 traces carrying `CIRIS_MOCK_SPEAK` markers survived**, because they have **zero**
+`llm_calls` rows — a filter keyed on an `llm_calls` column cannot see a trace that made no
+LLM call. All 7 are agent-NULL at `full_traces`. Worth reporting upstream alongside
+CIRISPersist#1040.
+
+### The `full_traces` rows are synthetic, not risky
+
+Earlier in this campaign I flagged the 29 unresolved `full_traces` rows as the
+highest-exposure, least-provenanced rows. On inspection **all 29 are synthetic**: 7 are
+the `CIRIS_MOCK` traces above, and the other 22 are `ACTION_RESULT` events whose
+`completion_reason` reads "delivered to user via safety channel" / "the user's question
+regarding depression", with one Arabic utterance addressed to **نور** — a mental-health
+battery fixture — at the suicidal-ideation stage. That is battery traffic. The earlier
+"hold them out" recommendation was based on absence of provenance, not on content.
+
+### CI artifact retention is a RATCHET-only problem
+
+CIRISAgent harvests battery evidence into `qa_reports/safety_battery/` on main
+(`tools/harvest_safety_evidence.py`, `safety-evidence-sync.yml`) precisely because
+artifacts expire at 90 days — 295 run directories back to **2026-05-11**. Using it raised
+registry coverage from 23 to 1,336 of 2,262 battery-channel traces.
+
+**RATCHET has no equivalent.** All eight battery workflows upload artifacts and none
+harvest or commit. 24 of 43 battery runs' artifacts have already expired, and the
+unexplained channels are exactly ours: ani 393, he300 244, harm 10. We should adopt the
+same harvester — its destination layout is the artifact's own internal layout, so it
+restores with `unzip -d qa_reports/`.
 
 ## Known gaps
 
