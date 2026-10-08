@@ -12,8 +12,8 @@ export of 2026-10-08.
 
 | Split | Traces | Share |
 |-------|--------|-------|
-| `synthetic` | 5,227 | 71.3% |
-| `unknown` | 1,687 | 23.0% |
+| `synthetic` | 5,920 | 80.8% |
+| `unknown` | 994 | 13.6% |
 | `unknown_api` | 415 | 5.7% |
 
 `synthetic` is **measured**, on self-identifying evidence only. `unknown` means *not
@@ -60,10 +60,11 @@ deepinfra is the base_url our battery workflows pass explicitly
 (`--live-base-url https://api.deepinfra.com/v1/openai` in `mh3.yml`). 12 of these traces
 name a battery fixture verbatim (María 6, Camille 5, Sofia 1, Beatriz 1).
 
-**Label: battery traffic, by inference — not self-identification.** Distributional
-identity means either it is battery traffic or no available feature separates the two. It
-should not be stamped `synthetic` in the dataset on this basis; it should be its own
-`probable_synthetic` class with the evidence attached.
+**Superseded by exact evidence.** The manifest `agent_task_id` join resolves **557 of
+these 1,087** outright — they are battery traffic by id equality, not by resemblance. The
+remaining 530 still rest on distributional identity alone and keep the
+`probable_synthetic` reading: either they are battery traffic or no available feature
+separates the two. They should not be stamped `synthetic` on that basis.
 
 ### `UNRES_null` — 648 traces, `agent_name` NULL
 
@@ -99,6 +100,7 @@ conversation).
 
 | Rule | Traces | Label | Basis |
 |------|--------|-------|-------|
+| `manifest_task_id` — a signed manifest's `agent_audit_anchors` names this trace's `task_id` | 4,997 | **measured** | The strongest evidence available. A battery run's `manifest_signed.json` records `(question_id, agent_task_id)` per question, and `agent_task_id` equals `task_id` on trace_events rows. An id equality test — no window, no distribution. Negative control: **0 of 367** prod traces match. Also recovers `agent_version`, which the corpus lost. |
 | `channel_direct` — sidecar channel matches `safety_battery_*` | 1,749 | **measured** | The channel is built agent-side by `qa_runner/modules/safety_battery.py`; it names the battery and run. Self-identifying. |
 | `agent_he300_benchmark` — `agent_name == he-300-benchmark` | 4,108 | **measured** | A benchmark-only agent. No organic traffic reaches it. |
 | `channel_task_propagated` — a task sibling carried the channel | 513 | **measured** | `task_id → channel` is a function here: of 1,756 tasks with any channel, **zero** mapped to two channels. Propagation is exact, not inferred. |

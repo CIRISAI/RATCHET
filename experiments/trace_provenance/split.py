@@ -7,17 +7,19 @@ WORK   = os.environ.get("TRACE_WORK_DIR", os.path.dirname(os.path.abspath(__file
 res=json.load(open(WORK+'channel_resolved.json'))
 TR=[json.loads(l) for l in open(WORK+'traces.jsonl')]
 reg=json.load(open(WORK+'battery_registry.json'))
+tj=json.load(open(WORK+'taskid_join.json')) if os.path.exists(WORK+'taskid_join.json') else {}
 out=[]; tier=collections.Counter(); ev=collections.Counter()
 for r in TR:
     t=r['trace_id']; ch=res.get(t,'')
     direct = bool(r['channel'])
     e=[]
     if ch.startswith('safety_battery_'): e.append('channel_direct' if direct else 'channel_task_propagated')
+    if t in tj: e.append('manifest_task_id')
     if r['agent']=='he-300-benchmark': e.append('agent_he300_benchmark')
     if ch.startswith('api_'): e.append('channel_api')
     if e and e[0].startswith('channel') and ch.startswith('safety_battery_'):
         tr_='synthetic'
-    elif 'agent_he300_benchmark' in e: tr_='synthetic'
+    elif 'manifest_task_id' in e or 'agent_he300_benchmark' in e: tr_='synthetic'
     elif 'channel_api' in e: tr_='unknown_api'
     else: tr_='unknown'
     bl=None
@@ -27,6 +29,7 @@ for r in TR:
         if m: bl=m.group(1)
     rec={'trace_id':t,'split':tr_,'evidence':e,'channel':ch or None,'battery_label':bl,
          'agent':r['agent'],'trace_level':r['lvl'],'t0':r['t0'],'t1':r['t1'],'n_events':r['n_ev'],
+         'manifest':tj.get(t),
          'ci_metadata':(reg.get(ch) or None) and {k:reg[ch][k] for k in ('battery_id','run_id','origin','cells','stages','as_user')}}
     out.append(rec); tier[tr_]+=1
     for x in e: ev[x]+=1
