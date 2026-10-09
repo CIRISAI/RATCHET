@@ -264,6 +264,17 @@ traces are independently owner-bound, so the class and the channel agree where b
 and reported; the bridge re-ran it on decoded-payload markers, found 13 (not the 7 I
 located by one marker), and removed them. Figures here are post-removal.
 
+## Shape of the window, by day (measured, canonical, 2026-10-09)
+
+Admission is same-day throughout (no backlog). Ally's volume collapses after 2026-09-11
+(412 traces that day; 3 in the four weeks since). **2026-09-19 → 09-23: zero traces from
+anyone.** From 09-24 the research agents send once (Datum 11, echo-core 14,
+echo-speculative 12) and go silent; NULL-agent traffic lands every day thereafter
+(5–35/day through 10-08). Every row is `verification_source = persist`, so the data cannot say
+whether a trace arrived over the mesh or the HTTP relay. An earlier relayed claim that the
+trace plane "went dark on 09-18" was withdrawn by its author; the five-day gap is the
+accurate observation, and the post-09-24 quiet may simply be usage.
+
 ## The Scout agent template is absent (measured, 2026-10-09)
 
 Scout — `ciris_engine/ciris_templates/scout.yaml`, the public CIRIS Outreach/sales agent on
