@@ -46,5 +46,12 @@
   "target_n_eff": "measured p95 of plateau; as a saturation policy, wager",
   "min_feature_dim": "measured (coverage confound)",
   "gate_semantics": "proved (units)"
+ },
+ "adopted_by": {
+  "pr": "CIRISAI/CIRISServer#758",
+  "fixes": "CIRISAI/CIRISServer#757",
+  "target": "0.5.226",
+  "rule": "rows<20 or feature_dim<4 -> Indeterminate (no row); n_eff_pr<=1.0 -> 0.0; else clamp01((n_eff_pr-1.0)/(4.5-1.0))",
+  "verified_against_pr_body": "2026-10-09"
  }
 }

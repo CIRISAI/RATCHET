@@ -43,7 +43,7 @@ Envelope fields: `asserted_at`, `attested_key_id`, `attesting_key_id`, `cohort_s
 calibration parameter — the server shipped 8.0 as a placeholder ("RATCHET owns the real value").
 
 **All 6,465 scores are 0.0.** The gate (20, a row count) is applied to `n_eff` (a rank ≤ 11). See
-`RECALIBRATION.md` for the proposed package values and the evidence behind them.
+`RECALIBRATION.md` for the package values (adopted in CIRISServer#758 for 0.5.226) and the evidence.
 
 ## The trap, stated up front
 

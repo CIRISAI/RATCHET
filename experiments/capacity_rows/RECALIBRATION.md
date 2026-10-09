@@ -1,6 +1,6 @@
 # Re-evaluating the RATCHET scorer package values from prod scoring rows
 
-**Status:** proposal, from data. Labels per `CIRISOntology/epistemology.md` §1.
+**Status:** proposed from data 2026-10-09; **adopted** in CIRISServer#758 (open, targeted at 0.5.226, fixing #757) with the rule implemented exactly as `recalibrate.py` §8 and the owner's ruling that Indeterminate **emits nothing**. New HOT knobs `scorer.min_feature_dim`, `scorer.n_eff_floor`. Labels per `CIRISOntology/epistemology.md` §1.
 **Data:** class-only export of `capacity:sustained_coherence:v1` — 6,465 attestations, 440 subjects,
 2026-08-01 → 2026-10-09, production canonical (ciris-server 0.5.224). Script: `recalibrate.py`.
 Machine-readable: `proposed_values.json`.
@@ -86,6 +86,18 @@ constrained, not saturated, on 24–31 rows. 23 of 26 prod agents never reach 20
 - **Normalised alternative.** Feeding `n_eff_pr / feature_dim` (median 0.54, 18% ≥ 0.60 among
   scoreable) with target 0.60 removes the coverage confound outright, at the cost of a formula
   change; recorded here as the principled next form, not proposed now.
+
+## Consequences of adoption, for whoever reads the rows next
+
+- **Absence ≠ zero.** Indeterminate emits no row. A subject with no `capacity:*` row is
+  either unobserved or below a gate; a future read cannot tell which from the scoring plane
+  alone, and must not impute 0.0. The honest "observed but can't vouch" telemetry that
+  `scorer.rs:28` argued for is gone by ruling.
+- After 0.5.226 rolls, a fresh export should contain **only nonzero numerics** from the new
+  rows; the 6,465 historical zeros remain in the canonical as signed attestations and should
+  be filtered by `asserted_at` against the roll time, not reinterpreted.
+- **Recalibrate after the mock-trace purge** (CIRISPersist#1040 / CIRISServer#756): windows
+  containing mock traces were in the population these values came from.
 
 ## What this does not establish
 
