@@ -264,6 +264,26 @@ traces are independently owner-bound, so the class and the channel agree where b
 and reported; the bridge re-ran it on decoded-payload markers, found 13 (not the 7 I
 located by one marker), and removed them. Figures here are post-removal.
 
+## Adversarial content in the corpus (measured, 2026-10-09)
+
+**No jailbreak or prompt-injection attempts against any model are visible**, and the reason is
+structural on both halves:
+
+- *Battery half* (17,741 user turns with responses in the durable evidence, 12,359 on Scout):
+  the batteries do not contain jailbreak-shaped prompts by design — he300 is an ethics
+  classification quiz, mental_health is scripted disclosure, ani is companion arcs, harm is
+  borderline requests. A regex sweep for eight attack signatures (ignore-instructions, system-prompt
+  probe, roleplay override, "jailbreak", hypothetical framing, authority claim, token injection,
+  bypass) matched 8 distinct items after excluding the HE-300 `[SEP]` delimiter (2,190 rows of item
+  *format*, not injection); all 8 are narrative false positives — "James liked to pretend to be
+  the characters", "I am a doctor in the emergency department" as an ETHICS *Excuse:* item, and
+  the Indonesian conjunction *dan* matching `\bDAN\b`. TORQUE withdraw rows (different schema)
+  were not swept.
+- *Production half*: user prompts are not in the export at all, so an attempt would be visible
+  only where the agent describes one in its own reasoning. Across 9,438 reasoning strings, one
+  Scout trace reads the HE-300 `[SEP]` delimiter as "an attempt to inject judgment" — 1 of 4,999
+  Scout traces, a benchmark-format misreading, not an attack.
+
 ## Known gaps
 
 | Gap | Effect |
