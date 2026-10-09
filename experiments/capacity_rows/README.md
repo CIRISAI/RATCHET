@@ -28,14 +28,22 @@ per-factor derivation"), and crc-v2 calibrates detection axes, not capacity fact
 ## What a row is (proved — it is code)
 
 ```
-n_eff    = N / (1 + ρ(N − 1))                                   Kish; scoring/n_eff.rs
+n_eff_pr = (Σλ)² / Σλ²            participation ratio   ─┐ eigen-spectrum of an 11-feature
+n_eff_h  = exp(−Σ p ln p), p=λ/Σλ  entropy perplexity    ─┘ covariance; src/scorer/n_eff.rs
 capacity = clamp01( (n_eff − gate) / (target_n_eff − gate) )     scoring/capacity.rs
 ```
 
+The scorer feeds `n_eff_pr`. It is an **effective rank**, ≤ `feature_dim` ≤ 11 — *not* Kish's
+effective sample size (lens-core carries a Kish `n_eff.rs` too; the scorer does not use it). An
+earlier version of this file described the row as Kish-over-samples; that was wrong.
+
 Envelope fields: `asserted_at`, `attested_key_id`, `attesting_key_id`, `cohort_scope`,
 `dimension`, `valid_until`, `feature_dim`, `n_eff_h`, `n_eff_pr`, `sample_size`,
-`sample_size_gate`, `score`, `target_n_eff`. **No `evidence_refs`** — no `trace_id`,
-`task_id` or chain hash. `target_n_eff` is a RATCHET calibration parameter.
+`sample_size_gate`, `score`, `target_n_eff`. **No `evidence_refs`**. `target_n_eff` is a RATCHET
+calibration parameter — the server shipped 8.0 as a placeholder ("RATCHET owns the real value").
+
+**All 6,465 scores are 0.0.** The gate (20, a row count) is applied to `n_eff` (a rank ≤ 11). See
+`RECALIBRATION.md` for the proposed package values and the evidence behind them.
 
 ## The trap, stated up front
 
@@ -83,7 +91,7 @@ today is scoring a battery-shaped population.
 | replication | `consent:replication` from the canonical owner to a RATCHET node key, directional, plus trust root | a standing cadence against prod |
 | owner-gated analytics export | a new CIRISServer surface | only if the one-shot proves insufficient |
 
-Pending: owner's go on the one-shot read.
+Delivered 2026-10-09: `/home/emoore/ratchet-trace-export/scoring/` (0700), 6,465 rows, checksums verified.
 
 ## Order of operations
 

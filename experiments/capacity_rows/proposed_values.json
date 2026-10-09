@@ -1,0 +1,50 @@
+{
+ "proposal": {
+  "measure": "n_eff_pr",
+  "gate_semantics": "rows",
+  "sample_gate_rows": 20,
+  "min_feature_dim": 4,
+  "n_eff_floor": 1.0,
+  "target_n_eff": 4.5,
+  "window_rows": 500
+ },
+ "withdrawn": {
+  "target_n_eff": 8.0,
+  "sample_size_gate_crc_v1": 500
+ },
+ "evidence": {
+  "rows": 6465,
+  "subjects": 440,
+  "window": "2026-08-01..2026-10-09",
+  "plateau_n_eff_pr_gate20": {
+   "n": 56,
+   "median": 2.96,
+   "p90": 4.14,
+   "p95": 4.48,
+   "p95_ci95": [
+    3.78,
+    5.1
+   ]
+  },
+  "knee_rows": 20,
+  "max_observed": {
+   "n_eff_pr": 5.31,
+   "n_eff_h": 6.18,
+   "sample_size": 156
+  },
+  "spearman_n_eff_pr_vs_feature_dim_N20": 0.74,
+  "spearman_n_eff_pr_vs_sample_size_N20": -0.35,
+  "scoreable_by_class": {
+   "unclaimed-bootstrap": 53,
+   "research-agent": 3,
+   "owner-bound": 0,
+   "qa-runner": 0
+  }
+ },
+ "labels": {
+  "sample_gate_rows": "measured (knee)",
+  "target_n_eff": "measured p95 of plateau; as a saturation policy, wager",
+  "min_feature_dim": "measured (coverage confound)",
+  "gate_semantics": "proved (units)"
+ }
+}
