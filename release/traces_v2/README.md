@@ -153,7 +153,11 @@ identity records. 789 traces could not be labelled either way and are published 
 
 ## Provider endpoints
 
-{{BASE_URL_POLICY}}
+LLM endpoints are published as **provider names**, never hostnames: `deepinfra`, `openrouter`,
+`groq`, `openai`, `ciris-services`, `other`. This applies to `trace_llm_calls.base_url` and to the
+`base_url` / `api_bases_used` fields inside event payloads. The provider is the analytically useful
+part — it is one of the signals that separates battery configuration from production — and the
+hostname is not.
 
 ## Privacy and consent
 

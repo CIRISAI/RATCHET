@@ -53,6 +53,15 @@ HANDLE = re.compile(r"(?<![\w@])@([A-Za-z][\w.]{1,30})")
 GLUE_R = re.compile(r"(\[(?:[A-Z_]+?)_\d+\])(\w+)")      # [ORG_1]IRIS
 GLUE_L = re.compile(r"(\w+)(\[(?:[A-Z_]+?)_\d+\])")      # D[ORG_2]
 ABUT   = re.compile(r"(\[([A-Z_]+?)_\d+\])(?:\[\2_\d+\])+")    # [PER_1][PER_2] -> [PER_1]
+PROVIDERS = (("deepinfra.com", "deepinfra"), ("openrouter.ai", "openrouter"), ("groq.com", "groq"),
+             ("api.openai.com", "openai"), ("ciris-services", "ciris-services"), ("anthropic.com", "anthropic"))
+ENDPOINT_KEYS = {"base_url", "api_bases_used"}
+def provider(url):
+    """Owner's policy (2026-10-09): endpoints publish as provider NAMES, never hostnames."""
+    if not isinstance(url, str): return url
+    for needle, name in PROVIDERS:
+        if needle in url: return name
+    return "other" if url.startswith(("http://", "https://")) or url == "[URL]" else url
 def post_pass(before, after, stats):
     """Restore structural keys, extend glued placeholders, redact @handles. Returns new `after`."""
     bmap = dict(walk_string_leaves(before))
@@ -68,6 +77,10 @@ def post_pass(before, after, stats):
                 if b is not None and b != o:
                     stats["structural_restored"] += 1; return b
                 return o
+            if key in ENDPOINT_KEYS:
+                b = bmap.get(path)
+                stats["endpoints_coarsened"] += 1
+                return provider(b if b is not None else o)
             s = o
             n1 = len(GLUE_R.findall(s)); n2 = len(GLUE_L.findall(s))
             if n1 or n2:
@@ -114,7 +127,7 @@ def flush(out):
             v = row.get(col)
             if isinstance(v, str) and v: row[col] = scrub_string(v, stats)
         row["provenance_split"], row["identity_class"] = prov.get(row["trace_id"], ("unknown", None))
-        row["scrub_policy"] = "ratchet/full_traces+postpass/v2"
+        row["scrub_policy"] = "ratchet/full_traces+postpass/v3"
         out.write(json.dumps(row, ensure_ascii=False) + "\n"); n_out += 1
     pending.clear()
 
@@ -144,8 +157,14 @@ os.replace(dst_tmp, OUT + "trace_events.scrubbed.jsonl"); os.chmod(OUT + "trace_
 
 # passthrough files (no reasoning text): copy + hash
 import shutil
-for f in ("trace_llm_calls.jsonl", "trace_thought_signatures.jsonl"):
-    shutil.copyfile(EXPORT + f, OUT + f); os.chmod(OUT + f, 0o600)
+shutil.copyfile(EXPORT + "trace_thought_signatures.jsonl", OUT + "trace_thought_signatures.jsonl")
+with open(OUT + "trace_llm_calls.jsonl", "w") as lo:
+    for l in open(EXPORT + "trace_llm_calls.jsonl"):
+        d = json.loads(l)
+        if d.get("base_url"): d["base_url"] = provider(d["base_url"]); stats["llm_calls_base_url_coarsened"] += 1
+        assert not d.get("prompt") and not d.get("response_text"), "llm_calls carries text; passthrough is not safe"
+        lo.write(json.dumps(d, ensure_ascii=False) + "\n")
+for f in ("trace_llm_calls.jsonl", "trace_thought_signatures.jsonl"): os.chmod(OUT + f, 0o600)
 
 # ── 4. manifest ──
 M = os.environ.get("CIRISLENS_NER_MODEL_DIR", "")
@@ -156,7 +175,7 @@ manifest = {
     "source": {"trace_events": sha256(src), "rows_in": n_in - (1 if LIMIT and n_in > LIMIT else 0)},
     "scrub": {"wheel": "ciris-server " + getattr(cs, "__version__", "?"), "level": LEVEL,
               "backbone": os.environ.get("CIRISLENS_NER_BACKBONE", "<default>"), "model_digests": model_digest,
-              "post_pass": ["structural_restore(#754, RESTORE_KEYS)", "glued_placeholder_extend(#755)", "abutting_placeholder_merge(#755)", "handle_redact"],
+              "post_pass": ["structural_restore(#754, RESTORE_KEYS)", "glued_placeholder_extend(#755)", "abutting_placeholder_merge(#755)", "handle_redact", "endpoint_provider_names"],
               "verifier": "experiments/scrub_verify/verify.py", "batch": BATCH},
     "counts": {"rows_out": n_out, "rows_excluded": stats["rows_excluded"], "payload_unparseable": stats["payload_unparseable"]},
     "stats": dict(stats),

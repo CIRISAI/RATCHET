@@ -123,3 +123,4 @@ data/institutional/vdem/
 # and do not belong in source control. Keep locally, back up out-of-band.
 lens-backups/
 *.sql.gz
+release/traces_v2/data/
