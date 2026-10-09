@@ -99,7 +99,7 @@ REGEX_ORDER = (
 )
 REGEX_PLACEHOLDERS = frozenset(p for _, p in REGEX_ORDER)
 NER_TAGS = frozenset({"PER", "ORG", "LOC", "MISC", "GPE", "FAC", "NORP", "DATE", "TIME",
-                      "EVENT", "LAW", "WORK_OF_ART"})
+                      "EVENT", "LAW", "WORK_OF_ART", "HANDLE"})  # HANDLE: RATCHET @handle pass
 PLACEHOLDER = re.compile(r"\[(?:(" + "|".join(sorted(NER_TAGS)) + r")_(\d+)|("
                          + "|".join(re.escape(p.strip("[]")) for p in REGEX_PLACEHOLDERS) + r"))\]")
 
