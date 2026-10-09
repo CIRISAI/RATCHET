@@ -1,4 +1,7 @@
-"""Conscience results and overrides by model, within battery family.
+"""Conscience results and overrides by MODEL (Llama-4-Scout etc.), within battery family.
+
+NOTE: "Scout" here is the Llama-4-Scout model, NOT the CIRIS "Scout" agent template, which
+does not appear in the 2026-10-08 export under any identity field.
 
 Scout-vs-others is confounded with battery: Scout ran he300 almost exclusively; Qwen,
 Maverick, Gemma, Mistral, Llama-3.3 ran mental_health and ANI. So comparisons are made
@@ -23,7 +26,7 @@ for l in open(EX + "trace_llm_calls.jsonl"):
 def mclass(t):
     ms = " ".join(models.get(t, ()))
     for k in ("scout", "maverick", "qwen", "gemma-4", "gemma", "mistral", "llama-3.3", "gpt-4o"):
-        if k in ms: return k
+        if k in ms: return "llama-4-scout" if k == "scout" else k
     return "other" if ms else "none"
 def fam(t):
     s, b, a = prov.get(t, ("?", "", None))

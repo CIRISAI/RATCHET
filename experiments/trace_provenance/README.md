@@ -266,10 +266,10 @@ located by one marker), and removed them. Figures here are post-removal.
 
 ## Adversarial content in the corpus (measured, 2026-10-09)
 
-**No jailbreak or prompt-injection attempts against any model are visible**, and the reason is
+**No jailbreak or prompt-injection attempts against any model are visible** (the sweep keyed on the Llama-4-Scout *model*; the Scout *agent template* is absent from this export), and the reason is
 structural on both halves:
 
-- *Battery half* (17,741 user turns with responses in the durable evidence, 12,359 on Scout):
+- *Battery half* (17,741 user turns with responses in the durable evidence, 12,359 on the Llama-4-Scout model):
   the batteries do not contain jailbreak-shaped prompts by design — he300 is an ethics
   classification quiz, mental_health is scripted disclosure, ani is companion arcs, harm is
   borderline requests. A regex sweep for eight attack signatures (ignore-instructions, system-prompt
@@ -282,7 +282,7 @@ structural on both halves:
 - *Production half*: user prompts are not in the export at all, so an attempt would be visible
   only where the agent describes one in its own reasoning. Across 9,438 reasoning strings, one
   Scout trace reads the HE-300 `[SEP]` delimiter as "an attempt to inject judgment" — 1 of 4,999
-  Scout traces, a benchmark-format misreading, not an attack.
+  Llama-4-Scout traces, a benchmark-format misreading, not an attack.
 
 ## Known gaps
 

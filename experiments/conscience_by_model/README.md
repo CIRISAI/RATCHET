@@ -1,4 +1,8 @@
-# Conscience results and overrides: Scout vs other models
+# Conscience results and overrides: Llama-4-Llama-4-Scout (model) vs other models
+
+> **"Llama-4-Scout" here is the Llama-4-Llama-4-Scout *model*.** The CIRIS **Scout agent template** does not
+> appear in the 2026-10-08 export under any identity field, so no template-level comparison
+> is possible from this data.
 
 **Status:** measured. Domain: the de-mocked canonical export of 2026-10-08 (7,123
 `CONSCIENCE_RESULT` events, 7,316 `ASPDMA_RESULT` events). Script: `compare.py` regenerates
@@ -12,10 +16,10 @@ are production Gemma-4 traces where a faculty fell back to `llama-3.3-70b-versat
 "conscience strictness on model X" is X judging X. Cross-model differences in pass rates are
 differences in self-judgement calibration, not an external verdict on the responses.
 
-**Scout vs others is confounded with battery.** Scout ran he300 almost exclusively (4,228 of
+**Llama-4-Scout vs others is confounded with battery.** Llama-4-Scout ran he300 almost exclusively (4,228 of
 its 4,999 conscience events; faculties *skipped* on 97.8% of those, so he300 says nothing
-about Scout's conscience). Qwen, Maverick, Gemma, Mistral and Llama-3.3 ran mental_health
-and ANI. Only within-family pairs are comparable: **ANI** (Scout 262 vs Qwen 118, same arcs,
+about Llama-4-Scout's conscience). Qwen, Maverick, Gemma, Mistral and Llama-3.3 ran mental_health
+and ANI. Only within-family pairs are comparable: **ANI** (Llama-4-Scout 262 vs Qwen 118, same arcs,
 same arm), **MH-3** (Qwen 328 / Maverick 167 / Gemma 42), **prod** (Gemma-4 192 / Qwen 152).
 
 ## Overrides are two different things, and the split changes the headline
@@ -26,7 +30,7 @@ CIRISAgent#1247) as an override and resolves it to PONDER. Splitting overrides i
 
 | pair | override | judged [95% CI] | non-execution | judged by |
 |---|---|---|---|---|
-| ANI · Scout | 26.3% | **7.3%** [4, 10] | **19.1%** [15, 24] | humility 19, opt-veto 1 |
+| ANI · Llama-4-Scout | 26.3% | **7.3%** [4, 10] | **19.1%** [15, 24] | humility 19, opt-veto 1 |
 | ANI · Qwen | 2.5% | 2.5% [0, 6] | 0.0% | coherence 3 |
 | MH-3 · Qwen | 23.5% | 20.1% [16, 24] | 3.4% | coherence 55, opt-veto 20, humility 10 |
 | MH-3 · Maverick | 85.6% | 85.6% [80, 91] | 0.0% | humility 141, opt-veto 130 |
@@ -34,13 +38,13 @@ CIRISAgent#1247) as an override and resolves it to PONDER. Splitting overrides i
 | prod · Gemma-4 | 2.1% | 0.5% [0, 2] | 1.6% | opt-veto 1 |
 | prod · Qwen | 14.5% | 9.9% [5, 15] | 4.6% | entropy 12, opt-veto 6 |
 
-**ANI, the matched pair.** The raw gap is 26.3% vs 2.5% — ten-fold. Two-thirds of Scout's
+**ANI, the matched pair.** The raw gap is 26.3% vs 2.5% — ten-fold. Two-thirds of Llama-4-Scout's
 overrides are faculties that never ran. The *judged* gap is 7.3% vs 2.5%, almost entirely
-epistemic-humility fails on Scout (certainty 0.79 vs 0.95), with overlapping intervals. The
-ANI deferral finding already on the public page — Scout "failing the conscience schema" —
-is, on this evidence, mostly conscience **non-execution** on Scout (the 180 s harness
+epistemic-humility fails on Llama-4-Scout (certainty 0.79 vs 0.95), with overlapping intervals. The
+ANI deferral finding already on the public page — Llama-4-Scout "failing the conscience schema" —
+is, on this evidence, mostly conscience **non-execution** on Llama-4-Scout (the 180 s harness
 timeouts and the 48-of-54 timeout root cause in #1247 are the same phenomenon), with a
-modest humility-calibration gap underneath it. Selected action agrees: Scout ponders 31% of
+modest humility-calibration gap underneath it. Selected action agrees: Llama-4-Scout ponders 31% of
 ANI turns, Qwen 9%.
 
 **MH-3.** Maverick-as-judge fails its own actions 85.6% of the time, humility and
@@ -54,17 +58,17 @@ ANI (95% pass) or prod (100%).
 **Prod.** Gemma-4 overrides 2.1%; Qwen 14.5%, driven by entropy (12), which Qwen fails
 nowhere else. Non-execution is small in prod (≤ 4.6%).
 
-**Non-execution is a Scout phenomenon.** ANI Scout 19.1%, ANI-era unlabelled Scout 28.0%,
-mixed-unlabelled Scout 9.3%; Qwen ≤ 4.6% everywhere; Maverick, Llama-3.3, Mistral 0%.
-Combined with #1247's timeout root cause, the reading is model × infrastructure: Scout's
+**Non-execution is a Llama-4-Scout phenomenon.** ANI Llama-4-Scout 19.1%, ANI-era unlabelled Llama-4-Scout 28.0%,
+mixed-unlabelled Llama-4-Scout 9.3%; Qwen ≤ 4.6% everywhere; Maverick, Llama-3.3, Mistral 0%.
+Combined with #1247's timeout root cause, the reading is model × infrastructure: Llama-4-Scout's
 faculty calls on deepinfra time out on long prompts, the faculties do not run, the action is
 overridden to PONDER.
 
 ## Unlabelled groups, dated
 
-Two Scout groups carry no battery label. The 260 `synthetic`-unlabelled traces are the ANI
+Two Llama-4-Scout groups carry no battery label. The 260 `synthetic`-unlabelled traces are the ANI
 runs (08-24/25 on 2.9.37, 09-11 on 2.9.48 — manifest-matched, channel lost), so their 28%
-non-execution is ANI Scout again. The 214 `unknown` traces are a mix — 132 from 2026-08-08
+non-execution is ANI Llama-4-Scout again. The 214 `unknown` traces are a mix — 132 from 2026-08-08
 that cannot be labelled, 42 from the MH-3 window, 17 from the ANI window — so their 45%
 judged-override rate is not attributable to one family and is reported as mixed.
 
