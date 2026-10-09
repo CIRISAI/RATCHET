@@ -59,6 +59,23 @@ STRUCTURAL_IDENTIFIER_KEYS = frozenset({
     "signature_key_id", "signing_key_id", "channel_id",
 })
 
+# RATCHET's ADDITION to the upstream allowlist, kept separate so the diff against CIRISLens
+# stays visible. Hashes and chain identifiers that the unbounded YEAR_IDENTIFIER pattern eats
+# whenever a 17xx-2023 digit window sits inside a hex run (CIRISLens#11 generalised): a 64-hex
+# sha256 trips it ~26% of the time. None is PII; the thought-chain links are what make the
+# reasoning graph traversable. Measured on the 2026-10-08 export: prompt_hash 4,878 of 18,570
+# altered, ed25519_fingerprint 630/2,178, audit_entry_id 150/2,361, follow_up_thought_id
+# 87/1,864, parent_thought_id 31/574 — all to [IDENTIFIER], zero with a \b-bounded year.
+RATCHET_STRUCTURAL_EXTRA = frozenset({
+    "prompt_hash",            # sha256 of the prompt; dedup key, public by construction
+    "ed25519_fingerprint",    # public-key fingerprint
+    "audit_entry_id",         # audit-chain uuid
+    "follow_up_thought_id",   # thought-chain link
+    "parent_thought_id",      # thought-chain link
+})
+# The set any RATCHET-published scrub must leave byte-identical.
+RESTORE_KEYS = STRUCTURAL_IDENTIFIER_KEYS | RATCHET_STRUCTURAL_EXTRA
+
 REDACT_ENTITY_TYPES = frozenset({
     "PERSON", "ORG", "GPE", "FAC", "LOC", "EMAIL", "PHONE", "NORP", "DATE", "TIME",
     "EVENT", "MISC", "WORK_OF_ART", "LAW",
@@ -150,9 +167,22 @@ def walk_string_leaves(value, path: str = ""):
             yield from walk_string_leaves(v, path + "[]")
 
 
-def count_year_residue(value) -> int:
-    """Rust `count_year_residue`: historical-year matches surviving in string leaves."""
-    return sum(len(HISTORICAL_YEAR.findall(s)) for _, s in walk_string_leaves(value))
+def count_year_residue(value, exempt=frozenset()) -> tuple[int, int]:
+    """Historical-year matches surviving in string leaves, split into (semantic, in_identifiers).
+
+    The Rust `count_year_residue` counts every leaf. RATCHET's contract exempts RESTORE_KEYS
+    values from the SEMANTIC count: a UUID segment like `-2014-` is a \\b-bounded year with no
+    historical meaning (the v1 release documented the same incidental case). Those matches are
+    still counted and reported, as the second element, never dropped.
+    """
+    sem = ident = 0
+    for path, s in walk_string_leaves(value):
+        key = path.replace("[]", "").rsplit(".", 1)[-1]
+        n = len(HISTORICAL_YEAR.findall(s))
+        if not n: continue
+        if key in exempt: ident += n
+        else: sem += n
+    return sem, ident
 
 
 def in_scrub_subtree(path: str) -> bool:

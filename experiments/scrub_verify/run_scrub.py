@@ -26,7 +26,7 @@ Run with python3 -I.
 import json, os, re, sys, time, hashlib, collections
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ciris_server as cs
-from reference import (STRUCTURAL_IDENTIFIER_KEYS, PLACEHOLDER, walk_string_leaves,
+from reference import (RESTORE_KEYS, PLACEHOLDER, walk_string_leaves,
                        count_year_residue, scrub_string)
 from verify import verify, summarize
 
@@ -52,6 +52,7 @@ for l in open(EXPORT + "provenance_split.jsonl"):
 HANDLE = re.compile(r"(?<![\w@])@([A-Za-z][\w.]{1,30})")
 GLUE_R = re.compile(r"(\[(?:[A-Z_]+?)_\d+\])(\w+)")      # [ORG_1]IRIS
 GLUE_L = re.compile(r"(\w+)(\[(?:[A-Z_]+?)_\d+\])")      # D[ORG_2]
+ABUT   = re.compile(r"(\[([A-Z_]+?)_\d+\])(?:\[\2_\d+\])+")    # [PER_1][PER_2] -> [PER_1]
 def post_pass(before, after, stats):
     """Restore structural keys, extend glued placeholders, redact @handles. Returns new `after`."""
     bmap = dict(walk_string_leaves(before))
@@ -62,7 +63,7 @@ def post_pass(before, after, stats):
         if isinstance(o, list):
             return [fix(v, path + "[]", key) for v in o]
         if isinstance(o, str):
-            if key in STRUCTURAL_IDENTIFIER_KEYS:
+            if key in RESTORE_KEYS:
                 b = bmap.get(path)
                 if b is not None and b != o:
                     stats["structural_restored"] += 1; return b
@@ -72,6 +73,9 @@ def post_pass(before, after, stats):
             if n1 or n2:
                 s = GLUE_R.sub(r"\1", s); s = GLUE_L.sub(r"\2", s)
                 stats["glued_placeholders_extended"] += n1 + n2
+            n3 = len(ABUT.findall(s))
+            if n3:
+                s = ABUT.sub(r"\1", s); stats["abutting_placeholders_merged"] += n3
             def h(m):
                 hcount[0] += 1; stats["handles_redacted"] += 1
                 return f"@[HANDLE_{hcount[0]}]"
@@ -98,7 +102,8 @@ def flush(out):
             if isinstance(v, (int, float)) and not isinstance(v, bool): stats["wheel_" + k] += v
         after = post_pass(before, after, stats)
         rep = verify(before, after); reps.append({k: rep[k] for k in ("structural_violations", "year_residue",
-                     "unknown_placeholders", "mid_token", "tags", "fields_changed", "strings", "strings_changed", "ok")})
+                     "year_residue_in_identifiers", "unknown_placeholders", "mid_token", "tags", "fields_changed",
+                     "strings", "strings_changed", "ok")})
         if rep["structural_violations"] or rep["year_residue"]:
             excluded.append((row["trace_id"], row["event_id"], len(rep["structural_violations"]), rep["year_residue"]))
             stats["rows_excluded"] += 1
@@ -109,7 +114,7 @@ def flush(out):
             v = row.get(col)
             if isinstance(v, str) and v: row[col] = scrub_string(v, stats)
         row["provenance_split"], row["identity_class"] = prov.get(row["trace_id"], ("unknown", None))
-        row["scrub_policy"] = "ratchet/full_traces+postpass/v1"
+        row["scrub_policy"] = "ratchet/full_traces+postpass/v2"
         out.write(json.dumps(row, ensure_ascii=False) + "\n"); n_out += 1
     pending.clear()
 
@@ -151,7 +156,7 @@ manifest = {
     "source": {"trace_events": sha256(src), "rows_in": n_in - (1 if LIMIT and n_in > LIMIT else 0)},
     "scrub": {"wheel": "ciris-server " + getattr(cs, "__version__", "?"), "level": LEVEL,
               "backbone": os.environ.get("CIRISLENS_NER_BACKBONE", "<default>"), "model_digests": model_digest,
-              "post_pass": ["structural_restore(#754)", "glued_placeholder_extend(#755)", "handle_redact"],
+              "post_pass": ["structural_restore(#754, RESTORE_KEYS)", "glued_placeholder_extend(#755)", "abutting_placeholder_merge(#755)", "handle_redact"],
               "verifier": "experiments/scrub_verify/verify.py", "batch": BATCH},
     "counts": {"rows_out": n_out, "rows_excluded": stats["rows_excluded"], "payload_unparseable": stats["payload_unparseable"]},
     "stats": dict(stats),
