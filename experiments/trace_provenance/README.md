@@ -264,6 +264,20 @@ traces are independently owner-bound, so the class and the channel agree where b
 and reported; the bridge re-ran it on decoded-payload markers, found 13 (not the 7 I
 located by one marker), and removed them. Figures here are post-removal.
 
+## The Scout agent template is absent (measured, 2026-10-09)
+
+Scout — `ciris_engine/ciris_templates/scout.yaml`, the public CIRIS Outreach/sales agent on
+`scoutapilb.ciris.ai` (scout1/scout2) — has **no rows on the canonical**: no identity record,
+no trace signed by its key (`agent-1ee871dcf31b`), no attestation by or about it, no consent
+grant, no capacity score. It is on the mesh (2 announced peers, 25 transport destinations,
+last seen 2026-09-18) but never registered a federation key or granted `analyze`/replication,
+so nothing it emits is admitted. The 840 traces whose payload contains "scout" are the
+`llama4scout` model alias (820, in `ACTION_RESULT.models_used[]`) and two IDMA mentions;
+they belong to Ally, NULL-agent and Datum rows, so none of the NULL-agent rows are Scout.
+Any Scout-vs-others comparison or sweep for attacks on the public agent needs Scout to
+register and consent, or a fresh Scout instance run against the batteries
+(`safety-battery.yml` already offers `template_id: scout`).
+
 ## Adversarial content in the corpus (measured, 2026-10-09)
 
 **No jailbreak or prompt-injection attempts against any model are visible** (the sweep keyed on the Llama-4-Scout *model*; the Scout *agent template* is absent from this export), and the reason is
