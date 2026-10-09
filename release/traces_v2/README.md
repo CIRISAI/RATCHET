@@ -181,5 +181,5 @@ Apache-2.0.
 
 ## Contact
 
-- Issues: https://github.com/CIRISAI/CIRISLens/issues
+- Issues: https://github.com/CIRISAI/RATCHET/issues
 - Community: https://discord.gg/ciris
