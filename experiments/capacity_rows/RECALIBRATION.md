@@ -96,8 +96,17 @@ constrained, not saturated, on 24–31 rows. 23 of 26 prod agents never reach 20
 - After 0.5.226 rolls, a fresh export should contain **only nonzero numerics** from the new
   rows; the 6,465 historical zeros remain in the canonical as signed attestations and should
   be filtered by `asserted_at` against the roll time, not reinterpreted.
-- **Recalibrate after the mock-trace purge** (CIRISPersist#1040 / CIRISServer#756): windows
-  containing mock traces were in the population these values came from.
+- **Three score populations, never read together** (server session, 2026-10-13, on the
+  owner's call): 0.5.225 ships without #758 (kill switch only, persist v55); **0.5.226** opens
+  immediately after with #758 and the #1041 consent-basis field. Separate by server version in
+  `asserted_at` order:
+  1. the 6,465 historical **zeros** (units bug; discard for calibration);
+  2. 0.5.226 scores **pre-purge** — persist #1040 refuses *new* mock traces at every door, but
+     the 1,499 already in the canonical stay until the purge door (CIRISServer#756, not yet
+     built) exists and the owner authorises each purge;
+  3. **post-purge** scores — the first clean population. **Re-estimate the values on (3), not
+     (2).** A re-estimate on (2) is at best a check that the band now moves.
+  Both roll times will be posted on CIRISServer#757.
 
 ## What this does not establish
 
