@@ -1,6 +1,6 @@
 # Re-evaluating the RATCHET scorer package values from prod scoring rows
 
-**Status:** proposed from data 2026-10-09; **adopted** in CIRISServer#758 (open, targeted at 0.5.226, fixing #757) with the rule implemented exactly as `recalibrate.py` §8 and the owner's ruling that Indeterminate **emits nothing**. New HOT knobs `scorer.min_feature_dim`, `scorer.n_eff_floor`. Labels per `CIRISOntology/epistemology.md` §1.
+**Status:** proposed from data 2026-10-09; **adopted** via CIRISServer#758, folded into #753 and shipping in **0.5.225** (fixes #757) with the rule implemented exactly as `recalibrate.py` §8 and the owner's ruling that Indeterminate **emits nothing**. New HOT knobs `scorer.min_feature_dim`, `scorer.n_eff_floor`. Labels per `CIRISOntology/epistemology.md` §1.
 **Data:** class-only export of `capacity:sustained_coherence:v1` — 6,465 attestations, 440 subjects,
 2026-08-01 → 2026-10-09, production canonical (ciris-server 0.5.224). Script: `recalibrate.py`.
 Machine-readable: `proposed_values.json`.
@@ -97,11 +97,12 @@ constrained, not saturated, on 24–31 rows. 23 of 26 prod agents never reach 20
   rows; the 6,465 historical zeros remain in the canonical as signed attestations and should
   be filtered by `asserted_at` against the roll time, not reinterpreted.
 - **Three score populations, never read together** (server session, 2026-10-13, on the
-  owner's call): 0.5.225 ships without #758 (kill switch only, persist v55); **0.5.226** opens
-  immediately after with #758 and the #1041 consent-basis field. Separate by server version in
-  `asserted_at` order:
+  owner's call, revised 2026-10-13): **0.5.225** carries both #758 (row gate, per-active-agent
+  window, these values — PR closed as folded into #753) and the #1041 consent basis — every
+  score envelope carries `consent_basis: [{principal, paths, attestation_id}]`. Separate by
+  server version in `asserted_at` order:
   1. the 6,465 historical **zeros** (units bug; discard for calibration);
-  2. 0.5.226 scores **pre-purge** — persist #1040 refuses *new* mock traces at every door, but
+  2. 0.5.225 scores **pre-purge** — persist #1040 refuses *new* mock traces at every door, but
      the 1,499 already in the canonical stay until the purge door (CIRISServer#756, not yet
      built) exists and the owner authorises each purge;
   3. **post-purge** scores — the first clean population. **Re-estimate the values on (3), not

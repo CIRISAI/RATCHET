@@ -50,8 +50,10 @@
  "adopted_by": {
   "pr": "CIRISAI/CIRISServer#758",
   "fixes": "CIRISAI/CIRISServer#757",
-  "target": "0.5.226",
+  "target": "0.5.225",
   "rule": "rows<20 or feature_dim<4 -> Indeterminate (no row); n_eff_pr<=1.0 -> 0.0; else clamp01((n_eff_pr-1.0)/(4.5-1.0))",
-  "verified_against_pr_body": "2026-10-09"
+  "verified_against_pr_body": "2026-10-09",
+  "folded_into": "CIRISAI/CIRISServer#753",
+  "consent_basis_field": "consent_basis: [{principal, paths, attestation_id}] (CIRISPersist#1041)"
  }
 }
