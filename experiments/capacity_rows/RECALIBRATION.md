@@ -93,7 +93,7 @@ constrained, not saturated, on 24–31 rows. 23 of 26 prod agents never reach 20
   either unobserved or below a gate; a future read cannot tell which from the scoring plane
   alone, and must not impute 0.0. The honest "observed but can't vouch" telemetry that
   `scorer.rs:28` argued for is gone by ruling.
-- After 0.5.226 rolls, a fresh export should contain **only nonzero numerics** from the new
+- After 0.5.225 rolls, a fresh export should contain **only nonzero numerics** from the new
   rows; the 6,465 historical zeros remain in the canonical as signed attestations and should
   be filtered by `asserted_at` against the roll time, not reinterpreted.
 - **Three score populations, never read together** (server session, 2026-10-13, on the

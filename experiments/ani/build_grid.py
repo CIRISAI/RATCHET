@@ -23,12 +23,16 @@ from ani_score import (DEFERRAL, ENDS_QUESTION, HOOK_PROMPT, JUDGE_MODELS,  # no
 from judge_pool import JudgePool  # noqa: E402
 
 #: (label, captures dir, agent ref, model, retention-discipline present)
+#: Only temperature-0 cells. The earlier runs mixed 0.7 (direct arms) with 0.0
+#: (pipeline, the agent's own default), so they compared arms at different
+#: temperatures AND carried a noise floor larger than every effect: the `bare`
+#: control moved 8/34 -> 14/34 between identical conditions. Excluded rather
+#: than caveated.
 CELLS = [
-    ("Aug baseline", "ani",  "v2.9.37", "scout", False),
-    ("scout, after", "ani2", "v2.11.1", "scout", True),
-    ("qwen, after",  "ani3", "v2.11.1", "qwen",  True),
-    ("qwen, before", "ani4", "v2.9.48", "qwen",  False),
-    ("qwen, after",  "ani5", "v2.11.1", "qwen",  True),
+    ("before", "ani8", "v2.9.48", "scout", False),
+    ("after",  "ani7", "v2.11.1", "scout", True),
+    ("before", "ani6", "v2.9.48", "qwen",  False),
+    ("after",  "ani9", "v2.11.1", "qwen",  True),
 ]
 SP = Path("/tmp/claude-1000/-home-emoore-RATCHET/4fdbd195-6bf1-45c9-8ffc-931540da4e4d/scratchpad")
 
