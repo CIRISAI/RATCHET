@@ -1,0 +1,18 @@
+# Audit of the CC 1.13.3.3 coordinated-reviewer-capture row's RATCHET citations
+
+Asked by the Constitution session 2026-10-14 (CIRISConstitution rc8 `7bf0af9`). Checked against
+RATCHET at the pinned manifest `38933ef` and head `ad535a9` (identical in `formal/`), and
+against coherence-ratchet `0c4edfb` (CC's pin). Labels per `CIRISOntology/epistemology.md` §1.
+
+| claim in the row | artifact | verdict |
+|---|---|---|
+| (1) correlated sources count as one at full correlation — `Signal_eff`, mechanized as `Core.SignalSourceDiscount.clique_neutralization` | coherence-ratchet `formal/CoherenceRatchet/Core/SignalSourceDiscount.lean`: `Signal_eff_is_kish … := rfl`; `clique_neutralization (hn : n_src ≠ 0) : Signal_eff n_src 1 = 1` by `div_self`; 0 `sorry` | **identity — correct as graded.** But **not in RATCHET**: zero occurrences of `SignalSourceDiscount`, `clique_neutralization` or `Signal_eff` at either RATCHET commit. 8.6.1 row 407 cites the right module; the 1.13.3.3 prose and changelog ("What RATCHET validates … `clique_neutralization`") attribute it to the wrong repo. Nothing in either repo *measures* `ρ̄_src` on any population; the discount is structural by definition. |
+| (2a) `k_eff` ceiling mechanized — `Core.BaseIdentity.k_eff_asymptotic_ceiling` | coherence-ratchet `Core/BaseIdentity.lean`: `Tendsto (fun k => k_eff k ρ) atTop (nhds (1/ρ))` for `0 < ρ`; 0 `sorry` | **correct, coherence-ratchet's.** RATCHET's own lake holds `RATCHET.Core.EffectiveConstraints` K1–K4 (independent full count, correlated unity at ρ=1, monotone in ρ, bounded on [0,1]), 0 `sorry`, byte-identical at pin and head — the **limit** theorem is not among them. |
+| (2b) `k_eff` measured — `experiments/keff_saturation`, ≈ 7 ± 2, max 9.7 at k = 200 | coherence-ratchet `experiments/keff_saturation/README.md` ll. 33–34, verbatim | **correct, coherence-ratchet's; directory absent from RATCHET at both commits.** `k` is system size (sensors/units); substrates are ECoG under propofol/ketamine, zebrafish, macaque, Allen Neuropixels, Drosophila, plus cosmological boxes — **no attester or reviewer population.** 8.6.1 row 408's "substrate-specific" is the right caveat; the 1.13.3.3 row's bare "mechanized and measured" invites reading the measurement as about attesters. RATCHET's standing position: the Kish identity "needs no empirical validation and can receive none"; the saturation result corroborates bounded-vs-scale-free (Gate 0), not the identity. |
+| (3) `ratchet:flag:*` advisory, no evidence row at rc8 | RATCHET: zero occurrences of `ratchet:flag` or `coordinated_voting_cluster` at either commit. Nearest artifact: `release/calibration/crc-v2` calibrates `detection:correlated_action:*` axes, but the only coordination-shaped one, `ecology_of_communication:coordinated_messaging_pattern`, is **Tier-3 deferred pending substrate emit**; prod canonical has **zero `detection:*` rows** of any dimension and the detectors are enum labels (2026-10-09) | **correct; if anything understated.** A flags evidence row is not near enough to mention. |
+| (bonus) 8.6.1 row 405: `RATCHET:Core.CollapseTheorem.remainder_scales_with_k_eff` | theorem is at coherence-ratchet `Core/CollapseTheorem.lean:93`; RATCHET's own `evidence/cc_formal.tsv` cites it as `coherence-ratchet:Core.CollapseTheorem…` | **repo prefix wrong** — same misattribution pattern. |
+
+What RATCHET itself supports for this row: K1–K4 (proved, identity-level); the equicorrelated
+precondition behind the Kish form **measured on one RTX 4090** — holds at ρ ≈ 0.39, fails at
+low ρ (exp117). At full correlation every pair has ρ = 1, so that precondition is trivially met
+and (1) needs no caveat; at intermediate ρ̄_src it does.
