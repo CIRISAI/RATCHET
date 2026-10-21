@@ -48,24 +48,35 @@ frozen generator + 300 h). Per-system certificate naming system and version.
   and `permitted_actions` are rendered into the system context (`formatters/identity.py`)
   and into action selection (`action_selection_pdma.py:190`). The node is versioned and
   tagged `updated_by:<wa>` / `version:<n>` (`persistence/models/identity.py:85`).
-- **Resolved 2026-10-21 (CIRISAgent#1303).** No production code set `wa_authorized`;
-  the agent session confirmed it on main `a94620f4f`: `build_dispatch_context` only reads
-  the flag from `extra_context`, the only callers pass the thought's `ThoughtContext`
-  (`extra="forbid"`, no such field), and `resolve_deferral` adds no authorization to the
-  guidance task. The designed path (identity change defers, WA approves, agent applies)
-  failed closed at the last step every time. Fix underway on
-  `fix/wa-approval-authorizes-identity-write`: a typed `TaskContext.wa_authorization`
-  record (wa_id, deferral_id, granted_at, verification="verified") set by
-  `resolve_deferral` **only when the WA's resolution signature verified** (#944); the
-  dispatch flag is true for that one guidance task's thoughts and no other. A QA module
-  (`wa_identity_approval`) runs refuse → `$defer` → resolve → identity node lands →
-  unrelated identity write still refused. **The signal a Market 4 sketch tests is
-  therefore "a verified, signed WA deferral resolution", not a caller-settable flag.**
-  Sketch freeze waits on that PR merging.
+- **Resolved 2026-10-21 (CIRISAgent#1303 → PR #1304, open, not merged).** No production
+  code set `wa_authorized`; the agent session confirmed it on main `a94620f4f`:
+  `build_dispatch_context` only read the flag from `extra_context`, the only callers
+  passed the thought's `ThoughtContext` (`extra="forbid"`, no such field), and
+  `resolve_deferral` added no authorization to the guidance task. The designed path
+  (identity change defers, WA approves, agent applies) failed closed at the last step
+  every time. The fix (`fix/wa-approval-authorizes-identity-write`): a typed
+  `TaskContext.wa_authorization` record (wa_id, deferral_id, granted_at,
+  `verification: Literal["verified"]`) set by `resolve_deferral` **only when the WA's
+  resolution signature verified** (#944); the API resolve route signs every resolution;
+  unsigned legacy approvals (including Discord WA approvals, which are unsigned) resolve
+  but grant nothing; the dispatch flag is true for that one guidance task's thoughts and
+  no other. QA module `wa_identity_approval` runs refuse → `$defer` → signed resolve →
+  identity node lands → unrelated identity write still refused; 5/5 on the Linux mock-LLM
+  modular run 39679543820 (conclusion `success`, verified via `gh run view`). **The signal
+  a Market 4 sketch tests is therefore "a verified, signed WA deferral resolution", not a
+  caller-settable flag.** Sketch freeze waits on #1304 merging.
+- **Caveat for any claims write-up (from #1304).** Before that PR no mock run had ever
+  exercised an IDENTITY write: the mock LLM's ASPDMA result stringified the scope enum
+  and its `$memorize` path hard-coded LOCAL, so every mock memorize was a LOCAL
+  observation and the gate under test never ran. Earlier "refused" results on mock were
+  vacuous. Two more in-channel defects came out of the same run: the memorize second
+  pass (MSASPDMA) discarded every verdict, including with real models, so the original
+  MEMORIZE always ran; and the memory API returned nodes with their content stripped.
+  Any correction-episode evidence dated before #1304 is not evidence about this channel.
 - Authentication of the corrector: AUTHORITY tokens are EdDSA JWTs over the WA's Ed25519
   key (`authentication/service.py:708-713`); deferral resolution is gated by
   `require_authority` at the API. At `2e1eccf54` the `DeferralResponse.signature` field
-  was a formatted string, never verified; under #1303 the API route signs every
+  was a formatted string, never verified; under #1304 the API route signs every
   resolution and an unverified one resolves but grants nothing. The sham family then
   tests both API role auth and signature verification.
 - A WA deferral resolution changes only the resolved task (new guidance task, same
@@ -169,8 +180,8 @@ it is the market where Gunnar credits CIRIS with the "largest shift."
    CIRIS deferral log as the challenge surface, and the workbench has the scaffold.
    Pilot at the sketch scale he uses himself (8–20 episodes, objective-change case,
    genuine + sham arms, probe after reset), frozen in the workbench before any run.
-   Resolve the `wa_authorized` question above before freezing, because the sketch has
-   to say which authorizing signal it tested.
+   The `wa_authorized` question is resolved (CIRISAgent#1304, open); freeze after it
+   merges, naming "a verified, signed WA deferral resolution" as the signal tested.
 2. **Market 15, the one we can realistically qualify.** Default budget, no serious
    route, substrate already frozen. Design, family-by-family inventory and the two
    open qualification items (second architecture, independent challenge operator) are
