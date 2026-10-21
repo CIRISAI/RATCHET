@@ -120,8 +120,10 @@ incompatible subset; that is the same operator or a second one.
    occurrence set and channel classes for a deployment; (b) a correction certificate:
    the Market 4 pilot's output, naming the WA keys and the identity-node versions it
    tested. Both are namespace questions (CC 3.1 is governed; new leaves route through
-   the Constitution), so they go to the Constitution session as an ask, not as an edit
-   from here.
+   the Constitution). **Ruled 2026-10-21:** (a) is CIRISConstitution#184 with
+   CIRISPersist#1115 and CIRISServer#804; the version pin for (a) and (b) alike is
+   CIRISPersist#1116 / CIRISAgent#1305 / CIRISVerify#315 (`MARKET_15_REQUIREMENTS.md` §7).
+   (b) still waits on the Market 4 pilot.
 2. **Write and freeze the bundle verdict** (§3) with test vectors covering each fault
    family and the clean case, in the workbench as a custom contribution.
 3. **Pilot sketch** on 10–20 self-built bundles from the first 0.5.225-era runs that
