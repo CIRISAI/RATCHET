@@ -165,8 +165,9 @@ it is the market where Gunnar credits CIRIS with the "largest shift."
    Resolve the `wa_authorized` question above before freezing, because the sketch has
    to say which authorizing signal it tested.
 2. **Market 15, the one we can realistically qualify.** Default budget, no serious
-   route, substrate already frozen. Worth a second sketch once the bundle typing is
-   agreed with him.
+   route, substrate already frozen. Design, family-by-family inventory and the two
+   open qualification items (second architecture, independent challenge operator) are
+   in `MARKET_15_DESIGN.md`.
 3. **Market 8: substrate only.** Ask him to keep the existing sketch's system name as
    is (it already says TSA fixtures) so nobody reads it as a CIRIS result.
 4. **Market 5: nothing to file.** Say so, with the 94.2% number as the reason.
