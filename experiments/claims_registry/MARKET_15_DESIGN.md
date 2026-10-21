@@ -76,10 +76,13 @@ agent_version, occurrence set, template_id, trace_level, community/cohort scope)
 | wrong-predecessor | `supersedes.references_attestation_id` chains on each certificate: the referenced row must be about the same subject and the version it supersedes must be the deployment's predecessor in the identity lineage | chain points at another subject or skips the lineage → reject; chain unresolvable → flag |
 | out-of-scope | `cohort_scope` / `community_id` / `scope` on each certificate against the deployment's scope; `witness_relation` and `SelfEmission` where the family requires an external witness | certificate scoped to another cohort, or a self-emitted proxy certificate → reject; scope absent → flag |
 
-**Output.** `accept` only when every check resolves and passes; otherwise
-`reject(fault_family)` or `flag(reason)`. The score-table row is
-`rejected_or_flagged = not accept`, `accepted = accept`. The verdict object itself is
-the "composition verdict on a named certificate bundle" the contract requires.
+**Output.** Per the Constitution's wording constraint (`MARKET_15_REQUIREMENTS.md` §6
+N3): `coincide` only when every axis resolves and agrees; otherwise
+`diverge(axis, fault_family)` or `unresolvable(reason)`. Lens never says accept/reject.
+The filer maps these to the score table: `accepted = coincide`,
+`rejected_or_flagged = not coincide`. The verdict row (a `scores` row under CC 3.1.8
+naming the bundle in `evidence_refs`) is the "composition verdict on a named certificate
+bundle" the contract requires.
 
 This is the part that is actually ours to write, and it is small: a reference
 implementation in Python under `experiments/claims_registry/m15/` with frozen test

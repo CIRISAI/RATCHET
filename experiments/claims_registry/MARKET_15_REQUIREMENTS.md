@@ -66,7 +66,10 @@ The registry's six fault families are violations on these axes:
   certificate silent on a load-bearing axis is not composable: the procedure must flag
   it, not assume.
 - **L2 A frozen, deterministic procedure.** `Compose(bundle, deployment_ref) →
-  accept | reject(fault family) | flag(reason)`; same inputs, same output; published
+  coincide | diverge(axis, fault family) | unresolvable(reason)` (the Constitution's
+  wording constraint, §6 N3: Lens may say whether rows share a referent, never
+  "accept/reject"; the registry's `accepted` / `rejected_or_flagged` columns are the
+  filer's mapping of those three); same inputs, same output; published
   and hashed before the bundles it is scored on are built (`methodFreezeAt`).
 - **L3 Fail-closed on resolution, not on judgment.** Unresolvable key, roster, lineage
   or scope → flag. No axis is ever defaulted. This is the `RefusalReason` discipline of
@@ -137,5 +140,27 @@ What the capacity scorer binds today (`scorer.rs` ~1388–1432): `dimension`,
   families (Verify bundle, trust-root delegations, moderation/accord rows, its own
   scoring) so that a bundle set spans two architectures without a toy?
 
+## 6. Answers from the Constitution session (2026-10-21, against rc9 head `aa5ae9c`)
+
+The first cause is CC's own: `CLM-capacity-composite` already composes independently
+emitted rows with a missing factor undefined, so "unresolvable is a flag, never silent"
+is the existing rule generalised.
+
+| Q | Status | Answer |
+|---|---|---|
+| N1 access certificate | **not answered; found defect** | No row states the monitoring interface assumed for a subject. `consent_basis` has 0 hits in the CC text; the server emits it on every `capacity:*` row since 0.5.225 (`scorer.rs:1614`, `:1704` at `ffff40e0`), so it is an **unregistered member** (CC 3.1.7 R2 requires a registry row at mint). Shape: what a witness saw is an observation and belongs in its own leaf any witness can emit, not a member of `capacity:*`; but `observation:` is closed (`observation:reachability` is its only leaf, 3.1.9.4), so opening it is a steward amendment. Interim honest carrier: the capacity row's envelope `scope` plus `evidence_refs` to the `consent:state:granted` row in force. |
+| N2 correction certificate | partly | `benchmark:*` exists but only `benchmark:he300:{category}:{version}` is enumerated (CIRISBench stewards it). A Market 4 battery fits as a new benchmark leaf registered at mint by its steward, per-case rates in the payload. The WA roster in `evidence_refs` is evidence, not authority: R5 is answered by N5. |
+| N3 the verdict | **answered**, one wording constraint | A commensurability observation is a `scores` row under 3.1.8 by Lens. "Observes; does not adjudicate" permits "these rows are / are not about the same referent on axis Rk / cannot be resolved" and forbids "accept / reject". Outcomes: `coincide` \| `diverge(axis, fault family)` \| `unresolvable`; bundle named in `evidence_refs`; leaf registered at mint. |
+| N4 version pin | **not answered; found gap** | No field is normative for R2 on a `scores` row about an agent. `occurrence_*` are self-asserted; `provenance:build_manifest` attests builds, not rows about running agents. Requiring a row about an occurrence to reference the build it observed (manifest digest in `evidence_refs` or a named member) is an amendment. |
+| N5 authority at an instant | partly | Defined per door, not as a general query: self roster at decision (3.3.6.3, freshness bound W); group rosters carry `effective_at` per version with `charter_digest` (3.2 T6); `delegates_to` valid until withdrawn or term lapses (4.4.3.2.8). "`delegates_to` in force at t net of `withdraws`" as one fold of the precedence layer is not written; small, well-posed amendment; persist's `acts_as_steward_at` implements one case. |
+| N6 node as subject | partly | A node has no agency (3.4.7.1): not a subject of control or correction families. Legitimate subject of access and proxy/custody rows. Two architectures only through an agent running on the node, not the node itself. |
+
+Consequences for §4: S1's R4 pin (`consent_basis`) exists but is unregistered; S1's R2
+pin has no normative field (N4); S3's verdict has a home (N3) with the vocabulary above;
+the second architecture must be a second *agent* architecture (N6). The two amendments
+(N1 leaf, N4 pin) and the one defect (unregistered `consent_basis`) are filed on
+CIRISConstitution for the steward.
+
 Nothing here is a result. §2's "carried by" column is **measured** on rc9; §3–§4 are
-requirements; §5 is the ask.
+requirements; §5 is the ask; §6 is the Constitution session's answer, verified where
+it names code.
