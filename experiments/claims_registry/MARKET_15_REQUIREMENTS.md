@@ -164,3 +164,14 @@ CIRISConstitution for the steward.
 Nothing here is a result. §2's "carried by" column is **measured** on rc9; §3–§4 are
 requirements; §5 is the ask; §6 is the Constitution session's answer, verified where
 it names code.
+
+## 7. Steward rulings (2026-10-21) and the tickets they opened
+
+| Item | Ruling | Tickets |
+|---|---|---|
+| Untyped capacity members | **Register.** CC 2.1 rows for all ten (`consent_basis`, `n_eff_pr`, `n_eff_h`, `sample_size`, `feature_dim`, `sample_size_gate`, `target_n_eff`, `min_feature_dim`, `n_eff_floor`, `window`), validator the `capacity:*` gate; shapes as emitted at CIRISServer `ffff40e0`. Text edit asked of the Constitution session; recorded on CIRISConstitution#183. | — |
+| N1 access assumption | **Full leaf now**, not the interim. `observation:` reopened by one leaf (`observation:access_assumption:v1`, name the steward's), first-person like `observation:reachability`, `subject_key_ids` = the observed agent's keys, members `consent_basis`, `trace_level`, `occurrence_key_ids`, `window`/`window_from`/`window_to`, `channel_classes`. | CIRISConstitution#184; CIRISPersist#1115 (gate); CIRISServer#804 (lens-core emitter, roster pin copy, composite precondition S4) |
+| N4 version pin | **On the occurrence row, from the Verify attestation.** Checked (measured, main heads): the agent's `AttestationResult` holds `agent_version` and the binary hash from CIRISVerify; `to_federation_provenance` makes pass/fail entries with no version; nothing forwards them; no receiver in persist or server; `verify_build_attestation_bundle` has no caller; `IdentityOccurrence` has no build member. The design intent is not shipped. | CIRISPersist#1116 (member `build_manifest_hash` + provenance row ref, door check); CIRISAgent#1305 (present it at registration); CIRISVerify#315 (integrity entry names the build; presenter path for the bundle verdict) |
+
+Consequence for §2: R2 will be carried by the occurrence roster, and R4 by the new leaf, once the tickets land. Until then the "carried by" column stands as written.
+
