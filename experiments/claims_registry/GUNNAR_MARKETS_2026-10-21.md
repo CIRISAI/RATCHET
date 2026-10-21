@@ -48,19 +48,26 @@ frozen generator + 300 h). Per-system certificate naming system and version.
   and `permitted_actions` are rendered into the system context (`formatters/identity.py`)
   and into action selection (`action_selection_pdma.py:190`). The node is versioned and
   tagged `updated_by:<wa>` / `version:<n>` (`persistence/models/identity.py:85`).
-- **Open point for Eric.** I found no production code that sets `wa_authorized=True`;
-  only tests do. The deferral-resolution path copies the original task context and adds
-  `wa_guidance`, not `wa_authorized` (`wise_authority/service.py:640+`). So an
-  agent-initiated identity change looks fail-closed with no live approval route, and the
-  WA/operator-initiated route is `refresh_identity_from_template` behind the
-  `--identity-update` restart flag with `updated_by="admin"`. Either I missed the setter or
-  that is the state of the code; it matters because the contract scores *behavioural*
-  uptake of a *signed* correction, and the authorizing signal must be real.
+- **Resolved 2026-10-21 (CIRISAgent#1303).** No production code set `wa_authorized`;
+  the agent session confirmed it on main `a94620f4f`: `build_dispatch_context` only reads
+  the flag from `extra_context`, the only callers pass the thought's `ThoughtContext`
+  (`extra="forbid"`, no such field), and `resolve_deferral` adds no authorization to the
+  guidance task. The designed path (identity change defers, WA approves, agent applies)
+  failed closed at the last step every time. Fix underway on
+  `fix/wa-approval-authorizes-identity-write`: a typed `TaskContext.wa_authorization`
+  record (wa_id, deferral_id, granted_at, verification="verified") set by
+  `resolve_deferral` **only when the WA's resolution signature verified** (#944); the
+  dispatch flag is true for that one guidance task's thoughts and no other. A QA module
+  (`wa_identity_approval`) runs refuse → `$defer` → resolve → identity node lands →
+  unrelated identity write still refused. **The signal a Market 4 sketch tests is
+  therefore "a verified, signed WA deferral resolution", not a caller-settable flag.**
+  Sketch freeze waits on that PR merging.
 - Authentication of the corrector: AUTHORITY tokens are EdDSA JWTs over the WA's Ed25519
   key (`authentication/service.py:708-713`); deferral resolution is gated by
-  `require_authority` at the API. The `DeferralResponse.signature` field is a formatted
-  string (`api_<user>_<time>`), never verified. The sham family therefore tests API role
-  auth, which is fine for the contract as long as the certificate says so.
+  `require_authority` at the API. At `2e1eccf54` the `DeferralResponse.signature` field
+  was a formatted string, never verified; under #1303 the API route signs every
+  resolution and an unverified one resolves but grants nothing. The sham family then
+  tests both API role auth and signature verification.
 - A WA deferral resolution changes only the resolved task (new guidance task, same
   original). It is not by itself a policy change for later tasks. Gunnar's glossary
   already flags exactly this: "CIRIS deferral log without demonstrated subsequent policy
