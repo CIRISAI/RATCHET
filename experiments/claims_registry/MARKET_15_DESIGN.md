@@ -107,7 +107,7 @@ decisions. A CIRIS agent on two models or two templates is also one architecture
 has to be a different AI system whose certificates are expressed in a form the procedure reads (CEG rows; the
 procedure is a policy over CEG rows, not over CIRIS internals). We have no such system. The registry's
 common checks rule out toy-only evidence, so a workbench lab simulation cannot be the only one. **Open**;
-asked of Gunnar (registry issue, linked in §5).
+asked of Gunnar in [aintelope/ai-safety-claims#1](https://github.com/aintelope/ai-safety-claims/issues/1) (2026-10-22).
 
 **The hidden suite.** `run` attempts need ≥50 hidden bundles from an independent challenge operator, with the
 incompatibility subset built after our method freeze, and the operator's manifest committed to the registry.
@@ -115,7 +115,7 @@ We cannot be our own operator: we would be building the faults our own checker i
 cases, once seen by us, can never be the hidden suite for the same method. The natural operator is
 aintelope: the contribute page bars them from *authoring attempts*, not from running challenge suites. The
 default budget's one independent red team (≥40 h) builds the post-freeze subset; that is the same operator or
-a second one. **Open**; asked of Gunnar.
+a second one. **Open**; asked in the same issue, #1.
 
 ## 5. Order of work (revised 2026-10-22)
 

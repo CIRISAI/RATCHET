@@ -196,7 +196,9 @@ it is the market where Gunnar credits CIRIS with the "largest shift."
    open qualification items (second architecture, independent challenge operator) are
    in `MARKET_15_DESIGN.md`.
 3. **Market 8: substrate only.** Ask him to keep the existing sketch's system name as
-   is (it already says TSA fixtures) so nobody reads it as a CIRIS result.
+   is (it already says TSA fixtures) so nobody reads it as a CIRIS result. Asked in
+   [aintelope/ai-safety-claims#2](https://github.com/aintelope/ai-safety-claims/issues/2) (2026-10-22); the
+   Market 15 questions are #1.
 4. **Market 5: nothing to file.** Say so, with the 94.2% number as the reason.
 
 Everything above is **open** until an episode has been run; the code facts are
