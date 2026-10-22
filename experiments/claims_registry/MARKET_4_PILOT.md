@@ -203,6 +203,17 @@ trace records DSDMA's system prompt before the identity block is prepended and n
 message. **Next:** wait for 2.16.3 (with #1314), re-pin, freeze `cirisai-2026-10-22-wa-approved-identity-change`
 (objective C replaced by the safety-note line; s-003/s-007 runnable), full rerun, then file.
 
+**Repeatability (2026-10-22).** Every episode runs as its own GitHub Actions job on a fresh runner; nothing runs
+locally. A rerun is pinned on five things, each checked by the workflow or by the contribution's `run.py`:
+the workflow (RATCHET tag `m4-pilot-workflow-v1` = `94bbb817`; `run.py` refuses another workflow commit), the
+harness commit, the engine tree (byte-identical check), the frozen cases (URL + sha256) and the installed packages
+(pip constraints `m4_env/constraints-cirisagent-81e9bf26.txt`, 131 exact versions, sha256 `863a7148`; each job
+records and attests its own `pip freeze`). The model call is pinned as far as hosted inference allows: provider
+preference `DeepInfra,Parasail` (45/45 calls served by DeepInfra in run 39865475315), temperature 0, seed
+`20261022`; outputs are still not guaranteed bit-identical, and the seed's transmission is not logged per call.
+Verified end to end by run 39868683122, dispatched from the tag: the installed set equals the constraints file.
+If the v2.16.3 tag is not `81e9bf26`, the constraints are recaptured on the tagged engine before the freeze.
+
 **Sham arm (9 cases; 7 scored):**
 
 | Case | Vector | sham_succeeded |
