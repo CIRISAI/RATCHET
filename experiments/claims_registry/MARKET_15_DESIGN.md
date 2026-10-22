@@ -91,47 +91,51 @@ contribution (the Market 4 custom template is the model: `contribution.yaml`, `r
 reading `freeze-cases.jsonl` and writing a raw log, `adapter.py` turning it into
 `trials.jsonl`). Freezing it is a git tag in the workbench before any bundle is scored.
 
-## 4. The two things we do not control
+## 4. What the market tests, and the two things we do not control
 
-**Two architectures.** The contract wants two architectures, "not two checkpoints of
-one run". A CIRIS agent on two models or two templates is one architecture. Candidates
-for the second: the CIRISServer node itself (it has its own build attestation, trust
-root, moderation rows, and scoring plane: a different control and correction structure
-over the same grammar); or a non-CIRIS system whose certificates are expressed as CEG
-rows (the Market 4 workbench's scripted assistant would do for a pilot, but it is a toy
-and cannot be the sole evidence). Which of these Gunnar reads as a second architecture
-is a question for him before freeze. **Open.**
+**What is being entered.** Market 15 does not evaluate an AI system. It evaluates a frozen *procedure* that
+reads a bundle of independently issued safety certificates (control, correction, access, proxy tracking) and
+says whether they form one coherent case "for the same AI system and deployment setup", or flags the mismatch.
+Our entry is the bundle verdict of §3. The CIRISAgent's role is to be a system whose certificates the
+procedure can check: one architecture's worth of real bundles.
 
-**The hidden suite.** `run` attempts need ≥50 hidden bundles from an independent
-challenge operator, with the incompatibility subset built after our method freeze, and
-the operator's manifest committed to the registry. We cannot be our own operator; a
-pilot's cases, once seen by us, can never be the hidden suite for the same method. The
-natural operator is Gunnar/aintelope: the contribute page bars them from *authoring
-attempts*, not from running challenge suites, and operating one is the registry's own
-job. Needs his yes. **Open.**
+**Two architectures (corrected 2026-10-22).** "Architectures, not two checkpoints of one run" refers to the AI
+systems the bundles are about: the procedure must work on more than the one kind of system it was built
+around. An earlier version of this section offered the CIRISServer node as a second architecture. That was
+wrong on two counts: the node is CIRIS, and it is federation infrastructure, not an AI system making
+decisions. A CIRIS agent on two models or two templates is also one architecture. The second architecture
+has to be a different AI system whose certificates are expressed in a form the procedure reads (CEG rows; the
+procedure is a policy over CEG rows, not over CIRIS internals). We have no such system. The registry's
+common checks rule out toy-only evidence, so a workbench lab simulation cannot be the only one. **Open**;
+asked of Gunnar (registry issue, linked in §5).
 
-The default budget (one independent red team, 40 h) is what builds the post-freeze
-incompatible subset; that is the same operator or a second one.
+**The hidden suite.** `run` attempts need ≥50 hidden bundles from an independent challenge operator, with the
+incompatibility subset built after our method freeze, and the operator's manifest committed to the registry.
+We cannot be our own operator: we would be building the faults our own checker is scored on, and a pilot's
+cases, once seen by us, can never be the hidden suite for the same method. The natural operator is
+aintelope: the contribute page bars them from *authoring attempts*, not from running challenge suites. The
+default budget's one independent red team (≥40 h) builds the post-freeze subset; that is the same operator or
+a second one. **Open**; asked of Gunnar.
 
-## 5. Order of work
+## 5. Order of work (revised 2026-10-22)
 
-1. **Settle the two missing certificate objects**, because without them no clean
-   bundle exists: (a) an access certificate: one row binding consent grant, `trace_level`,
-   occurrence set and channel classes for a deployment; (b) a correction certificate:
-   the Market 4 pilot's output, naming the WA keys and the identity-node versions it
-   tested. Both are namespace questions (CC 3.1 is governed; new leaves route through
-   the Constitution). **Ruled 2026-10-21:** (a) is CIRISConstitution#184 with
-   CIRISPersist#1115 and CIRISServer#804; the version pin for (a) and (b) alike is
-   CIRISPersist#1116 / CIRISAgent#1305 / CIRISVerify#315 (`MARKET_15_REQUIREMENTS.md` §7).
-   (b) still waits on the Market 4 pilot.
-2. **Write and freeze the bundle verdict** (§3) with test vectors covering each fault
-   family and the clean case, in the workbench as a custom contribution.
-3. **Pilot sketch** on 10–20 self-built bundles from the first 0.5.225-era runs that
-   carry all four rows, so the registry's dry run prints the gap list in its own words.
-   The sketch's `systems[]` must name the agent version and the node version.
-4. **Ask Gunnar** the two §4 questions and whether aintelope will operate the hidden
-   suite.
-5. **Hidden run** (≥50 bundles, ≥2 architectures, post-freeze subset), then submit.
+1. **Certificates for real CIRIS deployments in all four families**, each naming version and setup:
+   - proxy tracking: safety-battery signed manifests (**exist**);
+   - control: build attestation and occurrence roster with the version pin: CIRISPersist#1116,
+     CIRISAgent#1305, CIRISVerify#315 (**open tickets**);
+   - access: the `observation:access_assumption:v1` leaf, CC rc10; CIRISPersist#1115, CIRISServer#804
+     (**open tickets**);
+   - correction: a correction-eval certificate row naming the WA key(s) and the identity version tested.
+     **No ticket yet**; it is the output of Market 4 (`MARKET_4_PILOT.md`), whose pilot is not yet clean.
+   Without the version pin and the access row a clean CIRIS bundle can only be `unresolvable`, which fails
+   the clean-accept bar, so these are required, not optional.
+2. **Write the bundle verdict** (§3) with test vectors for each fault family and the clean case.
+3. **Freeze it** in the workbench as a custom contribution, before any bundle is scored.
+4. **Pilot sketch**: 10–20 bundles assembled from real CIRIS runs, clean plus planted faults; the registry's dry
+   run prints the gap list. `systems[]` names the agent version and the node version.
+5. **Qualify**: ≥50 hidden bundles across ≥2 architectures from an independent operator, post-freeze adversarial
+   subset, one independent red team; run the frozen procedure blind; submit. Steps 1–4 are ours; step 5 waits
+   on the two §4 answers.
 
 Nothing in this file is a result. The family table is **measured** on the pinned
 commits; the procedure is a design; the qualification path is **open** on the two §4

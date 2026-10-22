@@ -173,8 +173,9 @@ typing, semantic compatibility, and adversarial validation across certificates."
 
 **Gap to a sketch.** Define a bundle as four CEG attestations about one
 (agent_id, agent_version, deployment setup) and a consumer policy that returns
-accept / reject / flag with a fault family; build ≥50 bundles with planted faults
-(two architectures: e.g. two agent templates or agent vs. server-scored). The default
+accept / reject / flag with a fault family; build ≥50 bundles with planted faults.
+(Corrected 2026-10-22: two agent templates are one architecture and the server is not an AI system, so the
+second architecture must be a different AI system; see `MARKET_15_DESIGN.md` §4.) The default
 40 h budget makes this the cheapest market to take all the way to **qualifying**, and
 it is the market where Gunnar credits CIRIS with the "largest shift."
 
