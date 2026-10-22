@@ -127,7 +127,10 @@ a second one. **Open**; asked in the same issue, #1.
      (**open tickets**);
    - correction: assembled by us from substrate rows: the WA's signed `deferral_response`, the applied
      amendment's CEG row, and the Market 4 run's results. The rows are asked for in **CIRISAgent#1316**
-     (CEG-native deferrals; 2026-10-22). The amendment row also needs a namespace leaf (Constitution session).
+     (CEG-native deferrals; 2026-10-22). Names ruled and landed on CC rc10 `cadd5a9`: `deferral:request:v1`,
+     `deferral:response:{approved|rejected}:v1` (signed by the WA's own key), `identity_amendment:v1` (agent occurrence
+     key; `amendment_digest`, `authorized_by` → the approved response; refused unless that response is by a seated WA).
+     Post-2.16.3 work for the agent.
      Today none of these is a CEG row: the approval and the amendment live in the agent's local store.
    Without the version pin and the access row a clean CIRIS bundle can only be `unresolvable`, which fails
    the clean-accept bar, so these are required, not optional.
