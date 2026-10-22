@@ -186,7 +186,10 @@ it is the market where Gunnar credits CIRIS with the "largest shift."
    genuine + sham arms, probe after reset), frozen in the workbench before any run.
    The `wa_authorized` question is resolved and merged (CIRISAgent#1304, `412213fe`);
    freeze against that commit, naming "a verified, signed WA deferral resolution" as the
-   signal tested.
+   signal tested. **Frozen 2026-10-22T01:42:19Z** (workbench tag
+   `freeze/cirisai-2026-10-22-wa-correction-objective-change`, 18 cases, harness CIRISAgent
+   `40e49940` on engine `412213fe`, run by RATCHET `market4_correction_eval.yml`); design,
+   pins and results in `MARKET_4_PILOT.md`.
 2. **Market 15, the one we can realistically qualify.** Default budget, no serious
    route, substrate already frozen. Design, family-by-family inventory and the two
    open qualification items (second architecture, independent challenge operator) are
