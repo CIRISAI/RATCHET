@@ -29,12 +29,12 @@ on:
       harness_ref:
         description: 'CIRISAgent commit carrying the harness (branch market4/correction-eval)'
         required: false
-        default: '40e49940df558fdb0e88992d55f76cb07d0d6727'
+        default: 'f38d7d84d9a1b53f4a039b7db3c5d22ba05b5111'
         type: string
       engine_commit:
         description: 'Engine commit the harness checkout must be byte-identical to under ciris_engine/, ciris_adapters/, main.py, requirements.txt'
         required: false
-        default: '412213fe5c1a5ecf10060d003535bd48397052ed'
+        default: '960b2e8d4a35f9cb564fa59a621b745416ac69a2'
         type: string
       model:
         description: 'OpenRouter model id for the agent under test'
@@ -234,8 +234,7 @@ jobs:
           name: m4-agent-logs-${{ matrix.case }}
           path: |
             agent/qa_reports/episode_${{ matrix.case }}.log
-            agent/logs/sqlite/latest.log
-            agent/logs/sqlite/incidents_latest.log
-            agent/logs/sqlite/console.log
+            agent/qa_reports/correction_episodes/${{ matrix.case }}_*_logs/
+            agent/logs/
           retention-days: 30
           if-no-files-found: warn
