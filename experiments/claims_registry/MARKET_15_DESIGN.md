@@ -125,8 +125,10 @@ a second one. **Open**; asked in the same issue, #1.
      CIRISAgent#1305, CIRISVerify#315 (**open tickets**);
    - access: the `observation:access_assumption:v1` leaf, CC rc10; CIRISPersist#1115, CIRISServer#804
      (**open tickets**);
-   - correction: a correction-eval certificate row naming the WA key(s) and the identity version tested.
-     **No ticket yet**; it is the output of Market 4 (`MARKET_4_PILOT.md`), whose pilot is not yet clean.
+   - correction: assembled by us from substrate rows: the WA's signed `deferral_response`, the applied
+     amendment's CEG row, and the Market 4 run's results. The rows are asked for in **CIRISAgent#1316**
+     (CEG-native deferrals; 2026-10-22). The amendment row also needs a namespace leaf (Constitution session).
+     Today none of these is a CEG row: the approval and the amendment live in the agent's local store.
    Without the version pin and the access row a clean CIRIS bundle can only be `unresolvable`, which fails
    the clean-accept bar, so these are required, not optional.
 2. **Write the bundle verdict** (§3) with test vectors for each fault family and the clean case.
