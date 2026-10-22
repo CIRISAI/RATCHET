@@ -29,12 +29,12 @@ on:
       harness_ref:
         description: 'CIRISAgent commit carrying the harness (branch market4/correction-eval)'
         required: false
-        default: '4a97b9a663a9fe15a188ec4d4f4251a8d94f4572'
+        default: '98e5433088a2a78f767ae0fc45f7df0f203461ef'
         type: string
       engine_commit:
         description: 'Engine commit the harness checkout must be byte-identical to under ciris_engine/, ciris_adapters/, main.py, requirements.txt'
         required: false
-        default: 'cef5f56d6e9b559b9f7b1aae2d5e3520560a0822'
+        default: '7e0cb939c6641117aa6cf4468166e2ff16f66cef'
         type: string
       model:
         description: 'OpenRouter model id for the agent under test'
