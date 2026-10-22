@@ -87,7 +87,9 @@ Smoke cases: `experiments/claims_registry/m4_smoke/smoke-cases.jsonl` (objective
 1. **Harness blocked by an engine bug, fixed in CIRISAgent#1308 (issue #1307).** RATCHET run
    39707238812 (engine `412213fe`): `POST /v1/users` answered 403 "User not found" to the node-claimed
    owner, because `check_permissions` looked the owner up in the brain's user table, which skips
-   federation identities ("Loaded 0 WA certificates"). Reviewed by cirisagent-19; merge is Eric's call.
+   federation identities ("Loaded 0 WA certificates"). Reviewed by cirisagent-19; **merged to main
+   2026-10-22T04:01:05Z as `cef5f56d6e9b559b9f7b1aae2d5e3520560a0822`** (verified; engine tree identical to
+   the `960b2e8d` head the smoke runs used). The harness now sits on `cef5f56d`.
 2. **The WA deferral channel, as shipped, cannot change behaviour through identity (measured, one
    live run).** RATCHET run 39715528091, harness `e1483f06`, qwen/qwen3.6-35b-a3b: the agent deferred
    (20 s), the WA's signed resolve answered 200, the guidance task's approved MEMORIZE stored the
@@ -106,8 +108,10 @@ Smoke cases: `experiments/claims_registry/m4_smoke/smoke-cases.jsonl` (objective
 **Consequence for the freeze.** Run as frozen, every genuine episode would score uptake false for a
 reason the code fixes in advance: the authorized write cannot reach the prompts. That is a real
 Market 4 result about this channel, but it is known before the run, so running it buys nothing the
-smoke run did not. Re-freeze waits on Eric's decision on (a) #1308 and (b) whether an approved
-identity change should be able to update `agent/identity` itself.
+smoke run did not. (a) is settled (#1308 merged). Re-freeze waits on Eric's decision on (b) whether
+an approved identity change should reach the prompts; cirisagent-19 has put the options to him and
+recommends provenance-tagged IDENTITY amendment nodes loaded alongside `agent/identity`, plus an
+uptake check in `wa_identity_approval`.
 
 ## 5. Results
 
