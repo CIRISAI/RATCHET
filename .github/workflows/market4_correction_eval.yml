@@ -56,6 +56,26 @@ on:
         required: false
         default: '6'
         type: string
+      constraints_url:
+        description: 'Optional pip constraints file (raw URL) pinning every package version; blank = the agent requirements ranges'
+        required: false
+        default: ''
+        type: string
+      constraints_sha256:
+        description: 'sha256 of the constraints file; the run refuses on mismatch (required with constraints_url)'
+        required: false
+        default: ''
+        type: string
+      provider_order:
+        description: 'OPENROUTER_PROVIDER_ORDER for the agent (preference; OpenRouter falls back if unavailable). Blank = OpenRouter routing'
+        required: false
+        default: 'DeepInfra,Parasail'
+        type: string
+      llm_seed:
+        description: 'CIRIS_LLM_SEED sent with every call (temperature is 0 by default). Blank = no seed'
+        required: false
+        default: '20261022'
+        type: string
 
 permissions:
   id-token: write
@@ -121,6 +141,9 @@ jobs:
                      "engine_commit": "${{ inputs.engine_commit }}", "ratchet_commit": "${{ github.sha }}",
                      "cases_url": "${{ inputs.cases_url }}", "cases_sha256": "${{ inputs.cases_sha256 }}",
                      "model": "${{ inputs.model }}", "template_id": "${{ inputs.template_id }}",
+                     "constraints_url": "${{ inputs.constraints_url }}", "constraints_sha256": "${{ inputs.constraints_sha256 }}",
+                     "provider_order": "${{ inputs.provider_order }}", "llm_seed": "${{ inputs.llm_seed }}",
+                     "workflow_ref": "${{ github.ref }}",
                      "run_id": "${{ github.run_id }}", "cases": json.loads(open("/dev/stdin").read())},
                     open("/tmp/m4-cases/run-manifest.json", "w"), indent=1)
           ' <<< "$CASES"
@@ -149,6 +172,8 @@ jobs:
       M4_HARNESS_COMMIT: ${{ inputs.harness_ref }}
       MODEL_INPUT: ${{ inputs.model }}
       TEMPLATE_INPUT: ${{ inputs.template_id }}
+      OPENROUTER_PROVIDER_ORDER: ${{ inputs.provider_order }}
+      CIRIS_LLM_SEED: ${{ inputs.llm_seed }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -176,8 +201,22 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
-          pip install -e .
-          pip install -r requirements-dev.txt
+          CONSTRAINT_ARGS=()
+          if [ -n "${{ inputs.constraints_url }}" ]; then
+            curl -sSfL "${{ inputs.constraints_url }}" -o /tmp/m4-constraints.txt
+            GOT=$(sha256sum /tmp/m4-constraints.txt | cut -d' ' -f1)
+            if [ "$GOT" != "${{ inputs.constraints_sha256 }}" ]; then
+              echo "::error::constraints sha256 mismatch: got $GOT, expected ${{ inputs.constraints_sha256 }}"; exit 1
+            fi
+            CONSTRAINT_ARGS=(-c /tmp/m4-constraints.txt)
+          fi
+          pip install "${CONSTRAINT_ARGS[@]}" -e .
+          pip install "${CONSTRAINT_ARGS[@]}" -r requirements-dev.txt
+          mkdir -p qa_reports/correction_episodes
+          pip freeze --exclude-editable > "qa_reports/correction_episodes/${{ matrix.case }}_env_logs_pip-freeze.txt" || true
+          mkdir -p "qa_reports/correction_episodes/${{ matrix.case }}_env_logs"
+          mv "qa_reports/correction_episodes/${{ matrix.case }}_env_logs_pip-freeze.txt" "qa_reports/correction_episodes/${{ matrix.case }}_env_logs/pip-freeze.txt"
+          python --version > "qa_reports/correction_episodes/${{ matrix.case }}_env_logs/python-version.txt" 2>&1
       - uses: actions/download-artifact@v4
         with:
           name: m4-frozen-cases
@@ -214,11 +253,13 @@ jobs:
         run: |
           ls -la qa_reports/correction_episodes/ || true
           test -s "qa_reports/correction_episodes/${{ matrix.case }}.jsonl"
-      - name: Attest the raw log
+      - name: Attest the raw log and the installed environment
         if: always()
         uses: actions/attest-build-provenance@v2
         with:
-          subject-path: agent/qa_reports/correction_episodes/${{ matrix.case }}.jsonl
+          subject-path: |
+            agent/qa_reports/correction_episodes/${{ matrix.case }}.jsonl
+            agent/qa_reports/correction_episodes/${{ matrix.case }}_env_logs/pip-freeze.txt
       - name: Upload the raw log
         if: always()
         uses: actions/upload-artifact@v4
