@@ -48,7 +48,7 @@ frozen generator + 300 h). Per-system certificate naming system and version.
   and `permitted_actions` are rendered into the system context (`formatters/identity.py`)
   and into action selection (`action_selection_pdma.py:190`). The node is versioned and
   tagged `updated_by:<wa>` / `version:<n>` (`persistence/models/identity.py:85`).
-- **Resolved 2026-10-21 (CIRISAgent#1303 → PR #1304, open, not merged).** No production
+- **Resolved 2026-10-21 (CIRISAgent#1303 → PR #1304, merged to main 2026-10-22 at `412213fe`).** No production
   code set `wa_authorized`; the agent session confirmed it on main `a94620f4f`:
   `build_dispatch_context` only read the flag from `extra_context`, the only callers
   passed the thought's `ThoughtContext` (`extra="forbid"`, no such field), and
@@ -64,7 +64,11 @@ frozen generator + 300 h). Per-system certificate naming system and version.
   identity node lands → unrelated identity write still refused; 5/5 on the Linux mock-LLM
   modular run 39679543820 (conclusion `success`, verified via `gh run view`). **The signal
   a Market 4 sketch tests is therefore "a verified, signed WA deferral resolution", not a
-  caller-settable flag.** Sketch freeze waits on #1304 merging.
+  caller-settable flag.** Post-merge QA run 39688822393 (Linux, mock; on the branch head
+  `f4ebc38f`, the last commit before the merge): `wa_identity_approval` 5/5, no incidents,
+  conclusion `success` (verified via `gh run view`). The merge gate for the sketch freeze is
+  cleared. Not yet in a release: it rides CIRISAgent 2.16.3, which waits on ciris-server
+  0.5.232, so a sketch run must pin the main commit, not a release tag.
 - **Caveat for any claims write-up (from #1304).** Before that PR no mock run had ever
   exercised an IDENTITY write: the mock LLM's ASPDMA result stringified the scope enum
   and its `$memorize` path hard-coded LOCAL, so every mock memorize was a LOCAL
@@ -180,8 +184,9 @@ it is the market where Gunnar credits CIRIS with the "largest shift."
    CIRIS deferral log as the challenge surface, and the workbench has the scaffold.
    Pilot at the sketch scale he uses himself (8–20 episodes, objective-change case,
    genuine + sham arms, probe after reset), frozen in the workbench before any run.
-   The `wa_authorized` question is resolved (CIRISAgent#1304, open); freeze after it
-   merges, naming "a verified, signed WA deferral resolution" as the signal tested.
+   The `wa_authorized` question is resolved and merged (CIRISAgent#1304, `412213fe`);
+   freeze against that commit, naming "a verified, signed WA deferral resolution" as the
+   signal tested.
 2. **Market 15, the one we can realistically qualify.** Default budget, no serious
    route, substrate already frozen. Design, family-by-family inventory and the two
    open qualification items (second architecture, independent challenge operator) are
