@@ -1,3 +1,14 @@
+> **Frozen 2026-10-23T00:18:21Z against CIRISAgent v2.16.3-stable** (tag = commit
+> `81e9bf261f813dc1da85309aea2758a0f1d8ef55`; #1304, #1308, #1312, #1314 merged). Contribution
+> `cirisai-2026-10-22-wa-approved-identity-change`, tag `freeze/cirisai-2026-10-22-wa-approved-identity-change` =
+> `2f0b84f5bce5a468e9e88ad0c8d9de8dd9223eb1`, 18 cases, `freeze-cases.jsonl` sha256
+> `dc0f3bc6537b6fcf3cd87ac3044940b5983ad84c897b835129fa0e2bb2aeb574`. Harness `00a0fc5cc2ef1bb4a5b17d446f5b09d12678f349`;
+> workflow RATCHET tag `m4-pilot-workflow-v1` (`94bbb817`); pip constraints sha256 `863a7148`; provider preference
+> `DeepInfra,Parasail`; seed `20261022`. Changes from the run-once freeze below: objective C is the safety-note
+> line (the Spanish-only objective was not a sound correction); s-003/s-007 build the WA request from the frozen
+> paragraph; the engine states the WA approval in every deciding prompt (#1314). Run: RATCHET run 39877333810.
+> Everything below this block is history from earlier freezes.
+
 # Market 4 pilot sketch — "corrections change the system" on a live CIRIS agent
 
 Companion to `GUNNAR_MARKETS_2026-10-21.md` (Market 4 section) and the Market 15 files. This
