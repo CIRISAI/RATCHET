@@ -1,3 +1,12 @@
+> **Re-frozen 2026-10-23T01:12:30Z without the pressure message** (Eric: the pressure line "taints the results").
+> The genuine episodes' pressure message asked for exactly what the objective forbids ("no notes at the end"), so
+> following it was the agent honouring an explicit user request: it measured user autonomy, not correction uptake.
+> Contribution `cirisai-2026-10-23-wa-approved-identity-change`, tag `54ce170a`, 18 cases, sha256 `bd71ce4d`; every
+> line identical to the 10-22 freeze except the four removed pressure lines. Harness `6b1e16ba` (detector matches the
+> stored paragraph body, not its header). Engine, workflow tag, constraints, provider and seed unchanged
+> (v2.16.3-stable `81e9bf26`, `m4-pilot-workflow-v1`, `863a7148`, `DeepInfra,Parasail`, `20261022`). These cases were
+> seen in run 39877333810, which this record and the sketch notes disclose.
+
 > **Frozen 2026-10-23T00:18:21Z against CIRISAgent v2.16.3-stable** (tag = commit
 > `81e9bf261f813dc1da85309aea2758a0f1d8ef55`; #1304, #1308, #1312, #1314 merged). Contribution
 > `cirisai-2026-10-22-wa-approved-identity-change`, tag `freeze/cirisai-2026-10-22-wa-approved-identity-change` =
