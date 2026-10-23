@@ -51,6 +51,11 @@ on:
         required: false
         default: ''
         type: string
+      repeats:
+        description: 'Independent episodes per case (each on its own fresh agent); 1 = one per case'
+        required: false
+        default: '1'
+        type: string
       max_parallel:
         description: 'Concurrent episodes'
         required: false
@@ -130,9 +135,11 @@ jobs:
           CASES=$(python3 -I -c '
           import json, sys
           flt = set(sys.argv[1].split())
+          reps = max(1, int(sys.argv[2] or "1"))
           ids = [json.loads(l)["case_id"] for l in open("/tmp/m4-cases/freeze-cases.jsonl", encoding="utf-8") if l.strip()]
-          print(json.dumps([i for i in ids if not flt or i in flt]))
-          ' '${{ inputs.case_filter }}')
+          ids = [i for i in ids if not flt or i in flt]
+          print(json.dumps([{"case": i, "rep": r, "tag": i if reps == 1 else f"{i}-r{r}"} for i in ids for r in range(1, reps + 1)]))
+          ' '${{ inputs.case_filter }}' '${{ inputs.repeats }}')
           echo "cases=$CASES" >> "$GITHUB_OUTPUT"
           echo "cases: $CASES"
           python3 -I -c '
@@ -156,7 +163,7 @@ jobs:
           retention-days: 90
 
   episode:
-    name: ${{ matrix.case }}
+    name: ${{ matrix.item.tag }}
     needs: [plan]
     runs-on: ubuntu-latest
     timeout-minutes: 150
@@ -164,7 +171,7 @@ jobs:
       fail-fast: false
       max-parallel: ${{ fromJSON(inputs.max_parallel) }}
       matrix:
-        case: ${{ fromJSON(needs.plan.outputs.cases) }}
+        item: ${{ fromJSON(needs.plan.outputs.cases) }}
     env:
       CIRIS_TEST_MODE: "true"
       CIRIS_TESTING_MODE: "true"
@@ -213,10 +220,10 @@ jobs:
           pip install "${CONSTRAINT_ARGS[@]}" -e .
           pip install "${CONSTRAINT_ARGS[@]}" -r requirements-dev.txt
           mkdir -p qa_reports/correction_episodes
-          pip freeze --exclude-editable > "qa_reports/correction_episodes/${{ matrix.case }}_env_logs_pip-freeze.txt" || true
-          mkdir -p "qa_reports/correction_episodes/${{ matrix.case }}_env_logs"
-          mv "qa_reports/correction_episodes/${{ matrix.case }}_env_logs_pip-freeze.txt" "qa_reports/correction_episodes/${{ matrix.case }}_env_logs/pip-freeze.txt"
-          python --version > "qa_reports/correction_episodes/${{ matrix.case }}_env_logs/python-version.txt" 2>&1
+          pip freeze --exclude-editable > "qa_reports/correction_episodes/${{ matrix.item.case }}_env_logs_pip-freeze.txt" || true
+          mkdir -p "qa_reports/correction_episodes/${{ matrix.item.case }}_env_logs"
+          mv "qa_reports/correction_episodes/${{ matrix.item.case }}_env_logs_pip-freeze.txt" "qa_reports/correction_episodes/${{ matrix.item.case }}_env_logs/pip-freeze.txt"
+          python --version > "qa_reports/correction_episodes/${{ matrix.item.case }}_env_logs/python-version.txt" 2>&1
       - uses: actions/download-artifact@v4
         with:
           name: m4-frozen-cases
@@ -240,42 +247,42 @@ jobs:
           mkdir -p qa_reports
           python3 -m tools.qa_runner correction_episodes \
             --correction-cases-file /tmp/m4-cases/freeze-cases.jsonl \
-            --correction-case-id "${{ matrix.case }}" \
+            --correction-case-id "${{ matrix.item.case }}" \
             --live --live-key-file "$HOME/.openrouter_key" \
             --live-base-url https://openrouter.ai/api/v1 \
             --live-model "$MODEL_INPUT" \
             --safety-battery-template "$TEMPLATE_INPUT" \
-            --wipe-data --proceed-anyway --timeout 7200 --verbose 2>&1 | tee "qa_reports/episode_${{ matrix.case }}.log"
+            --wipe-data --proceed-anyway --timeout 7200 --verbose 2>&1 | tee "qa_reports/episode_${{ matrix.item.case }}.log"
       - name: Raw log present
         if: always()
         working-directory: agent
         shell: bash
         run: |
           ls -la qa_reports/correction_episodes/ || true
-          test -s "qa_reports/correction_episodes/${{ matrix.case }}.jsonl"
+          test -s "qa_reports/correction_episodes/${{ matrix.item.case }}.jsonl"
       - name: Attest the raw log and the installed environment
         if: always()
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: |
-            agent/qa_reports/correction_episodes/${{ matrix.case }}.jsonl
-            agent/qa_reports/correction_episodes/${{ matrix.case }}_env_logs/pip-freeze.txt
+            agent/qa_reports/correction_episodes/${{ matrix.item.case }}.jsonl
+            agent/qa_reports/correction_episodes/${{ matrix.item.case }}_env_logs/pip-freeze.txt
       - name: Upload the raw log
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: m4-raw-${{ matrix.case }}
-          path: agent/qa_reports/correction_episodes/${{ matrix.case }}.jsonl
+          name: m4-raw-${{ matrix.item.tag }}
+          path: agent/qa_reports/correction_episodes/${{ matrix.item.case }}.jsonl
           retention-days: 90
           if-no-files-found: error
       - name: Upload agent logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: m4-agent-logs-${{ matrix.case }}
+          name: m4-agent-logs-${{ matrix.item.tag }}
           path: |
-            agent/qa_reports/episode_${{ matrix.case }}.log
-            agent/qa_reports/correction_episodes/${{ matrix.case }}_*_logs/
+            agent/qa_reports/episode_${{ matrix.item.case }}.log
+            agent/qa_reports/correction_episodes/${{ matrix.item.case }}_*_logs/
             agent/logs/
           retention-days: 30
           if-no-files-found: warn
