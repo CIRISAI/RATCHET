@@ -30,7 +30,7 @@ on:
       harness_ref:
         description: 'CIRISAgent commit carrying the harness (branch market4/on-v2200 for v2.20.0-stable)'
         required: false
-        default: 'f8c8da03f87a7115d31942253b9da50923e35629'
+        default: '95d4cf57664ac05d65b3fa13cb33484effeb0d92'
         type: string
       engine_commit:
         description: 'Engine commit the harness checkout must be byte-identical to under ciris_engine/, ciris_adapters/, main.py, requirements.txt'
