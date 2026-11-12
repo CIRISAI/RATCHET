@@ -88,18 +88,28 @@ def main(mdir, rdir, out_path):
         lg = None if last == 0 else out.last_hidden_state[:, -last:] @ head.T
         return emb, lg, out
 
-    # ---- shared prefix, once
+    def prefill(tok_ids, chunk=2048):
+        """Amendment 4: chunked prefill through the cache."""
+        cache = None
+        for s0 in range(0, len(tok_ids), chunk):
+            _, _, o = run(tok_ids[s0:s0 + chunk], cache=cache, use_cache=True, last=0)
+            cache = o.past_key_values
+            del o; torch.cuda.empty_cache()
+        return cache
+
+    # ---- shared prefix, once (chunked)
     torch.cuda.reset_peak_memory_stats()
-    _, _, pout = run(ids[0][:P], use_cache=True, last=0)
-    pcache = pout.past_key_values
+    pcache = prefill(ids[0][:P])
     res["prefix_peak_gb"] = torch.cuda.max_memory_allocated() / 1e9
     log(f"prefix cached ({P} tokens), peak {res['prefix_peak_gb']:.2f} GB")
     # ---- L2: cache equivalence on 2 items
     l2 = 0.0
-    for k in range(2):
-        _, pre_c, _ = run(ids[k][P:], cache=copy.deepcopy(pcache), use_cache=True)
-        torch.cuda.empty_cache()
-        _, pre_f, _ = run(ids[k], use_cache=False)
+    for k in range(2):  # Amendment 4: at 6,144 tokens, chunked prefill of 6,112 + cached last 32 vs one uncached pass
+        short = ids[k][:6144]
+        c_ = prefill(short[:6112])
+        _, pre_c, _ = run(short[6112:], cache=c_, use_cache=True)
+        del c_; torch.cuda.empty_cache()
+        _, pre_f, _ = run(short, use_cache=False)
         l2 = max(l2, float((pre_c[0] - pre_f[0]).abs().max()))  # both are the last 32 positions
         del pre_c, pre_f
         torch.cuda.empty_cache()

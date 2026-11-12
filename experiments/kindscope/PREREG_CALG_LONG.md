@@ -67,3 +67,15 @@ the item pass then ran out of memory. So Amendment 1's remedy (SDPA) is needed, 
 memory, not a guessed allocation. The text decoder runs **SDPA** for CAL-G-LONG and EXIT-G, and a bridge check is added
 first: **L0** — at CAL-G's own regime (the first 2 FRESH-1 stories of CAL-G's set, 256 tokens), SDPA and eager
 pre-softcap logits agree within 1e-3 (max abs). If L0 fails, the run is VOID and the kernel question is reopened.
+
+## Amendment 4 (2026-11-12, before any check other than L0, L1 and the token counts)
+
+Measured (memory probe, no check read): model 9.12 GB; per-layer peak during a single 20,742-token pass 13.2 GB at the
+full-attention layers and **15.3 GB at the sliding-window layers** — the transient is MLP intermediates and the full-size
+sliding mask over 20,742 positions, not attention scores (Amendments 1 and 3 named the wrong cause; the SDPA kernel stays,
+bridged by L0 = 4.4e-4 at 256 tokens). Remedy: **chunked prefill** — the shared prefix is fed through the KV cache in
+chunks of 2,048 tokens (how a deployed runtime prefills). A single uncached pass at full length does not fit this GPU,
+so **L2 is restated:** cache equivalence is checked at a length that fits — the first 6,144 tokens of 2 item prompts,
+chunked prefill of the first 6,112 + cached last 32 vs one uncached pass of all 6,144, max abs ≤ 1e-3 on those 32
+positions' logits. Full-length equivalence then rests on the same mechanism (stated, not measured at 21k). L3–L5 run on
+the chunk-prefilled cache. Nothing else changes.
