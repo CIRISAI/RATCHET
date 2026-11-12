@@ -1,0 +1,50 @@
+{
+ "source": "CIRISAI/CIRISAgent Safety Battery agent-logs artifacts, live 2026-10-14..2026-11-12; capture_traces/accord_detailed (trace_level detailed: no prompt text)",
+ "artifacts": 141,
+ "artifacts_with_records": 121,
+ "runs": 118,
+ "locales": 29,
+ "thought_records": 2481,
+ "aspdma_first_selection": {
+  "SPEAK": 792,
+  "TASK_COMPLETE": 780,
+  "PONDER": 742,
+  "DEFER": 75
+ },
+ "conscience_final_action": {
+  "SPEAK": 899,
+  "TASK_COMPLETE": 803,
+  "PONDER": 613,
+  "DEFER": 77
+ },
+ "conscience_overrides": 672,
+ "first_selection_by_depth(3=3+)": {
+  "0": {
+   "SPEAK": 718,
+   "PONDER": 375,
+   "TASK_COMPLETE": 8,
+   "DEFER": 2
+  },
+  "1": {
+   "TASK_COMPLETE": 666,
+   "PONDER": 138,
+   "SPEAK": 46,
+   "DEFER": 1
+  },
+  "2": {
+   "PONDER": 89,
+   "TASK_COMPLETE": 63,
+   "SPEAK": 14,
+   "DEFER": 2
+  },
+  "3": {
+   "PONDER": 140,
+   "DEFER": 70,
+   "TASK_COMPLETE": 43,
+   "SPEAK": 14
+  }
+ },
+ "action_selection_handler": "ActionSelectionPDMAEvaluator",
+ "scope": "one harness: single-turn mental-health battery questions, Qwen3.6-35B-A3B; six of ten verbs never occur here",
+ "harvest_file_sha256": "41ec41008911466907305960e3d42e6eff49617ca438ef8bfd39194ac12b183a"
+}
