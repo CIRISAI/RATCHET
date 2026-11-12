@@ -65,6 +65,12 @@ def directions(sd0, windows, toks, cal):
         out[L] = {"probe": u(th[0, :-1].cpu().numpy() / sd), "write": u(gA.cpu().numpy()),
                   "resid": u(np.array(clouds["layers"][str(L)]["resid_dir"])),
                   "bytes16": {chr(c): u(gB[c].cpu().numpy()) for c in TOPB}}
+        st = {}
+        for n in ("probe", "write", "resid"):
+            pr = Xa @ np.array(out[L][n]); st[n] = {"mean": float(pr.mean()), "sd": float(pr.std())}
+        for c in TOPB:
+            pr = Xa @ np.array(out[L]["bytes16"][chr(c)]); st["byte:" + chr(c)] = {"mean": float(pr.mean()), "sd": float(pr.std())}
+        out[L]["fitted_site_stats"] = st
     return out
 
 
@@ -110,13 +116,41 @@ def main(valid, fresh, odir):
             for p in range(P):
                 f.write(W[p].tobytes()); f.write(S[p].tobytes())
         states = Y.fwd_full(sd0, idx)[2]
-        readings = {}
+        # fitted sites: the position before a word that follows a determiner (where every direction was fitted)
+        _, itoks = V.tag([story.decode("ascii")])
+        fitted = [False] * P
+        for s_i, a_, b_, y0, y1, f in X.pairs([np.frombuffer(w, dtype=np.uint8)], itoks):
+            if y0 == X.DET and 0 <= a_ - 1 < P:
+                fitted[a_ - 1] = True
+        readings, zread = {}, {}
         for L in range(6):
             s_ = states[L][0].cpu().double().numpy()
-            readings[f"mlp{L}"] = {n: (s_ @ np.array(v)).round(5).tolist() for n, v in dirs[L].items() if n != "bytes16"}
+            fs = dirs[L]["fitted_site_stats"]
+            readings[f"mlp{L}"] = {n: (s_ @ np.array(dirs[L][n])).round(5).tolist() for n in ("probe", "write", "resid")}
             readings[f"mlp{L}"]["bytes16"] = {c: (s_ @ np.array(v)).round(5).tolist() for c, v in dirs[L]["bytes16"].items()}
+            zread[f"mlp{L}"] = {n: ((np.array(readings[f"mlp{L}"][n]) - fs[n]["mean"]) / fs[n]["sd"]).round(4).tolist()
+                                for n in ("probe", "write", "resid")}
+            nxt = []
+            for p in range(P):
+                c = chr(w[p + 1]) if p + 1 < P else None
+                if c in dirs[L]["bytes16"]:
+                    v = float(s_[p] @ np.array(dirs[L]["bytes16"][c]))
+                    nxt.append(round((v - fs["byte:" + c]["mean"]) / fs["byte:" + c]["sd"], 4))
+                else:
+                    nxt.append(None)
+            zread[f"mlp{L}"]["next_byte_forecast"] = nxt
         side = {"item": k, "source": "FRESH-1 kept story index %d" % (20000 + k), "bytes": list(w),
-                "text": w.decode("ascii"), "readings_after_mlp": readings, "c4_max_abs_logit_residual": c4.round(7).tolist(),
+                "text": w.decode("ascii"), "readings_after_mlp": readings,
+                "fitted_site": fitted,
+                "z_readings_after_mlp": zread,
+                "readme": ("Directions (probe, write, resid, bytes16) were fitted ONLY at fitted_site positions (the byte "
+                           "before a word that follows a determiner, CAL stories 0-799). Elsewhere a projection is out of "
+                           "domain and should be greyed, not read. z_readings are (projection - mean) / sd of the same "
+                           "projection over the fitting sites, per layer and direction, so layers and directions compare. "
+                           "resid = the writing direction minus its part in the 16 next-byte forecast directions (the "
+                           "probe is NOT removed from it). next_byte_forecast = the z-scored reading along the forecast "
+                           "direction of the byte that actually comes next, when it is one of the 16; else null. A write's "
+                           "length is not its effect (KS-DIRECT-ONLY)."), "c4_max_abs_logit_residual": c4.round(7).tolist(),
                 "next_byte_logprob_true": logits[0, :-1].log_softmax(-1).gather(-1, idx[0, 1:, None])[:, 0].cpu().numpy()
                 .round(5).tolist()}
         json.dump(side, open(os.path.join(odir, f"gw_item{k}.readings.json"), "w"))
