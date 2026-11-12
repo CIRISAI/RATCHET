@@ -58,6 +58,15 @@ From the hand-over on Gemma-4-E2B (all *measured*, one model, one quantisation, 
 | 6 | IMAGE | Every series ships images of the progression (states, writes, weight trajectories during fine-tunes), each stating its frame | continuous (`figs/`) |
 | 7 | KIND-1 | Carry the instrument to the 11+1 kinds and ASPDMA verbs | fresh blind-authored set (coordinate with cirisholon-d7) |
 
+## Map and motion (the owner's framing, 2026-11-12)
+
+**The category stakes are the map; change-tracing is motion across it.** Token categories (parts of speech and, later,
+finer types) chart where things are carried, site by site — that is what the loop's stakes and VOCAB-1 build. A *kind*
+is a type of CHANGE, not a type of token: real one-word pairs, edits, and agent-block regimes are traced as movement
+over that chart, to see how a response is formed from its input. The purpose is optimisation: a small purpose-built
+model that can run the agent's reasoning on a phone. Change-tracing results are expressed in the map's coordinates where
+possible (a change's difference projected onto the mapped category directions, per layer).
+
 ## Misfits and the loop (principled exploration)
 
 A misfit is a **named defect of method** born from one diagnosed failure, not a statistical finding; it carries a rule
