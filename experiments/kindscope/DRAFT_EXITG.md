@@ -25,6 +25,13 @@ two held-out pair kinds), never over templates — the result says so.
    text alone, fit on fit. In harm and lethal the separating words ARE the deciding fact, so this baseline is expected
    to be strong there; every claim is stated against it, per pair kind.
 
+## Known cues to control (from the writer and the Constitution's ruling)
+
+Pair kind readable from the task wording (→ pair score); in harm and lethal the separating words are the deciding fact
+(→ surface baseline, per pair kind); in irreversible and triage the shape of the filled text differs between members
+(→ length/shape features in the surface baseline); **S11 states the agent was given authority to decide, S17 does not**
+(→ report S11/S17 apart, and add an authority-phrase indicator to the surface baseline). One authoring process.
+
 ## Measures
 
 Item accuracy; **pair score** ("both members right", the anti-shortcut core); per pair kind; prior as a stated
