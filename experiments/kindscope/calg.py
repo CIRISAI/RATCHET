@@ -105,7 +105,7 @@ def main(mdir, valid, fresh, out_path):
         pre = h @ head.T
         return emb, pre, torch.tanh(pre / softcap) * softcap
 
-    B = 8
+    B = 2  # 262,144-token vocabulary: one 8x256 batch of float32 logits is 2 GB; several are held per batch
     valid = torch.zeros(ids.shape, dtype=torch.bool)
     for i, n in enumerate(lens):
         valid[i, :n] = True
