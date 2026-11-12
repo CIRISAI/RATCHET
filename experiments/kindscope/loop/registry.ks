@@ -175,3 +175,11 @@ misfit KS-READOUT-GRAIN
   requires: grain_declared
   born: EDIT-1 P1 2026-11-11
   status: candidate
+
+misfit KS-FORCE-AT-WRONG-POINT
+  line: a restoring force read as the base model's loss gradient AT the base weights is the pull of a converged model — near zero, mostly batch noise — so any change sits near 90 degrees to it (EDIT-2: 91-93 degrees in every tensor, read by the author as "slightly against the grain"; reviewer cirisagent-fd, 2026-11-12)
+  rule: the pull opposing a change delta is the ordinary-loss gradient at theta + delta (about H delta); report its angle to delta and delta^T H delta per tensor, and call it restoring force; the agent's TORQUE is output-space deflection (share of the base-to-target log-odds gap closed per item) and keeps that name
+  applies: verb in {fork-delta, edit, tune}
+  requires: force_at_displaced_point
+  born: EDIT-2 2026-11-12 (author ratchet-b9; found by reviewer cirisagent-fd)
+  status: registered
