@@ -1,0 +1,14 @@
+{
+ "website_commit": "51e4305b",
+ "n": 240,
+ "bpb_website": 3.6996441575741095,
+ "bpb_fresh_tinystories_240": 0.9284872084543266,
+ "by_family": {
+  "STANDING": 3.7310293708426387,
+  "ACTION": 3.5305915121800306,
+  "DETECTION": 3.541927879584076,
+  "CONSENSUS": 3.859438079934084,
+  "CORRECTION": 3.8023337799853216
+ },
+ "note": "website scenarios are agent-generated and reviewed (file header); measured as reading material only; first 241 bytes of each"
+}
