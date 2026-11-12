@@ -242,3 +242,11 @@ misfit KS-NULL-EXPECTATION
   requires: null_expectation_derived
   born: EXIT-G design 2026-11-12
   status: registered
+
+misfit KS-ONE-WORD-PAIR
+  line: a pooled effect over "173 pairs" was mostly one word pair counted 94 times ("lived" / "was" in different openings), resampled as if independent; the pooled alignment (+0.39 to +0.50) and its interval describe that word pair, not a category change in general
+  rule: when pairs are mined from text, report the number of DISTINCT word pairs, resample by word pair (not by occurrence), and cap any one word pair's share before staking a pooled claim
+  applies: verb in {patch, steer, probe, trace}
+  requires: distinct_units
+  born: CROSS-1 2026-11-12
+  status: registered
