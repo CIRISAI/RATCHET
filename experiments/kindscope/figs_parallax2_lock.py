@@ -21,7 +21,8 @@ ax2.set_yticks(range(len(order)), [g.replace("_", " · first letter ") for g in 
 ax2.axvline(0, color=INK2, lw=0.8); ax2.set_xlabel("Δ log-prob of the next word (nats)")
 ax2.set_title("Late: the 'l' direction writes a byte — l-words up\nwhatever their class, everything else down",
               loc="left", fontsize=10.5)
-fig.suptitle("PARALLAX-2, locked on unseen text: category early, bytes late", x=0.01, ha="left", fontsize=12)
+fig.suptitle("PARALLAX-2, locked on unseen text: category early, bytes late", x=0.01, y=1.04, ha="left", fontsize=12)
+fig.subplots_adjust(bottom=0.2)
 frame(fig, f"GoldWorm v6 base · FRESH-1 (TinyStories-train slice, never seen by the model; {r['counts']['fresh_stories_kept']} "
            f"stories, {r['counts']['pairs']} determiner–word pairs) · directions fixed from CAL before freezing · 95% story-bootstrap CIs")
 fig.savefig(sys.argv[2], dpi=140, facecolor=SURF, bbox_inches="tight")
