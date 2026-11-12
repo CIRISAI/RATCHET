@@ -1,0 +1,62 @@
+{
+ "L1": {
+  "prefix": true,
+  "fit": true,
+  "pass": true
+ },
+ "tokens": {
+  "shared_prefix": 20742,
+  "items": [
+   21683,
+   21670,
+   21687,
+   21673,
+   21680,
+   21682,
+   21683,
+   21686
+  ]
+ },
+ "L0": {
+  "max_abs_sdpa_vs_eager_256": 0.0004425048828125,
+  "pass": true
+ },
+ "prefix_peak_gb": 10.026072064,
+ "L2": {
+  "max_abs": 0.000377655029296875,
+  "pass": true
+ },
+ "L3": {
+  "max_rel": 1.2562591320207638e-07,
+  "pass": true
+ },
+ "L3_wrong_frame": {
+  "max_rel": 40.32544986144709,
+  "fails": true
+ },
+ "L4": {
+  "max_abs": 0.000156402587890625,
+  "pass": true,
+  "positions": 64
+ },
+ "L5": {
+  "identical": true,
+  "pass": true
+ },
+ "peak_gpu_gb": 12.04084736,
+ "seconds_per_item_cached": [
+  0.49999523162841797,
+  0.4727647304534912,
+  0.47599291801452637,
+  0.48465585708618164,
+  0.5558969974517822,
+  0.48041248321533203,
+  0.48793697357177734,
+  0.49280548095703125
+ ],
+ "PASS": true,
+ "attn_implementation": "sdpa",
+ "prereg_sha256": "8fffffd38682aa842645f87e1946e7efd085e534af0be94cd3af72e35f9fa09b",
+ "script_sha256": "a9220a7bd353294156d259f1d0dcf6d83daeec2c7dcc876f60db41402ee62c3e",
+ "wall_sec": 54.44205641746521
+}

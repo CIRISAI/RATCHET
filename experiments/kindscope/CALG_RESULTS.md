@@ -30,3 +30,27 @@ is an instrument fault (taps summed as if the stream were additive), not a prope
   cost of 11.7 nats.** Layer 34 (last): corr 0.93.
 - GGUF top-1 agreement: not run (no llama.cpp runtime here). The deployed Q4 file stores the same scales as separate
   tensors (`blk.N.layer_output_scale`), so it is the same frame in a different precision class.
+
+## CAL-G-LONG — PASS at the real stage-1 prompt length (`calg_long_result.json`)
+
+Preregistration `PREREG_CALG_LONG.md` with **four amendments, all before any check beyond L0/L1 and token counts**:
+(1) switch to SDPA, blaming attention without reading the traceback — wrong; (2) withdrawn: the 20 GB was full-vocabulary
+logits over 20,742 positions — logits now only where read; (3) SDPA after all, blaming eager attention for a 15.96 GB peak
+— wrong again, and bridged by L0; (4) a memory probe located the peak (sliding-window layers' MLP intermediates and mask,
+15.3 GB; full-attention layers 13.2 GB) → chunked prefill (2,048-token chunks) and L2 restated at 6,144 tokens.
+**Measured:** Gemma-4-E2B-it, float32, SDPA, 8 fit prompts (no labels read), shared prefix 20,742 tokens, items
+21,670–21,687 tokens.
+
+| check | result | bar |
+|---|---|---|
+| L0 SDPA vs eager at CAL-G's 256-token regime | 4.4e-4 | ≤ 1e-3 |
+| L1 digests (prefix, fit) | match | exact |
+| L2 chunked prefill + cache vs one uncached pass (6,144 tokens) | 3.8e-4 | ≤ 1e-3 |
+| L3 scaled frame on the items' own positions (cached) | **1.3e-7** | ≤ 1e-5 |
+| L3′ plain-sum frame | 40.3 — fails | must fail |
+| L4 logits rebuilt linearly (64 positions) | 1.6e-4 | ≤ 1e-3 |
+| L5 cached run twice | identical | identical |
+
+**PASS.** Cached prefix once (peak 10.0 GB), then 0.5 s per item (peak 12.0 GB). EXIT-G may freeze on this instrument
+(SDPA, chunked prefill). Full-length cache equivalence rests on the mechanism checked at 6,144 tokens (stated, not
+measured at 21k).
