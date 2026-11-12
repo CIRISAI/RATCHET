@@ -1,0 +1,91 @@
+{
+ "counts": {
+  "NOUN\u2192other (head)": 962,
+  "ADJ": 457,
+  "NOUN\u2192NOUN (modifier)": 27
+ },
+ "0": {
+  "groups": {
+   "ADJ": [
+    0.095,
+    457
+   ],
+   "NOUN\u2192NOUN (modifier)": [
+    -0.142,
+    27
+   ],
+   "NOUN\u2192other (head)": [
+    -0.099,
+    962
+   ]
+  },
+  "modifier_nouns": [
+   [
+    "kind",
+    -0.12,
+    4
+   ],
+   [
+    "toy",
+    -0.31,
+    4
+   ]
+  ]
+ },
+ "1": {
+  "groups": {
+   "ADJ": [
+    0.079,
+    457
+   ],
+   "NOUN\u2192NOUN (modifier)": [
+    -0.048,
+    27
+   ],
+   "NOUN\u2192other (head)": [
+    -0.062,
+    962
+   ]
+  },
+  "modifier_nouns": [
+   [
+    "kind",
+    -0.1,
+    4
+   ],
+   [
+    "toy",
+    -0.14,
+    4
+   ]
+  ]
+ },
+ "2": {
+  "groups": {
+   "ADJ": [
+    0.107,
+    457
+   ],
+   "NOUN\u2192NOUN (modifier)": [
+    -0.084,
+    27
+   ],
+   "NOUN\u2192other (head)": [
+    -0.095,
+    962
+   ]
+  },
+  "modifier_nouns": [
+   [
+    "kind",
+    -0.14,
+    4
+   ],
+   [
+    "toy",
+    -0.17,
+    4
+   ]
+  ]
+ }
+}
