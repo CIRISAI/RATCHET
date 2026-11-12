@@ -182,7 +182,8 @@ def pending():
             if hashlib.sha256(path.read_bytes()).hexdigest() != e["batch_sha256"]:
                 raise RuntimeError(f"{e['batch']} changed after freeze — refusing to run {e['id']}")
             out.append(check_stake(e["block"]))
-    return out
+    # diagnosis tests first (they settle candidate misfits), then proposer stakes, each in ledger order
+    return sorted(out, key=lambda st: 0 if st.get("from", "").startswith("D") else 1)
 
 
 # ------------------------------------------------------------------ classify
