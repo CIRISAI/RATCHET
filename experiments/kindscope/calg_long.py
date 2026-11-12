@@ -46,6 +46,7 @@ def main(mdir, rdir, out_path):
     log(f"L1 {res['L1']} tokens {res['tokens']}")
     full = Gemma4ForConditionalGeneration.from_pretrained(mdir, dtype=torch.bfloat16, device_map="cpu")
     text = full.model.language_model
+    text.config._attn_implementation = "sdpa"  # Amendment 1: eager materialises a 20 GB score matrix at 20k tokens
     ple = text.embed_tokens_per_layer; text.embed_tokens_per_layer = None
     softcap = full.config.get_text_config().final_logit_softcapping
     dev = torch.device("cuda")
@@ -129,6 +130,7 @@ def main(mdir, rdir, out_path):
     res["peak_gpu_gb"] = torch.cuda.max_memory_allocated() / 1e9
     res["seconds_per_item_cached"] = secs
     res["PASS"] = all(res[c]["pass"] for c in ("L1", "L2", "L3", "L4", "L5")) and res["L3_wrong_frame"]["fails"]
+    res["attn_implementation"] = text.config._attn_implementation
     res.update({"prereg_sha256": sha(os.path.join(os.path.dirname(os.path.abspath(__file__)), "PREREG_CALG_LONG.md")),
                 "script_sha256": sha(os.path.abspath(__file__)), "wall_sec": time.time() - t0})
     log(json.dumps({k: res[k] for k in ("L2", "L3", "L3_wrong_frame", "L4", "L5", "peak_gpu_gb", "PASS")}))

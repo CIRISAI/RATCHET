@@ -40,3 +40,12 @@ distribution at the answer position after `{"selected_action": "` is NOT compute
 ## Outputs
 
 `calg_long.py` (committed before its first run), `calg_long_result.json`, results appended to `CALG_RESULTS.md`.
+
+## Amendment 1 (2026-11-12, before any check other than L1 and the token counts)
+
+The first launch reached L1 (digests match; shared prefix 20,742 tokens; items 21,670–21,687 tokens) and then ran out of
+memory: `transformers` had loaded the text decoder with the **eager** attention kernel (the multimodal class falls back
+to eager because its audio tower does not support SDPA), which materialises a 20 GB score matrix at 20,742 tokens. The
+text decoder supports SDPA and Gemma-4 has no attention logit softcapping, so the decoder is switched to
+`attn_implementation = "sdpa"` for this run. Consequence, stated: the kernel differs from CAL-G's (eager at 256 tokens),
+so L3–L5 calibrate the **SDPA** instrument at long context, and EXIT-G must use the same kernel. Nothing else changes.
