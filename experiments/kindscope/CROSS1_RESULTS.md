@@ -29,3 +29,24 @@ same-category changes. Under the probe (reading) directions alignment is 0.03 at
 moves the state mostly in directions the category map does not chart (word identity), plus a small, reliable component
 along the map's axis that appears once attention has run. Limits: tagger labels; pairs counted per occurrence in the
 frozen design; position shift in unequal-length pairs (the equal-length column is the control, n = 21).
+
+## Exploratory re-read (declared after the result; not a new stake) — `cross1_reread.py`, `cross1_reread.json`
+
+Prompted by cirisholon-d7's reading of the rows. One row per DISTINCT word pair (67), and pairs removed where one reader
+(this session) disputes the tagger's label in context — the list is written out in the script (e.g. "kind", "chubby",
+"jolly" and "pretty" are adjectives in these openings; "Lily" and "Molly" are names). **44 of the 67 distinct word pairs
+are disputed**: most of the "cross-category" set was the tagger's error, i.e. same-category pairs aimed at the wrong axis.
+
+| state | adjective/noun, undisputed (15) | adjective/noun, disputed (18) | all undisputed (23) | all disputed (44) |
+|---|---|---|---|---|
+| embed | +0.07 [−0.03, +0.17] | −0.19 [−0.31, −0.08] | +0.18 [0.07, 0.30] | −0.04 |
+| mlp0 | +0.14 [0.06, 0.21] | +0.04 [−0.05, +0.12] | +0.23 [0.15, 0.33] | +0.09 |
+| mlp2 | +0.18 [0.10, 0.26] | +0.04 [−0.03, +0.12] | +0.27 [0.19, 0.36] | +0.06 |
+| mlp5 | +0.25 [0.19, 0.30] | +0.08 [0.03, 0.13] | +0.29 [0.23, 0.35] | +0.06 |
+
+With the mislabelled pairs out, a real adjective↔noun change aligns with the map's axis at 0.14 after the first block and
+0.25 at the end; the disputed pairs sit near zero, as same-category pairs should. Motion across the map is larger than
+the frozen reading showed, and still a minority of the difference. Standing: exploratory; the dispute list is one
+reader's and should be re-labelled blind before it carries a claim. The lesson for the MAP: the tagger that labels the
+map's categories mislabels common adjectives ("kind", "pretty", "jolly", "chubby") in exactly these contexts, so the
+map's own cells carry that error.
