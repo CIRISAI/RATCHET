@@ -68,7 +68,7 @@ def cmd_status(_):
 
 def cmd_import_vocab1(args):
     res = json.load(open(args[0]))
-    have = {e["id"] for e in L.ledger()}
+    have = {e.get("id") for e in L.ledger()}
     n = 0
     for cell, c in res["cells"].items():
         sid = f"S-V1-{cell}"
