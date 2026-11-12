@@ -1,0 +1,2424 @@
+[
+{
+"word_index": 0,
+"a": "Lily and Ben like to play in the park.",
+"b": "Sara and Ben like to play in the park.",
+"a_word": "Lily",
+"b_word": "Sara",
+"a_pos": "ADV",
+"b_pos": "PROPN",
+"equal_length": true,
+"stories": [
+6213,
+16362
+]
+},
+{
+"word_index": 0,
+"a": "Anna and Ben like to play with blocks.",
+"b": "Lily and Ben like to play with blocks.",
+"a_word": "Anna",
+"b_word": "Lily",
+"a_pos": "PROPN",
+"b_pos": "ADV",
+"equal_length": true,
+"stories": [
+12632,
+15642
+]
+},
+{
+"word_index": 0,
+"a": "Anna and Ben like to pretend.",
+"b": "Lily and Ben like to pretend.",
+"a_word": "Anna",
+"b_word": "Lily",
+"a_pos": "PROPN",
+"b_pos": "ADV",
+"equal_length": true,
+"stories": [
+10508,
+11276
+]
+},
+{
+"word_index": 0,
+"a": "Lily and Ben were playing in the park.",
+"b": "Molly and Ben were playing in the park.",
+"a_word": "Lily",
+"b_word": "Molly",
+"a_pos": "PROPN",
+"b_pos": "ADV",
+"equal_length": false,
+"stories": [
+652,
+12853
+]
+},
+{
+"word_index": 0,
+"a": "Lily and Max were best friends.",
+"b": "Molly and Max were best friends.",
+"a_word": "Lily",
+"b_word": "Molly",
+"a_pos": "PROPN",
+"b_pos": "ADV",
+"equal_length": false,
+"stories": [
+12147,
+7735
+]
+},
+{
+"word_index": 0,
+"a": "Lily and Sam were best friends.",
+"b": "Tim and Sam were best friends.",
+"a_word": "Lily",
+"b_word": "Tim",
+"a_pos": "ADV",
+"b_pos": "PROPN",
+"equal_length": false,
+"stories": [
+9035,
+6568
+]
+},
+{
+"word_index": 0,
+"a": "Lily and Sam were friends who liked to play outside.",
+"b": "Tim and Sam were friends who liked to play outside.",
+"a_word": "Lily",
+"b_word": "Tim",
+"a_pos": "ADV",
+"b_pos": "PROPN",
+"equal_length": false,
+"stories": [
+19173,
+10303
+]
+},
+{
+"word_index": 0,
+"a": "Alice and her mom were walking in the park.",
+"b": "Molly and her mom were walking in the park.",
+"a_word": "Alice",
+"b_word": "Molly",
+"a_pos": "PROPN",
+"b_pos": "ADV",
+"equal_length": true,
+"stories": [
+21079,
+4045
+]
+},
+{
+"word_index": 0,
+"a": "Mia and her mommy were in the kitchen.",
+"b": "Molly and her mommy were in the kitchen.",
+"a_word": "Mia",
+"b_word": "Molly",
+"a_pos": "PROPN",
+"b_pos": "ADV",
+"equal_length": false,
+"stories": [
+3002,
+18887
+]
+},
+{
+"word_index": 0,
+"a": "Anna likes to play with her dolls.",
+"b": "Lily likes to play with her dolls.",
+"a_word": "Anna",
+"b_word": "Lily",
+"a_pos": "PROPN",
+"b_pos": "ADJ",
+"equal_length": true,
+"stories": [
+12623,
+13210
+]
+},
+{
+"word_index": 0,
+"a": "Lila was a very independent girl.",
+"b": "Molly was a very independent girl.",
+"a_word": "Lila",
+"b_word": "Molly",
+"a_pos": "PROPN",
+"b_pos": "ADV",
+"equal_length": false,
+"stories": [
+16549,
+3154
+]
+},
+{
+"word_index": 0,
+"a": "Amy was walking in the park.",
+"b": "Molly was walking in the park.",
+"a_word": "Amy",
+"b_word": "Molly",
+"a_pos": "PROPN",
+"b_pos": "ADV",
+"equal_length": false,
+"stories": [
+20820,
+5868
+]
+},
+{
+"word_index": 2,
+"a": "Once there lived a little girl named Jill.",
+"b": "Once there was a little girl named Jill.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+14597,
+3915
+]
+},
+{
+"word_index": 3,
+"a": "Anna and Ben liked to travel with their mom and dad.",
+"b": "Anna and Ben love to travel with their mom and dad.",
+"a_word": "liked",
+"b_word": "love",
+"a_pos": "VERB",
+"b_pos": "NOUN",
+"equal_length": false,
+"stories": [
+16136,
+17538
+]
+},
+{
+"word_index": 3,
+"a": "Ben and Mia liked to swim in the sea.",
+"b": "Ben and Mia love to swim in the sea.",
+"a_word": "liked",
+"b_word": "love",
+"a_pos": "VERB",
+"b_pos": "NOUN",
+"equal_length": false,
+"stories": [
+16679,
+669
+]
+},
+{
+"word_index": 3,
+"a": "Henry was a brave little boy.",
+"b": "Henry was a jolly little boy.",
+"a_word": "brave",
+"b_word": "jolly",
+"a_pos": "ADJ",
+"b_pos": "ADV",
+"equal_length": true,
+"stories": [
+2419,
+12781
+]
+},
+{
+"word_index": 3,
+"a": "The sun was out and it was a beautiful day.",
+"b": "The sun was shining and it was a beautiful day.",
+"a_word": "out",
+"b_word": "shining",
+"a_pos": "ADV",
+"b_pos": "VERB",
+"equal_length": false,
+"stories": [
+11568,
+12956
+]
+},
+{
+"word_index": 3,
+"a": "Tom and Mia liked to swim in the sea.",
+"b": "Tom and Mia love to swim in the sea.",
+"a_word": "liked",
+"b_word": "love",
+"a_pos": "VERB",
+"b_pos": "NOUN",
+"equal_length": false,
+"stories": [
+9015,
+12608
+]
+},
+{
+"word_index": 4,
+"a": "John was a very clumsy boy.",
+"b": "John was a very organized boy.",
+"a_word": "clumsy",
+"b_word": "organized",
+"a_pos": "ADJ",
+"b_pos": "VERB",
+"equal_length": false,
+"stories": [
+14665,
+20862
+]
+},
+{
+"word_index": 4,
+"a": "Once there was a very old man.",
+"b": "Once there was a wise old man.",
+"a_word": "very",
+"b_word": "wise",
+"a_pos": "ADV",
+"b_pos": "ADJ",
+"equal_length": true,
+"stories": [
+17767,
+355
+]
+},
+{
+"word_index": 4,
+"a": "Once upon a time, Peter was a little boy.",
+"b": "Once upon a time, there was a little boy.",
+"a_word": "Peter",
+"b_word": "there",
+"a_pos": "PROPN",
+"b_pos": "PRON",
+"equal_length": true,
+"stories": [
+11121,
+267
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a brave little girl.",
+"b": "Once upon a time there was a brave little girl.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+20795,
+2447
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a brave prince.",
+"b": "Once upon a time there was a brave prince.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+10846,
+14599
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a fierce lion.",
+"b": "Once upon a time there was a fierce lion.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+21539,
+17559
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a fish.",
+"b": "Once upon a time there was a fish.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+7897,
+19229
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a girl called Daisy.",
+"b": "Once upon a time there was a girl called Daisy.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+19378,
+10024
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a girl called Grace.",
+"b": "Once upon a time there was a girl called Grace.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+20164,
+1125
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a girl called Jane.",
+"b": "Once upon a time there was a girl called Jane.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+4645,
+8356
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a girl named Jane.",
+"b": "Once upon a time there was a girl named Jane.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+8230,
+505
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a girl.",
+"b": "Once upon a time there was a girl.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+21373,
+472
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a hero.",
+"b": "Once upon a time there was a hero.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+3421,
+2814
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a large family.",
+"b": "Once upon a time there was a large family.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+20852,
+4931
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a little boy called Joe.",
+"b": "Once upon a time there was a little boy called Joe.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+4551,
+3507
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a little boy called Peter.",
+"b": "Once upon a time there was a little boy called Peter.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+11571,
+2908
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a little boy named Jack.",
+"b": "Once upon a time there was a little boy named Jack.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+541,
+1842
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a little boy named Joe.",
+"b": "Once upon a time there was a little boy named Joe.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+283,
+1725
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a little boy.",
+"b": "Once upon a time there was a little boy.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+14419,
+1103
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a little girl called Amy.",
+"b": "Once upon a time there was a little girl called Amy.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+16011,
+176
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a little girl called Anna.",
+"b": "Once upon a time there was a little girl called Anna.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+8200,
+460
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a little girl called Sally.",
+"b": "Once upon a time there was a little girl called Sally.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+1465,
+6962
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a little girl called Susie.",
+"b": "Once upon a time there was a little girl called Susie.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+21443,
+4059
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a little girl named Anna.",
+"b": "Once upon a time there was a little girl named Anna.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+7797,
+7116
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a little girl named Hannah.",
+"b": "Once upon a time there was a little girl named Hannah.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+11555,
+4587
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a little girl named Jane.",
+"b": "Once upon a time there was a little girl named Jane.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+18848,
+198
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a little girl named Lucy.",
+"b": "Once upon a time there was a little girl named Lucy.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+416,
+2790
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a little girl named Mary.",
+"b": "Once upon a time there was a little girl named Mary.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+16993,
+19455
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a little girl.",
+"b": "Once upon a time there was a little girl.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+3980,
+265
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a prince.",
+"b": "Once upon a time there was a prince.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+18994,
+7871
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a queen.",
+"b": "Once upon a time there was a queen.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+1575,
+10825
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived a tall man.",
+"b": "Once upon a time there was a tall man.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+7805,
+10856
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived an old lady.",
+"b": "Once upon a time there was an old lady.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+10914,
+17790
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time there lived three friends.",
+"b": "Once upon a time there were three friends.",
+"a_word": "lived",
+"b_word": "were",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+15834,
+8467
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a big bear.",
+"b": "Once upon a time, there was a big bear.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+15959,
+4681
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a boy named Jake.",
+"b": "Once upon a time, there was a boy named Jake.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+5848,
+5012
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a boy.",
+"b": "Once upon a time, there was a boy.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+20735,
+2774
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a brave knight.",
+"b": "Once upon a time, there was a brave knight.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+11508,
+4448
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a bunny.",
+"b": "Once upon a time, there was a bunny.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+21489,
+7134
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a chubby bunny.",
+"b": "Once upon a time, there was a chubby bunny.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+9155,
+4166
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a dog.",
+"b": "Once upon a time, there was a dog.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+5818,
+2795
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a fox.",
+"b": "Once upon a time, there was a fox.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+3550,
+1042
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a girl named Lucy.",
+"b": "Once upon a time, there was a girl named Lucy.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+9305,
+1562
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a girl.",
+"b": "Once upon a time, there was a girl.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+140,
+1155
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a grumpy old man.",
+"b": "Once upon a time, there was a grumpy old man.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+1620,
+15169
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little boy called Jack.",
+"b": "Once upon a time, there was a little boy called Jack.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+18898,
+138
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little boy called John.",
+"b": "Once upon a time, there was a little boy called John.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+9969,
+3156
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little boy called Tom.",
+"b": "Once upon a time, there was a little boy called Tom.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+1191,
+5770
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little boy named Jimmy.",
+"b": "Once upon a time, there was a little boy named Jimmy.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+181,
+1522
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little boy named Sam.",
+"b": "Once upon a time, there was a little boy named Sam.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+4963,
+2451
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little boy.",
+"b": "Once upon a time, there was a little boy.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+1729,
+267
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little bunny.",
+"b": "Once upon a time, there was a little bunny.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+11449,
+1541
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little girl called Amy.",
+"b": "Once upon a time, there was a little girl called Amy.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+12997,
+1252
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little girl called Anna.",
+"b": "Once upon a time, there was a little girl called Anna.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+21074,
+121
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little girl called Daisy.",
+"b": "Once upon a time, there was a little girl called Daisy.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+13936,
+991
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little girl called Lily.",
+"b": "Once upon a time, there was a little girl called Lily.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+5743,
+1806
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little girl called Lucy.",
+"b": "Once upon a time, there was a little girl called Lucy.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+76,
+1069
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little girl called Molly.",
+"b": "Once upon a time, there was a little girl called Molly.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+7882,
+4262
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little girl called Sarah.",
+"b": "Once upon a time, there was a little girl called Sarah.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+5899,
+353
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little girl called Sue.",
+"b": "Once upon a time, there was a little girl called Sue.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+18891,
+1859
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little girl named Alice.",
+"b": "Once upon a time, there was a little girl named Alice.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+2865,
+1634
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little girl named Clara.",
+"b": "Once upon a time, there was a little girl named Clara.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+1484,
+4623
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little girl named Daisy.",
+"b": "Once upon a time, there was a little girl named Daisy.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+1629,
+1595
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little girl named Emily.",
+"b": "Once upon a time, there was a little girl named Emily.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+13837,
+2542
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little girl named Kate.",
+"b": "Once upon a time, there was a little girl named Kate.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+151,
+16031
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little girl named Sarah.",
+"b": "Once upon a time, there was a little girl named Sarah.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+14830,
+1517
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little girl named Sophie.",
+"b": "Once upon a time, there was a little girl named Sophie.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+1559,
+1822
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little girl named Tina.",
+"b": "Once upon a time, there was a little girl named Tina.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+21225,
+12041
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little girl who was very adventurous.",
+"b": "Once upon a time, there was a little girl who was very adventurous.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+2796,
+1047
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a little girl.",
+"b": "Once upon a time, there was a little girl.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+77,
+228
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a pig.",
+"b": "Once upon a time, there was a pig.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+10873,
+2855
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a princess.",
+"b": "Once upon a time, there was a princess.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+2981,
+551
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a rabbit.",
+"b": "Once upon a time, there was a rabbit.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+9264,
+6171
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a special girl.",
+"b": "Once upon a time, there was a special girl.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+20921,
+13913
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a tall man.",
+"b": "Once upon a time, there was a tall man.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+7098,
+3677
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a wealthy man.",
+"b": "Once upon a time, there was a wealthy man.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+14588,
+15989
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a young boy named Jake.",
+"b": "Once upon a time, there was a young boy named Jake.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+2484,
+4291
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a young boy.",
+"b": "Once upon a time, there was a young boy.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+7879,
+2540
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived a young girl.",
+"b": "Once upon a time, there was a young girl.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+165,
+8017
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived two brothers.",
+"b": "Once upon a time, there were two brothers.",
+"a_word": "lived",
+"b_word": "were",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+21408,
+9272
+]
+},
+{
+"word_index": 5,
+"a": "Once upon a time, there lived two friends.",
+"b": "Once upon a time, there were two friends.",
+"a_word": "lived",
+"b_word": "were",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+1231,
+1478
+]
+},
+{
+"word_index": 6,
+"a": "Once there was a mom and a baby.",
+"b": "Once there was a mom and her baby.",
+"a_word": "a",
+"b_word": "her",
+"a_pos": "DET",
+"b_pos": "PRON",
+"equal_length": false,
+"stories": [
+2959,
+9190
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time there was a baby bear named Bob.",
+"b": "Once upon a time there was a little bear named Bob.",
+"a_word": "baby",
+"b_word": "little",
+"a_pos": "NOUN",
+"b_pos": "ADJ",
+"equal_length": false,
+"stories": [
+15806,
+454
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time there was a big bear.",
+"b": "Once upon a time there was a chubby bear.",
+"a_word": "big",
+"b_word": "chubby",
+"a_pos": "ADJ",
+"b_pos": "NOUN",
+"equal_length": false,
+"stories": [
+7746,
+18818
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time there was a metal box.",
+"b": "Once upon a time there was a yellow box.",
+"a_word": "metal",
+"b_word": "yellow",
+"a_pos": "NOUN",
+"b_pos": "ADJ",
+"equal_length": false,
+"stories": [
+17813,
+3140
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time there was a jolly farmer.",
+"b": "Once upon a time there was a kind farmer.",
+"a_word": "jolly",
+"b_word": "kind",
+"a_pos": "ADJ",
+"b_pos": "NOUN",
+"equal_length": false,
+"stories": [
+17588,
+1369
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time there was a corn field.",
+"b": "Once upon a time there was a green field.",
+"a_word": "corn",
+"b_word": "green",
+"a_pos": "NOUN",
+"b_pos": "ADJ",
+"equal_length": false,
+"stories": [
+1158,
+3904
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time there was a coat frame.",
+"b": "Once upon a time there was a gloomy frame.",
+"a_word": "coat",
+"b_word": "gloomy",
+"a_pos": "NOUN",
+"b_pos": "ADJ",
+"equal_length": false,
+"stories": [
+81,
+9943
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time there was a brave little girl called Lily.",
+"b": "Once upon a time there was a pretty little girl called Lily.",
+"a_word": "brave",
+"b_word": "pretty",
+"a_pos": "ADJ",
+"b_pos": "ADV",
+"equal_length": false,
+"stories": [
+5771,
+4242
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time there was a kindly old lady.",
+"b": "Once upon a time there was a wise old lady.",
+"a_word": "kindly",
+"b_word": "wise",
+"a_pos": "ADV",
+"b_pos": "ADJ",
+"equal_length": false,
+"stories": [
+7124,
+4437
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time there was a grumpy old man.",
+"b": "Once upon a time there was a jolly old man.",
+"a_word": "grumpy",
+"b_word": "jolly",
+"a_pos": "ADJ",
+"b_pos": "ADV",
+"equal_length": false,
+"stories": [
+14240,
+2526
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time there was a famous princess.",
+"b": "Once upon a time there was a kind princess.",
+"a_word": "famous",
+"b_word": "kind",
+"a_pos": "ADJ",
+"b_pos": "NOUN",
+"equal_length": false,
+"stories": [
+14553,
+19335
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time there was a brown rabbit.",
+"b": "Once upon a time there was a kind rabbit.",
+"a_word": "brown",
+"b_word": "kind",
+"a_pos": "ADJ",
+"b_pos": "NOUN",
+"equal_length": false,
+"stories": [
+2541,
+279
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time there was a pretty raven.",
+"b": "Once upon a time there was a small raven.",
+"a_word": "pretty",
+"b_word": "small",
+"a_pos": "ADV",
+"b_pos": "ADJ",
+"equal_length": false,
+"stories": [
+14444,
+17672
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time there was a little ship.",
+"b": "Once upon a time there was a rocket ship.",
+"a_word": "little",
+"b_word": "rocket",
+"a_pos": "ADJ",
+"b_pos": "NOUN",
+"equal_length": true,
+"stories": [
+2948,
+4341
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time there was an ancient tree.",
+"b": "Once upon a time there was an ash tree.",
+"a_word": "ancient",
+"b_word": "ash",
+"a_pos": "ADJ",
+"b_pos": "NOUN",
+"equal_length": false,
+"stories": [
+4293,
+1250
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there lived a big bear.",
+"b": "Once upon a time, there lived a kind bear.",
+"a_word": "big",
+"b_word": "kind",
+"a_pos": "ADJ",
+"b_pos": "NOUN",
+"equal_length": false,
+"stories": [
+15959,
+9242
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there lived a chubby bunny.",
+"b": "Once upon a time, there lived a little bunny.",
+"a_word": "chubby",
+"b_word": "little",
+"a_pos": "PROPN",
+"b_pos": "ADJ",
+"equal_length": true,
+"stories": [
+9155,
+11449
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a mommy and a daddy.",
+"b": "Once upon a time, there was a mummy and a daddy.",
+"a_word": "mommy",
+"b_word": "mummy",
+"a_pos": "NOUN",
+"b_pos": "ADJ",
+"equal_length": true,
+"stories": [
+8805,
+1825
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a big bear named Benny.",
+"b": "Once upon a time, there was a chubby bear named Benny.",
+"a_word": "big",
+"b_word": "chubby",
+"a_pos": "ADJ",
+"b_pos": "NOUN",
+"equal_length": false,
+"stories": [
+18733,
+20329
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a busy bee named Buzzy.",
+"b": "Once upon a time, there was a chubby bee named Buzzy.",
+"a_word": "busy",
+"b_word": "chubby",
+"a_pos": "ADJ",
+"b_pos": "NOUN",
+"equal_length": false,
+"stories": [
+3734,
+1044
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a big bucket.",
+"b": "Once upon a time, there was a copper bucket.",
+"a_word": "big",
+"b_word": "copper",
+"a_pos": "ADJ",
+"b_pos": "NOUN",
+"equal_length": false,
+"stories": [
+19290,
+7716
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a chubby bunny named Benny.",
+"b": "Once upon a time, there was a little bunny named Benny.",
+"a_word": "chubby",
+"b_word": "little",
+"a_pos": "NOUN",
+"b_pos": "ADJ",
+"equal_length": true,
+"stories": [
+5443,
+718
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a chubby bunny.",
+"b": "Once upon a time, there was a little bunny.",
+"a_word": "chubby",
+"b_word": "little",
+"a_pos": "NOUN",
+"b_pos": "ADJ",
+"equal_length": true,
+"stories": [
+4166,
+1541
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a bunny carrot.",
+"b": "Once upon a time, there was a mysterious carrot.",
+"a_word": "bunny",
+"b_word": "mysterious",
+"a_pos": "NOUN",
+"b_pos": "ADJ",
+"equal_length": false,
+"stories": [
+2891,
+20241
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a big duck named Ducky.",
+"b": "Once upon a time, there was a kind duck named Ducky.",
+"a_word": "big",
+"b_word": "kind",
+"a_pos": "ADJ",
+"b_pos": "NOUN",
+"equal_length": false,
+"stories": [
+13536,
+12312
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a bossy duck.",
+"b": "Once upon a time, there was a kind duck.",
+"a_word": "bossy",
+"b_word": "kind",
+"a_pos": "ADJ",
+"b_pos": "NOUN",
+"equal_length": false,
+"stories": [
+18692,
+3693
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a kind elephant named Ella.",
+"b": "Once upon a time, there was a young elephant named Ella.",
+"a_word": "kind",
+"b_word": "young",
+"a_pos": "NOUN",
+"b_pos": "ADJ",
+"equal_length": false,
+"stories": [
+5501,
+11935
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a big elephant named Ellie.",
+"b": "Once upon a time, there was a jolly elephant named Ellie.",
+"a_word": "big",
+"b_word": "jolly",
+"a_pos": "ADJ",
+"b_pos": "ADV",
+"equal_length": false,
+"stories": [
+2714,
+20421
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a big elephant.",
+"b": "Once upon a time, there was a pretty elephant.",
+"a_word": "big",
+"b_word": "pretty",
+"a_pos": "ADJ",
+"b_pos": "ADV",
+"equal_length": false,
+"stories": [
+5552,
+15307
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a green frog named Fred.",
+"b": "Once upon a time, there was a jolly frog named Fred.",
+"a_word": "green",
+"b_word": "jolly",
+"a_pos": "ADJ",
+"b_pos": "ADV",
+"equal_length": true,
+"stories": [
+13786,
+11968
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a graceful king.",
+"b": "Once upon a time, there was a kind king.",
+"a_word": "graceful",
+"b_word": "kind",
+"a_pos": "ADJ",
+"b_pos": "NOUN",
+"equal_length": false,
+"stories": [
+15031,
+19892
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a kind lady who lived in a big house.",
+"b": "Once upon a time, there was a wealthy lady who lived in a big house.",
+"a_word": "kind",
+"b_word": "wealthy",
+"a_pos": "NOUN",
+"b_pos": "ADJ",
+"equal_length": false,
+"stories": [
+13643,
+11929
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a generous lady.",
+"b": "Once upon a time, there was a kind lady.",
+"a_word": "generous",
+"b_word": "kind",
+"a_pos": "ADJ",
+"b_pos": "NOUN",
+"equal_length": false,
+"stories": [
+20674,
+19760
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a poor little bird.",
+"b": "Once upon a time, there was a pretty little bird.",
+"a_word": "poor",
+"b_word": "pretty",
+"a_pos": "ADJ",
+"b_pos": "ADV",
+"equal_length": false,
+"stories": [
+16072,
+17431
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a clever little boy named Timmy.",
+"b": "Once upon a time, there was a jolly little boy named Timmy.",
+"a_word": "clever",
+"b_word": "jolly",
+"a_pos": "ADJ",
+"b_pos": "ADV",
+"equal_length": false,
+"stories": [
+2276,
+11225
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a brave little boy.",
+"b": "Once upon a time, there was a jolly little boy.",
+"a_word": "brave",
+"b_word": "jolly",
+"a_pos": "ADJ",
+"b_pos": "ADV",
+"equal_length": true,
+"stories": [
+12920,
+14435
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a happy little girl named Lily.",
+"b": "Once upon a time, there was a jolly little girl named Lily.",
+"a_word": "happy",
+"b_word": "jolly",
+"a_pos": "ADJ",
+"b_pos": "ADV",
+"equal_length": true,
+"stories": [
+2231,
+2717
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a jolly little girl.",
+"b": "Once upon a time, there was a nosy little girl.",
+"a_word": "jolly",
+"b_word": "nosy",
+"a_pos": "ADV",
+"b_pos": "ADJ",
+"equal_length": false,
+"stories": [
+8104,
+3124
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a kind little mouse named Timmy.",
+"b": "Once upon a time, there was a lively little mouse named Timmy.",
+"a_word": "kind",
+"b_word": "lively",
+"a_pos": "NOUN",
+"b_pos": "ADJ",
+"equal_length": false,
+"stories": [
+9118,
+8734
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a beautiful princess.",
+"b": "Once upon a time, there was a kind princess.",
+"a_word": "beautiful",
+"b_word": "kind",
+"a_pos": "ADJ",
+"b_pos": "NOUN",
+"equal_length": false,
+"stories": [
+4989,
+9700
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a fast rabbit named Benny.",
+"b": "Once upon a time, there was a kind rabbit named Benny.",
+"a_word": "fast",
+"b_word": "kind",
+"a_pos": "ADJ",
+"b_pos": "NOUN",
+"equal_length": true,
+"stories": [
+7624,
+12375
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a kind rabbit.",
+"b": "Once upon a time, there was a little rabbit.",
+"a_word": "kind",
+"b_word": "little",
+"a_pos": "NOUN",
+"b_pos": "ADJ",
+"equal_length": false,
+"stories": [
+750,
+3393
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was a apple tree.",
+"b": "Once upon a time, there was a big tree.",
+"a_word": "apple",
+"b_word": "big",
+"a_pos": "NOUN",
+"b_pos": "ADJ",
+"equal_length": false,
+"stories": [
+3110,
+6173
+]
+},
+{
+"word_index": 7,
+"a": "Once upon a time, there was an ancient tree.",
+"b": "Once upon a time, there was an oak tree.",
+"a_word": "ancient",
+"b_word": "oak",
+"a_pos": "ADJ",
+"b_pos": "NOUN",
+"equal_length": false,
+"stories": [
+14896,
+11355
+]
+},
+{
+"word_index": 8,
+"a": "Once there was a little girl who was feeling sad.",
+"b": "Once there was a little girl who was very sad.",
+"a_word": "feeling",
+"b_word": "very",
+"a_pos": "VERB",
+"b_pos": "ADV",
+"equal_length": false,
+"stories": [
+21450,
+15168
+]
+},
+{
+"word_index": 8,
+"a": "Once upon a time there was a big oak tree.",
+"b": "Once upon a time there was a big old tree.",
+"a_word": "oak",
+"b_word": "old",
+"a_pos": "NOUN",
+"b_pos": "ADJ",
+"equal_length": true,
+"stories": [
+9224,
+4604
+]
+},
+{
+"word_index": 8,
+"a": "Once upon a time there was an old oak tree.",
+"b": "Once upon a time there was an old wise tree.",
+"a_word": "oak",
+"b_word": "wise",
+"a_pos": "NOUN",
+"b_pos": "ADJ",
+"equal_length": false,
+"stories": [
+8353,
+4281
+]
+},
+{
+"word_index": 8,
+"a": "Once upon a time, there was a big, bright castle.",
+"b": "Once upon a time, there was a big, broken castle.",
+"a_word": "bright",
+"b_word": "broken",
+"a_pos": "ADJ",
+"b_pos": "VERB",
+"equal_length": true,
+"stories": [
+17655,
+1267
+]
+},
+{
+"word_index": 8,
+"a": "Once upon a time, there was a little bird named Blue.",
+"b": "Once upon a time, there was a little fishy named Blue.",
+"a_word": "bird",
+"b_word": "fishy",
+"a_pos": "NOUN",
+"b_pos": "ADJ",
+"equal_length": false,
+"stories": [
+5528,
+10663
+]
+},
+{
+"word_index": 8,
+"a": "Once upon a time, there was a little fish named Nemo.",
+"b": "Once upon a time, there was a little fishy named Nemo.",
+"a_word": "fish",
+"b_word": "fishy",
+"a_pos": "NOUN",
+"b_pos": "ADJ",
+"equal_length": false,
+"stories": [
+2279,
+4723
+]
+},
+{
+"word_index": 8,
+"a": "One day, a boy named Tim found a big motorcycle.",
+"b": "One day, a boy named Tim found a toy motorcycle.",
+"a_word": "big",
+"b_word": "toy",
+"a_pos": "ADJ",
+"b_pos": "NOUN",
+"equal_length": true,
+"stories": [
+18428,
+19720
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time there was a mommy and a baby.",
+"b": "Once upon a time there was a mommy and her baby.",
+"a_word": "a",
+"b_word": "her",
+"a_pos": "DET",
+"b_pos": "PRON",
+"equal_length": false,
+"stories": [
+3045,
+2487
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, in a faraway land, there lived a little boy named Tim.",
+"b": "Once upon a time, in a faraway land, there was a little boy named Tim.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+12058,
+9391
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, in a small house, there lived a boy named Tom.",
+"b": "Once upon a time, in a small house, there was a boy named Tom.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+5485,
+5613
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, in a small house, there lived a girl named Lily.",
+"b": "Once upon a time, in a small house, there was a girl named Lily.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+1270,
+3775
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, in a small house, there lived a little boy named Tim.",
+"b": "Once upon a time, in a small house, there was a little boy named Tim.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+16617,
+16641
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, in a small house, there lived a little girl named Amy.",
+"b": "Once upon a time, in a small house, there was a little girl named Amy.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+12,
+9728
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, in a small house, there lived a little girl named Lily.",
+"b": "Once upon a time, in a small house, there was a little girl named Lily.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+19827,
+6474
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, in a small house, there lived a little girl named Mia.",
+"b": "Once upon a time, in a small house, there was a little girl named Mia.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+7247,
+5637
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, in a small house, there lived a little girl named Sue.",
+"b": "Once upon a time, in a small house, there was a little girl named Sue.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+9725,
+18543
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, in a small town, there lived a boy named Tim.",
+"b": "Once upon a time, in a small town, there was a boy named Tim.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+9633,
+6111
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, in a small town, there lived a boy named Tom.",
+"b": "Once upon a time, in a small town, there was a boy named Tom.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+21720,
+18655
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, in a small town, there lived a girl named Lily.",
+"b": "Once upon a time, in a small town, there was a girl named Lily.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+7481,
+13549
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, in a small town, there lived a little boy named Tim.",
+"b": "Once upon a time, in a small town, there was a little boy named Tim.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+1261,
+41
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, in a small town, there lived a little girl named Amy.",
+"b": "Once upon a time, in a small town, there was a little girl named Amy.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+8632,
+5700
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, in a small town, there lived a wise old owl.",
+"b": "Once upon a time, in a small town, there was a wise old owl.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+6478,
+18725
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, in a small village, there lived a little boy named Tim.",
+"b": "Once upon a time, in a small village, there was a little boy named Tim.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+5674,
+8912
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, in a small village, there lived a little girl named Lily.",
+"b": "Once upon a time, in a small village, there was a little girl named Lily.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+7917,
+3768
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, in a small village, there lived a little girl named Lucy.",
+"b": "Once upon a time, in a small village, there was a little girl named Lucy.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+18577,
+8603
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, in an ordinary town, there lived a little girl named Lily.",
+"b": "Once upon a time, in an ordinary town, there was a little girl named Lily.",
+"a_word": "lived",
+"b_word": "was",
+"a_pos": "VERB",
+"b_pos": "AUX",
+"equal_length": false,
+"stories": [
+9711,
+17304
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, there was a dad and a son.",
+"b": "Once upon a time, there was a dad and his son.",
+"a_word": "a",
+"b_word": "his",
+"a_pos": "DET",
+"b_pos": "PRON",
+"equal_length": false,
+"stories": [
+20150,
+19260
+]
+},
+{
+"word_index": 9,
+"a": "Once upon a time, there was a mom and a daughter.",
+"b": "Once upon a time, there was a mom and her daughter.",
+"a_word": "a",
+"b_word": "her",
+"a_pos": "DET",
+"b_pos": "PRON",
+"equal_length": false,
+"stories": [
+12681,
+3401
+]
+},
+{
+"word_index": 11,
+"a": "Once upon a time there was a girl who wanted to do something special.",
+"b": "Once upon a time there was a girl who wanted to make something special.",
+"a_word": "do",
+"b_word": "make",
+"a_pos": "AUX",
+"b_pos": "VERB",
+"equal_length": false,
+"stories": [
+17594,
+14342
+]
+},
+{
+"word_index": 12,
+"a": "Once upon a time, in a big park, there was a little ant named Tim.",
+"b": "Once upon a time, in a big park, there was a little boy named Tim.",
+"a_word": "ant",
+"b_word": "boy",
+"a_pos": "ADJ",
+"b_pos": "NOUN",
+"equal_length": true,
+"stories": [
+16480,
+9631
+]
+}
+]
