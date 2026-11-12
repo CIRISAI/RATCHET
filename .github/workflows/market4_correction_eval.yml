@@ -111,6 +111,10 @@ jobs:
     name: Plan (verify cases, pin engine)
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # contents: write only so this job can read a DRAFT release (the candidate wheel); it runs no agent. The episode
+    # jobs keep the workflow's read-only token and receive the wheel as an artifact.
+    permissions:
+      contents: write
     outputs:
       cases: ${{ steps.cases.outputs.cases }}
     steps:
@@ -173,6 +177,27 @@ jobs:
             /tmp/m4-cases/freeze-cases.jsonl
             /tmp/m4-cases/run-manifest.json
           retention-days: 90
+      - name: Stage the candidate ciris-server wheel
+        if: inputs.server_wheel_release != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/m4-wheel
+          gh release download "${{ inputs.server_wheel_release }}" -R "${{ github.repository }}" -p 'ciris_server-*.whl' -D /tmp/m4-wheel
+          WHL=$(ls /tmp/m4-wheel/ciris_server-*.whl | head -1)
+          GOT=$(sha256sum "$WHL" | cut -d' ' -f1)
+          if [ "$GOT" != "${{ inputs.server_wheel_sha256 }}" ]; then
+            echo "::error::server wheel sha256 mismatch: got $GOT, expected ${{ inputs.server_wheel_sha256 }}"; exit 1
+          fi
+          echo "staged $(basename "$WHL") sha256 $GOT"
+      - if: inputs.server_wheel_release != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: m4-server-wheel
+          path: /tmp/m4-wheel/
+          retention-days: 30
 
   episode:
     name: ${{ matrix.item.tag }}
@@ -214,11 +239,14 @@ jobs:
             sudo apt-get install -y --no-install-recommends libtss2-tctildr0 libtss2-esys-3.0.2-0 libtss2-mu-4.0.1-0 && break
             sleep 15
           done
+      - if: inputs.server_wheel_release != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: m4-server-wheel
+          path: /tmp/m4-wheel
       - name: Install the agent and the QA runner
         working-directory: agent
         shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
@@ -234,8 +262,6 @@ jobs:
           pip install "${CONSTRAINT_ARGS[@]}" -e .
           pip install "${CONSTRAINT_ARGS[@]}" -r requirements-dev.txt
           if [ -n "${{ inputs.server_wheel_release }}" ]; then
-            mkdir -p /tmp/m4-wheel
-            gh release download "${{ inputs.server_wheel_release }}" -R "${{ github.repository }}" -p 'ciris_server-*.whl' -D /tmp/m4-wheel
             WHL=$(ls /tmp/m4-wheel/ciris_server-*.whl | head -1)
             GOT=$(sha256sum "$WHL" | cut -d' ' -f1)
             if [ "$GOT" != "${{ inputs.server_wheel_sha256 }}" ]; then
