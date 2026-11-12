@@ -46,21 +46,25 @@ From the hand-over on Gemma-4-E2B (all *measured*, one model, one quantisation, 
 
 ## Series
 
-| step | name | question | gate |
+| step | name | question | state |
 |---|---|---|---|
-| 1 | **CAL-1** | Does our port reproduce the published model exactly, and does the frame close? | `PREREG_CAL1.md` |
-| 2 | VOCAB-1 | Where across layers are parts of speech / noun-verb carried in the base, against a shuffled-label null? | prereg before run |
-| 3 | FORK-1 | From the base map, predict what each harness's weight change does; measure; register misfits | prereg before run |
-| 4 | IMAGE-1 | Render states/writes/attributions, each stating its frame (basis, normalisation, input set, layer) | after 2–3 |
-| 5 | KIND-1 | Carry the instrument to the 11+1 kinds | fresh labelled set |
+| 1 | **CAL-1** | Does our port reproduce the published model exactly, and does the frame close? | PASS (`CAL1_RESULTS.md`) |
+| 2 | VOCAB-1 | Where across layers are parts of speech carried in the base, against a shuffled-label null? | running |
+| 2a | MLP0-1 | Is mlp0 a lexical lookup at a word's last byte? | P1–P3 hold (`MLP0_1_RESULTS.md`) |
+| 2b | MLP0-2 | Is that lookup keyed on the word's final bytes (H-SUFFIX vs H-PREFIX)? CONFIRM split | running |
+| 3 | EDIT-1 | One category shift (more ADJ after DET, a **Manner** change) by rank-one surgical edit at each MLP vs full fine-tune vs readout-only map — what does each change, and where? | running |
+| 4 | EDIT-K | **One edit per kind of change** (CIRISConstitution CC 1.13.4: Facts, Rules, Manner, Identity; Priorities, Confidence, Circumstances, Process, Structure, Model, Premises) — does each kind land in a different place and shape in the weights? The theory-of-mind axis: which H3ERE reasoning stage an edit acts on | design after EDIT-1 |
+| 5 | FORK-1 | The 27 harness forks and the safety-battery green/non-green fine-tunes: predict each fork's weight change from the map, measure, register misfits | after EDIT-K |
+| 6 | IMAGE | Every series ships images of the progression (states, writes, weight trajectories during fine-tunes), each stating its frame | continuous (`figs/`) |
+| 7 | KIND-1 | Carry the instrument to the 11+1 kinds and ASPDMA verbs | fresh blind-authored set (coordinate with cirisholon-d7) |
 
-## Residual analysis (the statistical misfit rule)
+## Misfits and the loop (principled exploration)
 
-Every prediction is logged with its realised outcome. Failures are clustered by **signature** (site, category, edit
-type, sign and size of error). A cluster is entered as a misfit only if it recurs beyond a **shuffled-label null** (the
-null that killed closure on Gemma). Each misfit gets an id, a one-line reason and the run it was born in; later
-preregistrations must cite any misfit whose keywords they touch. Bars come from a prior stake, prior art or a plant
-on the carrier of record — never from the reading they grade (holon M-BAR-FROM-THE-READ).
+A misfit is a **named defect of method** born from one diagnosed failure, not a statistical finding; it carries a rule
+and the obligations every later stake must meet (`loop/registry.ks`, rendered to `MISFITS.md`). The loop (`ks.py`,
+`loop/README.md`) proposes stakes deterministically, audits them against the registry, runs them behind a plant and a
+power check, and sends unexplained misses to a diagnoser whose candidate misfit is registered only if its own test
+stake hits on the unread CONFIRM split. Theories formed by looking at EXPLORE are tested on CONFIRM.
 
 ## Running
 
