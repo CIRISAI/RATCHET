@@ -52,3 +52,15 @@ ten-verb question, not this binary one).
 - **E2:** the same head beats the surface baseline's pair score (otherwise E1 is a word-match).
 - **E3:** the head beats the final-readout fix (otherwise "exit early" buys nothing a cheap readout does not).
 - Descriptive: A1 − A2; RESERVE opened once, later, for the two unseen pair kinds.
+
+## Template (added 2026-11-12)
+
+Prompts are rendered under the DEFAULT agent template (Ally; render `…-default-template-2026-11-12`, renderer
+`bfe2a741`), with the base no-template render as a third arm. The template sends medical, LEGAL, FINANCIAL and
+mental-health-crisis matters to professionals in three places (identity text, the action-selection DEFER block, DSDMA
+domain knowledge). Template-touched domains come from CIRISHolon `c53346a` `stop_scenario_domains.tsv` (fields, not
+parsed text): fit — hospitals (medical); CONFIRM — housing (legal, financial, mental-health crisis) and shipping weakly
+(legal, one setting of five); reserve — rescue and relief camps; cross-cutting — triage (medical everywhere), lethal and
+some harm scenarios, and money in every item as the cost distractor. **CONFIRM covers the template-pushed case in housing
+and weakly in shipping, and not for medical settings.** The list of template-touched "none required" items is drawn from
+that table and the cross-cutting pairs before the freeze; DEFER there is a floor, in its own column.

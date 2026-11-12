@@ -54,3 +54,11 @@ logits over 20,742 positions — logits now only where read; (3) SDPA after all,
 **PASS.** Cached prefix once (peak 10.0 GB), then 0.5 s per item (peak 12.0 GB). EXIT-G may freeze on this instrument
 (SDPA, chunked prefill). Full-length cache equivalence rests on the mechanism checked at 6,144 tokens (stated, not
 measured at 21k).
+
+## CAL-G-LONG on the default-template render — PASS (`calg_long_template_result.json`, Amendment 5)
+
+Render `/home/emoore/blindverb1-rendered-default-template-2026-11-12/` (renderer `bfe2a741`, template Ally `f3f38b51…`,
+prefix `ae3a8ba8…`). Shared prefix 20,438 tokens, items 22,826–22,857 tokens (the template's user-message opening adds
+~1,160 tokens per item, so each item's own part is ~2,400 tokens). L0 4.4e-4, L1 match, L2 3.8e-4, L3 **1.5e-7**
+(plain sum 37.9, fails), L4 1.4e-4, L5 identical. Peak GPU 15.29 GB of 15.57 — it fits with ~0.3 GB to spare, so EXIT-G
+must run alone on the GPU and feed each item's own tokens in chunks if anything is added.
