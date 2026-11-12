@@ -1,0 +1,228 @@
+{
+ "readme": "Exploration (the 8 trace items, unseen stories): what each attention head's single strongest source is.\nNot a test: top-1 only; categories overlap (the previous character can be the word start); attention weight says where\na head reads from, not how much that matters (KS-DIRECT-ONLY / KS-PRICE-NOT-COST).",
+ "heads": {
+  "attn0/h0": {
+   "self": 0.024,
+   "prev": 0.02,
+   "word_start": 0.02,
+   "space_before_word": 0.004,
+   "prefix": 0.385,
+   "mean_top1_weight": 0.222,
+   "positions": 1928
+  },
+  "attn0/h1": {
+   "self": 0.036,
+   "prev": 0.052,
+   "word_start": 0.039,
+   "space_before_word": 0.126,
+   "prefix": 0.017,
+   "mean_top1_weight": 0.097,
+   "positions": 1928
+  },
+  "attn0/h2": {
+   "self": 0.001,
+   "prev": 0.464,
+   "word_start": 0.299,
+   "space_before_word": 0.122,
+   "prefix": 0.004,
+   "mean_top1_weight": 0.478,
+   "positions": 1928
+  },
+  "attn0/h3": {
+   "self": 0.048,
+   "prev": 0.901,
+   "word_start": 0.175,
+   "space_before_word": 0.198,
+   "prefix": 0.004,
+   "mean_top1_weight": 0.407,
+   "positions": 1928
+  },
+  "attn1/h0": {
+   "self": 0.468,
+   "prev": 0.224,
+   "word_start": 0.137,
+   "space_before_word": 0.185,
+   "prefix": 0.018,
+   "mean_top1_weight": 0.162,
+   "positions": 1928
+  },
+  "attn1/h1": {
+   "self": 0.183,
+   "prev": 0.16,
+   "word_start": 0.267,
+   "space_before_word": 0.042,
+   "prefix": 0.025,
+   "mean_top1_weight": 0.145,
+   "positions": 1928
+  },
+  "attn1/h2": {
+   "self": 0.0,
+   "prev": 0.0,
+   "word_start": 0.0,
+   "space_before_word": 0.0,
+   "prefix": 1.0,
+   "mean_top1_weight": 0.074,
+   "positions": 1928
+  },
+  "attn1/h3": {
+   "self": 0.188,
+   "prev": 0.163,
+   "word_start": 0.156,
+   "space_before_word": 0.0,
+   "prefix": 0.004,
+   "mean_top1_weight": 0.13,
+   "positions": 1928
+  },
+  "attn2/h0": {
+   "self": 0.298,
+   "prev": 0.264,
+   "word_start": 0.189,
+   "space_before_word": 0.061,
+   "prefix": 0.0,
+   "mean_top1_weight": 0.222,
+   "positions": 1928
+  },
+  "attn2/h1": {
+   "self": 0.214,
+   "prev": 0.304,
+   "word_start": 0.127,
+   "space_before_word": 0.045,
+   "prefix": 0.0,
+   "mean_top1_weight": 0.431,
+   "positions": 1928
+  },
+  "attn2/h2": {
+   "self": 0.245,
+   "prev": 0.197,
+   "word_start": 0.06,
+   "space_before_word": 0.313,
+   "prefix": 0.046,
+   "mean_top1_weight": 0.169,
+   "positions": 1928
+  },
+  "attn2/h3": {
+   "self": 0.177,
+   "prev": 0.231,
+   "word_start": 0.393,
+   "space_before_word": 0.004,
+   "prefix": 0.004,
+   "mean_top1_weight": 0.681,
+   "positions": 1928
+  },
+  "attn3/h0": {
+   "self": 0.147,
+   "prev": 0.165,
+   "word_start": 0.049,
+   "space_before_word": 0.016,
+   "prefix": 0.009,
+   "mean_top1_weight": 0.284,
+   "positions": 1928
+  },
+  "attn3/h1": {
+   "self": 0.165,
+   "prev": 0.206,
+   "word_start": 0.009,
+   "space_before_word": 0.61,
+   "prefix": 0.012,
+   "mean_top1_weight": 0.573,
+   "positions": 1928
+  },
+  "attn3/h2": {
+   "self": 0.175,
+   "prev": 0.396,
+   "word_start": 0.253,
+   "space_before_word": 0.121,
+   "prefix": 0.0,
+   "mean_top1_weight": 0.351,
+   "positions": 1928
+  },
+  "attn3/h3": {
+   "self": 0.162,
+   "prev": 0.239,
+   "word_start": 0.253,
+   "space_before_word": 0.0,
+   "prefix": 0.008,
+   "mean_top1_weight": 0.403,
+   "positions": 1928
+  },
+  "attn4/h0": {
+   "self": 0.099,
+   "prev": 0.093,
+   "word_start": 0.016,
+   "space_before_word": 0.029,
+   "prefix": 0.01,
+   "mean_top1_weight": 0.293,
+   "positions": 1928
+  },
+  "attn4/h1": {
+   "self": 0.165,
+   "prev": 0.322,
+   "word_start": 0.08,
+   "space_before_word": 0.037,
+   "prefix": 0.023,
+   "mean_top1_weight": 0.32,
+   "positions": 1928
+  },
+  "attn4/h2": {
+   "self": 0.087,
+   "prev": 0.163,
+   "word_start": 0.114,
+   "space_before_word": 0.077,
+   "prefix": 0.009,
+   "mean_top1_weight": 0.278,
+   "positions": 1928
+  },
+  "attn4/h3": {
+   "self": 0.126,
+   "prev": 0.34,
+   "word_start": 0.113,
+   "space_before_word": 0.07,
+   "prefix": 0.004,
+   "mean_top1_weight": 0.415,
+   "positions": 1928
+  },
+  "attn5/h0": {
+   "self": 0.043,
+   "prev": 0.05,
+   "word_start": 0.025,
+   "space_before_word": 0.026,
+   "prefix": 0.209,
+   "mean_top1_weight": 0.269,
+   "positions": 1928
+  },
+  "attn5/h1": {
+   "self": 0.06,
+   "prev": 0.077,
+   "word_start": 0.024,
+   "space_before_word": 0.135,
+   "prefix": 0.032,
+   "mean_top1_weight": 0.164,
+   "positions": 1928
+  },
+  "attn5/h2": {
+   "self": 0.093,
+   "prev": 0.11,
+   "word_start": 0.011,
+   "space_before_word": 0.025,
+   "prefix": 0.019,
+   "mean_top1_weight": 0.267,
+   "positions": 1928
+  },
+  "attn5/h3": {
+   "self": 0.12,
+   "prev": 0.022,
+   "word_start": 0.001,
+   "space_before_word": 0.038,
+   "prefix": 0.224,
+   "mean_top1_weight": 0.174,
+   "positions": 1928
+  }
+ },
+ "nameable_exploratory": {
+  "attn0/h3": "previous character (90%)",
+  "attn2/h3": "first letter of the current word (39%, weight 0.68)",
+  "attn3/h1": "the space just before the current word (61%)",
+  "attn1/h2": "the story's opening prefix (100%, diffuse weight 0.07: a resting place)"
+ },
+ "suspected_not_tested": "attn0/h3 (previous character) feeds mlp0's lookup keyed on a word's final bytes (MLP0-4); test: ablate attn0/h3 and measure mlp0's suffix lookup"
+}
