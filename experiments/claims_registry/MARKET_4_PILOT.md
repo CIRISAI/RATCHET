@@ -1,3 +1,19 @@
+> **2026-11-12: the ciris-server 0.5.246 candidate passes the Market 4 gate (CIRISServer#871).** RATCHET run
+> 43142893883, case smoke6-obj (throwaway smoke cases v6), harness `market4/on-v2200` `3487dd17`, engine CIRISAgent
+> v2.20.0-stable `f0a07995` (tree byte-identical), with the candidate wheel installed over the agent's 0.5.245 pin:
+> `ciris_server-0.5.246` from CIRISServer `release/0.5.246` `d892af04` (contains the #871 fix `b3797a79` and the
+> `agreed` field `88032b00`), sha256 `05172f9d`. The wheel was staged as a DRAFT RATCHET release and fetched by the
+> plan job (no agent) and handed to the episode as an artifact; the attested pip freeze shows it installed. Measured,
+> one episode:
+> - `amendment_outcome: landed` (audit memorize success ×2, no refusal lines in the agent log), after 39/39 refusals on 0.5.245;
+> - `occurrences_readback`: the agent's occurrence row `agreed: true, revoked: false` at all 7 read points, login to after restart;
+> - `ceg_rows`: request → owner-signed `deferral:response:approved:v1` → `identity_amendment:v1`; references, `authorized_by`,
+>   digest and subject checks all hold;
+> - uptake true, persisted after restart true (baseline did not already pass).
+>
+> This clears the checklist's gate condition for the candidate. The freeze still waits for a CIRISAgent release that pins
+> ciris-server ≥ 0.5.246, per the 2026-11-10 decision; a gate run on that release repeats this before the battery freezes.
+
 > **2026-11-10: harness moved to v2.20.0-stable; four-case battery drafted; freeze held until a release pins
 > ciris-server ≥ 0.5.246.** Labels per `CIRISOntology/epistemology.md` §1. Every *measured* item is one model
 > (qwen/qwen3.6-35b-a3b), engine CIRISAgent v2.20.0-stable `f0a07995` (ciris-server 0.5.245), one episode per case.
