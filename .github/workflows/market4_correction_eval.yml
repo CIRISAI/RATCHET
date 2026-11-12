@@ -82,6 +82,16 @@ on:
         required: false
         default: '20261022'
         type: string
+      server_wheel_release:
+        description: 'Optional: tag of a (draft) RATCHET release holding a candidate ciris-server wheel, installed over the agent pin with --force-reinstall --no-deps. Blank = the agent pin'
+        required: false
+        default: ''
+        type: string
+      server_wheel_sha256:
+        description: 'sha256 of that wheel; the run refuses on mismatch (required with server_wheel_release)'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   id-token: write
@@ -152,6 +162,7 @@ jobs:
                      "constraints_url": "${{ inputs.constraints_url }}", "constraints_sha256": "${{ inputs.constraints_sha256 }}",
                      "provider_order": "${{ inputs.provider_order }}", "llm_seed": "${{ inputs.llm_seed }}",
                      "workflow_ref": "${{ github.ref }}",
+                     "server_wheel_release": "${{ inputs.server_wheel_release }}", "server_wheel_sha256": "${{ inputs.server_wheel_sha256 }}",
                      "run_id": "${{ github.run_id }}", "cases": json.loads(open("/dev/stdin").read())},
                     open("/tmp/m4-cases/run-manifest.json", "w"), indent=1)
           ' <<< "$CASES"
@@ -206,6 +217,8 @@ jobs:
       - name: Install the agent and the QA runner
         working-directory: agent
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
@@ -220,6 +233,17 @@ jobs:
           fi
           pip install "${CONSTRAINT_ARGS[@]}" -e .
           pip install "${CONSTRAINT_ARGS[@]}" -r requirements-dev.txt
+          if [ -n "${{ inputs.server_wheel_release }}" ]; then
+            mkdir -p /tmp/m4-wheel
+            gh release download "${{ inputs.server_wheel_release }}" -R "${{ github.repository }}" -p 'ciris_server-*.whl' -D /tmp/m4-wheel
+            WHL=$(ls /tmp/m4-wheel/ciris_server-*.whl | head -1)
+            GOT=$(sha256sum "$WHL" | cut -d' ' -f1)
+            if [ "$GOT" != "${{ inputs.server_wheel_sha256 }}" ]; then
+              echo "::error::server wheel sha256 mismatch: got $GOT, expected ${{ inputs.server_wheel_sha256 }}"; exit 1
+            fi
+            pip install --force-reinstall --no-deps "$WHL"
+            echo "candidate ciris-server installed: $(basename "$WHL") sha256 $GOT"
+          fi
           mkdir -p qa_reports/correction_episodes
           pip freeze --exclude-editable > "qa_reports/correction_episodes/${{ matrix.item.case }}_env_logs_pip-freeze.txt" || true
           mkdir -p "qa_reports/correction_episodes/${{ matrix.item.case }}_env_logs"
