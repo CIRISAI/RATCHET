@@ -58,3 +58,12 @@ the script's own `last_hidden_state @ head.T`. Amendment 1 blamed the attention 
 **Corrected:** the kernel goes back to CAL-G's (eager, as loaded), so no kernel changes between CAL-G and CAL-G-LONG; the
 script computes logits only at the positions a check reads (none for the prefix pass; the last 32 for L2; the item's
 last 8 for L4; the item's own positions' final 32 for L5). Amendment 1 is withdrawn and kept.
+
+## Amendment 3 (2026-11-12, before any check other than L1 and the token counts)
+
+With logits restricted (Amendment 2), the eager prefix pass completed but **peaked at 15.96 GB** of 15.57 GB usable — the
+eager kernel materialises each full-attention layer's score matrix (8 heads × 20,742² × 4 B ≈ 13.8 GB, transient) — and
+the item pass then ran out of memory. So Amendment 1's remedy (SDPA) is needed, for a reason measured this time: peak
+memory, not a guessed allocation. The text decoder runs **SDPA** for CAL-G-LONG and EXIT-G, and a bridge check is added
+first: **L0** — at CAL-G's own regime (the first 2 FRESH-1 stories of CAL-G's set, 256 tokens), SDPA and eager
+pre-softcap logits agree within 1e-3 (max abs). If L0 fails, the run is VOID and the kernel question is reopened.

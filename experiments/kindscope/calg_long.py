@@ -46,11 +46,32 @@ def main(mdir, rdir, out_path):
     log(f"L1 {res['L1']} tokens {res['tokens']}")
     full = Gemma4ForConditionalGeneration.from_pretrained(mdir, dtype=torch.bfloat16, device_map="cpu")
     text = full.model.language_model
-    # Amendment 2: Amendment 1 (sdpa) withdrawn — the kernel stays as loaded (eager, CAL-G's); the 20 GB was the logits
+    # Amendment 3: SDPA after all (eager's full-attention score matrices peaked the GPU at 15.96 GB); L0 bridges kernels
+    def short_logits(impl, toks):
+        text.config._attn_implementation = impl
+        t = torch.tensor([toks], dtype=torch.long)
+        emb = text.embed_tokens(t.to(dev))
+        pl = ple(t).reshape(1, len(toks), text.config.num_hidden_layers, text.config.hidden_size_per_layer_input).to(dev, torch.float32)
+        return text(inputs_embeds=emb, per_layer_inputs=pl, use_cache=False).last_hidden_state[0] @ text.embed_tokens.weight.detach().T
     ple = text.embed_tokens_per_layer; text.embed_tokens_per_layer = None
     softcap = full.config.get_text_config().final_logit_softcapping
     dev = torch.device("cuda")
     text.to(dev, torch.float32)
+    # ---- L0: SDPA vs eager at CAL-G's regime (first 2 stories of CAL-G's FRESH-1 set, 256 tokens, BOS explicit)
+    vset_path = os.environ.get("KS_VALID", "/tmp/claude-1000/-home-emoore-RATCHET/4fdbd195-6bf1-45c9-8ffc-931540da4e4d/scratchpad/gw_data/TinyStories-valid.txt")
+    fresh_path = os.environ.get("KS_FRESH", "/tmp/claude-1000/-home-emoore-RATCHET/4fdbd195-6bf1-45c9-8ffc-931540da4e4d/scratchpad/gw_fresh/TinyStories-train.head20MiB.txt")
+    vset = set(p.strip() for p in open(vset_path, "rb").read().split(b"<|endoftext|>") if p.strip())
+    parts = open(fresh_path, "rb").read().split(b"<|endoftext|>")[1:-1]
+    kept = [p.strip() for p in parts if p.strip() and all(c < 128 for c in p.strip()) and p.strip() not in vset]
+    l0 = 0.0
+    for st_ in kept[8000:8002]:
+        tk = ([tok.bos_token_id] + tok(st_.decode("ascii"), add_special_tokens=False)["input_ids"])[:256]
+        a_ = short_logits("eager", tk); b_ = short_logits("sdpa", tk)
+        l0 = max(l0, float((a_ - b_).abs().max())); del a_, b_
+    text.config._attn_implementation = "sdpa"
+    res["L0"] = {"max_abs_sdpa_vs_eager_256": l0, "pass": l0 <= 1e-3}
+    print(f"L0 {res['L0']}", flush=True)
+    torch.cuda.empty_cache()
     head = text.embed_tokens.weight.detach()
     nl = text.config.num_hidden_layers
     hpl = text.config.hidden_size_per_layer_input
@@ -131,7 +152,7 @@ def main(mdir, rdir, out_path):
     res["L5"] = {"identical": det, "pass": det}
     res["peak_gpu_gb"] = torch.cuda.max_memory_allocated() / 1e9
     res["seconds_per_item_cached"] = secs
-    res["PASS"] = all(res[c]["pass"] for c in ("L1", "L2", "L3", "L4", "L5")) and res["L3_wrong_frame"]["fails"]
+    res["PASS"] = all(res[c]["pass"] for c in ("L0", "L1", "L2", "L3", "L4", "L5")) and res["L3_wrong_frame"]["fails"]
     res["attn_implementation"] = str(getattr(text.config, "_attn_implementation", None))
     res.update({"prereg_sha256": sha(os.path.join(os.path.dirname(os.path.abspath(__file__)), "PREREG_CALG_LONG.md")),
                 "script_sha256": sha(os.path.abspath(__file__)), "wall_sec": time.time() - t0})
