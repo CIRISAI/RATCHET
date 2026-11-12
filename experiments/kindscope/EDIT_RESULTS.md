@@ -71,3 +71,12 @@ decays when the force stops. Next: deflection (share of the base→target gap cl
   loss: same word 0.0014, same last 3 bytes 0.0023, same first 3 bytes 0.260; **P2 = +0.258 [0.255, 0.261]**.
   With MLP0-2's η² (CONFIRM), H-SUFFIX holds on two independent tests: **mlp0 is a lookup keyed on a word's final
   bytes** (measured, this checkpoint).
+
+## WIRE-1 — attn0/h3 → mlp0 (`wire1_result.json`; FRESH-1 stories 9,000–11,999; 60,029 word-final sites, 885 forms)
+
+Plant P-NULL-ABLATION: bit-identical. Null-adjusted η² of the mlp0 write by the last 3 bytes, base 0.873; drop when each
+attn0 head is zeroed: h3 **0.039**, h2 0.016, h0 −0.007, h1 −0.061 (removing h1 makes the write MORE word-determined).
+By first 3 bytes: h3 0.038, h2 0.049. **W1 holds** (+0.023 [0.022, 0.023]) and **W2 holds in form, negligible in size**
+(+0.0007 [0.0002, 0.0014]) — so H-WIRE holds by its letter. Reading: a real but **weak** wire; mlp0's final-bytes lookup
+survives the loss of any single attn0 head (0.873 → 0.834 at worst), h3 is one minor input among several, and its
+contribution is not specific to the word's ending.
