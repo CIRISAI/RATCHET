@@ -57,7 +57,7 @@ def main(mdir, valid, fresh, out_path):
     parts = open(fresh, "rb").read().split(b"<|endoftext|>")[1:-1]
     kept = [p.strip() for p in parts if p.strip() and all(c < 128 for c in p.strip()) and p.strip() not in vset]
     stories = [p.decode("ascii") for p in kept[8000:8000 + N_STORIES]]
-    enc = [tok(s, add_special_tokens=True)["input_ids"][:CTX] for s in stories]
+    enc = [([tok.bos_token_id] + tok(s, add_special_tokens=False)["input_ids"])[:CTX] for s in stories]  # BOS explicit
     assert all(e[0] == tok.bos_token_id for e in enc), "BOS not prepended"
     L = max(len(e) for e in enc)
     ids = torch.full((len(enc), L), tok.pad_token_id, dtype=torch.long)
