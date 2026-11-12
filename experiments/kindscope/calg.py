@@ -26,6 +26,7 @@ def sha(p):
 
 def main(mdir, valid, fresh, out_path):
     torch.use_deterministic_algorithms(True)
+    torch.set_grad_enabled(False)  # the tied head is a Parameter: without this every logit computation built a graph
     t0 = time.time()
     log = lambda m: print(f"{m}  [{time.time()-t0:.0f}s]", flush=True)  # noqa: E731
     res = {"C1": {"model": sha(os.path.join(mdir, "model.safetensors")) == MODEL_SHA,
@@ -46,7 +47,7 @@ def main(mdir, valid, fresh, out_path):
     nbytes = sum(p.numel() for n, p in text.named_parameters()) * 4
     dtype = torch.float32 if nbytes < 0.8 * free else torch.bfloat16
     text.to(dev, dtype)
-    head = text.embed_tokens.weight  # tied: share the embedding instead of a second 1.6 GB copy
+    head = text.embed_tokens.weight.detach()  # tied: share the embedding instead of a second 1.6 GB copy
     assert torch.equal(head_w.to(dtype).cpu(), head.detach().cpu()), "lm_head is not tied to embed_tokens"
     res["C0"] = {"dtype": str(dtype), "text_params_on_gpu": sum(p.numel() for p in text.parameters()),
                  "gpu_free_bytes_before": int(free), "transformers": transformers.__version__, "torch": torch.__version__,
@@ -176,7 +177,7 @@ def main(mdir, valid, fresh, out_path):
         del W, recon, wrong, prenorm, x0, ref, emb, pre, lg, lpf
         taps.clear()
         torch.cuda.empty_cache()  # free this batch's 262k-vocab logits before the next batch allocates its own
-        log(f"batch {s0 // B + 1}/{math.ceil(len(enc) / B)}")
+        log(f"batch {s0 // B + 1}/{math.ceil(len(enc) / B)} gpu {torch.cuda.memory_allocated() / 1e9:.2f} GB, peak {torch.cuda.max_memory_allocated() / 1e9:.2f}")
     res["C2"] = {"identical": st["c2"], "pass": st["c2"]}
     res["C5"] = {"identical": st["c5"], "pass": st["c5"]}
     c3, c3w = st["c3_num"] / st["den"], st["c3w_num"] / st["den"]
