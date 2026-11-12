@@ -210,3 +210,11 @@ misfit KS-CONTROL-BASE-RATE
   born: D0001 2026-11-12
   status: candidate
   rests_on: S0012, S0013, S0014, S0015, S0016, S0017, S0018; engine 13274181efbdb8f2
+
+misfit KS-PRICE-NOT-COST
+  line: an observational removability price and a realised removal cost disagree in both directions on GoldWorm (PARALLAX-H, Holon admit_file at 028228b): the probe at mlp0 is CARRIED (+0.044 R2) yet removing it costs +0.0001 nats; the writing direction is DROPPED at every layer (redundant as information given the byte and residual coordinates) yet removing it costs +0.006 to +0.058 nats; price-cost rank correlation 0.14-0.61 per layer
+  rule: a carried / dropped verdict about what the MODEL uses needs the realised intervention beside the price; the gate answers "is this information needed to predict the target", the intervention answers "does the network read this channel" — report both, never one as the other
+  applies: verb in {probe, gate}
+  requires: realised_cost
+  born: PARALLAX-H 2026-11-12 (gate by cirisholon-d7; run and realisation ratchet-b9)
+  status: registered

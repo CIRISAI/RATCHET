@@ -53,3 +53,13 @@ reads the category from a third, near-silent direction neither writer uses. Wher
 destination therefore depends on the grain of the effect: category edits early (in the non-byte residual), byte edits
 late. Open residuals: mass nouns (grass, water, sun) rose with the adjectives under the early residual push; and the
 early residual's other parts are unexplained.
+
+## PARALLAX-H — Holon's gate beside realised costs (`parallaxh_result.json`; gate at CIRISHolon 028228b)
+
+4,261 positions (CAL 800–1,599, Amendment 1), target = final next-byte log-probs. Stakes: **H1 fails at mlp0 only**
+(probe carried there), **H2 holds** (shuffled dropped everywhere), **H3 holds** (bytes16 carried at every layer),
+**H4 fails** (residual dropped at mlp0–2; carried only at mlp5). Price-to-cost rank correlation 0.14–0.61 per layer.
+Two mismatch directions: the probe at mlp0 is predictive but unread (carried, removal costs +0.0001); the writing
+direction is redundant as information but read (dropped everywhere, removal costs +0.006 to +0.058). The gate answers
+"is the information needed", the intervention "is the channel read" — **KS-PRICE-NOT-COST** (registered). The model
+reads its own channels and does not re-derive their content from elsewhere — the parallax again, from the other side.
