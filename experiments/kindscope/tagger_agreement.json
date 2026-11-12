@@ -1,0 +1,316 @@
+{
+ "tokens": 77419,
+ "span_matched": 77410,
+ "agreement_on_matched": 0.9556517245833872,
+ "by_spacy_label": {
+  "NOUN": {
+   "n": 14559,
+   "agreement": 0.9837900954735902,
+   "stanza_says_instead": {
+    "VERB": 127,
+    "PROPN": 40,
+    "ADJ": 35,
+    "PRON": 19
+   }
+  },
+  "VERB": {
+   "n": 12787,
+   "agreement": 0.9946820990068038,
+   "stanza_says_instead": {
+    "NOUN": 27,
+    "ADJ": 24,
+    "AUX": 16,
+    "PROPN": 1
+   }
+  },
+  "ADJ": {
+   "n": 6099,
+   "agreement": 0.9744220363994097,
+   "stanza_says_instead": {
+    "NOUN": 64,
+    "VERB": 56,
+    "ADV": 18,
+    "PROPN": 14
+   }
+  },
+  "ADV": {
+   "n": 4250,
+   "agreement": 0.8807058823529412,
+   "stanza_says_instead": {
+    "other": 277,
+    "ADJ": 96,
+    "PROPN": 52,
+    "ADP": 48
+   }
+  },
+  "PRON": {
+   "n": 11343,
+   "agreement": 0.998853918716389,
+   "stanza_says_instead": {
+    "other": 7,
+    "DET": 4,
+    "ADV": 1,
+    "NOUN": 1
+   }
+  },
+  "DET": {
+   "n": 9238,
+   "agreement": 0.9922061052175796,
+   "stanza_says_instead": {
+    "PRON": 64,
+    "ADV": 4,
+    "CCONJ": 3,
+    "PROPN": 1
+   }
+  },
+  "ADP": {
+   "n": 5625,
+   "agreement": 0.9406222222222222,
+   "stanza_says_instead": {
+    "other": 268,
+    "ADV": 64,
+    "VERB": 2
+   }
+  },
+  "AUX": {
+   "n": 5886,
+   "agreement": 0.682466870540265,
+   "stanza_says_instead": {
+    "VERB": 1865,
+    "NOUN": 2,
+    "other": 2
+   }
+  },
+  "CCONJ": {
+   "n": 3930,
+   "agreement": 0.9989821882951654,
+   "stanza_says_instead": {
+    "ADV": 2,
+    "other": 2
+   }
+  },
+  "PROPN": {
+   "n": 3693,
+   "agreement": 0.9528838342810723,
+   "stanza_says_instead": {
+    "NOUN": 120,
+    "other": 30,
+    "ADJ": 19,
+    "VERB": 5
+   }
+  }
+ },
+ "confusions": {},
+ "top_disagreeing_forms": [
+  {
+   "form": "was",
+   "spacy": "AUX",
+   "stanza": "VERB",
+   "count": 977,
+   "of": 3139
+  },
+  {
+   "form": "had",
+   "spacy": "AUX",
+   "stanza": "VERB",
+   "count": 483,
+   "of": 579
+  },
+  {
+   "form": "once",
+   "spacy": "ADV",
+   "stanza": "other",
+   "count": 261,
+   "of": 871
+  },
+  {
+   "form": "have",
+   "spacy": "AUX",
+   "stanza": "VERB",
+   "count": 151,
+   "of": 157
+  },
+  {
+   "form": "as",
+   "spacy": "ADP",
+   "stanza": "other",
+   "count": 126,
+   "of": 151
+  },
+  {
+   "form": "do",
+   "spacy": "AUX",
+   "stanza": "VERB",
+   "count": 102,
+   "of": 139
+  },
+  {
+   "form": "were",
+   "spacy": "AUX",
+   "stanza": "VERB",
+   "count": 77,
+   "of": 472
+  },
+  {
+   "form": "has",
+   "spacy": "AUX",
+   "stanza": "VERB",
+   "count": 49,
+   "of": 49
+  },
+  {
+   "form": "until",
+   "spacy": "ADP",
+   "stanza": "other",
+   "count": 40,
+   "of": 41
+  },
+  {
+   "form": "molly",
+   "spacy": "ADV",
+   "stanza": "PROPN",
+   "count": 30,
+   "of": 42
+  },
+  {
+   "form": "this",
+   "spacy": "DET",
+   "stanza": "PRON",
+   "count": 29,
+   "of": 56
+  },
+  {
+   "form": "mom",
+   "spacy": "PROPN",
+   "stanza": "NOUN",
+   "count": 28,
+   "of": 411
+  },
+  {
+   "form": "that",
+   "spacy": "DET",
+   "stanza": "PRON",
+   "count": 26,
+   "of": 187
+  },
+  {
+   "form": "for",
+   "spacy": "ADP",
+   "stanza": "other",
+   "count": 23,
+   "of": 325
+  },
+  {
+   "form": "around",
+   "spacy": "ADP",
+   "stanza": "ADV",
+   "count": 22,
+   "of": 256
+  },
+  {
+   "form": "mama",
+   "spacy": "PROPN",
+   "stanza": "NOUN",
+   "count": 21,
+   "of": 33
+  },
+  {
+   "form": "out",
+   "spacy": "ADP",
+   "stanza": "ADV",
+   "count": 20,
+   "of": 170
+  },
+  {
+   "form": "lily",
+   "spacy": "ADV",
+   "stanza": "PROPN",
+   "count": 19,
+   "of": 502
+  },
+  {
+   "form": "all",
+   "spacy": "ADV",
+   "stanza": "DET",
+   "count": 17,
+   "of": 191
+  },
+  {
+   "form": "daddy",
+   "spacy": "NOUN",
+   "stanza": "PROPN",
+   "count": 17,
+   "of": 41
+  },
+  {
+   "form": "closer",
+   "spacy": "ADV",
+   "stanza": "ADJ",
+   "count": 16,
+   "of": 32
+  },
+  {
+   "form": "like",
+   "spacy": "ADP",
+   "stanza": "other",
+   "count": 15,
+   "of": 224
+  },
+  {
+   "form": "fun",
+   "spacy": "NOUN",
+   "stanza": "ADJ",
+   "count": 15,
+   "of": 132
+  },
+  {
+   "form": "slide",
+   "spacy": "NOUN",
+   "stanza": "VERB",
+   "count": 14,
+   "of": 62
+  },
+  {
+   "form": "did",
+   "spacy": "AUX",
+   "stanza": "VERB",
+   "count": 14,
+   "of": 138
+  },
+  {
+   "form": "so",
+   "spacy": "ADV",
+   "stanza": "other",
+   "count": 14,
+   "of": 552
+  },
+  {
+   "form": "of",
+   "spacy": "ADP",
+   "stanza": "other",
+   "count": 13,
+   "of": 498
+  },
+  {
+   "form": "up",
+   "spacy": "ADV",
+   "stanza": "ADP",
+   "count": 12,
+   "of": 244
+  },
+  {
+   "form": "mummy",
+   "spacy": "PROPN",
+   "stanza": "NOUN",
+   "count": 12,
+   "of": 35
+  },
+  {
+   "form": "dad",
+   "spacy": "PROPN",
+   "stanza": "NOUN",
+   "count": 11,
+   "of": 124
+  }
+ ]
+}
