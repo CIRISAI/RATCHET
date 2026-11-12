@@ -46,5 +46,16 @@
  },
  "action_selection_handler": "ActionSelectionPDMAEvaluator",
  "scope": "one harness: single-turn mental-health battery questions, Qwen3.6-35B-A3B; six of ten verbs never occur here",
- "harvest_file_sha256": "41ec41008911466907305960e3d42e6eff49617ca438ef8bfd39194ac12b183a"
+ "harvest_file_sha256": "41ec41008911466907305960e3d42e6eff49617ca438ef8bfd39194ac12b183a",
+ "CORRECTION_2026-11-12": "In a thought the conscience overrode, the trace's ASPDMA_RESULT.selected_action is the OVERRIDING action, not the model's selection: in run 43254843464 the capture file shows the model chose speak in all 8 overridden thoughts whose traces read ponder (7) or defer (1). So `aspdma_first_selection` above is NOT the model's verb prior. Model's own selection is known only where no override occurred; for overridden thoughts it is unrecorded in traces before the capture file existed.",
+ "selection_where_not_overridden": {
+  "SPEAK": 792,
+  "TASK_COMPLETE": 780,
+  "PONDER": 143,
+  "DEFER": 5
+ },
+ "trace_value_where_overridden": {
+  "PONDER": 599,
+  "DEFER": 70
+ }
 }
