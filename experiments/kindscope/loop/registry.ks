@@ -192,3 +192,11 @@ misfit KS-READ-NOT-WRITE-EARLY
   replaces: KS-READ-NOT-WRITE
   born: EDIT-2 2026-11-12
   status: candidate
+
+misfit KS-CASEFOLD-DONOR
+  line: a byte-exact plant assumed identical raw bytes from donors matched on lower-cased word forms (MLP0-3: 2 of 71,195 suffix donors had a differently cased last byte, so the "exactly within floor" plant failed by its letter)
+  rule: donors for a byte-level plant are matched on raw bytes, and the plant's exactness assumption is checked over every job before the run reads anything
+  applies: verb in {patch}
+  requires: raw_byte_match
+  born: MLP0-3 2026-11-12
+  status: registered
