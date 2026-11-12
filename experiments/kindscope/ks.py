@@ -202,6 +202,12 @@ def cmd_diagnose(args):
         sys.exit(1)
 
 
+def cmd_supersede(args):
+    """ks supersede <engine_sha> <misfit id>: results from that engine no longer count; their cells are re-proposable."""
+    L.append({"type": "supersede", "engine_sha": args[0], "by": args[1]})
+    print(f"engine {args[0]} superseded by {args[1]}")
+
+
 def cmd_render(_):
     reg = L.registry()
     led = L.ledger()
@@ -218,7 +224,7 @@ def cmd_render(_):
 
 if __name__ == "__main__":
     cmds = {"status": cmd_status, "import-vocab1": cmd_import_vocab1, "build-cache": cmd_build_cache,
-            "propose": cmd_propose, "run": cmd_run, "gate": cmd_gate, "miss": cmd_miss, "diagnose": cmd_diagnose, "render": cmd_render}
+            "propose": cmd_propose, "run": cmd_run, "gate": cmd_gate, "supersede": cmd_supersede, "miss": cmd_miss, "diagnose": cmd_diagnose, "render": cmd_render}
     if len(sys.argv) < 2 or sys.argv[1] not in cmds:
         print(__doc__)
         sys.exit(1)

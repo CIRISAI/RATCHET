@@ -70,10 +70,17 @@ def audit(stake, capabilities):
 
 # ------------------------------------------------------------------ map
 
+def superseded():
+    return {e["engine_sha"] for e in ledger() if e["type"] == "supersede"}
+
+
 def measured():
-    """stake id -> (block, record) for every stake with a non-void result, plus imported cells."""
+    """stake id -> (block, record) for every stake with a non-void result under a live engine, plus imported cells."""
     out, blocks = {}, {}
+    dead = superseded()
     for e in ledger():
+        if e["type"] == "result" and e["record"].get("engine_sha") in dead:
+            continue
         if e["type"] in ("stake", "imported"):
             blocks[e["id"]] = check_stake(e["block"])
         if e["type"] == "imported":
@@ -102,7 +109,10 @@ def propose(n):
     """Deterministic acquisition. Order: (0) diagnosis tests already queued are frozen by `diagnose`, not here;
     (1) per-class expansion of every measured pos10 cell, transition cells first, predicting the aggregate verdict."""
     done = {key(b) for b, _ in measured().values()}
-    queued = {key(check_stake(e["block"])) for e in ledger() if e["type"] == "stake"}
+    dead = superseded()
+    res_engine = {e["id"]: e["record"].get("engine_sha") for e in ledger() if e["type"] == "result"}
+    queued = {key(check_stake(e["block"])) for e in ledger() if e["type"] == "stake"
+              and res_engine.get(e["id"]) not in dead}
     agg = {b["at"]: (sid, rec) for sid, (b, rec) in measured().items() if b["noun"] == "pos10" and b["verb"] == "probe"}
 
     def transition(at):

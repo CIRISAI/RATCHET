@@ -8,8 +8,9 @@ Declared rules (fixed here, before any loop stake is read; changes to them are a
     the stake (M-EXIT-DISCRIMINATOR).
   - Splits: VOCAB-1's 80/20 story split; the 20% is halved by story (seed SEED+3) into EXPLORE (proposer stakes) and
     CONFIRM (diagnosis tests only). Novel-type = test token whose form never occurs in train.
-  - V1: acc > 95th pct of N_NULL label-shuffled fits. V2: acc > max of N_CTRL control-task fits (type-consistent random
-    labels at the class prior). V3: 95% story-bootstrap CI of (state - surface) correctness on novel-type tokens:
+  - V1: acc > 95th pct of N_NULL label-shuffled fits. V2: excess over base rate, (acc - base)/(1 - base), above the max
+    excess of N_CTRL control-task fits, each control judged against its OWN token-level base rate (KS-CONTROL-BASE-RATE;
+    type-consistent random labels at the class prior). V3: 95% story-bootstrap CI of (state - surface) correctness on novel-type tokens:
     true if lo > 0, false if hi < 0, undecided otherwise; VOID if fewer than MIN_NOVEL_EACH novel positives or
     negatives. carried: true if V1 and V2 and V3; false if any of them is false; undecided otherwise.
   - Plant (M-PLANT-OBS, M-JOINT-PASS-REGION, holon `plant_not_by_construction`): a type-consistent random label r at
@@ -55,7 +56,7 @@ DT = torch.float64
 
 def capabilities(stake):
     caps = {"plant", "plant_joint", "power", "base_rate", "null", "control_task", "exit_reason", "device_class",
-            "cite", "split"}
+            "cite", "split", "control_base_rate"}
     if stake["verb"] == "probe" and stake["layer"] >= 1:
         caps.add("plant_not_by_construction")
     return caps if stake["verb"] == "probe" else set()
@@ -316,6 +317,9 @@ def pipeline(X, y, cache, te, rng, s_corr):
         ctr.append(allc[tr]); cte.append(allc[te])
     thc, gnc, itc, whyc = newton(Xtr, torch.from_numpy(np.stack(ctr)))
     ctrl_acc = (predict(Xte, thc) == np.stack(cte)).mean(1)
+    # KS-CONTROL-BASE-RATE: each label set is judged against its OWN token-level majority rate
+    ctrl_base = np.array([max(c.mean(), 1 - c.mean()) for c in cte])
+    ctrl_excess = (ctrl_acc - ctrl_base) / np.maximum(1 - ctrl_base, 1e-12)
     yn = yte[nov]
     v3_void = int((yn == 1).sum()) < MIN_NOVEL_EACH or int((yn == 0).sum()) < MIN_NOVEL_EACH
     if v3_void:
@@ -325,10 +329,14 @@ def pipeline(X, y, cache, te, rng, s_corr):
         ci = V.boot_ci(diff[nov], cache.story_of[te][nov], rng)
         v3 = True if ci[0] > 0 else (False if ci[1] < 0 else None)
     v1 = bool(acc > float(np.percentile(null_acc, 95)))
-    v2 = bool(acc > float(ctrl_acc.max()))
+    base = float(max(yte.mean(), 1 - yte.mean()))
+    excess = (acc - base) / max(1 - base, 1e-12)
+    v2 = bool(excess > float(ctrl_excess.max()))
     carried = True if (v1 and v2 and v3) else (False if (not v1 or not v2 or v3 is False) else None)
     return {"acc": acc, "acc_novel": acc_nov, "base_rate": float(max(yte.mean(), 1 - yte.mean())),
             "null_p95": float(np.percentile(null_acc, 95)), "ctrl_max": float(ctrl_acc.max()),
+            "excess": float(excess), "ctrl_excess_max": float(ctrl_excess.max()),
+            "ctrl_base_rates": [float(x) for x in ctrl_base],
             "diff_novel": None if v3_void else float(acc_nov - s_corr[nov].mean()), "ci95": ci,
             "V1": v1, "V2": v2, "V3": v3, "V3_void": v3_void, "carried": carried,
             "n_novel": int(nov.sum()), "n_novel_pos": int((yn == 1).sum()),
