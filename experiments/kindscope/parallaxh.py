@@ -23,7 +23,7 @@ def main(valid, gate_bin, out_path):
     stories, windows, toks = X.tag_train_core(valid)
     rng = np.random.default_rng(20261115); order = rng.permutation(len(stories))
     cal = sorted(order[: len(stories) // 10].tolist())
-    dir_set, gate_stories = set(cal[:800]), cal[2000:2400]
+    dir_set, gate_stories = set(cal[:800]), cal[800:1600]  # Amendment 1
     gate_set = set(gate_stories)
     prev_form = {(int(toks[i][0]), int(toks[i][1])): str(toks[i - 1][4]) for i in range(1, len(toks))}
     prs = [p for p in X.pairs(windows, toks) if p[3] == X.DET]

@@ -44,3 +44,11 @@ nothing, or a dropped one whose removal costs, is a mismatch row for the misfit 
 ## Outputs
 
 `parallaxh.py` (committed before its first run), the SPEC files' sha256, the gate's raw output, `parallaxh_result.json`.
+
+## Amendment 1 (2026-11-12, before any quantity was computed)
+
+The frozen gate-row range, CAL stories 2,000–2,399, does not exist: CAL holds 1,884 stories. The first launch built no
+rows and stopped at its own empty-input error; nothing was read. Gate rows are moved to **CAL stories 800–1,599**, which
+meet the stated condition (not used to fit any direction — directions come from 0–799; 800–1,599 were read once by
+`explore_play.py` for push effects, an exploratory reading of a different quantity). Also corrected for the record:
+`explore_modifier.py`'s range "1,600–2,399" was in effect 1,600–1,883. Nothing else changes.
