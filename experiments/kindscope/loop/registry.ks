@@ -218,3 +218,11 @@ misfit KS-PRICE-NOT-COST
   requires: realised_cost
   born: PARALLAX-H 2026-11-12 (gate by cirisholon-d7; run and realisation ratchet-b9)
   status: registered
+
+misfit KS-PARTIAL-WORSE-THAN-COLLAPSE
+  line: a truncation plant assumed cost falls monotonically with kept rank; on GoldWorm collapsing the stream after attn2 to its mean (+2.99 nats) cost LESS than keeping 8 directions (+3.02 variance-ranked, +3.37 use-ranked) — a partial projection builds state combinations the model never sees (FOLD-1 P-ZERO failed, the run VOID by its letter)
+  rule: a plant on a truncation family is checked on the carrier at every rank before it is staked, never assumed monotone; report the off-manifold cost of partial projection beside its kept rank
+  applies: verb in {fold, edit}
+  requires: plant_checked_each_rank
+  born: FOLD-1 2026-11-12
+  status: registered
