@@ -61,3 +61,13 @@ Categories are **read** in one geometry and **written** in another, unrelated as
 work only early and break late layers; the fine-tune instead changes late attention most; and most of what it builds
 decays when the force stops. Next: deflection (share of the base→target gap closed per item) and restoring force at
 θ + δ, under withdrawal, per kind of change (EDIT-K).
+
+## MLP0-3 and MLP0-4 (H-SUFFIX patching, fresh text)
+
+- **MLP0-3 VOID by its letter** (`mlp0_3_result.json`): donors were matched on lower-cased forms; 2 of 71,195 had a
+  differently cased last byte, so the byte-exact plant failed → **KS-CASEFOLD-DONOR** (registered).
+- **MLP0-4 — holds** (`mlp0_4_result.json`; FRESH-1 stories 16,000–19,999; raw-byte donors, precondition asserted over
+  every job; unpatched pass in the identical batch layout): plant fired (self floor 1.3e-6); mlp0 patch Δ next-8-byte
+  loss: same word 0.0014, same last 3 bytes 0.0023, same first 3 bytes 0.260; **P2 = +0.258 [0.255, 0.261]**.
+  With MLP0-2's η² (CONFIRM), H-SUFFIX holds on two independent tests: **mlp0 is a lookup keyed on a word's final
+  bytes** (measured, this checkpoint).
