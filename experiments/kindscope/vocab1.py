@@ -22,6 +22,8 @@ PREFIX = b"<|endoftext|>\n\n"
 CTX = 256
 N_NULL, N_CTRL, N_BOOT, N_RAND, INLP_ROUNDS = 200, 20, 1000, 20, 3
 LBFGS_ITERS = 300
+DEV = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+DT = torch.float64  # AMEND1: device only; precision as preregistered
 SITES = ("last", "first", "pre")
 STATE_NAMES = ["embed"] + [f"{p}{i}" for i in range(6) for p in ("attn", "mlp")]
 
@@ -66,7 +68,8 @@ def states_and_forward(port, idx, proj=None):
     D = 192
     import math
     import torch.nn.functional as F
-    x = sd["wte.weight"][idx] + sd["wpe.weight"][torch.arange(T)][None]
+    idx = idx.to(DEV)
+    x = sd["wte.weight"][idx] + sd["wpe.weight"][torch.arange(T, device=DEV)][None]
     states = []
 
     def maybe(x, j):
@@ -77,7 +80,7 @@ def states_and_forward(port, idx, proj=None):
 
     x = maybe(x, 0)
     states.append(x)
-    mask = torch.ones(T, T, dtype=torch.bool).tril()
+    mask = torch.ones(T, T, dtype=torch.bool, device=DEV).tril()
     for i in range(port.n_layer):
         h = port.ln(x, f"blocks.{i}.ln1")
         q, k, v = (h @ sd[f"blocks.{i}.attn.qkv.weight"].T).split(D, dim=2)
@@ -116,7 +119,7 @@ def collect(port, windows, toks):
     pos_cnt = np.zeros(len(windows))
     for ids, idx in batches(windows, list(range(len(windows)))):
         _, st = states_and_forward(port, idx)
-        S = torch.stack(st, 0)  # [13,B,T,D]
+        S = torch.stack(st, 0).cpu()  # [13,B,T,D]
         for j, si in enumerate(ids):
             L = len(windows[si])
             pos_sum[si] = S[:, j, :L].sum(1).double().numpy()
@@ -135,8 +138,9 @@ def fit(X, Y, K=10):
     X [n,d] float64 (already standardised), Y [B,n] long. Returns W [B,d,K], b [B,K], final grad norm per draw."""
     B = Y.shape[0]
     n, d = X.shape
-    W = torch.zeros(B, d, K, dtype=torch.float64, requires_grad=True)
-    b = torch.zeros(B, K, dtype=torch.float64, requires_grad=True)
+    Y = Y.to(DEV)
+    W = torch.zeros(B, d, K, dtype=DT, device=DEV, requires_grad=True)
+    b = torch.zeros(B, K, dtype=DT, device=DEV, requires_grad=True)
     opt = torch.optim.LBFGS([W, b], lr=1, max_iter=LBFGS_ITERS, tolerance_grad=1e-9, tolerance_change=1e-12,
                             history_size=20, line_search_fn="strong_wolfe")
 
@@ -150,20 +154,21 @@ def fit(X, Y, K=10):
     opt.step(closure)
     closure()
     gn = torch.sqrt(W.grad.pow(2).sum((1, 2)) + b.grad.pow(2).sum(1)).detach()
-    return W.detach(), b.detach(), gn
+    return W.detach(), b.detach(), gn.cpu()
 
 
 def predict(X, W, b):
-    return (torch.einsum("nd,bdk->bnk", X, W) + b[:, None]).argmax(-1)
+    return (torch.einsum("nd,bdk->bnk", X, W) + b[:, None]).argmax(-1).cpu()
 
 
 def standardise(Xtr, Xte):
     mu, sd = Xtr.mean(0), Xtr.std(0)
     sd = np.where(sd > 0, sd, 1.0)
-    return (torch.from_numpy((Xtr - mu) / sd), torch.from_numpy((Xte - mu) / sd), mu, sd)
+    f = lambda a: torch.from_numpy((a - mu) / sd).to(DEV, DT)
+    return (f(Xtr), f(Xte), mu, sd)
 
 
-def fit_chunked(Xtr, Y, chunk=50):
+def fit_chunked(Xtr, Y, chunk=100):
     Ws, bs, gns = [], [], []
     for s in range(0, Y.shape[0], chunk):
         W, b, gn = fit(Xtr, Y[s:s + chunk])
@@ -221,7 +226,7 @@ def loss_sets(port, windows, test_sids, Wpos, proj=None):
         for j, si in enumerate(ids):
             L = len(windows[si])
             t = torch.arange(P - 1, L - 1)
-            nll = -lp[j, t, idx[j, t + 1]].double().numpy()
+            nll = -lp[j, t.to(DEV), idx[j, t + 1].to(DEV)].double().cpu().numpy()
             isW = np.isin(t.numpy(), Wpos.get(si, []))
             sW += nll[isW].sum(); nW += isW.sum()
             sO += nll[~isW].sum(); nO += (~isW).sum()
@@ -234,7 +239,7 @@ def main(model_path, corpus_path, out_path):
     torch.set_num_threads(16)
     torch.manual_seed(SEED)
     t0 = time.time()
-    port = Port({k: v.float() for k, v in load_file(model_path).items()}, "tanh")
+    port = Port({k: v.float().to(DEV) for k, v in load_file(model_path).items()}, "tanh")
     stories = load_stories(corpus_path)
     windows, toks = tag(stories)
     rng = np.random.default_rng(SEED)
@@ -322,7 +327,7 @@ def main(model_path, corpus_path, out_path):
         for _ in range(INLP_ROUNDS):
             Xtr_, _, _, sd = standardise(Xtr_raw, Xte_raw)
             W, b, _ = fit(Xtr_, ytr[None])
-            U = removed_basis(W[0].numpy(), sd)
+            U = removed_basis(W[0].cpu().double().numpy(), sd)
             U = U - Qs @ (Qs.T @ U)
             Qn, _ = np.linalg.qr(U)
             Qs = np.concatenate([Qs, Qn], 1)
@@ -332,12 +337,12 @@ def main(model_path, corpus_path, out_path):
         W, b, _ = fit(Xtr_, ytr[None])
         post_acc = float((predict(Xte_, W, b)[0] == yte).double().mean())
         r = Qs.shape[1]
-        mu_t = torch.from_numpy(mu_state).float()
-        dW, dO = loss_sets(port, windows, test_sids, Wpos, (j, mu_t, torch.from_numpy(Qs).float()))
+        mu_t = torch.from_numpy(mu_state).float().to(DEV)
+        dW, dO = loss_sets(port, windows, test_sids, Wpos, (j, mu_t, torch.from_numpy(Qs).float().to(DEV)))
         rand = []
         for _ in range(N_RAND):
             Qr, _ = np.linalg.qr(rrng.standard_normal((192, r)))
-            rand.append(loss_sets(port, windows, test_sids, Wpos, (j, mu_t, torch.from_numpy(Qr).float())))
+            rand.append(loss_sets(port, windows, test_sids, Wpos, (j, mu_t, torch.from_numpy(Qr).float().to(DEV))))
         rW = np.array([a for a, _ in rand]) - base_W
         rO = np.array([o for _, o in rand]) - base_O
         realW, realO = dW - base_W, dO - base_O
@@ -360,7 +365,8 @@ def main(model_path, corpus_path, out_path):
         "cells": cells, "amnesic": amnesic,
         "env": {"torch": torch.__version__, "numpy": np.__version__, "spacy": spacy.__version__,
                 "spacy_model": spacy.load("en_core_web_sm").meta["version"], "python": platform.python_version(),
-                "platform": platform.platform(), "threads": torch.get_num_threads()},
+                "platform": platform.platform(), "threads": torch.get_num_threads(), "device": str(DEV),
+                "gpu": torch.cuda.get_device_name(0) if DEV.type == "cuda" else None, "fit_dtype": str(DT)},
         "wall_sec": time.time() - t0,
     }
     json.dump(res, open(out_path, "w"), indent=1)
