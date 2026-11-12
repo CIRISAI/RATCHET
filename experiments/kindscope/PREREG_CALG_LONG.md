@@ -79,3 +79,16 @@ so **L2 is restated:** cache equivalence is checked at a length that fits — th
 chunked prefill of the first 6,112 + cached last 32 vs one uncached pass of all 6,144, max abs ≤ 1e-3 on those 32
 positions' logits. Full-length equivalence then rests on the same mechanism (stated, not measured at 21k). L3–L5 run on
 the chunk-prefilled cache. Nothing else changes.
+
+## Amendment 5 (2026-11-12) — rerun on the render under the default agent template
+
+The folder this calibration cited is the evaluator's BASE prompt (no agent template); no deployed agent sends it
+(cirisagent-fd, 2026-11-12). The PASS above stands as a calibration at that length on the base render. The same checks,
+unchanged (SDPA, chunked prefill, L0–L5 and their bars), are rerun on the render EXIT-G will use:
+`/home/emoore/blindverb1-rendered-default-template-2026-11-12/` — renderer commit
+`bfe2a7413d08edf8d4b36356452b7fb72d13b9b7` (local, unpushed), template `default.yaml` (Ally) sha256
+`f3f38b513388b51a1409f6abc52c69db2115b40885a09a17a25390c35623b8e6`, `prefix.json` sha256
+`ae3a8ba89ceab24ee5c7dfdf180a6cc9547b6cbafa22f458795d07655270a8df`, `fit.jsonl` sha256
+`b827a526becb06ceb45646c0815d8a3fbfaf5ddb4b7a78efbaad3fda757a22d7`. First 8 fit rows, no label read, confirm and reserve
+unopened. Output `calg_long_template_result.json`. The render is unvalidated against a live captured call until the
+agent session's diff lands; that is a property of the prompts, not of this calibration.

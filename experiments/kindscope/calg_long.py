@@ -6,8 +6,10 @@ os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 import copy, hashlib, json, math, sys, time  # noqa: E401,E402
 import torch  # noqa: E402
 
-PREFIX_SHA = "92f645c0accf794501e8bd490f12b1c6765a6563d138c8269283b5522dc4faef"
-FIT_SHA = "3b4c9325db39df64dafe5f643ee6c664dbcc0723c60303f200c162abf0d0624c"
+# Amendment 5: digests selectable by KS_RENDER (base | template); both pinned here
+DIGESTS = {"base": ("92f645c0accf794501e8bd490f12b1c6765a6563d138c8269283b5522dc4faef", "3b4c9325db39df64dafe5f643ee6c664dbcc0723c60303f200c162abf0d0624c"),
+           "template": ("ae3a8ba89ceab24ee5c7dfdf180a6cc9547b6cbafa22f458795d07655270a8df", "b827a526becb06ceb45646c0815d8a3fbfaf5ddb4b7a78efbaad3fda757a22d7")}
+PREFIX_SHA, FIT_SHA = DIGESTS[os.environ.get("KS_RENDER", "base")]
 N_ITEMS = 8
 
 
@@ -164,6 +166,7 @@ def main(mdir, rdir, out_path):
     res["seconds_per_item_cached"] = secs
     res["PASS"] = all(res[c]["pass"] for c in ("L0", "L1", "L2", "L3", "L4", "L5")) and res["L3_wrong_frame"]["fails"]
     res["attn_implementation"] = str(getattr(text.config, "_attn_implementation", None))
+    res["render"] = os.environ.get("KS_RENDER", "base")
     res.update({"prereg_sha256": sha(os.path.join(os.path.dirname(os.path.abspath(__file__)), "PREREG_CALG_LONG.md")),
                 "script_sha256": sha(os.path.abspath(__file__)), "wall_sec": time.time() - t0})
     log(json.dumps({k: res[k] for k in ("L2", "L3", "L3_wrong_frame", "L4", "L5", "peak_gpu_gb", "PASS")}))
