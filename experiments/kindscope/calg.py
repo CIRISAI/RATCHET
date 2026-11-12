@@ -173,8 +173,9 @@ def main(mdir, valid, fresh, out_path):
                 pre_lin = pre[rt, pt].double() - ((tail[i] * W[i][rt, pt] * rr).float() * g @ head.T.float()).double()
                 st["r1_lin"][i].append(torch.log_softmax(torch.tanh(pre_lin / softcap) * softcap, -1)
                                        [torch.arange(len(sel), device=dev), tgt].cpu())
-        del W, recon, wrong, prenorm, x0
+        del W, recon, wrong, prenorm, x0, ref, emb, pre, lg, lpf
         taps.clear()
+        torch.cuda.empty_cache()  # free this batch's 262k-vocab logits before the next batch allocates its own
         log(f"batch {s0 // B + 1}/{math.ceil(len(enc) / B)}")
     res["C2"] = {"identical": st["c2"], "pass": st["c2"]}
     res["C5"] = {"identical": st["c5"], "pass": st["c5"]}
