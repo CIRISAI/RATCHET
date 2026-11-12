@@ -46,7 +46,8 @@ def main(mdir, valid, fresh, out_path):
     nbytes = sum(p.numel() for n, p in text.named_parameters()) * 4
     dtype = torch.float32 if nbytes < 0.8 * free else torch.bfloat16
     text.to(dev, dtype)
-    head = head_w.to(dev, dtype)
+    head = text.embed_tokens.weight  # tied: share the embedding instead of a second 1.6 GB copy
+    assert torch.equal(head_w.to(dtype).cpu(), head.detach().cpu()), "lm_head is not tied to embed_tokens"
     res["C0"] = {"dtype": str(dtype), "text_params_on_gpu": sum(p.numel() for p in text.parameters()),
                  "gpu_free_bytes_before": int(free), "transformers": transformers.__version__, "torch": torch.__version__,
                  "gpu": torch.cuda.get_device_name(0)}
@@ -105,7 +106,7 @@ def main(mdir, valid, fresh, out_path):
         pre = h @ head.T
         return emb, pre, torch.tanh(pre / softcap) * softcap
 
-    B = 2  # 262,144-token vocabulary: one 8x256 batch of float32 logits is 2 GB; several are held per batch
+    B = 1  # 262,144-token vocabulary: float32 logits are 0.27 GB per story and several are held per batch
     valid = torch.zeros(ids.shape, dtype=torch.bool)
     for i, n in enumerate(lens):
         valid[i, :n] = True
