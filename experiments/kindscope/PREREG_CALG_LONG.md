@@ -49,3 +49,12 @@ to eager because its audio tower does not support SDPA), which materialises a 20
 text decoder supports SDPA and Gemma-4 has no attention logit softcapping, so the decoder is switched to
 `attn_implementation = "sdpa"` for this run. Consequence, stated: the kernel differs from CAL-G's (eager at 256 tokens),
 so L3–L5 calibrate the **SDPA** instrument at long context, and EXIT-G must use the same kernel. Nothing else changes.
+
+## Amendment 2 (2026-11-12, before any check other than L1 and the token counts) — Amendment 1's diagnosis was wrong
+
+Read from the traceback after Amendment 1's rerun failed identically: the forward pass **completed** at 20,742 tokens
+under the eager kernel; the 20.26 GiB allocation was the **logits** (20,742 positions × 262,144 vocabulary × 4 bytes) in
+the script's own `last_hidden_state @ head.T`. Amendment 1 blamed the attention kernel without reading the traceback.
+**Corrected:** the kernel goes back to CAL-G's (eager, as loaded), so no kernel changes between CAL-G and CAL-G-LONG; the
+script computes logits only at the positions a check reads (none for the prefix pass; the last 32 for L2; the item's
+last 8 for L4; the item's own positions' final 32 for L5). Amendment 1 is withdrawn and kept.

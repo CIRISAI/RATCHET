@@ -46,7 +46,7 @@ def main(mdir, rdir, out_path):
     log(f"L1 {res['L1']} tokens {res['tokens']}")
     full = Gemma4ForConditionalGeneration.from_pretrained(mdir, dtype=torch.bfloat16, device_map="cpu")
     text = full.model.language_model
-    text.config._attn_implementation = "sdpa"  # Amendment 1: eager materialises a 20 GB score matrix at 20k tokens
+    # Amendment 2: Amendment 1 (sdpa) withdrawn — the kernel stays as loaded (eager, CAL-G's); the 20 GB was the logits
     ple = text.embed_tokens_per_layer; text.embed_tokens_per_layer = None
     softcap = full.config.get_text_config().final_logit_softcapping
     dev = torch.device("cuda")
@@ -58,16 +58,18 @@ def main(mdir, rdir, out_path):
     tail = [math.prod(scal[k:]) for k in range(nl)]
     del full
 
-    def run(tok_ids, cache=None, use_cache=False):
+    def run(tok_ids, cache=None, use_cache=False, last=32):
+        """Logits only for the last `last` positions (Amendment 2: full-vocab logits over 20k positions are 21 GB)."""
         t = torch.tensor([tok_ids], dtype=torch.long)
         emb = text.embed_tokens(t.to(dev))
         pl = ple(t).reshape(1, len(tok_ids), nl, hpl).to(dev, torch.float32)
         out = text(inputs_embeds=emb, per_layer_inputs=pl, past_key_values=cache, use_cache=use_cache)
-        return emb, out.last_hidden_state @ head.T, out
+        lg = None if last == 0 else out.last_hidden_state[:, -last:] @ head.T
+        return emb, lg, out
 
     # ---- shared prefix, once
     torch.cuda.reset_peak_memory_stats()
-    _, _, pout = run(ids[0][:P], use_cache=True)
+    _, _, pout = run(ids[0][:P], use_cache=True, last=0)
     pcache = pout.past_key_values
     res["prefix_peak_gb"] = torch.cuda.max_memory_allocated() / 1e9
     log(f"prefix cached ({P} tokens), peak {res['prefix_peak_gb']:.2f} GB")
@@ -77,7 +79,7 @@ def main(mdir, rdir, out_path):
         _, pre_c, _ = run(ids[k][P:], cache=copy.deepcopy(pcache), use_cache=True)
         torch.cuda.empty_cache()
         _, pre_f, _ = run(ids[k], use_cache=False)
-        l2 = max(l2, float((pre_c[0, -32:] - pre_f[0, -32:]).abs().max()))
+        l2 = max(l2, float((pre_c[0] - pre_f[0]).abs().max()))  # both are the last 32 positions
         del pre_c, pre_f
         torch.cuda.empty_cache()
     res["L2"] = {"max_abs": l2, "pass": l2 <= 1e-3}
@@ -115,7 +117,7 @@ def main(mdir, rdir, out_path):
         sel = torch.arange(max(0, pn.shape[1] - 8), pn.shape[1], device=dev)
         xs = pn[0, sel]; rr = (xs.pow(2).mean(-1, keepdim=True) + eps).pow(-0.5)
         terms = tail[0] * x0[0, sel] + sum(tail[i] * W[i][0, sel] for i in range(nl))
-        c4 = max(c4, float((((terms * rr).float() * g) @ head.T - pre[0, sel]).abs().max()))
+        c4 = max(c4, float((((terms * rr).float() * g) @ head.T - pre[0, -8:]).abs().max()))
         _, pre2, _ = run(ids[k][P:], cache=copy.deepcopy(pcache), use_cache=True)
         det &= bool(torch.equal(pre, pre2))
         del emb, pre, pre2, W, recon, wrong, pn, x0
@@ -130,7 +132,7 @@ def main(mdir, rdir, out_path):
     res["peak_gpu_gb"] = torch.cuda.max_memory_allocated() / 1e9
     res["seconds_per_item_cached"] = secs
     res["PASS"] = all(res[c]["pass"] for c in ("L1", "L2", "L3", "L4", "L5")) and res["L3_wrong_frame"]["fails"]
-    res["attn_implementation"] = text.config._attn_implementation
+    res["attn_implementation"] = str(getattr(text.config, "_attn_implementation", None))
     res.update({"prereg_sha256": sha(os.path.join(os.path.dirname(os.path.abspath(__file__)), "PREREG_CALG_LONG.md")),
                 "script_sha256": sha(os.path.abspath(__file__)), "wall_sec": time.time() - t0})
     log(json.dumps({k: res[k] for k in ("L2", "L3", "L3_wrong_frame", "L4", "L5", "peak_gpu_gb", "PASS")}))
