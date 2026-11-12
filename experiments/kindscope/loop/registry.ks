@@ -226,3 +226,19 @@ misfit KS-PARTIAL-WORSE-THAN-COLLAPSE
   requires: plant_checked_each_rank
   born: FOLD-1 2026-11-12
   status: registered
+
+misfit KS-CASE-BLIND-READOUT
+  line: a read-out built from one spelling of the answer tokens read the model as "off-format" when it was answering in another case (EXIT-G design: 4-6% mass on the ten lower-case verb tokens; Gemma writes PONDER / TASK / OBS / SPEAK in upper case at the same position)
+  rule: before a read-out is frozen, the top tokens at the answer position are inspected on fit items, and the read-out sums every observed spelling of each answer; a low-mass reading is never reported as a model property until that inspection is done
+  applies: verb in {readout, lens, probe}
+  requires: spelling_inspected
+  born: EXIT-G design 2026-11-12
+  status: registered
+
+misfit KS-NULL-EXPECTATION
+  line: a plant's null was staked at the wrong expected value — "a shuffled-label head stays within 0.10 of the base rate" — but an uninformed head at positive rate p scores p^2 + (1-p)^2 (0.625 at p = 0.25), not max(p, 1-p) = 0.75; the plant failed by its letter at 0.583 while doing exactly what a null should
+  rule: a null's expected value is derived arithmetically (or simulated) before it is staked; the criterion is one-sided where the hazard is one-sided (a shuffled head must not EXCEED the majority rate)
+  applies: verb in {probe, readout}
+  requires: null_expectation_derived
+  born: EXIT-G design 2026-11-12
+  status: registered
