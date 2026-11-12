@@ -20,3 +20,12 @@ Dated 2026-11-12, before the CONFIRM read.
 6. **Read-out** (found in the design phase, fit only): Gemma puts 6.4% (compact stem) and 4.2% (deployed stem) of its
    next-token probability on the ten verb tokens at the answer position. Kept as a finding; the read-out rule is amended
    before CONFIRM is read (see the amendment in `PREREG_EXITG.md` when written).
+
+**Item 2 in the agent session's own words (relayed 2026-11-12), which supersede my paraphrase:** "the outcome read is
+action-tier (defer or not); the arms were not a declared regime; the default template carries deferral-policy content in
+an unrouted, mixed site (its system-header override), present identically in both arms, so it cannot bias A1 minus A2,
+but it is a confound for any claim about what the RULES alone do, and for any comparison against the base-prompt arm,
+where it is absent together with everything else the template adds." Detail: the per-verb deferral guidance that §10.2.1
+names is routed on 2.21 as its own keyed field; the template's "DEFER immediately for…" passage is not separately
+addressable. Class-set version 2 has not passed the κ gate (no annotator sheets, κ result or adjudication log in the
+tree).
