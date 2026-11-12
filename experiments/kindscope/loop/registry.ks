@@ -150,3 +150,28 @@ misfit G-RECALIBRATION-CONTROL
   requires: readout_control
   born: Gemma hand-over 2026-11-11
   status: adopted
+
+# --- born 2026-11-11 in this series
+misfit KS-EXACT-ZERO-ACROSS-BATCH
+  line: an "exactly 0" bar on a comparison whose two arms ran in different batch shapes reads float summation-order noise (MLP0-2: self-patch deltas ~1e-9, not 0, so the plant failed by its letter)
+  rule: arms compared against zero run in the identical batch layout, or the bar is "within the self-donor floor", never "exactly 0"
+  applies: verb in {patch, steer, edit}
+  requires: same_batch_or_floor
+  born: MLP0-2 2026-11-11
+  status: registered
+
+misfit KS-READ-NOT-WRITE
+  line: the direction where a category is readable is not the direction that writes it (EDIT-1 exploration: reading vs pulled-back writing directions 84-89 degrees apart at every MLP; probe-direction rank-one edits UNREACHABLE at 200x write norm)
+  rule: an edit direction is pulled back from the destination through the network (gradient or Jacobian), never taken from a probe; report the parallax angle beside every edit
+  applies: verb in {steer, edit}
+  requires: pulled_back_direction
+  born: EDIT-1 2026-11-11
+  status: candidate
+
+misfit KS-READOUT-GRAIN
+  line: a readout-only fix cannot reproduce a change whose category is coarser than the output unit (EDIT-1: byte-level readout map vs full fine-tune on adjectives-after-determiners, A2-A1 +0.29 [0.22, 0.37]; Gemma's single-token answer let a readout match)
+  rule: before staking a readout control as sufficient, state the output unit and the category's grain; a category spanning several output units needs an inside-the-network arm
+  applies: verb in {fork-delta, edit}
+  requires: grain_declared
+  born: EDIT-1 P1 2026-11-11
+  status: candidate
