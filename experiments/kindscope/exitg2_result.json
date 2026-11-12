@@ -1,0 +1,541 @@
+{
+ "stem": "compact",
+ "layer": 19,
+ "truth_sha256": "851b98d2b00b81fd1a343e112beed624a10a164cadedcc8381ea540e25430577",
+ "arms": {
+  "A2": {
+   "pair_score": {
+    "gemma_full": {
+     "point": 0.03125,
+     "ci95": [
+      0.00625,
+      0.06875
+     ],
+     "groups": 160,
+     "scenarios": 80
+    },
+    "gemma_full_pre_ruling": {
+     "point": 0.03125,
+     "ci95": [
+      0.00625,
+      0.0625
+     ],
+     "groups": 160,
+     "scenarios": 80
+    },
+    "head_fitA2": {
+     "point": 0.625,
+     "ci95": [
+      0.54359375,
+      0.7125
+     ],
+     "groups": 160,
+     "scenarios": 80
+    },
+    "readout_fix": {
+     "point": 0.26875,
+     "ci95": [
+      0.19375,
+      0.35
+     ],
+     "groups": 160,
+     "scenarios": 80
+    },
+    "surface": {
+     "point": 0.83125,
+     "ci95": [
+      0.74375,
+      0.90625
+     ],
+     "groups": 160,
+     "scenarios": 80
+    }
+   },
+   "item_acc": {
+    "gemma_full": 0.45,
+    "gemma_full_pre_ruling": 0.4525,
+    "head_fitA2": 0.845,
+    "readout_fix": 0.695,
+    "surface": 0.9325
+   },
+   "base_rate": 0.6,
+   "off_format": 29,
+   "verbs": {
+    "ponder": 255,
+    "None": 29,
+    "speak": 20,
+    "tool": 103,
+    "task_complete": 27,
+    "recall": 10,
+    "defer": 35,
+    "reject": 1
+   },
+   "by_pair": {
+    "gemma_full": {
+     "accept": 0.025,
+     "harm": 0.0,
+     "irreversible": 0.1,
+     "lethal": NaN,
+     "veto": 0.0
+    },
+    "gemma_full_pre_ruling": {
+     "accept": 0.025,
+     "harm": 0.0,
+     "irreversible": 0.1,
+     "lethal": NaN,
+     "veto": 0.0
+    },
+    "head_fitA2": {
+     "accept": 0.775,
+     "harm": 0.25,
+     "irreversible": 0.825,
+     "lethal": NaN,
+     "veto": 0.65
+    },
+    "readout_fix": {
+     "accept": 0.7,
+     "harm": 0.0,
+     "irreversible": 0.25,
+     "lethal": NaN,
+     "veto": 0.125
+    },
+    "surface": {
+     "accept": 1.0,
+     "harm": 0.375,
+     "irreversible": 1.0,
+     "lethal": NaN,
+     "veto": 0.95
+    }
+   },
+   "by_domain": {
+    "gemma_full": {
+     "housing": 0.49,
+     "laboratories": 0.45,
+     "shipping and ports": 0.48,
+     "sports clubs": 0.38
+    },
+    "gemma_full_pre_ruling": {
+     "housing": 0.5,
+     "laboratories": 0.45,
+     "shipping and ports": 0.48,
+     "sports clubs": 0.38
+    },
+    "head_fitA2": {
+     "housing": 0.85,
+     "laboratories": 0.78,
+     "shipping and ports": 0.91,
+     "sports clubs": 0.84
+    },
+    "readout_fix": {
+     "housing": 0.69,
+     "laboratories": 0.66,
+     "shipping and ports": 0.69,
+     "sports clubs": 0.74
+    },
+    "surface": {
+     "housing": 0.95,
+     "laboratories": 0.94,
+     "shipping and ports": 0.9,
+     "sports clubs": 0.94
+    }
+   },
+   "floor_defer_on_none": 1,
+   "apart_S03": {
+    "gemma_full": 0.925,
+    "gemma_full_pre_ruling": 0.925,
+    "head_fitA2": 0.4,
+    "readout_fix": 0.65,
+    "surface": 0.05
+   },
+   "fits": {
+    "head": {
+     "exit": "converged",
+     "iters": 12,
+     "grad_norm": 2.2086841943768557e-10
+    },
+    "readout": {
+     "exit": "converged",
+     "iters": 5,
+     "grad_norm": 9.613972914500356e-12
+    },
+    "surface": {
+     "exit": "converged",
+     "iters": 11,
+     "grad_norm": 1.6860034485078642e-10
+    }
+   },
+   "E1": {
+    "point": 0.59375,
+    "ci95": [
+     0.5,
+     0.68125
+    ],
+    "groups": 160,
+    "scenarios": 80,
+    "holds": true
+   },
+   "E2": {
+    "point": -0.20625,
+    "ci95": [
+     -0.30625,
+     -0.11875
+    ],
+    "groups": 160,
+    "scenarios": 80,
+    "holds": false
+   },
+   "E3": {
+    "point": 0.35625,
+    "ci95": [
+     0.26875,
+     0.45
+    ],
+    "groups": 160,
+    "scenarios": 80,
+    "holds": true
+   }
+  },
+  "A1": {
+   "pair_score": {
+    "gemma_full": {
+     "point": 0.0875,
+     "ci95": [
+      0.0375,
+      0.1375
+     ],
+     "groups": 160,
+     "scenarios": 80
+    },
+    "gemma_full_pre_ruling": {
+     "point": 0.0875,
+     "ci95": [
+      0.04375,
+      0.14375
+     ],
+     "groups": 160,
+     "scenarios": 80
+    },
+    "head_fitA2": {
+     "point": 0.15,
+     "ci95": [
+      0.09375,
+      0.2125
+     ],
+     "groups": 160,
+     "scenarios": 80
+    },
+    "head_refit": {
+     "point": 0.4625,
+     "ci95": [
+      0.375,
+      0.55625
+     ],
+     "groups": 160,
+     "scenarios": 80
+    },
+    "readout_fix": {
+     "point": 0.20625,
+     "ci95": [
+      0.13125,
+      0.28125
+     ],
+     "groups": 160,
+     "scenarios": 80
+    },
+    "qwen_as_deployed": {
+     "point": 0.0875,
+     "ci95": [
+      0.05,
+      0.125
+     ],
+     "groups": 160,
+     "scenarios": 80
+    }
+   },
+   "item_acc": {
+    "gemma_full": 0.4425,
+    "gemma_full_pre_ruling": 0.5225,
+    "head_fitA2": 0.5625,
+    "head_refit": 0.7525,
+    "readout_fix": 0.6225,
+    "qwen_as_deployed": 0.38
+   },
+   "base_rate": 0.6,
+   "off_format": 13,
+   "verbs": {
+    "ponder": 243,
+    "defer": 97,
+    "recall": 5,
+    "task_complete": 17,
+    "speak": 10,
+    "tool": 56,
+    "None": 13,
+    "reject": 39
+   },
+   "by_pair": {
+    "gemma_full": {
+     "accept": 0.05,
+     "harm": 0.225,
+     "irreversible": 0.025,
+     "lethal": NaN,
+     "veto": 0.05
+    },
+    "gemma_full_pre_ruling": {
+     "accept": 0.05,
+     "harm": 0.225,
+     "irreversible": 0.025,
+     "lethal": NaN,
+     "veto": 0.05
+    },
+    "head_fitA2": {
+     "accept": 0.1,
+     "harm": 0.175,
+     "irreversible": 0.2,
+     "lethal": NaN,
+     "veto": 0.125
+    },
+    "head_refit": {
+     "accept": 0.825,
+     "harm": 0.15,
+     "irreversible": 0.4,
+     "lethal": NaN,
+     "veto": 0.475
+    },
+    "readout_fix": {
+     "accept": 0.4,
+     "harm": 0.15,
+     "irreversible": 0.1,
+     "lethal": NaN,
+     "veto": 0.175
+    },
+    "qwen_as_deployed": {
+     "accept": 0.025,
+     "harm": 0.025,
+     "irreversible": 0.225,
+     "lethal": NaN,
+     "veto": 0.075
+    }
+   },
+   "by_domain": {
+    "gemma_full": {
+     "housing": 0.48,
+     "laboratories": 0.36,
+     "shipping and ports": 0.48,
+     "sports clubs": 0.45
+    },
+    "gemma_full_pre_ruling": {
+     "housing": 0.55,
+     "laboratories": 0.46,
+     "shipping and ports": 0.55,
+     "sports clubs": 0.53
+    },
+    "head_fitA2": {
+     "housing": 0.56,
+     "laboratories": 0.55,
+     "shipping and ports": 0.62,
+     "sports clubs": 0.52
+    },
+    "head_refit": {
+     "housing": 0.75,
+     "laboratories": 0.67,
+     "shipping and ports": 0.78,
+     "sports clubs": 0.81
+    },
+    "readout_fix": {
+     "housing": 0.67,
+     "laboratories": 0.55,
+     "shipping and ports": 0.57,
+     "sports clubs": 0.7
+    },
+    "qwen_as_deployed": {
+     "housing": 0.41,
+     "laboratories": 0.34,
+     "shipping and ports": 0.39,
+     "sports clubs": 0.38
+    }
+   },
+   "floor_defer_on_none": 25,
+   "apart_S03": {
+    "gemma_full": 0.85,
+    "gemma_full_pre_ruling": 0.85,
+    "head_fitA2": 0.775,
+    "head_refit": 0.325,
+    "readout_fix": 0.2,
+    "qwen_as_deployed": 0.875
+   },
+   "fits": {
+    "head": {
+     "exit": "converged",
+     "iters": 12,
+     "grad_norm": 2.2086841943768557e-10
+    },
+    "readout": {
+     "exit": "converged",
+     "iters": 5,
+     "grad_norm": 1.702860713278555e-13
+    }
+   }
+  },
+  "base": {
+   "pair_score": {
+    "gemma_full": {
+     "point": 0.00625,
+     "ci95": [
+      0.0,
+      0.01875
+     ],
+     "groups": 160,
+     "scenarios": 80
+    },
+    "gemma_full_pre_ruling": {
+     "point": 0.00625,
+     "ci95": [
+      0.0,
+      0.01875
+     ],
+     "groups": 160,
+     "scenarios": 80
+    },
+    "head_fitA2": {
+     "point": 0.425,
+     "ci95": [
+      0.33125,
+      0.50625
+     ],
+     "groups": 160,
+     "scenarios": 80
+    },
+    "head_refit": {
+     "point": 0.69375,
+     "ci95": [
+      0.6125,
+      0.775
+     ],
+     "groups": 160,
+     "scenarios": 80
+    },
+    "readout_fix": {
+     "point": 0.2875,
+     "ci95": [
+      0.2,
+      0.375
+     ],
+     "groups": 160,
+     "scenarios": 80
+    }
+   },
+   "item_acc": {
+    "gemma_full": 0.3825,
+    "gemma_full_pre_ruling": 0.4,
+    "head_fitA2": 0.725,
+    "head_refit": 0.86,
+    "readout_fix": 0.685
+   },
+   "base_rate": 0.6,
+   "off_format": 13,
+   "verbs": {
+    "ponder": 80,
+    "speak": 58,
+    "task_complete": 57,
+    "tool": 251,
+    "None": 13,
+    "defer": 4,
+    "reject": 11,
+    "observe": 6
+   },
+   "by_pair": {
+    "gemma_full": {
+     "accept": 0.025,
+     "harm": 0.0,
+     "irreversible": 0.0,
+     "lethal": NaN,
+     "veto": 0.0
+    },
+    "gemma_full_pre_ruling": {
+     "accept": 0.025,
+     "harm": 0.0,
+     "irreversible": 0.0,
+     "lethal": NaN,
+     "veto": 0.0
+    },
+    "head_fitA2": {
+     "accept": 0.625,
+     "harm": 0.3,
+     "irreversible": 0.35,
+     "lethal": NaN,
+     "veto": 0.425
+    },
+    "head_refit": {
+     "accept": 0.825,
+     "harm": 0.475,
+     "irreversible": 0.85,
+     "lethal": NaN,
+     "veto": 0.625
+    },
+    "readout_fix": {
+     "accept": 0.85,
+     "harm": 0.0,
+     "irreversible": 0.25,
+     "lethal": NaN,
+     "veto": 0.05
+    }
+   },
+   "by_domain": {
+    "gemma_full": {
+     "housing": 0.37,
+     "laboratories": 0.37,
+     "shipping and ports": 0.4,
+     "sports clubs": 0.39
+    },
+    "gemma_full_pre_ruling": {
+     "housing": 0.41,
+     "laboratories": 0.37,
+     "shipping and ports": 0.42,
+     "sports clubs": 0.4
+    },
+    "head_fitA2": {
+     "housing": 0.72,
+     "laboratories": 0.67,
+     "shipping and ports": 0.71,
+     "sports clubs": 0.8
+    },
+    "head_refit": {
+     "housing": 0.82,
+     "laboratories": 0.84,
+     "shipping and ports": 0.88,
+     "sports clubs": 0.9
+    },
+    "readout_fix": {
+     "housing": 0.71,
+     "laboratories": 0.66,
+     "shipping and ports": 0.71,
+     "sports clubs": 0.66
+    }
+   },
+   "floor_defer_on_none": 1,
+   "apart_S03": {
+    "gemma_full": 0.875,
+    "gemma_full_pre_ruling": 0.875,
+    "head_fitA2": 0.775,
+    "head_refit": 0.65,
+    "readout_fix": 0.4
+   },
+   "fits": {
+    "head": {
+     "exit": "converged",
+     "iters": 12,
+     "grad_norm": 2.2086841943768557e-10
+    },
+    "readout": {
+     "exit": "converged",
+     "iters": 5,
+     "grad_norm": 2.398304567463106e-10
+    }
+   }
+  }
+ },
+ "prereg_sha256": "fdb030c6c3c72c59fde8b3643e16c49ed8228c0f2c4530b60893e6cfa84a4e63",
+ "script_sha256": "94a884bc105c69c047df19b6960f9aa990d7837caa887d7624f7c295681d27be",
+ "confirm_items_sha256": "61a570258a520c08f600c951aa938ca86ffbb3af089a26ee21be37b868f4a55f",
+ "wall_sec": 9222.021148443222
+}
