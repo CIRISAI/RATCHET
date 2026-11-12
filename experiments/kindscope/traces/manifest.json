@@ -1,0 +1,79 @@
+{
+ "model": "GoldWorm v6 base",
+ "model_sha256": "31729a9deb9160b045d399e2775c18972ab7ed7465eb8411b05eb801b3753521",
+ "fresh_sha256": "3232df12d6bdd8f83071f0d8196ad10128624168e228aaf9a23f6a1f8431ee8a",
+ "writes": [
+  "embed",
+  "attn0",
+  "mlp0",
+  "attn1",
+  "mlp1",
+  "attn2",
+  "mlp2",
+  "attn3",
+  "mlp3",
+  "attn4",
+  "mlp4",
+  "attn5",
+  "mlp5"
+ ],
+ "directions_from": "CAL stories 0-799, as parallaxh.py",
+ "items": [
+  {
+   "item": 0,
+   "trace": "gw_item0.trace",
+   "trace_sha256": "db1660644fb5b4b5743e598ed278ef546fd44a230691011dbecb52695868f614",
+   "positions": 256,
+   "c4_max": 7.62939453125e-06
+  },
+  {
+   "item": 1,
+   "trace": "gw_item1.trace",
+   "trace_sha256": "2919a7af7f87e3c42f60cc14085a9db1f30c42019e54d7348d78dd35596db28b",
+   "positions": 256,
+   "c4_max": 5.7220458984375e-06
+  },
+  {
+   "item": 2,
+   "trace": "gw_item2.trace",
+   "trace_sha256": "744361c55fbddf8661057179af710e1ca486946765116c4c364605c6d35911a6",
+   "positions": 256,
+   "c4_max": 7.62939453125e-06
+  },
+  {
+   "item": 3,
+   "trace": "gw_item3.trace",
+   "trace_sha256": "1f37bdbd60f27570268d817ff271bfd33d9759cd36f13198ec7c601a819473cc",
+   "positions": 256,
+   "c4_max": 7.62939453125e-06
+  },
+  {
+   "item": 4,
+   "trace": "gw_item4.trace",
+   "trace_sha256": "a653dc48547fdd4733dbd48edd93e1b13cc5edc55dde60d5d9d84729cfa3ba8c",
+   "positions": 256,
+   "c4_max": 7.62939453125e-06
+  },
+  {
+   "item": 5,
+   "trace": "gw_item5.trace",
+   "trace_sha256": "f8c9947f16c08bc8bbc20e62ea355f54f1bae48f05f6188024d79bbf62652294",
+   "positions": 256,
+   "c4_max": 7.62939453125e-06
+  },
+  {
+   "item": 6,
+   "trace": "gw_item6.trace",
+   "trace_sha256": "8438d9047f827cb1173806ec264fb969823ae59a3a37c2f1e7134b8e70fe1585",
+   "positions": 256,
+   "c4_max": 6.67572021484375e-06
+  },
+  {
+   "item": 7,
+   "trace": "gw_item7.trace",
+   "trace_sha256": "1b2ee7ca0d78ea1007e6fbd4376eb83ecea2fa578884968d2dbcb4a2f3953b6f",
+   "positions": 256,
+   "c4_max": 7.62939453125e-06
+  }
+ ]
+}
