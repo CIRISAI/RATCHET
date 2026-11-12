@@ -57,5 +57,15 @@
  "trace_value_where_overridden": {
   "PONDER": 599,
   "DEFER": 70
+ },
+ "CAVEAT_2026-11-12_retries": "Cause confirmed by cirisagent-fd (CIRISAgent#1355): the event's verb is read from the conscience step's output. A thought whose final attempt was not overridden may have had an earlier overridden attempt, whose event shows the replacement; this harvest took the FIRST event per thought. Cleanest reading: thoughts with exactly one selection event and no override.",
+ "selection_single_event_not_overridden": {
+  "SPEAK": 792,
+  "TASK_COMPLETE": 780,
+  "PONDER": 10,
+  "DEFER": 5
+ },
+ "first_event_where_several_not_overridden": {
+  "PONDER": 133
  }
 }
