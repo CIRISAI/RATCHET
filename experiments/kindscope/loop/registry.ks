@@ -183,3 +183,12 @@ misfit KS-FORCE-AT-WRONG-POINT
   requires: force_at_displaced_point
   born: EDIT-2 2026-11-12 (author ratchet-b9; found by reviewer cirisagent-fd)
   status: registered
+
+misfit KS-READ-NOT-WRITE-EARLY
+  line: refines the recanted KS-READ-NOT-WRITE — at mlp0-mlp2 a pulled-back writing direction moves behaviour where the probe (reading) direction does not (EDIT-2 at half write norm: +0.08, +0.07, +0.10 over reading, CIs exclude 0); in stiff late layers the same first-order direction overshoots and harms (mlp5 -0.56)
+  rule: an edit direction is pulled back from the destination, never taken from a probe, AND its size is kept inside the range where the first-order direction holds (measured per layer); report the parallax angle against the random-direction band beside every edit
+  applies: verb in {steer, edit}
+  requires: pulled_back_direction, linear_range
+  replaces: KS-READ-NOT-WRITE
+  born: EDIT-2 2026-11-12
+  status: candidate

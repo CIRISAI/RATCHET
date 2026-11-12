@@ -45,10 +45,10 @@ def fig_torque(r, out):
         axs[0].plot(range(6), [t[k]["deg"] for k in ks], color=CAT[j], lw=2, marker="o", ms=6, label=kind)
         axs[1].plot(range(6), [t[k]["rel_change"] for k in ks], color=CAT[j], lw=2, marker="o", ms=6, label=kind)
     axs[0].axhline(90, color=INK2, lw=1, ls="--")
-    axs[0].set_ylabel("torque: angle to the weights' own pull (°)"); axs[1].set_ylabel("‖A2 − A3‖ / ‖W‖")
+    axs[0].set_ylabel("angle to −∇ at base weights (°)"); axs[1].set_ylabel("‖A2 − A3‖ / ‖W‖")
     for a in axs:
         a.set_xticks(range(6), [f"block {i}" for i in range(6)]); a.legend(frameon=False, fontsize=8)
-    axs[0].set_title("Torque per tensor (90° = orthogonal to ordinary training)", loc="left", fontsize=10)
+    axs[0].set_title("Angle to the base-point gradient — VOID as torque (KS-FORCE-AT-WRONG-POINT)", loc="left", fontsize=10)
     axs[1].set_title("How much each tensor moved for the shift", loc="left", fontsize=10)
     emb = {k: v for k, v in t.items() if not k.startswith("blocks.")}
     frame(fig, FOOT + " · shift = A2 − A3 seed mean · pull = −∇ base loss on CONTROL · other tensors: " +
@@ -69,7 +69,7 @@ def fig_withdrawal(r, out):
     ax.axhline(0, color=INK2, lw=0.8)
     ax.set_xlabel("steps after the change"); ax.set_ylabel("Δ log-prob of adjectives after DET (nats)")
     ax.legend(frameon=False, fontsize=8)
-    ax.set_title("Torque is a force you keep applying: what stays when it stops", loc="left", fontsize=11)
+    ax.set_title("Withdrawing the force: most of the change does not stay", loc="left", fontsize=11)
     frame(fig, FOOT + f" · P2 {'holds' if r['P2']['holds'] else 'does not hold'}")
     fig.tight_layout(rect=(0, 0.05, 1, 1)); fig.savefig(out, dpi=150, facecolor=SURF); plt.close(fig)
 
@@ -78,7 +78,10 @@ def fig_parallax(r, out):
     fig, axs = plt.subplots(1, 2, figsize=(11, 4))
     L = range(6)
     axs[0].plot(L, [r["parallax_deg"][str(l)] for l in L], color=CAT[0], lw=2, marker="o", ms=7)
-    axs[0].axhline(90, color=INK2, lw=1, ls="--"); axs[0].set_ylim(60, 95)
+    axs[0].axhline(90, color=INK2, lw=1, ls="--"); axs[0].set_ylim(60, 100)
+    lo = math.degrees(math.acos(1.96 / math.sqrt(192)))  # two random unit vectors in R^192: |cos| < 1.96/sqrt(192) 95%
+    axs[0].axhspan(lo, 180 - lo, color=GRID, alpha=0.8, zorder=0)
+    axs[0].text(0, lo + 0.6, f"95% band for two random directions ({lo:.1f}°–{180-lo:.1f}°)", color=INK2, fontsize=8)
     axs[0].set_ylabel("angle read ↔ write (°)"); axs[0].set_title("Parallax per layer (directions from CAL)", loc="left",
                                                                    fontsize=10)
     for k, name in enumerate(("read", "write")):
