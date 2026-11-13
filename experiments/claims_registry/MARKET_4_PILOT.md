@@ -71,6 +71,11 @@
 >   complete based solely on communication") twice pushed the agent to act again instead of completing; TSASPDMA once
 >   called `create_ticket` the wrong tool for the same request it had just filed. Result: a duplicate ticket, then the
 >   auto-deferral at depth 5.
+> - Agent session, later the same day: the connection-error retry is fixed in `1aef6b517` (APIConnectionError in the
+>   cause chain gets the 503 backoff, not counted against the breaker). ac-07's IDMA push-past and TSASPDMA's
+>   reversal are prompt behaviour, put to the owner. Server session: a pending deferral is not on the owner's
+>   `GET /v1/self/decisions` queue; resolves rely on the owner finding it in the room (raised with the owner).
+>   `release/2.21.1` carries 1, 3 (guide only), 7 and the retry fix.
 > - **The two RuntimeErrors** were provider failures handled unevenly. A 503 (nc-01) was retried with backoff and
 >   recovered. An `APIConnectionError` (ac-21) got 1 attempt, "not retried" at the DMA, and the task FAILED with no reply
 >   to the user.
