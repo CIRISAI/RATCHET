@@ -74,7 +74,7 @@
 > - Agent session, later the same day: the connection-error retry is fixed in `1aef6b517` (APIConnectionError in the
 >   cause chain gets the 503 backoff, not counted against the breaker). ac-07's IDMA push-past and TSASPDMA's
 >   reversal are prompt behaviour, put to the owner. Server session: a pending deferral is not on the owner's
->   `GET /v1/self/decisions` queue; resolves rely on the owner finding it in the room (owner: being fixed in "server 227" (owner's words; the agent pins ciris-server 0.5.246 today), which the agent will adopt).
+>   `GET /v1/self/decisions` queue; resolves rely on the owner finding it in the room (owner: being fixed in ciris-server 0.5.247, which the agent will adopt).
 >   `release/2.21.1` carries 1, 3 (guide only), 7 and the retry fix.
 > - Owner rulings (2026-11-13): approved identity amendments go through the consciences; prompt edits that only correct
 >   tool-call facts proceed (relayed to the agent session). The IDMA push-past is not covered and stays with the owner.
