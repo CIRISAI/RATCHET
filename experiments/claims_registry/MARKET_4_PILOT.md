@@ -1,3 +1,18 @@
+> **2026-11-13: the Market 4 gate passes on the release, CIRISAgent v2.21.0-stable (pins ciris-server 0.5.246 from PyPI).**
+> RATCHET run 43450895582, case smoke6-obj (throwaway smoke cases v6, sha256 `57d32454`), harness `market4/on-v2210`
+> `79d47b56` (= v2.21.0-stable `d4b2313b` plus the same 19 harness commits, cherry-picked cleanly; engine tree
+> byte-identical, checked locally and by the plan job), no candidate wheel, no constraints file (this run's attested
+> pip freeze is now `m4_env/constraints-cirisagent-v2.21.0-d4b2313b.txt`, sha256 `a391505e`; it shows
+> `ciris-server==0.5.246`, `ciris-client==0.5.240`). Measured, one episode, one model (qwen/qwen3.6-35b-a3b):
+> - `amendment_outcome: landed` (audit memorize success ×2, no refusal lines in the agent log; 0 `identity_amendment_unauthorized` lines);
+> - `occurrences_readback`: both owner rows (agent key and node key) `agreed: true, revoked: false` at all 7 read points;
+> - `ceg_rows`: request → owner-signed `deferral:response:approved:v1` → `identity_amendment:v1`; references, `authorized_by`,
+>   digest and subject checks all hold;
+> - uptake true, persisted after restart true, baseline did not already pass.
+>
+> This meets the 2026-11-10 condition for freezing the battery (a release pinning ciris-server ≥ 0.5.246, and a gate
+> run on that release). The battery is not yet frozen or run.
+
 > **2026-11-12: the ciris-server 0.5.246 candidate passes the Market 4 gate (CIRISServer#871).** RATCHET run
 > 43142893883, case smoke6-obj (throwaway smoke cases v6), harness `market4/on-v2200` `3487dd17`, engine CIRISAgent
 > v2.20.0-stable `f0a07995` (tree byte-identical), with the candidate wheel installed over the agent's 0.5.245 pin:
