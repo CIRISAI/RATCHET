@@ -67,6 +67,12 @@ over that chart, to see how a response is formed from its input. The purpose is 
 model that can run the agent's reasoning on a phone. Change-tracing results are expressed in the map's coordinates where
 possible (a change's difference projected onto the mapped category directions, per layer).
 
+## Logic against training (2026-11-12, exploratory)
+
+The owner's direction after the map-and-motion work: do not remove layers; edit weights in concert to make or repair
+curves in the map, and see the curve the logic obeys against the curve the weights encode (vocab against grammar).
+The session's measurements, readings and what is not done are in `TORQUE_NOTES.md`. Kindscope is paused there.
+
 ## Misfits and the loop (principled exploration)
 
 A misfit is a **named defect of method** born from one diagnosed failure, not a statistical finding; it carries a rule
