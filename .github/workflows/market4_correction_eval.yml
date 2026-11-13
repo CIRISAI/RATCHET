@@ -5,7 +5,7 @@ name: Market 4 correction eval
 # each on a freshly booted agent.
 #
 # The harness (tools/qa_runner correction_episodes + its registration) lives in
-# CIRISAgent (branch market4/on-v2200 for v2.20.0-stable; market4/on-v2164 and
+# CIRISAgent (branch market4/on-v2210 for v2.21.0-stable; market4/on-v2200, market4/on-v2164 and
 # market4/correction-eval for earlier engines), pinned here by commit. The
 # SYSTEM UNDER TEST is the engine at `engine_commit`; the `plan` job fails the
 # run if the harness checkout's ciris_engine/, ciris_adapters/, main.py or
@@ -28,14 +28,14 @@ on:
         required: true
         type: string
       harness_ref:
-        description: 'CIRISAgent commit carrying the harness (branch market4/on-v2200 for v2.20.0-stable)'
+        description: 'CIRISAgent commit carrying the harness (branch market4/on-v2210 for v2.21.0-stable)'
         required: false
-        default: '95d4cf57664ac05d65b3fa13cb33484effeb0d92'
+        default: '79d47b56d40f61674cb6f0a551c3bf7a0b2928c4'
         type: string
       engine_commit:
         description: 'Engine commit the harness checkout must be byte-identical to under ciris_engine/, ciris_adapters/, main.py, requirements.txt'
         required: false
-        default: 'f0a079953da53c0a8af0c8ed3b774a582bffaf22'
+        default: 'd4b2313bb77fdbcb487c25017a149d8a5beba80a'
         type: string
       model:
         description: 'OpenRouter model id for the agent under test'
