@@ -61,6 +61,20 @@
 > 8. Six conscience overrides end in "Maximum thought depth (5) reached - deferring to human", including ac-07 deferring
 >    after it had already answered; two model calls failed (one ethical PDMA, one entropy conscience, `RuntimeError`).
 >
+> **Status from the agent session (2026-11-13; CIRISAgent `release/2.21.1`, PR #1358, not released):** 1 fixed
+> (`af274272d`: the conscience retry runs the verb second pass); 3 partly (`2d428babe`: guide and docstring say `blocked`;
+> the consciences are still not told the ticket model); 7 fixed (`3da58bb5f`: DSASPDMA's domain hint routed deferrals only
+> to services declaring that domain, none does, `send_deferral` returned False and the task was still marked DEFERRED
+> with no record; the hint now informs and does not block). 5 (amendments invisible to the consciences) is a design
+> question for the owner. Followed up from the streams:
+> - **ac-07 depth-5:** one request, two tickets. After a correct ticket and reply, the IDMA fragility flag ("task marked
+>   complete based solely on communication") twice pushed the agent to act again instead of completing; TSASPDMA once
+>   called `create_ticket` the wrong tool for the same request it had just filed. Result: a duplicate ticket, then the
+>   auto-deferral at depth 5.
+> - **The two RuntimeErrors** were provider failures handled unevenly. A 503 (nc-01) was retried with backoff and
+>   recovered. An `APIConnectionError` (ac-21) got 1 attempt, "not retried" at the DMA, and the task FAILED with no reply
+>   to the user.
+>
 > **Next method (owner, 2026-11-13), before any new freeze:**
 > - **Obeyability pre-test per correction text:** does the correction make sense for this product, and does the agent
 >   obey it when given directly (not through the identity channel)? Texts the agent will not or cannot follow are
