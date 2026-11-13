@@ -1,0 +1,169 @@
+{
+  "schema": "goldworm-lm-v6/eval/1",
+  "purpose": "v6 transformer evaluation on the fixed sampled outer_val position set",
+  "generated_utc": "2026-09-13T07:45:59.174737+00:00",
+  "corpus": {
+    "path": "hybrid/v6/corpus/corpus.txt",
+    "bytes": 19447282,
+    "sha256": "94e431816c4cce81ff71e4408ff8d3bda9a42e8d2663986697c3954288cb38b4",
+    "source": "https://huggingface.co/datasets/roneneldan/TinyStories/resolve/main/TinyStories-valid.txt"
+  },
+  "splits": {
+    "train_core": [
+      0,
+      17502553
+    ],
+    "inner_val": [
+      17502553,
+      17764697
+    ],
+    "outer_val": [
+      17764697,
+      19447282
+    ]
+  },
+  "eval_set": {
+    "npy": "hybrid/v6/eval_positions.npy",
+    "spec": "hybrid/v6/eval_spec.json",
+    "sha256": "43d20dd0ddf64b753090906c97b42672b3e8b422bee93ae8803e63181217afaa",
+    "count": 129429,
+    "rule": "p_k = outer_val[0] + W_CONTEXT + k * EVAL_STRIDE for k = 0..n-1",
+    "EVAL_STRIDE": 13,
+    "W_CONTEXT": 8,
+    "first": 17764705,
+    "last": 19447269
+  },
+  "protocol": {
+    "metric": "mean over positions of -log2 p(true byte), base-2 bits per byte",
+    "primary": {
+      "name": "windowed stride-16 ctx-256 over the fixed sampled position set, region-clamped",
+      "per_window": 16,
+      "ctx": 256,
+      "window_rule": "one causal window per block of 16 consecutive sampled positions; reads [max(outer_val_start, last_target + 1 - ctx), last_target + 1); target p is scored from the logits at input offset p - w_start - 1",
+      "implementation": "gwlm_v6.windowed_positions_bits"
+    },
+    "baselines": "unigram/bigram add-k (k=0.01) counts over train_core (train-matched), same position set",
+    "selection": "lowest inner-val windowed bpc over the 8192 sampled inner-val positions (stride 31), before any outer_val read",
+    "determinism": "the outer pass is executed twice; bits arrays must be bit-identical"
+  },
+  "threads": 4,
+  "baselines": {
+    "unigram_bpc": 4.437245907592765,
+    "bigram_bpc": 3.3168704976747163,
+    "add_k": 0.01,
+    "counts_span": "train_core",
+    "bits_npy": {
+      "unigram": "results/eval_bits_unigram.npy",
+      "bigram": "results/eval_bits_bigram.npy"
+    },
+    "wall_sec": 0.6562598000000435,
+    "note": "train-matched = counts over the v6 train split only"
+  },
+  "selection": {
+    "file": "results/selection.json",
+    "sha256": "162849cd244e6179f5231912a9202b448d6001c9c467edc6afa08e4740d2146d",
+    "selected_checkpoint": "run/andrew_8000/checkpoint_selected.pt",
+    "selected_step": 8000,
+    "selected_inner_val_windowed_bpc": 1.0511870494423836,
+    "candidates": 17,
+    "runner_up": {
+      "checkpoint": "checkpoint.pt",
+      "step": 8000,
+      "tokens_seen": 65536000,
+      "kind": "final",
+      "inner_val_windowed_bpc": 1.0511870494423836,
+      "inner_val_positions": 8192,
+      "inner_val_stride": 31,
+      "windows": 911,
+      "wall_sec": 14.423227499999484,
+      "selection_bits_npy": "run/selection_bits_checkpoint.npy"
+    },
+    "selection_frozen_unix": 1789285821.6371968,
+    "ordering": "selection.json (sha256 above) was written and frozen before the first outer_val pass"
+  },
+  "transformer": {
+    "checkpoint": "run/andrew_8000/checkpoint_selected.pt",
+    "checkpoint_meta": {
+      "tag": "gwlm-v6-full",
+      "step": 8000,
+      "tokens_seen": 65536000,
+      "seed": 20260912,
+      "elapsed_sec": 11672.2589954,
+      "kind": "interval"
+    },
+    "model_config": {
+      "vocab_size": 256,
+      "ctx": 256,
+      "d_model": 192,
+      "n_layer": 6,
+      "n_head": 4,
+      "ffn_mult": 4,
+      "dropout": 0.1,
+      "tie_embeddings": true
+    },
+    "n_params": 2757504,
+    "full_bpc": 1.007349040026128,
+    "full_bpc_definition": "mean of the per-position bits over the fixed evaluation position set",
+    "passes": [
+      {
+        "run": 1,
+        "bpc": 1.007349040026128,
+        "wall_sec": 129.3523753999998,
+        "info": {
+          "per_window": 16,
+          "windows": 8090,
+          "scored_positions": 129429,
+          "unscored_positions": 0,
+          "region": [
+            17764697,
+            19447282
+          ],
+          "batch_windows": 64
+        }
+      },
+      {
+        "run": 2,
+        "bpc": 1.007349040026128,
+        "wall_sec": 135.66176749999977,
+        "info": {
+          "per_window": 16,
+          "windows": 8090,
+          "scored_positions": 129429,
+          "unscored_positions": 0,
+          "region": [
+            17764697,
+            19447282
+          ],
+          "batch_windows": 64
+        }
+      }
+    ]
+  },
+  "determinism": {
+    "runs": 2,
+    "max_abs_diff_per_position_bits": 0.0,
+    "identical": true
+  },
+  "plumbing_self_check": {
+    "compared": 512,
+    "mean_abs_diff": 0.0946489424713235,
+    "max_abs_diff": 3.1407546997070312,
+    "exact_context_bpc": 1.0002055049144758,
+    "windowed_bpc": 1.034207898785752,
+    "wall_sec": 13.40898340000058,
+    "note": "positions with >= ctx-1 bytes of in-region context; differences are float32 batching effects only"
+  },
+  "per_position_bits_npy": {
+    "path": "results/eval_bits_transformer.npy",
+    "sha256": "21cf4dfc57ccb920b4f57ad89dbdecbd060be207f5d8874c6b745a824027558e",
+    "dtype": "float64",
+    "n": 129429
+  },
+  "wall_sec": {
+    "eval_total": 541.0920074999976,
+    "outer_passes": [
+      129.3523753999998,
+      135.66176749999977
+    ]
+  }
+}
