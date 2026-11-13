@@ -1,3 +1,7 @@
+# Market 4 battery (frozen 2026-11-13 as workbench contribution `cirisai-2026-11-13-four-case-v2-21-0-stable`; see `../MARKET_4_PILOT.md`)
+
+The text below is the draft-stage note, kept as written; `battery-draft.jsonl` here is the file the freeze was built from (sha256 `bc60f861…`).
+
 # Market 4 battery: DRAFT, not frozen
 
 `battery-draft.jsonl` holds 112 cases for ai-safety-claims Market 4 ("corrections change the system", contract v3).

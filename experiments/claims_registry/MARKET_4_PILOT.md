@@ -1,3 +1,15 @@
+> **2026-11-13: the four-case battery is frozen and running.** Contribution
+> `cirisai-2026-11-13-four-case-v2-21-0-stable` on the workbench fork `CIRISAI/ai-safety-claims-workbench`, branch
+> `market4-ciris`; tag `freeze/cirisai-2026-11-13-four-case-v2-21-0-stable` = `17316f63351582af5e012f44876887db05beeb30`,
+> `frozenAt 2026-11-13T15:32:46Z`, method code `8e49ee44439e`, 112 cases, `freeze-cases.jsonl` sha256 `bd8f238b…fed972`
+> (the public raw file at the tag matches). Built from `m4_battery/battery-draft.jsonl` sha256 `bc60f861…` (generator
+> run for v2.21.0-stable; validator: all rules hold; harness unit tests 41 passed). Pins: engine CIRISAgent
+> v2.21.0-stable `d4b2313b`; harness `market4/on-v2210` `79d47b56`; workflow tag `m4-workflow-v3` = RATCHET `3008eadb`;
+> constraints `m4_env/constraints-cirisagent-v2.21.0-d4b2313b.txt` sha256 `a391505e`; model qwen/qwen3.6-35b-a3b,
+> provider order DeepInfra,Parasail, seed 20261022, max_parallel 6; registry `aintelope/ai-safety-claims` @ `dea188f`.
+> `response_bound_hours: null` (no case removes a WA seat). Run dispatched by the contribution's `run.py`:
+> RATCHET run 43453725789. No result yet; nothing is filed.
+
 > **2026-11-13: the Market 4 gate passes on the release, CIRISAgent v2.21.0-stable (pins ciris-server 0.5.246 from PyPI).**
 > RATCHET run 43450895582, case smoke6-obj (throwaway smoke cases v6, sha256 `57d32454`), harness `market4/on-v2210`
 > `79d47b56` (= v2.21.0-stable `d4b2313b` plus the same 19 harness commits, cherry-picked cleanly; engine tree
