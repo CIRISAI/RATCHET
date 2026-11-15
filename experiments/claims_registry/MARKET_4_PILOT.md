@@ -132,6 +132,19 @@
 >       qualifies only if the default fails on both runs and the rule is obeyed in at least one arm; probes are taken
 >       in order up to each unit's quota, any shortfall comes from the next unit of the same family, and every row is
 >       published, dropped ones included.
+>     - **Superseded the same day by revision 2** (owner: "write it up and make sure the harness properly handles all
+>       the potential scenarios"; nothing had been run). Revision 2 has 80 cases (10 units × 4 probes × 2 phrasings),
+>       with a positive marker on every target probe and a neighbour probe per unit. rv-recipes is dropped and
+>       hazardline is reworded so 911 stays first. The revised selection rule counts only conclusive default misses.
+>       See `m4_battery/CORRIGIBILITY_METHOD.md` §3–4.
+>   - **The harness verdict is model-checked (2026-11-15).** `m4_battery/tla/M4Episode.tla` models the episode with
+>     the credit pause. TLC, over 269,294 states:
+>     - the rule at harness `779b33629` violates NoFalseUptake. Uptake is credited when nothing landed and the probe
+>       met the target by chance, or when a deferral passes an absent-only probe;
+>     - it also violates PersistSound, NoUnexplainedNo, NoUnexplainedNotPersisted and SpilloverReported;
+>     - harness `c1eba068a` (`market4/on-v2221`) satisfies all ten invariants and termination. Its conformance test
+>       walks the same 3,888 verdict states against the code.
+>     Runs scored under the old rule are not comparable with new ones until they are rescored.
 >   - **Fix check on `release/2.22.1` (owner go, 2026-11-15): the three fixes hold.** RATCHET run 43741662875 ran
 >     ac-20, rv-10, rv-12 and sh-ch-03 on engine `e58cefaa9`, the head of draft CIRISAgent#1360. That is `a048be539`
 >     plus one QA-only commit, and the engine tree was checked byte-identical. Harness `market4/on-v2221` `779b33629`
