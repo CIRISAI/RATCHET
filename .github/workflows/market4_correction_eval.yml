@@ -208,7 +208,7 @@ jobs:
     name: ${{ matrix.item.tag }}
     needs: [plan]
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 345
     strategy:
       fail-fast: false
       max-parallel: ${{ fromJSON(inputs.max_parallel) }}
@@ -294,22 +294,120 @@ jobs:
           if [ -z "$OPENROUTER_API_KEY" ]; then echo "::error::RATCHET_OPENROUTER_KEY not in scope"; exit 1; fi
           umask 077
           printf '%s' "$OPENROUTER_API_KEY" > "$HOME/.openrouter_key"
-      - name: Run the episode
+      # Credit pause. If the provider refuses for credit (HTTP 402, "run out of credit", insufficient_quota) at any
+      # point in an episode, the episode is contaminated: it is stopped, its files are kept under
+      # qa_reports/credit_paused/attempt-N/ (uploaded with the agent logs), the job waits until a 1-token request to
+      # the same model is accepted, and the episode is rerun from a wiped start. Every pause is logged to
+      # qa_reports/credit_pauses.jsonl. It never waits out the key's weekly limit: if the key reports less than
+      # M4_MIN_KEY_REMAINING dollars left it stops red. Bounds: M4_MAX_ATTEMPTS episodes and M4_PAUSE_BUDGET_S seconds
+      # of waiting per job.
+      - name: Run the episode (pauses on provider credit refusals, then reruns from scratch)
         id: run
-        timeout-minutes: 135
+        timeout-minutes: 320
         working-directory: agent
         shell: bash
+        env:
+          M4_MAX_ATTEMPTS: '4'
+          M4_PAUSE_BUDGET_S: '5400'
+          M4_ATTEMPT_TIMEOUT_S: '7800'
+          M4_MIN_KEY_REMAINING: '2'
         run: |
-          set -o pipefail
-          mkdir -p qa_reports
-          python3 -m tools.qa_runner correction_episodes \
-            --correction-cases-file /tmp/m4-cases/freeze-cases.jsonl \
-            --correction-case-id "${{ matrix.item.case }}" \
-            --live --live-key-file "$HOME/.openrouter_key" \
-            --live-base-url https://openrouter.ai/api/v1 \
-            --live-model "$MODEL_INPUT" \
-            --safety-battery-template "$TEMPLATE_INPUT" \
-            --wipe-data --proceed-anyway --timeout 7200 --verbose 2>&1 | tee "qa_reports/episode_${{ matrix.item.case }}.log"
+          set -u -o pipefail
+          CASE="${{ matrix.item.case }}"
+          mkdir -p qa_reports qa_reports/credit_paused
+          PAUSES=qa_reports/credit_pauses.jsonl; : > "$PAUSES"
+          MARK='run out of credit|insufficient_quota|Error code: 402|would exceed your available credits|LLM BILLING ERROR'
+          credit_hit() {
+            grep -qsE "$MARK" "qa_reports/correction_episodes/$CASE.jsonl" "qa_reports/episode_$CASE.log" 2>/dev/null && return 0
+            [ -d logs ] && grep -rqsE "$MARK" logs/ && return 0
+            return 1
+          }
+          provider_ok() {   # 1-token request to the same model; prints the HTTP status
+            python3 - "$MODEL_INPUT" <<'PY'
+          import json, os, sys, urllib.request, urllib.error
+          key = open(os.path.expanduser("~/.openrouter_key")).read().strip()
+          req = urllib.request.Request("https://openrouter.ai/api/v1/chat/completions",
+              data=json.dumps({"model": sys.argv[1], "max_tokens": 1,
+                               "messages": [{"role": "user", "content": "ok"}]}).encode(),
+              headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"})
+          try:
+              print(urllib.request.urlopen(req, timeout=60).status)
+          except urllib.error.HTTPError as e:
+              print(e.code)
+          except Exception:
+              print(0)
+          PY
+          }
+          key_remaining() {  # dollars left on the key's limit; "none" when the key has no limit
+            python3 - <<'PY'
+          import json, os, urllib.request
+          key = open(os.path.expanduser("~/.openrouter_key")).read().strip()
+          try:
+              d = json.load(urllib.request.urlopen(urllib.request.Request("https://openrouter.ai/api/v1/key",
+                  headers={"Authorization": f"Bearer {key}"}), timeout=30))["data"]
+              print("none" if d.get("limit_remaining") is None else d["limit_remaining"])
+          except Exception:
+              print("unknown")
+          PY
+          }
+          log_pause() { printf '{"t":"%s","case":"%s","attempt":%d,"event":"%s"%s}\n' "$(date -u +%FT%TZ)" "$CASE" "$ATTEMPT" "$1" "${2:-}" >> "$PAUSES"; }
+
+          WAITED=0; ATTEMPT=0
+          while :; do
+            ATTEMPT=$((ATTEMPT+1))
+            rm -rf logs "qa_reports/correction_episodes/$CASE.jsonl"
+            for d in qa_reports/correction_episodes/"${CASE}"_*_logs; do
+              [ -e "$d" ] && [ "$d" != "qa_reports/correction_episodes/${CASE}_env_logs" ] && rm -rf "$d"
+            done
+            setsid bash -c 'exec timeout --signal=TERM --kill-after=60 "$0" python3 -m tools.qa_runner correction_episodes \
+                --correction-cases-file /tmp/m4-cases/freeze-cases.jsonl --correction-case-id "$1" \
+                --live --live-key-file "$HOME/.openrouter_key" --live-base-url https://openrouter.ai/api/v1 \
+                --live-model "$2" --safety-battery-template "$3" \
+                --wipe-data --proceed-anyway --timeout 7200 --verbose 2>&1' \
+              "$M4_ATTEMPT_TIMEOUT_S" "$CASE" "$MODEL_INPUT" "$TEMPLATE_INPUT" > "qa_reports/episode_$CASE.log" 2>&1 &
+            PG=$!; HIT=0
+            while kill -0 "$PG" 2>/dev/null; do
+              sleep 15
+              if credit_hit; then
+                HIT=1; echo "::warning::credit refusal in attempt $ATTEMPT of $CASE; stopping the episode"
+                kill -TERM -- "-$PG" 2>/dev/null; sleep 30; kill -KILL -- "-$PG" 2>/dev/null; break
+              fi
+            done
+            wait "$PG"; RC=$?
+            [ "$HIT" = 0 ] && credit_hit && HIT=1
+            pkill -f "$PWD/main.py" 2>/dev/null || true
+            cat "qa_reports/episode_$CASE.log"
+            if [ "$HIT" = 0 ]; then
+              log_pause done ",\"rc\":$RC"
+              exit "$RC"
+            fi
+            D="qa_reports/credit_paused/attempt-$ATTEMPT"; mkdir -p "$D"
+            cp -r "qa_reports/episode_$CASE.log" logs "qa_reports/correction_episodes/$CASE.jsonl" "$D/" 2>/dev/null || true
+            cp -r qa_reports/correction_episodes/${CASE}_*_logs "$D/" 2>/dev/null || true
+            log_pause credit_refusal ",\"kept\":\"$D\""
+            if [ "$ATTEMPT" -ge "$M4_MAX_ATTEMPTS" ]; then
+              echo "::error::$CASE: credit refusals in all $ATTEMPT attempts; no clean episode"; exit 1
+            fi
+            S=60
+            while :; do
+              REM=$(key_remaining)
+              if [ "$REM" != none ] && [ "$REM" != unknown ] && python3 -c "import sys; sys.exit(0 if float('$REM') < float('$M4_MIN_KEY_REMAINING') else 1)"; then
+                log_pause key_limit ",\"remaining\":\"$REM\""
+                echo "::error::$CASE: the key's limit is nearly spent (\$$REM left); not waiting for the weekly reset"; exit 1
+              fi
+              if [ "$WAITED" -ge "$M4_PAUSE_BUDGET_S" ]; then
+                log_pause pause_budget_spent ",\"waited_s\":$WAITED"
+                echo "::error::$CASE: provider still refusing after ${WAITED}s of waiting"; exit 1
+              fi
+              echo "credit pause: waiting ${S}s (waited ${WAITED}s so far; key remaining: $REM)"
+              sleep "$S"; WAITED=$((WAITED+S))
+              CODE=$(provider_ok)
+              log_pause probe ",\"status\":$CODE,\"waited_s\":$WAITED"
+              [ "$CODE" = 200 ] && break
+              S=$(( S*2 > 600 ? 600 : S*2 ))
+            done
+            echo "provider accepts again after ${WAITED}s; rerunning $CASE from a wiped start (attempt $((ATTEMPT+1)))"
+          done
       - name: Raw log present
         if: always()
         working-directory: agent
@@ -339,6 +437,8 @@ jobs:
           name: m4-agent-logs-${{ matrix.item.tag }}
           path: |
             agent/qa_reports/episode_${{ matrix.item.case }}.log
+            agent/qa_reports/credit_pauses.jsonl
+            agent/qa_reports/credit_paused/
             agent/qa_reports/correction_episodes/${{ matrix.item.case }}_*_logs/
             agent/logs/
           retention-days: 30
