@@ -78,6 +78,12 @@
 >   `release/2.21.1` carries 1, 3 (guide only), 7 and the retry fix.
 > - Owner rulings (2026-11-13): approved identity amendments go through the consciences; prompt edits that only correct
 >   tool-call facts proceed (relayed to the agent session). The IDMA push-past is not covered and stays with the owner.
+> - **Released as 2.22.0, not 2.21.1 (2026-11-14):** PR #1358 merged as `739795cc0` ("identity in every judging prompt,
+>   every action's result in the follow-up"), reading 2.22.0-stable and pinning ciris-server 0.5.247 and ciris-client
+>   0.5.241. Tag `v2.22.0-stable` exists (checked). `af274272d`, `2d428babe`, `3da58bb5f` and `1aef6b517` are each an
+>   ancestor of the merge (checked by compare). The PyPI build (CIRISAgent run 43662598069) was queued when last checked.
+>   Not checked: whether "identity in every judging prompt" covers all seven calls that missed the amendment (item 5).
+>   Any diagnostic rerun targets this tag.
 > - **The two RuntimeErrors** were provider failures handled unevenly. A 503 (nc-01) was retried with backoff and
 >   recovered. An `APIConnectionError` (ac-21) got 1 attempt, "not retried" at the DMA, and the task FAILED with no reply
 >   to the user.
