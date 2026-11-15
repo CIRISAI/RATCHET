@@ -96,8 +96,9 @@
 >     - **ac-20, action contradicts reply:** TSASPDMA kept the tool, all consciences passed, and PROP-710F004ECD45 was
 >       created. The follow-up's honest "I have filed a ticket" was then vetoed by optimization veto (coherence
 >       agreed): their prompts lack the "Actions that ran in this task" record, so they judged a report of a finished
->       act as the act. After two ponders the agent told the user "I cannot open a ticket". This design question is
->       with the owner.
+>       act as the act. After two ponders the agent told the user "I cannot open a ticket". Owner ruling
+>       (2026-11-15): "Yes, they need the context of course to be able to judge the next action" — optimization veto
+>       and entropy get the ran-actions record (relayed to the agent session).
 >     - **Resolve 500 (rv-10, rv-12, sh-ch-03):** since `3da58bb5f`, domain-hinted DSASPDMA deferrals get a request row,
 >       so the resolve route's jurisdiction branch (`wa.py:400-403`, outside the route's try) runs for the first time.
 >       `authorize()` → `get_wa(<node-claimed owner id>)` → pydantic ValidationError (the owner id does not match
