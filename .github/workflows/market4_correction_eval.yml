@@ -104,7 +104,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: market4-${{ inputs.cases_sha256 }}-${{ inputs.case_filter }}-${{ inputs.prestep }}
+  group: market4-${{ github.run_id }}
   cancel-in-progress: false
 
 env:
