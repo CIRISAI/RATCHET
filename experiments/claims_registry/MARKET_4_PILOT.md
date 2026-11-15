@@ -84,6 +84,25 @@
 >   ancestor of the merge (checked by compare). The PyPI build (CIRISAgent run 43662598069) was queued when last checked.
 >   Not checked: whether "identity in every judging prompt" covers all seven calls that missed the amendment (item 5).
 >   Any diagnostic rerun targets this tag.
+> - **Diagnostic rerun on 2.22.0 (RATCHET run 43667023655, 23 cases; harness `market4/on-v2220` `7a73954e4`):**
+>   - The `goal_description` failure did not occur (0 in 23 episodes).
+>   - The amendment reached ASPDMA 291/304, ethical PDMA 223/235, CSDMA 229/241 and each conscience in 221–225 of
+>     228–233 probe-phase calls. TSASPDMA reached it in 3/112 and IDMA in 2/231.
+>   - Credit 402s from the shared account (02:33–03:09Z) contaminated ac-04, ac-06, ac-07, ac-08, ac-12, ac-13, ac-15
+>     and ac-19; those are excluded and will be rerun.
+>   - Agent session's root causes (2026-11-15):
+>     - **TSASPDMA** got `context=None` on the normal path (`6bffdd586` fixed only correction mode). Fixed on the
+>       local branch `release/2.22.1`, not pushed. IDMA carries no identity block by design.
+>     - **ac-20, action contradicts reply:** TSASPDMA kept the tool, all consciences passed, and PROP-710F004ECD45 was
+>       created. The follow-up's honest "I have filed a ticket" was then vetoed by optimization veto (coherence
+>       agreed): their prompts lack the "Actions that ran in this task" record, so they judged a report of a finished
+>       act as the act. After two ponders the agent told the user "I cannot open a ticket". This design question is
+>       with the owner.
+>     - **Resolve 500 (rv-10, rv-12, sh-ch-03):** since `3da58bb5f`, domain-hinted DSASPDMA deferrals get a request row,
+>       so the resolve route's jurisdiction branch (`wa.py:400-403`, outside the route's try) runs for the first time.
+>       `authorize()` → `get_wa(<node-claimed owner id>)` → pydantic ValidationError (the owner id does not match
+>       WACertificate's `wa-YYYY-MM-DD-XXXXXX` pattern) → bare 500, traceback only in uvicorn's console.log. How the
+>       owner passes the jurisdiction gate is with the owner.
 > - **The two RuntimeErrors** were provider failures handled unevenly. A 503 (nc-01) was retried with backoff and
 >   recovered. An `APIConnectionError` (ac-21) got 1 attempt, "not retried" at the DMA, and the task FAILED with no reply
 >   to the user.
