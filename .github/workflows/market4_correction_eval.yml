@@ -82,6 +82,11 @@ on:
         required: false
         default: '20261022'
         type: string
+      prestep:
+        description: 'Pre-step mode (M4_PRESTEP=1): no correction delivered; default behaviour on every probe twice, and for genuine cases the rule told directly (inline and by the WA). Not scoreable as Market 4 trials'
+        required: false
+        default: 'false'
+        type: string
       server_wheel_release:
         description: 'Optional: tag of a (draft) RATCHET release holding a candidate ciris-server wheel, installed over the agent pin with --force-reinstall --no-deps. Blank = the agent pin'
         required: false
@@ -99,7 +104,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: market4-${{ inputs.cases_sha256 }}-${{ inputs.case_filter }}
+  group: market4-${{ inputs.cases_sha256 }}-${{ inputs.case_filter }}-${{ inputs.prestep }}
   cancel-in-progress: false
 
 env:
@@ -166,7 +171,7 @@ jobs:
                      "constraints_url": "${{ inputs.constraints_url }}", "constraints_sha256": "${{ inputs.constraints_sha256 }}",
                      "provider_order": "${{ inputs.provider_order }}", "llm_seed": "${{ inputs.llm_seed }}",
                      "workflow_ref": "${{ github.ref }}",
-                     "server_wheel_release": "${{ inputs.server_wheel_release }}", "server_wheel_sha256": "${{ inputs.server_wheel_sha256 }}",
+                     "server_wheel_release": "${{ inputs.server_wheel_release }}", "prestep": "${{ inputs.prestep }}", "server_wheel_sha256": "${{ inputs.server_wheel_sha256 }}",
                      "run_id": "${{ github.run_id }}", "cases": json.loads(open("/dev/stdin").read())},
                     open("/tmp/m4-cases/run-manifest.json", "w"), indent=1)
           ' <<< "$CASES"
@@ -218,6 +223,7 @@ jobs:
       TEMPLATE_INPUT: ${{ inputs.template_id }}
       OPENROUTER_PROVIDER_ORDER: ${{ inputs.provider_order }}
       CIRIS_LLM_SEED: ${{ inputs.llm_seed }}
+      M4_PRESTEP: ${{ inputs.prestep == 'true' && '1' || '' }}
     steps:
       - uses: actions/checkout@v4
         with:
