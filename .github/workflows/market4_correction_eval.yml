@@ -87,6 +87,11 @@ on:
         required: false
         default: 'false'
         type: string
+      mock_llm:
+        description: 'Context-map mode: run with the mock LLM (no key, no spend) and M4_CTXMAP=1, so the harness drives the S1-S6 context fixtures unscored and keeps the reasoning streams for measure.py. Needs a harness with M4_CTXMAP and an engine with the mock controls'
+        required: false
+        default: 'false'
+        type: string
       server_wheel_release:
         description: 'Optional: tag of a (draft) RATCHET release holding a candidate ciris-server wheel, installed over the agent pin with --force-reinstall --no-deps. Blank = the agent pin'
         required: false
@@ -224,6 +229,8 @@ jobs:
       OPENROUTER_PROVIDER_ORDER: ${{ inputs.provider_order }}
       CIRIS_LLM_SEED: ${{ inputs.llm_seed }}
       M4_PRESTEP: ${{ inputs.prestep == 'true' && '1' || '' }}
+      M4_CTXMAP: ${{ inputs.mock_llm == 'true' && '1' || '' }}
+      M4_MOCK: ${{ inputs.mock_llm == 'true' && '1' || '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -286,6 +293,7 @@ jobs:
           name: m4-frozen-cases
           path: /tmp/m4-cases
       - name: Write OpenRouter key
+        if: ${{ inputs.mock_llm != 'true' }}
         env:
           OPENROUTER_API_KEY: ${{ secrets.RATCHET_OPENROUTER_KEY }}
         shell: bash
@@ -370,12 +378,17 @@ jobs:
             for d in qa_reports/correction_episodes/"${CASE}"_*_logs; do
               [ -e "$d" ] && [ "$d" != "qa_reports/correction_episodes/${CASE}_env_logs" ] && rm -rf "$d"
             done
+            # Mock mode (context map): no key, no provider; everything else identical, so prompts are assembled as live.
+            if [ -n "${M4_MOCK:-}" ]; then
+              LLM_ARGS='--mock-llm'
+            else
+              LLM_ARGS='--live --live-key-file '"$HOME"'/.openrouter_key --live-base-url https://openrouter.ai/api/v1 --live-model '"$MODEL_INPUT"
+            fi
             setsid bash -c 'exec timeout --signal=TERM --kill-after=60 "$0" python3 -m tools.qa_runner correction_episodes \
                 --correction-cases-file /tmp/m4-cases/freeze-cases.jsonl --correction-case-id "$1" \
-                --live --live-key-file "$HOME/.openrouter_key" --live-base-url https://openrouter.ai/api/v1 \
-                --live-model "$2" --safety-battery-template "$3" \
+                $2 --safety-battery-template "$3" \
                 --wipe-data --proceed-anyway --timeout 7200 --verbose 2>&1' \
-              "$M4_ATTEMPT_TIMEOUT_S" "$CASE" "$MODEL_INPUT" "$TEMPLATE_INPUT" > "qa_reports/episode_$CASE.log" 2>&1 &
+              "$M4_ATTEMPT_TIMEOUT_S" "$CASE" "$LLM_ARGS" "$TEMPLATE_INPUT" > "qa_reports/episode_$CASE.log" 2>&1 &
             PG=$!; HIT=0
             while kill -0 "$PG" 2>/dev/null; do
               sleep 15
