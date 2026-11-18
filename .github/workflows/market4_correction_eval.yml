@@ -317,11 +317,22 @@ jobs:
           mkdir -p qa_reports qa_reports/credit_paused
           PAUSES=qa_reports/credit_pauses.jsonl; : > "$PAUSES"
           MARK='run out of credit|insufficient_quota|Error code: 402|would exceed your available credits|LLM BILLING ERROR'
+          # OpenRouter's in-flight-budget 402 (limit_source openrouter_in_flight_budget) is transient: from CIRISAgent
+          # #1366 item 20 the engine waits Retry-After and retries it, so it does not stop the episode. Only a
+          # terminal credit failure does (balance, key limit, a credit refusal the harness saw in a reply). Engines
+          # without item 20 fail the call, and the harness's null-reply rule then shows it; set M4_INFLIGHT_STOP=1
+          # to keep stopping on in-flight 402s for such engines.
+          INFLIGHT='in_flight_budget|openrouter_in_flight_budget|given your current in-flight requests'
+          credit_lines() {
+            { grep -hsE "$MARK" "qa_reports/correction_episodes/$CASE.jsonl" "qa_reports/episode_$CASE.log" 2>/dev/null
+              [ -d logs ] && grep -rhsE "$MARK" logs/ 2>/dev/null; } || true
+          }
           credit_hit() {
-            grep -qsE "$MARK" "qa_reports/correction_episodes/$CASE.jsonl" "qa_reports/episode_$CASE.log" 2>/dev/null && return 0
-            [ -d logs ] && grep -rqsE "$MARK" logs/ && return 0
+            if [ "${M4_INFLIGHT_STOP:-0}" = 1 ]; then credit_lines | grep -q . && return 0; return 1; fi
+            credit_lines | grep -vE "$INFLIGHT" | grep -q . && return 0
             return 1
           }
+          inflight_count() { credit_lines | grep -cE "$INFLIGHT" || true; }
           provider_ok() {   # 1-token request to the same model; prints the HTTP status
             python3 - "$MODEL_INPUT" <<'PY'
           import json, os, sys, urllib.request, urllib.error
@@ -394,7 +405,7 @@ jobs:
                   cat qa_reports/infra_incidents.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
                 exit 0
               fi
-              log_pause done ",\"rc\":$RC"
+              log_pause done ",\"rc\":$RC,\"inflight_402_lines\":$(inflight_count)"
               exit "$RC"
             fi
             D="qa_reports/credit_paused/attempt-$ATTEMPT"; mkdir -p "$D"
