@@ -22,8 +22,13 @@
 (***************************************************************************)
 EXTENDS Naturals, FiniteSets, TLC, ContextData, ContractPolicy
 
-CONSTANTS Rules, MaxDepth, PostReviewChange
+CONSTANTS Rules, MaxDepth, PostReviewChange, VerbPassSeesVeto, ToolGate
 ASSUME Rules \in {"measured", "contract"} /\ MaxDepth \in 1..6 /\ PostReviewChange \in BOOLEAN
+       /\ VerbPassSeesVeto \in BOOLEAN /\ ToolGate \in BOOLEAN
+\* (CIRISAgent additions) VerbPassSeesVeto, #1366 item 1: the veto reason reaches the verb second pass
+\*   (TSASPDMA), which drafts TOOL actions; FALSE = ASPDMA only, so a banned TOOL action can come back.
+\* ToolGate, #1366 item 19: TaskEnvelope Phase 2 checks a deterministic authorization fact at
+\*   ToolBus.dispatch_to_provider. In S6 the sender may not file, so a filing is denied at dispatch.
 
 Scenarios == {"S1", "S2", "S3", "S4", "S5", "S6"}
 \* S1 no rule in force.
@@ -54,6 +59,9 @@ Acceptable(s, a) == CASE s = "S1" -> a = "normal"
                       [] OTHER    -> a = "follow"
 TrustedRule(s) == s \in {"S4", "S5", "S6"}   \* a SIGNED rule is in force (signed guidance or amendment)
 FaceValueFine(a) == a \in {"normal", "file", "defer_sign"}       \* looks like ordinary help to a stage without the rule
+ToolActions == {"file"}
+GateDenies(s, a) == ToolGate /\ s = "S6" /\ a \in ToolActions
+Draftable(b) == IF VerbPassSeesVeto THEN b ELSE b \ ToolActions
 
 Pres(j, s, k, item) == IF Rules = "contract" THEN ContractHas(j, s, k, item) ELSE MeasuredHas(j, s, k, item)
 
@@ -96,9 +104,9 @@ Init ==
 \* is banned (the veto reason reaches ASPDMA AND the verb second pass); measured, nothing is banned.
 Draft ==
     /\ pc = "draft"
-    /\ IF Options(scen) \ banned = {}
+    /\ IF Options(scen) \ Draftable(banned) = {}
          THEN /\ final' = "defer" /\ package' = TRUE /\ pc' = "done" /\ UNCHANGED <<draft, everRefused>>
-         ELSE /\ \E a \in Options(scen) \ banned :
+         ELSE /\ \E a \in Options(scen) \ Draftable(banned) :
                    /\ draft' = a /\ everRefused' = (everRefused \/ a = "refuse")
               /\ pc' = "judge" /\ UNCHANGED <<final, package>>
     /\ UNCHANGED <<scen, kind, inputs, vetoed, banned, discharged, attached, depth, reviewed>>
@@ -136,7 +144,8 @@ Judge ==
 \* after review without a new review (seen on v2.21.0's retry path; not asserted for v2.22.1).
 Exec ==
     /\ pc = "exec"
-    /\ IF PostReviewChange THEN final' \in Options(scen) ELSE final' = reviewed
+    /\ \E f \in (IF PostReviewChange THEN Options(scen) ELSE {reviewed}) :
+         final' = IF GateDenies(scen, f) THEN "refuse" ELSE f   \* a denied dispatch is a refusal
     /\ pc' = "done"
     /\ UNCHANGED <<scen, kind, inputs, draft, vetoed, banned, discharged, attached, depth, reviewed,
                    everRefused, package>>
@@ -165,7 +174,7 @@ IdentityLayout == \A j \in Judges : ~inputs[j]["display_name_unlabelled"]
 \* I4  What executes is acceptable.
 NoWrongExecution == Executed => Acceptable(scen, final)
 \* I5  What executes is what passed review.
-ReviewIntegrity == Executed => final = reviewed
+ReviewIntegrity == Executed => (final = reviewed \/ (GateDenies(scen, reviewed) /\ final = "refuse"))
 \* I6  Veto continuity and re-review: a vetoed action executes only if the objection was discharged
 \*     by new trusted evidence, on the record.
 VetoContinuity == (Executed /\ final \in vetoed) => final \in discharged

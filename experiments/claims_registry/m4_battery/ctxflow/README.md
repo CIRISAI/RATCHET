@@ -51,6 +51,24 @@ a signature).
 | IdentityLayout (display name never inside the sender line) | holds | **violated** | holds |
 | Terminates | holds | holds | holds |
 
+**Item 1 and item 19 (constants from CIRISAgent `formal/h3ere_ctxflow/`, 3b23b0faf).**
+
+- `VerbPassSeesVeto`: the veto reason reaches the verb second pass. It is FALSE in `measured`, matching 0 of 162
+  calls.
+- `ToolGate`: TaskEnvelope Phase 2 denies at dispatch. A denied filing becomes a refusal; ReviewIntegrity admits
+  only that case.
+
+| Configuration | Violated |
+|---|---|
+| `contract` | none |
+| `contract_noverbveto` (contract without item 1) | NoForcedDeferral |
+| `contract_postreview` | AuthMonotone, NoWrongExecution, ReviewIntegrity, VetoContinuity |
+| `contract_postreview_gate` (+ item 19) | NoWrongExecution, ReviewIntegrity, VetoContinuity. The gate restores AuthMonotone |
+| `measured` | 10 (all but TypeOK, ReviewIntegrity, NoCrossTaskLeak) |
+| `measured_gate` | 9. The gate alone restores AuthMonotone and nothing else |
+
+So the gate backs the consciences up on authorization, but cannot replace the context fixes.
+
 ## Policy input shape (`context_policy.yaml`)
 
 ```yaml
