@@ -49,6 +49,8 @@ a signature).
 | NoLaundering (no system segment carries untrusted bytes) | holds | **violated** | holds |
 | NoCrossTaskLeak (WA guidance only in its task) | holds | holds (not exercised: no cross-task scenario measured) | holds |
 | IdentityLayout (display name never inside the sender line) | holds | **violated** | holds |
+| StubsOnlyAblated (stubs only where content is withheld) | holds | holds (trivially: no stubs in v2.22.1) | holds |
+| StubInformed (each ablated judge holds the stub of an advisory chat rule) | holds | **violated** | holds |
 | Terminates | holds | holds | holds |
 
 **Item 1 and item 19 (constants from CIRISAgent `formal/h3ere_ctxflow/`, 3b23b0faf).**
@@ -60,12 +62,12 @@ a signature).
 
 | Configuration | Violated |
 |---|---|
-| `contract` | none |
+| `contract` | none (15 invariants + termination, stub revision d564c7b; TLC with -Xmx1500m, 1 worker) |
 | `contract_noverbveto` (contract without item 1) | NoForcedDeferral |
 | `contract_postreview` | AuthMonotone, NoWrongExecution, ReviewIntegrity, VetoContinuity |
 | `contract_postreview_gate` (+ item 19) | NoWrongExecution, ReviewIntegrity, VetoContinuity. The gate restores AuthMonotone |
-| `measured` | 10 (all but TypeOK, ReviewIntegrity, NoCrossTaskLeak) |
-| `measured_gate` | 9. The gate alone restores AuthMonotone and nothing else |
+| `measured` | 11 (all but TypeOK, ReviewIntegrity, NoCrossTaskLeak, StubsOnlyAblated) |
+| `measured_gate` | 10. The gate alone restores AuthMonotone and nothing else |
 
 So the gate backs the consciences up on authorization, but cannot replace the context fixes.
 
