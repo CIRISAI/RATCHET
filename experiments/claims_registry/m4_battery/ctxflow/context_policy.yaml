@@ -9,7 +9,6 @@ kinds:
   accord:             {trust: system,    lifecycle: standing}
   identity_base:      {trust: system,    lifecycle: standing}
   amendment:          {trust: verified,  lifecycle: standing,    authz: required}
-  wa_guidance:        {trust: verified,  lifecycle: per-task,    authz: required}
   rule:               {lifecycle: per-message}      # trust comes from provenance
   request:            {trust: untrusted, lifecycle: per-message}
   history:            {trust: untrusted, lifecycle: per-message}
@@ -47,11 +46,14 @@ stub_fields:
   - position        # current | prior_<n>
   - digest          # sha256 prefix: correlates the stub with the manifest
 
-# stage -> kind[.provenance] -> predicate, or {when: predicate, form: full|stub}. Anything not listed is "never". Anything not listed is "never".
+# stage -> kind[.provenance] -> predicate, or {when: predicate, form: full|stub}. Anything not listed is "never".
 # Predicates (closed set): always | never | trusted_rule_in_force | id_scoped | signed_guidance_in_force |
 #   amendment_in_force | advisory_rule | retry
-# trusted_rule_in_force: a SIGNED rule is in force (signed guidance or amendment). advisory_rule: a rule stated in
-# chat, by a user or by the WA, not yet signed.
+# trusted_rule_in_force: a SIGNED rule is in force (signed guidance or amendment).
+# Decision 2026-11-18 (Eric): only signed rules count. A rule stated in chat (by a user or the WA) has no segment of its
+# own: nothing structural can mark chat text as a rule without a classifier, which stubs forbid. It stays in request /
+# history. The agent offers to defer so a WA can sign a standing rule. advisory_rule is kept in the vocabulary, unused.
+# WA guidance is one kind: rule.signed_guidance (the former wa_guidance kind is merged into it).
 stages:
   coherence: &nonablated_judge
     stage_instruction: always
@@ -60,9 +62,6 @@ stages:
     accord: always
     identity_base: always
     amendment: amendment_in_force
-    wa_guidance: signed_guidance_in_force
-    rule.user_chat: advisory_rule
-    rule.wa_chat: advisory_rule
     rule.signed_guidance: signed_guidance_in_force
     rule.amendment: amendment_in_force
     request: always
@@ -79,10 +78,9 @@ stages:
     accord: always
     identity_base: always
     amendment: amendment_in_force
-    wa_guidance: signed_guidance_in_force
     rule.signed_guidance: signed_guidance_in_force
     rule.amendment: amendment_in_force
-    sender_identity: id_scoped
+    sender_identity: trusted_rule_in_force   # 2026-11-18: verified data; a deterministic predicate, not an id scan
     action_record: always
     draft: always            # residual (FSD §10)
     pipeline_position: always
@@ -90,8 +88,6 @@ stages:
     request:        {when: always,        form: stub}
     history:        {when: always,        form: stub}
     tool_output:    {when: always,        form: stub}
-    rule.user_chat: {when: advisory_rule, form: stub}
-    rule.wa_chat:   {when: advisory_rule, form: stub}
   optveto: *ablated_judge
   aspdma: &drafter
     stage_instruction: always
@@ -100,9 +96,6 @@ stages:
     accord: always
     identity_base: always
     amendment: amendment_in_force
-    wa_guidance: signed_guidance_in_force
-    rule.user_chat: advisory_rule
-    rule.wa_chat: advisory_rule
     rule.signed_guidance: signed_guidance_in_force
     rule.amendment: amendment_in_force
     request: always
@@ -114,19 +107,19 @@ stages:
     dma_output: always
     pipeline_position: always
   tsaspdma: *drafter
-  # IDMA (decision 2026-11-18): signed rule and amendment segments with provenance, NOT identity_base.
+  # The other verb second passes re-decide ASPDMA's action exactly as TSASPDMA does (#1366 item 1).
+  dsaspdma: *drafter
+  fsaspdma: *drafter
+  msaspdma: *drafter
+  rsaspdma: *drafter
+  # IDMA (Eric, 2026-11-18, FSD §15.2): signed rule and amendment segments with provenance, NOT identity_base. The
+  # advisory chat-rule row is withdrawn with the "only signed rules count" decision (nothing structural produces it).
   idma:
     stage_instruction: always
     schema_instruction: always   # residual
     pipeline_position: always    # #1366 item 12: every stage
-    # Advisory chat rules carry their label at IDMA too (recommended, NOT an owner decision yet: the 2026-11-18
-    # IDMA ruling covers signed rules only). Without it IDMA reads a chat-stated rule as unlabelled text
-    # (#1366 item 15: IDMA scored a WA instruction as "rigidity").
-    rule.user_chat: advisory_rule
-    rule.wa_chat: advisory_rule
     accord: always
     amendment: amendment_in_force
-    wa_guidance: signed_guidance_in_force
     rule.signed_guidance: signed_guidance_in_force
     rule.amendment: amendment_in_force
     request: always
@@ -135,3 +128,23 @@ stages:
     display_name: always
     action_record: always
     draft: always
+  # The evaluators read the thought with the agent's identity and the trusted rules in force. dma_output: a bounce
+  # re-run reads its own earlier result.
+  csdma: &evaluator
+    stage_instruction: always
+    schema_instruction: always   # residual
+    tool_output: always
+    accord: always
+    identity_base: always
+    amendment: amendment_in_force
+    rule.signed_guidance: signed_guidance_in_force
+    rule.amendment: amendment_in_force
+    request: always
+    history: always
+    sender_identity: always
+    display_name: always
+    action_record: always
+    dma_output: always
+    pipeline_position: always
+  dsdma: *evaluator
+  pdma: *evaluator
