@@ -22,6 +22,12 @@ from gen_contract_policy import PRED_SCEN  # noqa: E402  (one definition of the 
 LABEL_SCEN = {"S1": "S1", "S2": "S2", "S3r": "S3", "S3": "S3", "S4c": "S3", "S4": "S4", "S5": "S5", "S6": "S6",
               "DEPTH": "S1"}
 RESIDUAL_KINDS = {"draft", "schema_instruction"}
+# --locale: the script a localized stage_instruction must contain. Some engine fields stay English in every locale
+# by design or translation lag (pipeline_position, stage_contract, *_tail, context_integration ...), so the check is
+# "the localized template fields rendered" (enough target-script characters), not "no English anywhere".
+SCRIPTS = {"am": (0x1200, 0x137F), "ar": (0x0600, 0x06FF), "zh": (0x4E00, 0x9FFF), "hi": (0x0900, 0x097F),
+           "ru": (0x0400, 0x04FF), "ja": (0x3040, 0x30FF), "ko": (0xAC00, 0xD7AF), "th": (0x0E00, 0x0E7F)}
+MIN_SCRIPT_CHARS = 200
 
 
 def load_policy(path):
@@ -53,7 +59,7 @@ def key_of(seg):
     return f"{seg['kind']}.{seg['provenance']}" if seg.get("kind") == "rule" and seg.get("provenance") else seg["kind"]
 
 
-def main(run_dir, policy_path, out=None):
+def main(run_dir, policy_path, out=None, locale=None):
     P, stages = load_policy(policy_path)
     ablated = set(P["ablated_stages"])
     findings = collections.defaultdict(collections.Counter)
@@ -106,6 +112,16 @@ def main(run_dir, policy_path, out=None):
                     flag("sent_differs_from_assembled", stage, ex)
                 segs = man.get("segments") or []
                 rows = stages.get(stage, {})
+                if locale in SCRIPTS and msgs:
+                    lo, hi = SCRIPTS[locale]
+                    n = 0
+                    for s in segs:
+                        if s["kind"] == "stage_instruction" and isinstance(s.get("message_index"), int) \
+                                and s["message_index"] < len(msgs) and isinstance(msgs[s["message_index"]], dict):
+                            t = str(msgs[s["message_index"]].get("content") or "")[s["span_start"]:s["span_end"]]
+                            n += sum(1 for ch in t if lo <= ord(ch) <= hi)
+                    if n < MIN_SCRIPT_CHARS:
+                        flag("not_localized", f"{stage} stage_instruction has {('<' + str(MIN_SCRIPT_CHARS)) if n else 'no'} {locale} chars", ex)
                 ids = {s["segment_id"]: s for s in segs}
                 for s in segs:
                     k = key_of(s)
@@ -179,4 +195,5 @@ def main(run_dir, policy_path, out=None):
 
 if __name__ == "__main__":
     out = sys.argv[sys.argv.index("--json") + 1] if "--json" in sys.argv else None
-    main(sys.argv[1], sys.argv[2], out)
+    loc = sys.argv[sys.argv.index("--locale") + 1] if "--locale" in sys.argv else None
+    main(sys.argv[1], sys.argv[2], out, loc)
