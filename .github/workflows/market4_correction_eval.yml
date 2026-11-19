@@ -243,6 +243,7 @@ jobs:
       M4_MOCK: ${{ inputs.mock_llm == 'true' && '1' || '' }}
       M4_AMENDMENT_FIELD: ${{ inputs.amendment_field }}
       CIRIS_PREFERRED_LANGUAGE: ${{ inputs.preferred_language }}
+      M4_PROBE_LANGUAGE: ${{ inputs.preferred_language }}
     steps:
       - uses: actions/checkout@v4
         with:

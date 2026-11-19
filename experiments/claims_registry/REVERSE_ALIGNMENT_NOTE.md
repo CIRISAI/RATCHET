@@ -53,7 +53,11 @@ The registry (ai-safety-claims) is exactly the kind of independent verification 
 
 **A joint demonstration, if pursued later, should be one Gunnar's registry can score.** For example: several independently governed agents, signed provenance, a human appeal path and preserved disagreement. Each claim would be framed as a frozen-contract market attempt, not a demo. That keeps "complementary" from becoming an untested assertion.
 
-## Open questions for Eric
+## Decision (Eric, 2026-11-18)
+
+**Hold.** No approach to the coalition, and no public mapping against the twelve areas, for now. If engagement happens later, the suggested entry point is the "execution without verification" failure mode, where CIRIS has concrete mechanisms and Market 4 evidence.
+
+## Open questions (on hold)
 
 1. Approach the coalition, or file first? Filing a qualifying Market 4 attempt first would give any later conversation measured evidence instead of architecture.
 2. Is "execution without verification" the right single entry point? It maps most directly to what we can show: signed exact-digest authority, and reviewed-equals-executed.
