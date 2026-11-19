@@ -92,6 +92,11 @@ on:
         required: false
         default: ''
         type: string
+      preferred_language:
+        description: 'CIRIS_PREFERRED_LANGUAGE for the agent (e.g. am, es, zh). Blank = the agent default (en). Used to check the context map in a non-English locale'
+        required: false
+        default: ''
+        type: string
       mock_llm:
         description: 'Context-map mode: run with the mock LLM (no key, no spend) and M4_CTXMAP=1, so the harness drives the S1-S6 context fixtures unscored and keeps the reasoning streams for measure.py. Needs a harness with M4_CTXMAP and an engine with the mock controls'
         required: false
@@ -237,6 +242,7 @@ jobs:
       M4_CTXMAP: ${{ inputs.mock_llm == 'true' && '1' || '' }}
       M4_MOCK: ${{ inputs.mock_llm == 'true' && '1' || '' }}
       M4_AMENDMENT_FIELD: ${{ inputs.amendment_field }}
+      CIRIS_PREFERRED_LANGUAGE: ${{ inputs.preferred_language }}
     steps:
       - uses: actions/checkout@v4
         with:
