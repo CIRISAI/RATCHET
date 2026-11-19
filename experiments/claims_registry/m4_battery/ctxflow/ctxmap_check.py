@@ -28,6 +28,9 @@ RESIDUAL_KINDS = {"draft", "schema_instruction"}
 SCRIPTS = {"am": (0x1200, 0x137F), "ar": (0x0600, 0x06FF), "zh": (0x4E00, 0x9FFF), "hi": (0x0900, 0x097F),
            "ru": (0x0400, 0x04FF), "ja": (0x3040, 0x30FF), "ko": (0xAC00, 0xD7AF), "th": (0x0E00, 0x0E7F)}
 MIN_SCRIPT_CHARS = 200
+# The optimization veto is deliberately ONE polyglot prompt for every locale (CIRISAgent 0c6a962f1; per-locale
+# copies fail tests/test_conscience_prompt_coverage.py), so it is exempt from the locale check.
+POLYGLOT_STAGES = {"optveto"}
 
 
 def load_policy(path):
@@ -112,7 +115,7 @@ def main(run_dir, policy_path, out=None, locale=None):
                     flag("sent_differs_from_assembled", stage, ex)
                 segs = man.get("segments") or []
                 rows = stages.get(stage, {})
-                if locale in SCRIPTS and msgs:
+                if locale in SCRIPTS and msgs and stage not in POLYGLOT_STAGES:
                     lo, hi = SCRIPTS[locale]
                     n = 0
                     for s in segs:
