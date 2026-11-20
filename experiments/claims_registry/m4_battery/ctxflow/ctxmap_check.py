@@ -46,6 +46,24 @@ def load_policy(path):
     return P, stages
 
 
+# Which rows are REQUIRED when their predicate holds, as the engine defines it (CIRISAgent
+# ciris_engine/logic/prompt_assembly/policy.py row_is_required, v2.23.x; ContractPolicy.tla mirrors it): the stage
+# instruction always; rows on id_scoped or retry everywhere they are listed; rows on the other state predicates only at
+# the judges, and never the identity text (`amendment`, ALLOWANCE_ONLY_KINDS). Everything else is allowed, not required.
+JUDGE_STAGES = {"coherence", "entropy", "epistemic", "optveto"}
+ALWAYS_REQUIRED_KINDS = {"stage_instruction"}
+ALWAYS_REQUIRING_PREDICATES = {"id_scoped", "retry"}
+REQUIRING_PREDICATES = {"trusted_rule_in_force", "signed_guidance_in_force", "amendment_in_force"}
+ALLOWANCE_ONLY_KINDS = {"amendment"}
+
+
+def row_is_required(key, pred, stage):
+    kind = key.split(".", 1)[0]
+    if kind in ALWAYS_REQUIRED_KINDS or pred in ALWAYS_REQUIRING_PREDICATES:
+        return True
+    return stage in JUDGE_STAGES and pred in REQUIRING_PREDICATES and kind not in ALLOWANCE_ONLY_KINDS
+
+
 def tasks_of(raw):
     t = {}
     for line in open(raw):
@@ -175,6 +193,8 @@ def main(run_dir, policy_path, out=None, locale=None):
                 # required: policy cells whose predicate holds here but nothing of that key is present
                 keys_here = {key_of(s) for s in segs}
                 for k, (pred, form) in rows.items():
+                    if not row_is_required(k, pred, stage):
+                        continue  # allowed, not required (engine policy.py row_is_required)
                     if pred != "never" and scen in PRED_SCEN.get(pred, set()) and k not in keys_here:
                         if k in ("tool_output", "schema_instruction", "conscience_feedback", "dma_output", "history",
                                  "action_record", "draft"):
