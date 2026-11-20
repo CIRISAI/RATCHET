@@ -58,6 +58,18 @@ def tasks_of(raw):
     return t
 
 
+def amendment_landed(raw):
+    """True when the run's S4 amendment landed (the harness's ctxmap_step label=amendment)."""
+    for line in open(raw):
+        try:
+            r = json.loads(line)
+        except ValueError:
+            continue
+        if r.get("event") == "ctxmap_step" and r.get("label") == "amendment":
+            return bool(r.get("landed"))
+    return False
+
+
 def key_of(seg):
     return f"{seg['kind']}.{seg['provenance']}" if seg.get("kind") == "rule" and seg.get("provenance") else seg["kind"]
 
@@ -78,6 +90,7 @@ def main(run_dir, policy_path, out=None, locale=None):
     for raw in glob.glob(f"{run_dir}/m4-raw-*/*.jsonl"):
         cid = os.path.basename(raw)[:-6]
         tasks = tasks_of(raw)
+        landed = amendment_landed(raw)
         probe_texts = []
         for line in open(raw):
             r = json.loads(line)
@@ -92,6 +105,9 @@ def main(run_dir, policy_path, out=None, locale=None):
                 if not label:
                     continue
                 scen = LABEL_SCEN[label]
+                # DEPTH runs last, after S4: once the amendment has landed it is in force there, as in S5.
+                if label == "DEPTH" and landed:
+                    scen = "S5"
                 man = e.get("context_manifest")
                 if isinstance(man, str):
                     try:
