@@ -57,6 +57,25 @@ REQUIRING_PREDICATES = {"trusted_rule_in_force", "signed_guidance_in_force", "am
 ALLOWANCE_ONLY_KINDS = {"amendment"}
 
 
+# (b) the facts the guard evaluated, against what the scenario says should hold. Only the two facts the engine sets
+# (advisory_rule and id_scoped are vocabulary only since 2026-11-18). S4's amendment fact is skipped: the guidance
+# task's thoughts before the write have it false and those after have it true, both correctly.
+CHECKED_FACTS = ("signed_guidance_in_force", "amendment_in_force")
+
+
+def call_holds(pred, facts, retry):
+    """(a) a policy predicate under the call's own PolicyFacts (engine policy.py predicate_holds)."""
+    if pred == "always":
+        return True
+    if pred == "never":
+        return False
+    if pred == "retry":
+        return retry
+    if pred == "trusted_rule_in_force":
+        return bool(facts.get("signed_guidance_in_force") or facts.get("amendment_in_force"))
+    return bool(facts.get(pred))
+
+
 def row_is_required(key, pred, stage):
     kind = key.split(".", 1)[0]
     if kind in ALWAYS_REQUIRED_KINDS or pred in ALWAYS_REQUIRING_PREDICATES:
@@ -149,6 +168,15 @@ def main(run_dir, policy_path, out=None, locale=None):
                     flag("sent_differs_from_assembled", stage, ex)
                 segs = man.get("segments") or []
                 rows = stages.get(stage, {})
+                facts = man.get("facts") if isinstance(man.get("facts"), dict) else None
+                retry = (man.get("retry_index") or 0) > 0
+                if facts is not None:
+                    for f in CHECKED_FACTS:
+                        if f == "amendment_in_force" and scen == "S4":
+                            continue
+                        expected = scen in PRED_SCEN.get(f, set())
+                        if bool(facts.get(f)) != expected:
+                            flag("fact_disagrees_with_scenario", f"{f}={bool(facts.get(f))} in {scen} (expected {expected})", ex)
                 if locale in SCRIPTS and msgs and stage not in POLYGLOT_STAGES:
                     lo, hi = SCRIPTS[locale]
                     n = 0
@@ -174,8 +202,11 @@ def main(run_dir, policy_path, out=None, locale=None):
                                 flag("span_hash_mismatch", f"{stage}.{k}", ex)
                     # policy: allowed here, in this form?
                     cell = rows.get(k)
-                    holds = (cell is not None and cell[0] == "retry" and (man.get("retry_index") or 0) > 0) or \
-                        (cell is not None and scen in PRED_SCEN.get(cell[0], set()))
+                    if facts is not None:
+                        holds = cell is not None and call_holds(cell[0], facts, retry)
+                    else:
+                        holds = (cell is not None and cell[0] == "retry" and retry) or \
+                            (cell is not None and scen in PRED_SCEN.get(cell[0], set()))
                     if cell is None or cell[0] == "never" or not holds:
                         flag("not_allowed_by_policy", f"{stage}.{k}[{form}] in {scen}", ex)
                     elif cell[1] != form:
@@ -195,7 +226,9 @@ def main(run_dir, policy_path, out=None, locale=None):
                 for k, (pred, form) in rows.items():
                     if not row_is_required(k, pred, stage):
                         continue  # allowed, not required (engine policy.py row_is_required)
-                    if pred != "never" and scen in PRED_SCEN.get(pred, set()) and k not in keys_here:
+                    should = call_holds(pred, facts, retry) if facts is not None else \
+                        (pred != "never" and scen in PRED_SCEN.get(pred, set()))
+                    if should and k not in keys_here:
                         if k in ("tool_output", "schema_instruction", "conscience_feedback", "dma_output", "history",
                                  "action_record", "draft"):
                             continue  # present only when the thing exists (tool ran, follow-up, retry ...)
