@@ -33,6 +33,13 @@ MIN_SCRIPT_CHARS = 200
 POLYGLOT_STAGES = {"optveto"}
 
 
+def agent_logs_dir(raw):
+    """The m4-agent-logs-<tag> directory beside a raw log's m4-raw-<tag> directory. Works for both layouts: one
+    artifact per case (run_dir/m4-raw-<tag>/) and one artifact per lane (run_dir/m4-lane-N/m4-raw-<tag>/)."""
+    d = os.path.dirname(raw)
+    return os.path.join(os.path.dirname(d), "m4-agent-logs-" + os.path.basename(d)[len("m4-raw-"):])
+
+
 def load_policy(path):
     P = yaml.safe_load(open(path))
     stages = {}
@@ -124,7 +131,7 @@ def main(run_dir, policy_path, out=None, locale=None):
         if len(examples[(kind, detail)]) < 2:
             examples[(kind, detail)].append(ex)
 
-    for raw in glob.glob(f"{run_dir}/m4-raw-*/*.jsonl"):
+    for raw in sorted(glob.glob(f"{run_dir}/**/m4-raw-*/*.jsonl", recursive=True)):
         cid = os.path.basename(raw)[:-6]
         tasks = tasks_of(raw)
         landed = amendment_landed(raw)
@@ -133,7 +140,7 @@ def main(run_dir, policy_path, out=None, locale=None):
             r = json.loads(line)
             if r.get("event") == "send" and str(r.get("label", "")).startswith("ctxmap-"):
                 probe_texts.append((r.get("label"), str(r.get("message") or "")))
-        for stream in glob.glob(f"{run_dir}/m4-agent-logs-{cid}/qa_reports/correction_episodes/*stream*/reasoning_stream.jsonl"):
+        for stream in glob.glob(f"{agent_logs_dir(raw)}/qa_reports/correction_episodes/*stream*/reasoning_stream.jsonl"):
             for line in open(stream):
                 if '"llm_call"' not in line:
                     continue

@@ -1,8 +1,8 @@
 name: Market 4 correction eval
 
 # ai-safety-claims Market 4 ("corrections change the system", contract v3) on a
-# real CIRIS agent with a live model: one frozen correction episode per job,
-# each on a freshly booted agent.
+# real CIRIS agent with a live model: one frozen correction episode per container,
+# each on a freshly booted agent; `lanes` runner jobs each run `lane_width` containers at a time.
 #
 # The harness (tools/qa_runner correction_episodes + its registration) lives in
 # CIRISAgent (branch market4/on-v2210 for v2.21.0-stable; market4/on-v2200, market4/on-v2164 and
@@ -57,10 +57,15 @@ on:
         required: false
         default: '1'
         type: string
-      max_parallel:
-        description: 'Concurrent episodes'
+      lanes:
+        description: 'Lane jobs (runner slots held); the cases are dealt round-robin across them'
         required: false
         default: '6'
+        type: string
+      lane_width:
+        description: 'Concurrent episodes per lane, each in its own container on the lane runner'
+        required: false
+        default: '3'
         type: string
       constraints_url:
         description: 'Optional pip constraints file (raw URL) pinning every package version; blank = the agent requirements ranges'
@@ -137,6 +142,7 @@ jobs:
       contents: write
     outputs:
       cases: ${{ steps.cases.outputs.cases }}
+      lanes: ${{ steps.cases.outputs.lanes }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -176,6 +182,13 @@ jobs:
           print(json.dumps([{"case": i, "rep": r, "tag": i if reps == 1 else f"{i}-r{r}"} for i in ids for r in range(1, reps + 1)]))
           ' '${{ inputs.case_filter }}' '${{ inputs.repeats }}')
           echo "cases=$CASES" >> "$GITHUB_OUTPUT"
+          LANES=$(python3 -I -c '
+          import json, sys
+          items = json.loads(sys.argv[1]); n = max(1, min(int(sys.argv[2] or "1"), len(items)))
+          print(json.dumps([{"lane": k + 1, "items": items[k::n]} for k in range(n)]))
+          ' "$CASES" '${{ inputs.lanes }}')
+          echo "lanes=$LANES" >> "$GITHUB_OUTPUT"
+          echo "lanes: $LANES"
           echo "cases: $CASES"
           python3 -I -c '
           import json
@@ -219,16 +232,20 @@ jobs:
           path: /tmp/m4-wheel/
           retention-days: 30
 
-  episode:
-    name: ${{ matrix.item.tag }}
+  # Lanes. Each lane job installs the agent once (a Docker image) and runs its share of the cases `lane_width` at a
+  # time, each episode in its own container from that image: its own localhost (the fixed ports 4243/4242/8080/18080
+  # do not collide) and its own writable copy of the checkout (data/, logs/, qa_reports/, CIRIS_HOME), so every
+  # episode still starts on a freshly booted agent with nothing shared. An episode is mostly waiting on the model, so
+  # packing them onto a runner costs little; `lanes` is how many of the org's runner slots the run holds.
+  lane:
+    name: lane ${{ matrix.lane.lane }}
     needs: [plan]
     runs-on: ubuntu-latest
     timeout-minutes: 345
     strategy:
       fail-fast: false
-      max-parallel: ${{ fromJSON(inputs.max_parallel) }}
       matrix:
-        item: ${{ fromJSON(needs.plan.outputs.cases) }}
+        lane: ${{ fromJSON(needs.plan.outputs.lanes) }}
     env:
       CIRIS_TEST_MODE: "true"
       CIRIS_TESTING_MODE: "true"
@@ -244,63 +261,47 @@ jobs:
       M4_AMENDMENT_FIELD: ${{ inputs.amendment_field }}
       CIRIS_PREFERRED_LANGUAGE: ${{ inputs.preferred_language }}
       M4_PROBE_LANGUAGE: ${{ inputs.preferred_language }}
+      M4_MAX_ATTEMPTS: '4'
+      M4_PAUSE_BUDGET_S: '5400'
+      M4_ATTEMPT_TIMEOUT_S: '7800'
+      M4_MIN_KEY_REMAINING: '2'
+      LANE_WIDTH: ${{ inputs.lane_width }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ratchet
       - uses: actions/checkout@v4
         with:
           repository: CIRISAI/CIRISAgent
           ref: ${{ inputs.harness_ref }}
-          path: agent
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: pip-m4-${{ runner.os }}-${{ hashFiles('agent/requirements.txt', 'agent/requirements-dev.txt') }}
-      - name: Install CIRISVerify system deps (libtss2)
-        shell: bash
-        run: |
-          for i in 1 2 3; do
-            sudo apt-get update -o Acquire::Retries=3 && \
-            sudo apt-get install -y --no-install-recommends libtss2-tctildr0 libtss2-esys-3.0.2-0 libtss2-mu-4.0.1-0 && break
-            sleep 15
-          done
+          path: build/agent
       - if: inputs.server_wheel_release != ''
         uses: actions/download-artifact@v4
         with:
           name: m4-server-wheel
-          path: /tmp/m4-wheel
-      - name: Install the agent and the QA runner
-        working-directory: agent
+          path: build/extra
+      - name: Fetch the constraints file
         shell: bash
         run: |
           set -euo pipefail
-          python -m pip install --upgrade pip
-          CONSTRAINT_ARGS=()
+          mkdir -p build/extra
           if [ -n "${{ inputs.constraints_url }}" ]; then
-            curl -sSfL "${{ inputs.constraints_url }}" -o /tmp/m4-constraints.txt
-            GOT=$(sha256sum /tmp/m4-constraints.txt | cut -d' ' -f1)
+            curl -sSfL "${{ inputs.constraints_url }}" -o build/extra/constraints.txt
+            GOT=$(sha256sum build/extra/constraints.txt | cut -d' ' -f1)
             if [ "$GOT" != "${{ inputs.constraints_sha256 }}" ]; then
               echo "::error::constraints sha256 mismatch: got $GOT, expected ${{ inputs.constraints_sha256 }}"; exit 1
             fi
-            CONSTRAINT_ARGS=(-c /tmp/m4-constraints.txt)
           fi
-          pip install "${CONSTRAINT_ARGS[@]}" -e .
-          pip install "${CONSTRAINT_ARGS[@]}" -r requirements-dev.txt
           if [ -n "${{ inputs.server_wheel_release }}" ]; then
-            WHL=$(ls /tmp/m4-wheel/ciris_server-*.whl | head -1)
+            WHL=$(ls build/extra/ciris_server-*.whl | head -1)
             GOT=$(sha256sum "$WHL" | cut -d' ' -f1)
             if [ "$GOT" != "${{ inputs.server_wheel_sha256 }}" ]; then
               echo "::error::server wheel sha256 mismatch: got $GOT, expected ${{ inputs.server_wheel_sha256 }}"; exit 1
             fi
-            pip install --force-reinstall --no-deps "$WHL"
-            echo "candidate ciris-server installed: $(basename "$WHL") sha256 $GOT"
           fi
-          mkdir -p qa_reports/correction_episodes
-          pip freeze --exclude-editable > "qa_reports/correction_episodes/${{ matrix.item.case }}_env_logs_pip-freeze.txt" || true
-          mkdir -p "qa_reports/correction_episodes/${{ matrix.item.case }}_env_logs"
-          mv "qa_reports/correction_episodes/${{ matrix.item.case }}_env_logs_pip-freeze.txt" "qa_reports/correction_episodes/${{ matrix.item.case }}_env_logs/pip-freeze.txt"
-          python --version > "qa_reports/correction_episodes/${{ matrix.item.case }}_env_logs/python-version.txt" 2>&1
+      - name: Build the agent image (one install for the whole lane)
+        shell: bash
+        run: docker build -q -t m4-agent -f ratchet/.github/m4/Dockerfile build
       - uses: actions/download-artifact@v4
         with:
           name: m4-frozen-cases
@@ -314,186 +315,60 @@ jobs:
           set -euo pipefail
           if [ -z "$OPENROUTER_API_KEY" ]; then echo "::error::RATCHET_OPENROUTER_KEY not in scope"; exit 1; fi
           umask 077
-          printf '%s' "$OPENROUTER_API_KEY" > "$HOME/.openrouter_key"
-      # Credit pause. If the provider refuses for credit (HTTP 402, "run out of credit", insufficient_quota) at any
-      # point in an episode, the episode is contaminated: it is stopped, its files are kept under
-      # qa_reports/credit_paused/attempt-N/ (uploaded with the agent logs), the job waits until a 1-token request to
-      # the same model is accepted, and the episode is rerun from a wiped start. Every pause is logged to
-      # qa_reports/credit_pauses.jsonl. It never waits out the key's weekly limit: if the key reports less than
-      # M4_MIN_KEY_REMAINING dollars left it stops red. Bounds: M4_MAX_ATTEMPTS episodes and M4_PAUSE_BUDGET_S seconds
-      # of waiting per job.
-      - name: Run the episode (pauses on provider credit refusals, then reruns from scratch)
-        id: run
-        timeout-minutes: 320
-        working-directory: agent
+          printf '%s' "$OPENROUTER_API_KEY" > "$RUNNER_TEMP/openrouter_key"
+      - name: Run this lane's episodes, lane_width at a time, one container each
+        timeout-minutes: 330
         shell: bash
         env:
-          M4_MAX_ATTEMPTS: '4'
-          M4_PAUSE_BUDGET_S: '5400'
-          M4_ATTEMPT_TIMEOUT_S: '7800'
-          M4_MIN_KEY_REMAINING: '2'
+          ITEMS: ${{ toJSON(matrix.lane.items) }}
         run: |
           set -u -o pipefail
-          CASE="${{ matrix.item.case }}"
-          mkdir -p qa_reports qa_reports/credit_paused
-          PAUSES=qa_reports/credit_pauses.jsonl; : > "$PAUSES"
-          MARK='run out of credit|insufficient_quota|Error code: 402|would exceed your available credits|LLM BILLING ERROR'
-          # OpenRouter's in-flight-budget 402 (limit_source openrouter_in_flight_budget) is transient: from CIRISAgent
-          # #1366 item 20 the engine waits Retry-After and retries it, so it does not stop the episode. Only a
-          # terminal credit failure does (balance, key limit, a credit refusal the harness saw in a reply). Engines
-          # without item 20 fail the call, and the harness's null-reply rule then shows it; set M4_INFLIGHT_STOP=1
-          # to keep stopping on in-flight 402s for such engines.
-          INFLIGHT='in_flight_budget|openrouter_in_flight_budget|given your current in-flight requests'
-          credit_lines() {
-            { grep -hsE "$MARK" "qa_reports/correction_episodes/$CASE.jsonl" "qa_reports/episode_$CASE.log" 2>/dev/null
-              [ -d logs ] && grep -rhsE "$MARK" logs/ 2>/dev/null; } || true
+          mkdir -p out/_lane
+          ENV_NAMES="CIRIS_TRACE_RUN_KIND PYTHONUNBUFFERED CIRIS_TEST_MODE CIRIS_TESTING_MODE M4_ENGINE_COMMIT M4_HARNESS_COMMIT
+            MODEL_INPUT TEMPLATE_INPUT OPENROUTER_PROVIDER_ORDER CIRIS_LLM_SEED M4_PRESTEP M4_CTXMAP M4_MOCK
+            M4_AMENDMENT_FIELD CIRIS_PREFERRED_LANGUAGE M4_PROBE_LANGUAGE M4_MAX_ATTEMPTS M4_PAUSE_BUDGET_S
+            M4_ATTEMPT_TIMEOUT_S M4_MIN_KEY_REMAINING M4_INFLIGHT_STOP"
+          DARGS=(--rm --shm-size=1g -v /tmp/m4-cases:/tmp/m4-cases:ro -v "$PWD/out:/out"
+                 -v "$PWD/ratchet/.github/m4/episode.sh:/m4/episode.sh:ro")
+          for n in $ENV_NAMES; do DARGS+=(-e "$n"); done
+          [ -f "$RUNNER_TEMP/openrouter_key" ] && DARGS+=(-v "$RUNNER_TEMP/openrouter_key:/root/.openrouter_key:ro")
+          ( while :; do   # lane resources, to size lane_width from evidence
+              printf '%s\t%s\t%s\n' "$(date -u +%FT%TZ)" "$(free -m | awk '/Mem:/{print $3"/"$2" MB"}')" \
+                "$(docker stats --no-stream --format '{{.Name}}={{.MemUsage}},{{.CPUPerc}}' | tr '\n' ' ')" >> out/_lane/resources.tsv
+              sleep 20; done ) & SAMPLER=$!
+          run_one() {
+            echo "start $2 ($(date -u +%T))"
+            docker run --name "m4-$2" "${DARGS[@]}" m4-agent bash /m4/episode.sh "$1" "$2" > "out/_lane/$2.console.log" 2>&1
+            echo "end $2 rc=$? ($(date -u +%T))"
           }
-          credit_hit() {
-            if [ "${M4_INFLIGHT_STOP:-0}" = 1 ]; then credit_lines | grep -q . && return 0; return 1; fi
-            credit_lines | grep -vE "$INFLIGHT" | grep -q . && return 0
-            return 1
-          }
-          inflight_count() { credit_lines | grep -cE "$INFLIGHT" || true; }
-          provider_ok() {   # 1-token request to the same model; prints the HTTP status
-            python3 - "$MODEL_INPUT" <<'PY'
-          import json, os, sys, urllib.request, urllib.error
-          key = open(os.path.expanduser("~/.openrouter_key")).read().strip()
-          req = urllib.request.Request("https://openrouter.ai/api/v1/chat/completions",
-              data=json.dumps({"model": sys.argv[1], "max_tokens": 1,
-                               "messages": [{"role": "user", "content": "ok"}]}).encode(),
-              headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"})
-          try:
-              print(urllib.request.urlopen(req, timeout=60).status)
-          except urllib.error.HTTPError as e:
-              print(e.code)
-          except Exception:
-              print(0)
-          PY
-          }
-          key_remaining() {  # dollars left on the key's limit; "none" when the key has no limit
-            python3 - <<'PY'
-          import json, os, urllib.request
-          key = open(os.path.expanduser("~/.openrouter_key")).read().strip()
-          try:
-              d = json.load(urllib.request.urlopen(urllib.request.Request("https://openrouter.ai/api/v1/key",
-                  headers={"Authorization": f"Bearer {key}"}), timeout=30))["data"]
-              print("none" if d.get("limit_remaining") is None else d["limit_remaining"])
-          except Exception:
-              print("unknown")
-          PY
-          }
-          log_pause() { printf '{"t":"%s","case":"%s","attempt":%d,"event":"%s"%s}\n' "$(date -u +%FT%TZ)" "$CASE" "$ATTEMPT" "$1" "${2:-}" >> "$PAUSES"; }
-
-          WAITED=0; ATTEMPT=0
-          while :; do
-            ATTEMPT=$((ATTEMPT+1))
-            rm -rf logs "qa_reports/correction_episodes/$CASE.jsonl"
-            for d in qa_reports/correction_episodes/"${CASE}"_*_logs; do
-              [ -e "$d" ] && [ "$d" != "qa_reports/correction_episodes/${CASE}_env_logs" ] && rm -rf "$d"
-            done
-            # Mock mode (context map): no key, no provider; everything else identical, so prompts are assembled as live.
-            if [ -n "${M4_MOCK:-}" ]; then
-              LLM_ARGS='--mock-llm'
-            else
-              LLM_ARGS='--live --live-key-file '"$HOME"'/.openrouter_key --live-base-url https://openrouter.ai/api/v1 --live-model '"$MODEL_INPUT"
-            fi
-            setsid bash -c 'exec timeout --signal=TERM --kill-after=60 "$0" python3 -m tools.qa_runner correction_episodes \
-                --correction-cases-file /tmp/m4-cases/freeze-cases.jsonl --correction-case-id "$1" \
-                $2 --safety-battery-template "$3" \
-                --wipe-data --proceed-anyway --timeout 7200 --verbose 2>&1' \
-              "$M4_ATTEMPT_TIMEOUT_S" "$CASE" "$LLM_ARGS" "$TEMPLATE_INPUT" > "qa_reports/episode_$CASE.log" 2>&1 &
-            PG=$!; HIT=0
-            while kill -0 "$PG" 2>/dev/null; do
-              sleep 15
-              if credit_hit; then
-                HIT=1; echo "::notice::provider credit pause in attempt $ATTEMPT of $CASE: stopping the episode, will rerun it from a wiped start"
-                kill -TERM -- "-$PG" 2>/dev/null || true; sleep 30; kill -KILL -- "-$PG" 2>/dev/null || true; break
-              fi
-            done
-            # `|| RC=$?`: under bash -e a bare `wait` on the process group we just killed exits the step before the
-            # pause below can run (RATCHET run 44208916740: 12 episodes lost this way on an in-flight-budget 402).
-            RC=0; wait "$PG" || RC=$?
-            [ "$HIT" = 0 ] && credit_hit && HIT=1
-            pkill -f "$PWD/main.py" 2>/dev/null || true
-            cat "qa_reports/episode_$CASE.log"
-            if [ "$HIT" = 0 ]; then
-              # The runner's incidents gate fails an episode on provider/runtime transients (connection errors,
-              # DMA or interact timeouts, log floods) even when it produced a verdict. Those are infrastructure,
-              # reported, not behavioural failures: with a verdict in the raw log, the job stays green and the
-              # incident lines go to qa_reports/infra_incidents.txt and the job summary. No verdict: still red.
-              RAW="qa_reports/correction_episodes/$CASE.jsonl"
-              if [ "$RC" != 0 ] && grep -qs '"event": "verdict"' "$RAW"; then
-                grep -h '\[INCIDENTS-GATE\] FAILED' "qa_reports/episode_$CASE.log" > qa_reports/infra_incidents.txt || true
-                N=$(wc -l < qa_reports/infra_incidents.txt)
-                log_pause done_with_infra_incidents ",\"rc\":$RC,\"incidents\":$N"
-                echo "::notice::$CASE produced a verdict; runner rc=$RC from $N infrastructure incident line(s), recorded in infra_incidents.txt"
-                { echo "### $CASE: verdict produced; infrastructure incidents (not behavioural)"; echo '```';
-                  cat qa_reports/infra_incidents.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
-                exit 0
-              fi
-              log_pause done ",\"rc\":$RC,\"inflight_402_lines\":$(inflight_count)"
-              exit "$RC"
-            fi
-            D="qa_reports/credit_paused/attempt-$ATTEMPT"; mkdir -p "$D"
-            cp -r "qa_reports/episode_$CASE.log" logs "qa_reports/correction_episodes/$CASE.jsonl" "$D/" 2>/dev/null || true
-            cp -r qa_reports/correction_episodes/${CASE}_*_logs "$D/" 2>/dev/null || true
-            log_pause credit_refusal ",\"kept\":\"$D\""
-            if [ "$ATTEMPT" -ge "$M4_MAX_ATTEMPTS" ]; then
-              echo "::error::$CASE: credit refusals in all $ATTEMPT attempts; no clean episode"; exit 1
-            fi
-            S=60
-            while :; do
-              REM=$(key_remaining)
-              if [ "$REM" != none ] && [ "$REM" != unknown ] && python3 -c "import sys; sys.exit(0 if float('$REM') < float('$M4_MIN_KEY_REMAINING') else 1)"; then
-                log_pause key_limit ",\"remaining\":\"$REM\""
-                echo "::error::$CASE: the key's limit is nearly spent (\$$REM left); not waiting for the weekly reset"; exit 1
-              fi
-              if [ "$WAITED" -ge "$M4_PAUSE_BUDGET_S" ]; then
-                log_pause pause_budget_spent ",\"waited_s\":$WAITED"
-                echo "::error::$CASE: provider still refusing after ${WAITED}s of waiting"; exit 1
-              fi
-              echo "credit pause: waiting ${S}s (waited ${WAITED}s so far; key remaining: $REM)"
-              sleep "$S"; WAITED=$((WAITED+S))
-              CODE=$(provider_ok)
-              log_pause probe ",\"status\":$CODE,\"waited_s\":$WAITED"
-              [ "$CODE" = 200 ] && break
-              S=$(( S*2 > 600 ? 600 : S*2 ))
-            done
-            echo "provider accepts again after ${WAITED}s; rerunning $CASE from a wiped start (attempt $((ATTEMPT+1)))"
+          export -f run_one
+          # xargs cannot pass bash arrays; re-declare them inside each worker from a serialised copy
+          declare -p DARGS > "$RUNNER_TEMP/dargs.sh"
+          jq -r '.[] | "\(.case) \(.tag)"' <<< "$ITEMS" \
+            | xargs -P "$LANE_WIDTH" -L 1 bash -c 'source "$RUNNER_TEMP/dargs.sh"; run_one "$0" "$1"'
+          kill "$SAMPLER" 2>/dev/null || true
+          FAIL=0
+          for t in $(jq -r '.[].tag' <<< "$ITEMS"); do
+            RC=$(cat "out/_lane/$t.rc" 2>/dev/null || echo missing)
+            echo "::group::$t (rc=$RC)"; cat "out/_lane/$t.console.log" 2>/dev/null; echo "::endgroup::"
+            grep -hE '^::(notice|error|warning)::' "out/_lane/$t.console.log" 2>/dev/null || true
+            cat "out/_lane/$t.summary.md" >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+            if [ "$RC" != 0 ] || [ ! -s "out/m4-raw-$t/"*.jsonl ]; then echo "::error::$t: rc=$RC or no raw log"; FAIL=1; fi
           done
-      - name: Raw log present
-        if: always()
-        working-directory: agent
-        shell: bash
-        run: |
-          ls -la qa_reports/correction_episodes/ || true
-          test -s "qa_reports/correction_episodes/${{ matrix.item.case }}.jsonl"
-      - name: Attest the raw log and the installed environment
+          { echo "### lane ${{ matrix.lane.lane }} resources (peak used memory)"; sort -t$'\t' -k2 -V out/_lane/resources.tsv | tail -1; } >> "$GITHUB_STEP_SUMMARY" || true
+          exit $FAIL
+      - name: Attest the raw logs and the installed environment
         if: always()
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: |
-            agent/qa_reports/correction_episodes/${{ matrix.item.case }}.jsonl
-            agent/qa_reports/correction_episodes/${{ matrix.item.case }}_env_logs/pip-freeze.txt
-      - name: Upload the raw log
+            out/m4-raw-*/*.jsonl
+            out/m4-agent-logs-*/qa_reports/correction_episodes/*_env_logs/pip-freeze.txt
+      - name: Upload the lane's raw logs and agent logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: m4-raw-${{ matrix.item.tag }}
-          path: agent/qa_reports/correction_episodes/${{ matrix.item.case }}.jsonl
-          retention-days: 90
-          if-no-files-found: error
-      - name: Upload agent logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: m4-agent-logs-${{ matrix.item.tag }}
-          path: |
-            agent/qa_reports/episode_${{ matrix.item.case }}.log
-            agent/qa_reports/credit_pauses.jsonl
-            agent/qa_reports/credit_paused/
-            agent/qa_reports/infra_incidents.txt
-            agent/qa_reports/correction_episodes/${{ matrix.item.case }}_*_logs/
-            agent/logs/
+          name: m4-lane-${{ matrix.lane.lane }}
+          path: out/
           retention-days: 30
-          if-no-files-found: warn
+          if-no-files-found: error
